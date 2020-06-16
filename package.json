@@ -1,0 +1,11 @@
+{
+  "name": "Verifier-Server-SDK-TypeScript",
+  "version": "0.0.1",
+  "main": "index.js",
+  "author": "jacobleesinger <jacobleesinger@gmail.com>",
+  "license": "MIT",
+  "private": false,
+  "devDependencies": {
+    "typescript": "^3.9.5"
+  }
+}
