@@ -1,14 +1,17 @@
 import express from 'express';
-import configData from './config/config.json';
+import { initServer, startServer, CustError, customErrFormatter } from 'library-issuer-verifier-utility';
 
-const port = configData.port;
+import { configData } from './config';
+import { registerVerifier } from './registerVerifier';
 
-export const app = express();
+const app = initServer();
 
-app.get('/', function (req: express.Request, res: express.Response, next: any) {
-  res.send(`Verifier Application running at http://localhost:${port}`);
+app.post('/api/register', registerVerifier);
+app.use((err: CustError, req: express.Request, res: express.Response, next: any) => {
+  customErrFormatter(err, res);
+  next(err);
 });
 
-app.listen(port, () => {
-  console.log(`server started at http://localhost:${port}`);
-});
+startServer(configData.port, app);
+
+export { app };
