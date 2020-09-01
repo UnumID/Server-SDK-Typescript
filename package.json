@@ -1,7 +1,7 @@
 {
   "name": "Verifier-Server-App-TypeScript",
   "version": "0.0.1",
-  "main": "build/index.js",
+  "main": "build/server.js",
   "repository": "git@github.com:UnumID/Verifier-Server-SDK-TypeScript.git",
   "author": "jacobleesinger <jacobleesinger@gmail.com>",
   "license": "MIT",

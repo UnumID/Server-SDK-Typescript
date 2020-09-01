@@ -3,7 +3,7 @@ import request from 'supertest';
 import * as hlpr from 'library-issuer-verifier-utility';
 import { app } from '../src/index';
 
-function callRegIssApi (name: string, customerUuid: string, apiKey: string): Promise<hlpr.JSONObj> {
+const callRegIssApi = (name: string, customerUuid: string, apiKey: string): Promise<hlpr.JSONObj> => {
   return (request(app)
     .post('/api/register')
     .send({
@@ -12,7 +12,7 @@ function callRegIssApi (name: string, customerUuid: string, apiKey: string): Pro
       apiKey
     })
   );
-}
+};
 
 describe('POST /api/register Verifier', () => {
   let createTokenSpy, restCallSpy, newVerifier: hlpr.JSONObj, reqBody: hlpr.JSONObj;
@@ -61,29 +61,31 @@ describe('POST /api/register Verifier - Failure cases', () => {
   const name = 'First Unumid Verifier';
   const customerUuid = '5e46f1ba-4c82-471d-bbc7-251924a90532';
   const apiKey = '/7uLH4LB+etgKb5LUR5vm2cebS49EmPwxmBoS/TpfXM=';
+  const stCode = 404;
+  const errMsg = 'Missing required name, customerUuid, and/or apiKey fields';
 
-  it('Response code should be 404 when name is not passed', async () => {
+  it('Response code should be ' + stCode + ' when name is not passed', async () => {
     newVerifier = await callRegIssApi('', customerUuid, apiKey);
     reqBody = newVerifier.body;
 
-    expect(newVerifier.statusCode).toBe(404);
-    expect(reqBody.message).toBe('Missing required name, customerUuid, and apiKey fields');
+    expect(newVerifier.statusCode).toBe(stCode);
+    expect(reqBody.message).toBe(errMsg);
   });
 
-  it('Response code should be 404 when customerUuid is not passed', async () => {
+  it('Response code should be ' + stCode + ' when customerUuid is not passed', async () => {
     newVerifier = await callRegIssApi(name, '', apiKey);
     reqBody = newVerifier.body;
 
-    expect(newVerifier.statusCode).toBe(404);
-    expect(reqBody.message).toBe('Missing required name, customerUuid, and apiKey fields');
+    expect(newVerifier.statusCode).toBe(stCode);
+    expect(reqBody.message).toBe(errMsg);
   });
 
-  it('Response code should be 404 when apiKey is not passed', async () => {
+  it('Response code should be ' + stCode + ' when apiKey is not passed', async () => {
     newVerifier = await callRegIssApi(name, customerUuid, '');
     reqBody = newVerifier.body;
 
-    expect(newVerifier.statusCode).toBe(404);
-    expect(reqBody.message).toBe('Missing required name, customerUuid, and apiKey fields');
+    expect(newVerifier.statusCode).toBe(stCode);
+    expect(reqBody.message).toBe(errMsg);
   });
 });
 
@@ -92,16 +94,17 @@ describe('POST /api/register Verifier - Failure cases - SaaS Errors', () => {
   const name = 'First Unumid Verifier';
   const customerUuid = '5e46f1ba-4c82-471d-bbc7-251924a90532';
   const apiKey = '/7uLH4LB+etgKb5LUR5vm2cebS49EmPwxmBoS/TpfXM=';
+  const stCode = 403;
 
-  it('Response code should be 403 when uuId is not valid', async () => {
+  it('Response code should be ' + stCode + ' when uuId is not valid', async () => {
     newVerifier = await callRegIssApi(name, '123', apiKey);
 
-    expect(newVerifier.statusCode).toBe(403);
+    expect(newVerifier.statusCode).toBe(stCode);
   });
 
-  it('Response code should be 403 when API Key is not valid', async () => {
+  it('Response code should be ' + stCode + ' when API Key is not valid', async () => {
     newVerifier = await callRegIssApi(name, customerUuid, 'abc');
 
-    expect(newVerifier.statusCode).toBe(403);
+    expect(newVerifier.statusCode).toBe(stCode);
   });
 });

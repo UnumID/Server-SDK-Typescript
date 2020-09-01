@@ -55,68 +55,104 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.registerVerifier = void 0;
+exports.sendRequest = void 0;
 var hlpr = __importStar(require("library-issuer-verifier-utility"));
 var config_1 = require("./config");
-var constructKeyObj = function (kp, type) {
-    return {
-        id: hlpr.getUUID(),
-        encoding: 'pem',
-        type: type,
-        status: 'valid',
-        publicKey: kp.publicKey
-    };
-};
-var constructKeyObjs = function (kpSet) {
-    var signKey = constructKeyObj(kpSet.signing, 'secp256r1');
-    return ([signKey]);
-};
-var validateInParams = function (req) {
-    var _a = req.body, name = _a.name, customerUuid = _a.customerUuid, apiKey = _a.apiKey;
-    if (!name || !customerUuid || !apiKey) {
-        throw new hlpr.CustError(404, 'Missing required name, customerUuid, and/or apiKey fields');
+var validateInParams = function (req, authToken) {
+    var _a = req.body, verifier = _a.verifier, credentialRequests = _a.credentialRequests, metadata = _a.metadata, expiresAt = _a.expiresAt, eccPrivateKey = _a.eccPrivateKey;
+    // Verifier input element validation
+    if (!verifier || !credentialRequests) {
+        throw new hlpr.CustError(404, 'Missing required verifier, and/or credentialRequests');
     }
+    if (!verifier.name || !verifier.did || !verifier.url) {
+        throw new hlpr.CustError(404, 'Missing required name, did and/or url in verifier input element');
+    }
+    // credentialRequests input element must be an array
+    if (!Array.isArray(credentialRequests)) {
+        throw new hlpr.CustError(404, 'credentialRequests input is not an array');
+    }
+    var totCredReqs = credentialRequests.length;
+    if (totCredReqs === 0) {
+        throw new hlpr.CustError(404, 'credentialRequests input array is empty');
+    }
+    // credentialRequests input element should have type and issuer elements
+    for (var i = 0; i < totCredReqs; i++) {
+        var credPosStr = '[' + i + ']';
+        if (!credentialRequests[i].type || !credentialRequests[i].issuers) {
+            throw new hlpr.CustError(404, 'Missing type and/or issuers in credentialRequests' + credPosStr + ' Array input element');
+        }
+        // credentialRequests.issuers input element must be an array
+        if (!Array.isArray(credentialRequests[i].issuers)) {
+            throw new hlpr.CustError(404, 'issuers element in credentialRequests' + credPosStr + ' object is not an Array');
+        }
+        var totIssuers = credentialRequests[i].issuers.length;
+        if (totIssuers === 0) {
+            throw new hlpr.CustError(404, 'credentialRequests' + credPosStr + '.issuers input array is empty');
+        }
+        // credentialRequests.issuers should have did and name attribute
+        for (var j = 0; j < totIssuers; j++) {
+            if (!credentialRequests[i].issuers[j].did || !credentialRequests[i].issuers[j].name) {
+                throw new hlpr.CustError(404, 'Missing name and/or did in one or more issuers Array input element');
+            }
+        }
+    }
+    // ECC Private Key is mandatory input parameter
+    if (!eccPrivateKey) {
+        throw new hlpr.CustError(404, 'eccPrivateKey input field is mandatory');
+    }
+    // x-auth-token is mandatory
+    if (!authToken) {
+        throw new hlpr.CustError(401, 'Request not authenticated');
+    }
+    var unsignedPR = {
+        verifier: verifier,
+        credentialRequests: credentialRequests,
+        metadata: metadata,
+        expiresAt: expiresAt
+    };
+    return (unsignedPR);
 };
-exports.registerVerifier = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var kpSet, verifierOpt, restData, restResp, verifierResp, error_1;
+var constructSignedPresentation = function (unsignedPR, privateKey) {
+    var proof = hlpr.createProof(unsignedPR, privateKey, unsignedPR.verifier.did);
+    var signedPR = {
+        verifier: unsignedPR.verifier,
+        credentialRequests: unsignedPR.credentialRequests,
+        metadata: unsignedPR.metadata,
+        expiresAt: unsignedPR.expiresAt,
+        proof: proof
+    };
+    return (signedPR);
+};
+exports.sendRequest = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var authToken, unsignedPR, signedPR, restData, restResp, prReqWithDeeplink, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                _a.trys.push([0, 3, , 4]);
-                validateInParams(req);
-                return [4 /*yield*/, hlpr.createToken()];
-            case 1:
-                kpSet = _a.sent();
-                verifierOpt = { name: req.body.name, customerUuid: req.body.customerUuid, publicKeyInfo: constructKeyObjs(kpSet) };
+                _a.trys.push([0, 2, , 3]);
+                authToken = req.headers['x-auth-token'];
+                unsignedPR = validateInParams(req, authToken);
+                signedPR = constructSignedPresentation(unsignedPR, req.body.eccPrivateKey);
                 restData = {
                     method: 'POST',
                     baseUrl: config_1.configData.SaaSUrl,
-                    endPoint: 'verifier',
-                    header: { Authorization: 'Bearer ' + req.body.apiKey },
-                    data: verifierOpt
+                    endPoint: 'presentationRequest',
+                    header: { Authorization: 'Bearer ' + authToken },
+                    data: signedPR
                 };
                 return [4 /*yield*/, hlpr.makeRESTCall(restData)];
-            case 2:
+            case 1:
                 restResp = _a.sent();
-                verifierResp = {};
-                verifierResp.uuid = restResp.body.uuid;
-                verifierResp.customerUuid = restResp.body.customerUuid;
-                verifierResp.did = restResp.body.did;
-                verifierResp.name = restResp.body.name;
-                verifierResp.createdAt = restResp.body.createdAt;
-                verifierResp.updatedAt = restResp.body.updatedAt;
-                // Populate the key info into the response got from SaaS
-                verifierResp.keys = kpSet.signing;
+                prReqWithDeeplink = restResp.body;
                 // Set the X-Auth-Token header alone
                 res.setHeader('Content-Type', 'application/json');
                 res.setHeader('x-auth-token', restResp.headers['x-auth-token']);
-                res.send(verifierResp);
-                return [3 /*break*/, 4];
-            case 3:
+                res.send(prReqWithDeeplink);
+                return [3 /*break*/, 3];
+            case 2:
                 error_1 = _a.sent();
                 next(error_1);
-                return [3 /*break*/, 4];
-            case 4: return [2 /*return*/];
+                return [3 /*break*/, 3];
+            case 3: return [2 /*return*/];
         }
     });
 }); };

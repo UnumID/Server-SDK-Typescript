@@ -4,7 +4,7 @@ import * as hlpr from 'library-issuer-verifier-utility';
 import { configData } from './config';
 import { VerifierOptions } from './types';
 
-function constructKeyObj (kp: hlpr.KeyPair, type: string): hlpr.PublicKeyInfo {
+const constructKeyObj = (kp: hlpr.KeyPair, type: string): hlpr.PublicKeyInfo => {
   return {
     id: hlpr.getUUID(),
     encoding: 'pem',
@@ -12,23 +12,23 @@ function constructKeyObj (kp: hlpr.KeyPair, type: string): hlpr.PublicKeyInfo {
     status: 'valid',
     publicKey: kp.publicKey
   };
-}
+};
 
-function constructKeyObjs (kpSet: hlpr.KeyPairSet): Array<hlpr.PublicKeyInfo> {
+const constructKeyObjs = (kpSet: hlpr.KeyPairSet): Array<hlpr.PublicKeyInfo> => {
   const signKey = constructKeyObj(kpSet.signing, 'secp256r1');
 
   return ([signKey]);
-}
+};
 
-function validateInParams (req: express.Request) {
+const validateInParams = (req: express.Request): void => {
   const { name, customerUuid, apiKey } = req.body;
 
   if (!name || !customerUuid || !apiKey) {
-    throw new hlpr.CustError(404, 'Missing required name, customerUuid, and apiKey fields');
+    throw new hlpr.CustError(404, 'Missing required name, customerUuid, and/or apiKey fields');
   }
-}
+};
 
-export async function registerVerifier (req: express.Request, res: express.Response, next: any):Promise<void> {
+export const registerVerifier = async (req: express.Request, res: express.Response, next: any): Promise<void> => {
   try {
     validateInParams(req);
 
@@ -64,4 +64,4 @@ export async function registerVerifier (req: express.Request, res: express.Respo
   } catch (error) {
     next(error);
   }
-}
+};
