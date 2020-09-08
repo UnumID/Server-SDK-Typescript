@@ -71,7 +71,7 @@ const validateInParams = (req: express.Request, authToken: string): UnsignedPres
 };
 
 const constructSignedPresentation = (unsignedPR: UnsignedPresentationRequest, privateKey: string): SignedPresentationRequest => {
-  const proof: hlpr.Proof = hlpr.createProof(unsignedPR, privateKey, unsignedPR.verifier.did);
+  const proof: hlpr.Proof = hlpr.createProof(unsignedPR, privateKey, unsignedPR.verifier.did, 'pem');
   const signedPR: SignedPresentationRequest = {
     verifier: unsignedPR.verifier,
     credentialRequests: unsignedPR.credentialRequests,

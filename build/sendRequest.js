@@ -113,7 +113,7 @@ var validateInParams = function (req, authToken) {
     return (unsignedPR);
 };
 var constructSignedPresentation = function (unsignedPR, privateKey) {
-    var proof = hlpr.createProof(unsignedPR, privateKey, unsignedPR.verifier.did);
+    var proof = hlpr.createProof(unsignedPR, privateKey, unsignedPR.verifier.did, 'pem');
     var signedPR = {
         verifier: unsignedPR.verifier,
         credentialRequests: unsignedPR.credentialRequests,

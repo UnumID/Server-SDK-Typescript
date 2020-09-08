@@ -40,3 +40,14 @@ export interface PresentationRequestWithDeeplink extends SignedPresentationReque
   updatedAt: Date;
   deeplink: string;
 }
+
+export interface UnsignedPresentation {
+  '@context': ['https://www.w3.org/2018/credentials/v1', ...string[]];
+  type: ['VerifiablePresentation', ...string[]];
+  verifiableCredential: Credential;
+  presentationRequestUuid: string;
+}
+
+export interface Presentation extends UnsignedPresentation {
+  proof: Proof;
+}
