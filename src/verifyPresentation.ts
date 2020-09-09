@@ -146,10 +146,12 @@ export const verifyPresentation = async (req: express.Request, res: express.Resp
       throw new hlpr.CustError(401, 'Public key not found for the DID');
     }
 
-    // Verify the data given.  As of now only one RSA public key is expected.
-    // In future, there is a possibility that, more than on RSA public key can be there for a given DID.
+    // Verify the data given.  As of now only one secp256r1 public key is expected.
+    // In future, there is a possibility that, more than one secp256r1 public key can be there for a given DID.
     // The same scenario would be handled later.
-    const verifiedStatus: boolean = hlpr.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, 'pem');
+    // verifiableCredential is an array.  As of now we are verifying the entire credential object together.  We will have to modify
+    // this logic to verify each credential present separately.  We can take this up later.
+    const verifiedStatus: boolean = hlpr.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
 
     // Set the X-Auth-Token header alone
     res.setHeader('Content-Type', 'application/json');

@@ -178,7 +178,7 @@ exports.verifyPresentation = function (req, res, next) { return __awaiter(void 0
                 if (pubKeyObj.length === 0) {
                     throw new hlpr.CustError(401, 'Public key not found for the DID');
                 }
-                verifiedStatus = hlpr.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, 'pem');
+                verifiedStatus = hlpr.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
                 // Set the X-Auth-Token header alone
                 res.setHeader('Content-Type', 'application/json');
                 res.setHeader('x-auth-token', authToken);
