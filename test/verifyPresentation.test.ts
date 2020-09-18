@@ -33,7 +33,6 @@ const copyCredentialObj = (credential: hlpr.JSONObj, elemName: string, elemValue
   ];
 
   newCred[0][elemName] = elemValue;
-
   return (newCred);
 };
 
@@ -90,7 +89,7 @@ const populateMockData = (): hlpr.JSONObj => {
 };
 
 describe('POST /api/verifyPresentation - Success Scenario', () => {
-  const getDidSpy, verifySpy, response: hlpr.JSONObj, verStatus;
+  let getDidSpy, verifySpy, response: hlpr.JSONObj, verStatus;
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authToken } = populateMockData();
 
   beforeAll(() => {
@@ -121,7 +120,7 @@ describe('POST /api/verifyPresentation - Success Scenario', () => {
 });
 
 describe('POST /api/verifyPresentation - Failure Scenario', () => {
-  const getDidSpy, verifySpy, response: hlpr.JSONObj, verStatus;
+  let getDidSpy, verifySpy, response: hlpr.JSONObj, verStatus;
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authToken } = populateMockData();
 
   beforeAll(() => {
@@ -154,239 +153,230 @@ describe('POST /api/verifyPresentation - Failure Scenario', () => {
 });
 
 describe('POST /api/verifyPresentation - Validateion Failures', () => {
-  const response: hlpr.JSONObj, preReq: hlpr.JSONObj;
+  let response: hlpr.JSONObj, preReq: hlpr.JSONObj;
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authToken } = populateMockData();
-  const stCode = 404;
-  const stCode1 = 401;
-  const errMsg = 'Missing required context, type, verifiableCredential, proof and/or presentationRequestUuid';
-  const errMsg1 = 'context element is not an array and / or is empty';
-  const errMsg2 = 'type element is not an array and / or is empty';
-  const errMsg3 = 'verifiableCredential element is not an array and / or is empty';
 
-  it('Response code should be ' + stCode + ' when context is not passed', async () => {
+  it('returns a 400 status code with a descriptive error message when @context is missing', async () => {
     response = await callVerifyPresentation('', type, verifiableCredential, presentationRequestUuid, proof, authToken);
     preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg);
+    expect(response.statusCode).toBe(400);
+    expect(preReq.message).toBe('Invalid Presentation: @context is required.');
   });
 
-  it('Response code should be ' + stCode + ' when type is not passed', async () => {
+  it('returns a 400 status code with a descriptive error message when type is missing', async () => {
     response = await callVerifyPresentation(context, '', verifiableCredential, presentationRequestUuid, proof, authToken);
     preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg);
+    expect(response.statusCode).toBe(400);
+    expect(preReq.message).toBe('Invalid Presentation: type is required.');
   });
 
-  it('Response code should be ' + stCode + ' when verifiableCredential is not passed', async () => {
+  it('returns a 400 status code with a descriptive error message when verifiableCredential is missing', async () => {
     response = await callVerifyPresentation(context, type, '', presentationRequestUuid, proof, authToken);
     preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg);
+    expect(response.statusCode).toBe(400);
+    expect(preReq.message).toBe('Invalid Presentation: verifiableCredential is required.');
   });
 
-  it('Response code should be ' + stCode + ' when presentationRequestUuid is not passed', async () => {
+  it('returns a 400 status code with a descriptive error message when presentationRequestUuid is missing', async () => {
     response = await callVerifyPresentation(context, type, verifiableCredential, '', proof, authToken);
     preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg);
+    expect(response.statusCode).toBe(400);
+    expect(preReq.message).toBe('Invalid Presentation: presentationRequestUuid is required.');
   });
 
-  it('Response code should be ' + stCode + ' when proof is not passed', async () => {
+  it('returns a 400 status code with a descriptive error message when proof is missing', async () => {
     response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, '', authToken);
     preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg);
+    expect(response.statusCode).toBe(400);
+    expect(preReq.message).toBe('Invalid Presentation: proof is required.');
   });
 
-  it('Response code should be ' + stCode + ' when context is not an array', async () => {
+  it('returns a 400 status code with a descriptive error message when @context is not an array', async () => {
     response = await callVerifyPresentation('https://www.w3.org/2018/credentials/v1', type, verifiableCredential, presentationRequestUuid, proof, authToken);
     preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg1);
+    expect(response.statusCode).toBe(400);
+    expect(preReq.message).toBe('Invalid Presentation: @context must be a non-empty array.');
   });
 
-  it('Response code should be ' + stCode + ' when context is array but empty', async () => {
+  it('returns a 400 status code with a descriptive error message when @context array is empty', async () => {
     response = await callVerifyPresentation([], type, verifiableCredential, presentationRequestUuid, proof, authToken);
     preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg1);
+    expect(response.statusCode).toBe(400);
+    expect(preReq.message).toBe('Invalid Presentation: @context must be a non-empty array.');
   });
 
-  it('Response code should be ' + stCode + ' when type is not an array', async () => {
+  it('returns a 400 status code with a descriptive error message when type is not an array', async () => {
     response = await callVerifyPresentation(context, 'VerifiablePresentation', verifiableCredential, presentationRequestUuid, proof, authToken);
     preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg2);
+    expect(response.statusCode).toBe(400);
+    expect(preReq.message).toBe('Invalid Presentation: type must be a non-empty array.');
   });
 
-  it('Response code should be ' + stCode + ' when type is array but empty', async () => {
+  it('returns a 400 status code with a descriptive error message when type array is empty', async () => {
     response = await callVerifyPresentation(context, [], verifiableCredential, presentationRequestUuid, proof, authToken);
     preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg2);
+    expect(response.statusCode).toBe(400);
+    expect(preReq.message).toBe('Invalid Presentation: type must be a non-empty array.');
   });
 
-  it('Response code should be ' + stCode + ' when verifiableCredential is array but empty', async () => {
+  it('returns a 400 status code with a descriptive error message when verifiableCredential is not an array', async () => {
     response = await callVerifyPresentation(context, type, 'verifiableCredential', presentationRequestUuid, proof, authToken);
     preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg3);
+    expect(response.statusCode).toBe(400);
+    expect(preReq.message).toBe('Invalid Presentation: verifiableCredential must be a non-empty array.');
   });
 
-  it('Response code should be ' + stCode + ' when verifiableCredential is array but empty', async () => {
+  it('returns a 400 status code with a descriptive error message when verifiableCredential array is empty', async () => {
     response = await callVerifyPresentation(context, type, [], presentationRequestUuid, proof, authToken);
     preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg3);
+    expect(response.statusCode).toBe(400);
+    expect(preReq.message).toBe('Invalid Presentation: verifiableCredential must be a non-empty array.');
   });
 
-  it('Response code should be ' + stCode1 + ' when x-auth-token is not passed in the header', async () => {
+  it('returns a 401 status code if x-auth-token header is missing', async () => {
     response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, '');
     preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode1);
-    expect(preReq.message).toBe('Request not authenticated');
+    expect(response.statusCode).toBe(401);
+    expect(preReq.message).toBe('Not authenticated');
   });
 });
 
 describe('POST /api/verifyPresentation - Validation for verifiableCredential object', () => {
-  const response: hlpr.JSONObj, preReq: hlpr.JSONObj;
+  let response: hlpr.JSONObj, preReq: hlpr.JSONObj;
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authToken } = populateMockData();
-  const stCode = 404;
-  const errMsg = 'context, credentialStatus, credentialSubject, issuer, type, id, issuanceDate and / or proof element in verifiableCredential[0] is empty';
 
-  let cred = copyCredentialObj(verifiableCredential[0], '@context');
-  it('Response code should be ' + stCode + ' when @context is not passed', async () => {
+  let cred;
+  it('Response code should be ' + 400 + ' when @context is not passed', async () => {
+    cred = copyCredentialObj(verifiableCredential[0], '@context');
     response = await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, authToken);
     preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg);
+    expect(response.statusCode).toBe(400);
+    expect(preReq.message).toBe('Invalid verifiableCredential[0]: @context is required.');
   });
 
-  cred = copyCredentialObj(verifiableCredential[0], 'credentialStatus');
-  it('Response code should be ' + stCode + ' when credentialStatus is not passed', async () => {
+  it('Response code should be ' + 400 + ' when credentialStatus is not passed', async () => {
+    cred = copyCredentialObj(verifiableCredential[0], 'credentialStatus');
     response = await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, authToken);
     preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg);
+    expect(response.statusCode).toBe(400);
+    expect(preReq.message).toBe('Invalid verifiableCredential[0]: credentialStatus is required.');
   });
 
-  cred = copyCredentialObj(verifiableCredential[0], 'credentialSubject');
-  it('Response code should be ' + stCode + ' when credentialSubject is not passed', async () => {
+  it('Response code should be ' + 400 + ' when credentialSubject is not passed', async () => {
+    cred = copyCredentialObj(verifiableCredential[0], 'credentialSubject');
     response = await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, authToken);
     preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg);
+    expect(response.statusCode).toBe(400);
+    expect(preReq.message).toBe('Invalid verifiableCredential[0]: credentialSubject is required.');
   });
 
-  cred = copyCredentialObj(verifiableCredential[0], 'issuer');
-  it('Response code should be ' + stCode + ' when issuer is not passed', async () => {
+  it('Response code should be ' + 400 + ' when issuer is not passed', async () => {
+    cred = copyCredentialObj(verifiableCredential[0], 'issuer');
     response = await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, authToken);
     preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg);
+    expect(response.statusCode).toBe(400);
+    expect(preReq.message).toBe('Invalid verifiableCredential[0]: issuer is required.');
   });
 
-  cred = copyCredentialObj(verifiableCredential[0], 'type');
-  it('Response code should be ' + stCode + ' when type is not passed', async () => {
+  it('Response code should be ' + 400 + ' when type is not passed', async () => {
+    cred = copyCredentialObj(verifiableCredential[0], 'type');
     response = await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, authToken);
     preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg);
+    expect(response.statusCode).toBe(400);
+    expect(preReq.message).toBe('Invalid verifiableCredential[0]: type is required.');
   });
 
-  cred = copyCredentialObj(verifiableCredential[0], 'id');
-  it('Response code should be ' + stCode + ' when id is not passed', async () => {
+  it('Response code should be ' + 400 + ' when id is not passed', async () => {
+    cred = copyCredentialObj(verifiableCredential[0], 'id');
     response = await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, authToken);
     preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg);
+    expect(response.statusCode).toBe(400);
+    expect(preReq.message).toBe('Invalid verifiableCredential[0]: id is required.');
   });
 
-  cred = copyCredentialObj(verifiableCredential[0], 'issuanceDate');
-  it('Response code should be ' + stCode + ' when issuanceDate is not passed', async () => {
+  it('Response code should be ' + 400 + ' when issuanceDate is not passed', async () => {
+    cred = copyCredentialObj(verifiableCredential[0], 'issuanceDate');
     response = await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, authToken);
     preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg);
+    expect(response.statusCode).toBe(400);
+    expect(preReq.message).toBe('Invalid verifiableCredential[0]: issuanceDate is required.');
   });
 
-  cred = copyCredentialObj(verifiableCredential[0], 'proof');
-  it('Response code should be ' + stCode + ' when proof is not passed', async () => {
+  it('Response code should be ' + 400 + ' when proof is not passed', async () => {
+    cred = copyCredentialObj(verifiableCredential[0], 'proof');
     response = await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, authToken);
     preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg);
+    expect(response.statusCode).toBe(400);
+    expect(preReq.message).toBe('Invalid verifiableCredential[0]: proof is required.');
   });
 });
 
 describe('POST /api/verifyPresentation - Validation for proof object', () => {
-  const response: hlpr.JSONObj, preReq: hlpr.JSONObj;
+  let response: hlpr.JSONObj, preReq: hlpr.JSONObj;
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authToken } = populateMockData();
-  const stCode = 404;
-  const errMsg = 'created, signatureValue, type, verificationMethod, and / or proofPurpose of proof element is empty';
 
-  let proof1 = { created: '', signatureValue: proof.signatureValue, type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
-  it('Response code should be ' + stCode + ' when created is not passed', async () => {
-    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof1, authToken);
+  it('returns a 400 status code with a descriptive error message when created is missing', async () => {
+    const invalidProof = { created: '', signatureValue: proof.signatureValue, type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
+    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, invalidProof, authToken);
     preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg);
+    expect(response.statusCode).toBe(400);
+    expect(preReq.message).toBe('Invalid Presentation: proof is not correctly formatted.');
   });
 
-  proof1 = { created: proof.created, signatureValue: '', type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
-  it('Response code should be ' + stCode + ' when signatureValue is not passed', async () => {
-    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof1, authToken);
+  it('returns a 400 status code with a descriptive error message when signatureValue is missing', async () => {
+    const invlaidProof = { created: proof.created, signatureValue: '', type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
+    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, invlaidProof, authToken);
     preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg);
+    expect(response.statusCode).toBe(400);
+    expect(preReq.message).toBe('Invalid Presentation: proof is not correctly formatted.');
   });
 
-  proof1 = { created: proof.created, signatureValue: proof.signatureValue, type: '', verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
-  it('Response code should be ' + stCode + ' when type is not passed', async () => {
-    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof1, authToken);
+  it('returns a 400 status code with a descriptive error message when type is missing', async () => {
+    const invalidProof = { created: proof.created, signatureValue: proof.signatureValue, type: '', verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
+    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, invalidProof, authToken);
     preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg);
+    expect(response.statusCode).toBe(400);
+    expect(preReq.message).toBe('Invalid Presentation: proof is not correctly formatted.');
   });
 
-  proof1 = { created: proof.created, signatureValue: proof.signatureValue, type: proof.type, verificationMethod: '', proofPurpose: proof.proofPurpose };
-  it('Response code should be ' + stCode + ' when verificationMethod is not passed', async () => {
-    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof1, authToken);
+  it('returns a 400 status code with a descriptive error message when verificationMethod is missing', async () => {
+    const invalidProof = { created: proof.created, signatureValue: proof.signatureValue, type: proof.type, verificationMethod: '', proofPurpose: proof.proofPurpose };
+    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, invalidProof, authToken);
     preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg);
+    expect(response.statusCode).toBe(400);
+    expect(preReq.message).toBe('Invalid Presentation: proof is not correctly formatted.');
   });
 
-  proof1 = { created: proof.created, signatureValue: proof.signatureValue, type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: '' };
-  it('Response code should be ' + stCode + ' when proofPurpose is not passed', async () => {
-    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof1, authToken);
+  it('returns a 400 status code with a descriptive error message when proofPurpose is missing', async () => {
+    const invalidProof = { created: proof.created, signatureValue: proof.signatureValue, type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: '' };
+    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, invalidProof, authToken);
     preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg);
+    expect(response.statusCode).toBe(400);
+    expect(preReq.message).toBe('Invalid Presentation: proof is not correctly formatted.');
   });
 });

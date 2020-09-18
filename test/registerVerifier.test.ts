@@ -61,31 +61,29 @@ describe('POST /api/register Verifier - Failure cases', () => {
   const name = 'First Unumid Verifier';
   const customerUuid = '5e46f1ba-4c82-471d-bbc7-251924a90532';
   const apiKey = '/7uLH4LB+etgKb5LUR5vm2cebS49EmPwxmBoS/TpfXM=';
-  const stCode = 404;
-  const errMsg = 'Missing required name, customerUuid, and/or apiKey fields';
 
-  it('Response code should be ' + stCode + ' when name is not passed', async () => {
+  it('returns a 400 status code with a descriptive error message when name is missing', async () => {
     newVerifier = await callRegIssApi('', customerUuid, apiKey);
     reqBody = newVerifier.body;
 
-    expect(newVerifier.statusCode).toBe(stCode);
-    expect(reqBody.message).toBe(errMsg);
+    expect(newVerifier.statusCode).toBe(400);
+    expect(reqBody.message).toBe('Invalid Verifier Options: name is required.');
   });
 
-  it('Response code should be ' + stCode + ' when customerUuid is not passed', async () => {
+  it('returns a 400 status code with a descriptive error message when cusotmerUuid is missing', async () => {
     newVerifier = await callRegIssApi(name, '', apiKey);
     reqBody = newVerifier.body;
 
-    expect(newVerifier.statusCode).toBe(stCode);
-    expect(reqBody.message).toBe(errMsg);
+    expect(newVerifier.statusCode).toBe(400);
+    expect(reqBody.message).toBe('Invalid Verifier Options: customerUuid is required.');
   });
 
-  it('Response code should be ' + stCode + ' when apiKey is not passed', async () => {
+  it('returns a 401 status code with a descriptive error message when apiKey is missing', async () => {
     newVerifier = await callRegIssApi(name, customerUuid, '');
     reqBody = newVerifier.body;
 
-    expect(newVerifier.statusCode).toBe(stCode);
-    expect(reqBody.message).toBe(errMsg);
+    expect(newVerifier.statusCode).toBe(401);
+    expect(reqBody.message).toBe('Not authenticated.');
   });
 });
 

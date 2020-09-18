@@ -70,59 +70,93 @@ var isNotAnEmptyArray = function (paramValue) {
 };
 // returns the element names for populating the error.  For all validation methods
 // type is given as JSON intentionally, as we need to validate the existance of each and every value.
-var checkProofObjIsEntered = function (proof) {
+var validateProof = function (proof) {
     if (!proof.created || !proof.signatureValue || !proof.type || !proof.verificationMethod || !proof.proofPurpose) {
-        return ('created, signatureValue, type, verificationMethod, and / or proofPurpose');
+        return false;
     }
-    return ('');
+    return true;
 };
-var validateCredentialInput = function (credential) {
+var validateCredentialInput = function (credentials) {
     var retObj = { valStat: true };
-    if (!isNotAnEmptyArray(credential)) {
+    if (!isNotAnEmptyArray(credentials)) {
         retObj.valStat = false;
-        retObj.msg = 'verifiableCredential element is not an array and / or is empty';
+        retObj.msg = 'Invalid Presentation: verifiableCredential must be a non-empty array.';
         return (retObj);
     }
-    var totCred = credential.length;
+    var totCred = credentials.length;
     for (var i = 0; i < totCred; i++) {
         var credPosStr = '[' + i + ']';
+        var credential = credentials[i];
         // Validate the existance of elements in verifiableCredential object
-        if (!credential[i]['@context'] || !credential[i].credentialStatus || !credential[i].credentialSubject ||
-            !credential[i].issuer || !credential[i].type || !credential[i].id || !credential[i].issuanceDate || !credential[i].proof) {
+        var invalidMsg = "Invalid verifiableCredential" + credPosStr + ":";
+        if (!credential['@context']) {
             retObj.valStat = false;
-            retObj.msg = 'context, credentialStatus, credentialSubject, issuer, type, id, issuanceDate and / or proof element in verifiableCredential' + credPosStr + ' is empty';
+            retObj.msg = invalidMsg + " @context is required.";
+            break;
+        }
+        if (!credential.credentialStatus) {
+            retObj.valStat = false;
+            retObj.msg = invalidMsg + " credentialStatus is required.";
+            break;
+        }
+        if (!credential.credentialSubject) {
+            retObj.valStat = false;
+            retObj.msg = invalidMsg + " credentialSubject is required.";
+            break;
+        }
+        if (!credential.issuer) {
+            retObj.valStat = false;
+            retObj.msg = invalidMsg + " issuer is required.";
+            break;
+        }
+        if (!credential.type) {
+            retObj.valStat = false;
+            retObj.msg = invalidMsg + " type is required.";
+            break;
+        }
+        if (!credential.id) {
+            retObj.valStat = false;
+            retObj.msg = invalidMsg + " id is required.";
+            break;
+        }
+        if (!credential.issuanceDate) {
+            retObj.valStat = false;
+            retObj.msg = invalidMsg + " issuanceDate is required.";
+            break;
+        }
+        if (!credential.proof) {
+            retObj.valStat = false;
+            retObj.msg = invalidMsg + " proof is required.";
             break;
         }
         // Check @context is an array and not empty
-        if (!isNotAnEmptyArray(credential[i]['@context'])) {
+        if (!isNotAnEmptyArray(credential['@context'])) {
             retObj.valStat = false;
-            retObj.msg = 'context element in verifiableCredential' + credPosStr + ' is not an array and / or is empty';
+            retObj.msg = invalidMsg + " @context must be a non-empty array.";
             break;
         }
-        // Check CredentialStatus object is having id and type elements.
-        if (!credential[i].credentialStatus.id || !credential[i].credentialStatus.type) {
+        // Check CredentialStatus object has id and type elements.
+        if (!credential.credentialStatus.id || !credential.credentialStatus.type) {
             retObj.valStat = false;
-            retObj.msg = 'id and / or type element in credentialStatus of verifiableCredential' + credPosStr + ' is empty';
+            retObj.msg = invalidMsg + " credentialStatus must contain id and type properties.";
             break;
         }
-        // Check credentialSubject object is having id element.
-        if (!credential[i].credentialSubject.id) {
+        // Check credentialSubject object has id element.
+        if (!credential.credentialSubject.id) {
             retObj.valStat = false;
-            retObj.msg = 'id element in credentialSubject of verifiableCredential' + credPosStr + ' is empty';
+            retObj.msg = invalidMsg + " credentialSubject must contain id property.";
             break;
         }
         // Check type is an array and not empty
-        if (!isNotAnEmptyArray(credential[i].type)) {
+        if (!isNotAnEmptyArray(credential.type)) {
             retObj.valStat = false;
-            retObj.msg = 'type element in verifiableCredential' + credPosStr + ' is not an array and / or is empty';
+            retObj.msg = invalidMsg + " type must be a non-empty array.";
             break;
         }
-        // Check proof object is having required elements
-        var msg = checkProofObjIsEntered(credential[i].proof);
-        // Non empty string indicates that one of the element is not present
-        if (msg) {
+        // Check that proof object is valid
+        if (!validateProof(credential.proof)) {
             retObj.valStat = false;
-            retObj.msg = msg + ' in proof element of verifiableCredential' + credPosStr + ' is empty';
+            retObj.msg = invalidMsg + " proof is not correctly formatted.";
             break;
         }
     }
@@ -132,29 +166,39 @@ var validateInParams = function (req, authToken) {
     var context = req.body['@context'];
     var _a = req.body, type = _a.type, verifiableCredential = _a.verifiableCredential, proof = _a.proof, presentationRequestUuid = _a.presentationRequestUuid;
     var retObj = {};
-    // First level input element validation
-    if (!context || !type || !verifiableCredential || !proof || !presentationRequestUuid) {
-        throw new hlpr.CustError(404, 'Missing required context, type, verifiableCredential, proof and/or presentationRequestUuid');
+    // validate required fields
+    if (!context) {
+        throw new hlpr.CustError(400, 'Invalid Presentation: @context is required.');
+    }
+    if (!type) {
+        throw new hlpr.CustError(400, 'Invalid Presentation: type is required.');
+    }
+    if (!verifiableCredential) {
+        throw new hlpr.CustError(400, 'Invalid Presentation: verifiableCredential is required.');
+    }
+    if (!proof) {
+        throw new hlpr.CustError(400, 'Invalid Presentation: proof is required.');
+    }
+    if (!presentationRequestUuid) {
+        throw new hlpr.CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
     }
     if (!isNotAnEmptyArray(context)) {
-        throw new hlpr.CustError(404, 'context element is not an array and / or is empty');
+        throw new hlpr.CustError(400, 'Invalid Presentation: @context must be a non-empty array.');
     }
     if (!isNotAnEmptyArray(type)) {
-        throw new hlpr.CustError(404, 'type element is not an array and / or is empty');
+        throw new hlpr.CustError(400, 'Invalid Presentation: type must be a non-empty array.');
     }
     retObj = validateCredentialInput(verifiableCredential);
     if (!retObj.valStat) {
-        throw new hlpr.CustError(404, retObj.msg);
+        throw new hlpr.CustError(400, retObj.msg);
     }
-    // Check proof object is having required elements
-    var msg = checkProofObjIsEntered(proof);
-    // Non empty string indicates that one of the element is not present
-    if (msg) {
-        throw new hlpr.CustError(404, msg + ' of proof element is empty');
+    // Check proof object is formatted correctly
+    if (!validateProof(proof)) {
+        throw new hlpr.CustError(400, 'Invalid Presentation: proof is not correctly formatted.');
     }
     // x-auth-token is mandatory
     if (!authToken) {
-        throw new hlpr.CustError(401, 'Request not authenticated');
+        throw new hlpr.CustError(401, 'Not authenticated');
     }
     return ({
         '@context': context,

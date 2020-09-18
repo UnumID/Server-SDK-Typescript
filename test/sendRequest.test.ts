@@ -5,7 +5,7 @@ import { app } from '../src/index';
 import { PresentationRequestWithDeeplink } from '../src/types';
 
 const callSendRequests = (verifier: hlpr.JSONObj, credentialRequests: hlpr.JSONObj[],
-  metadata: string, expiresAt: string, eccPrivateKey: string, authToken: string): Promise<hlpr.JSONObj> => {
+  metadata: Record<string, unknown>, expiresAt: string, eccPrivateKey: string, authToken: string): Promise<hlpr.JSONObj> => {
   return (request(app)
     .post('/api/sendRequest')
     .set('x-auth-token', authToken)
@@ -122,158 +122,107 @@ describe('POST /api/sendRequest with expiry date and metadata', () => {
 });
 
 describe('POST /api/sendRequest - Failure cases', () => {
-  let preReq: PresentationRequestWithDeeplink, response: hlpr.JSONObj;
+  let response: hlpr.JSONObj;
   const { verifier, credentialRequests, eccPrivateKey, authToken } = populateMockData();
   const metadata = {};
   const expiresAt = '2021-10-26T23:07:12.770Z';
 
-  const stCode = 404;
-  const stCode1 = 401;
-  const errMsg = 'Missing required verifier, and/or credentialRequests';
-  const errMsg1 = 'Missing required name, did and/or url in verifier input element';
-  const errMsg2 = 'credentialRequests input is not an array';
-  const errMsg3 = 'credentialRequests input array is empty';
+  it('returns a 400 status code with a descriptive error message when verifier is missing', async () => {
+    response = await callSendRequests(undefined, credentialRequests, metadata, expiresAt, eccPrivateKey, authToken);
 
-  it('Response code should be ' + stCode + ' when verifier is not passed', async () => {
-    response = await callSendRequests('', credentialRequests, metadata, expiresAt, eccPrivateKey, authToken);
-    preReq = response.body;
-
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg);
+    expect(response.statusCode).toBe(400);
+    expect(response.body.message).toBe('Invalid PresentationRequest options: verifier is required.');
   });
 
-  it('Response code should be ' + stCode + ' when verifier is passed as empty object', async () => {
+  it('returns a 400 status code with a descriptive error message when verifier is not formatted correctly', async () => {
     response = await callSendRequests({}, credentialRequests, metadata, expiresAt, eccPrivateKey, authToken);
-    preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg1);
+    expect(response.statusCode).toBe(400);
+    expect(response.body.message).toBe('Invalid PresentationRequest options: verifier is not correctly formatted.');
   });
 
-  it('Response code should be ' + stCode + ' when credentialRequests is not passed', async () => {
-    response = await callSendRequests(verifier, '', metadata, expiresAt, eccPrivateKey, authToken);
-    preReq = response.body;
+  it('returns a 400 status code with a descriptive error message when credentialRequests is missing', async () => {
+    response = await callSendRequests(verifier, undefined, metadata, expiresAt, eccPrivateKey, authToken);
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg);
+    expect(response.statusCode).toBe(400);
+    expect(response.body.message).toBe('Invalid PresentationRequest options: credentialRequests is required.');
   });
 
-  it('Response code should be ' + stCode + ' when credentialRequests is passed as empty object', async () => {
-    response = await callSendRequests(verifier, {}, metadata, expiresAt, eccPrivateKey, authToken);
-    preReq = response.body;
+  it('returns a 400 status code with a descriptive error message when credentialRequests is not an array', async () => {
+    response = await callSendRequests(verifier, {} as Array<unknown>, metadata, expiresAt, eccPrivateKey, authToken);
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg2);
+    expect(response.statusCode).toBe(400);
+    expect(response.body.message).toBe('Invalid PresentationRequest options: credentialRequests must be an array.');
   });
 
-  it('Response code should be ' + stCode + ' when credentialRequests is passed as empty array', async () => {
+  it('returns a 400 status code with a descriptive error message when credentialRequests array is empty', async () => {
     response = await callSendRequests(verifier, [], metadata, expiresAt, eccPrivateKey, authToken);
-    preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg3);
+    expect(response.statusCode).toBe(400);
+    expect(response.body.message).toBe('Invalid PresentationRequest options: credentialRequests array must not be empty.');
   });
 
-  it('Response code should be ' + stCode + ' when eccPrivateKey is not passed', async () => {
+  it('returns a 400 status code with a descriptive error message when eccPrivateKey is missing', async () => {
     response = await callSendRequests(verifier, credentialRequests, metadata, expiresAt, '', authToken);
-    preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe('eccPrivateKey input field is mandatory');
+    expect(response.statusCode).toBe(400);
+    expect(response.body.message).toBe('Invalid PresentationRequest options: eccPrivateKey is required.');
   });
 
-  it('Response code should be ' + stCode1 + ' when x-auth-token is not passed in the header', async () => {
+  it('returns a 401 status code when x-auth-token header is missing', async () => {
     response = await callSendRequests(verifier, credentialRequests, metadata, expiresAt, eccPrivateKey, '');
-    preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode1);
-    expect(preReq.message).toBe('Request not authenticated');
+    expect(response.statusCode).toBe(401);
+    expect(response.body.message).toBe('Not authenticated.');
   });
 });
 
 describe('POST /api/sendRequest - Failure cases for credentialRequests element', () => {
-  let preReq: PresentationRequestWithDeeplink, response: hlpr.JSONObj;
+  let response: hlpr.JSONObj;
   const { verifier, credentialRequests, eccPrivateKey, authToken } = populateMockData();
   const metadata = {};
   const expiresAt = '2021-10-26T23:07:12.770Z';
 
-  const stCode = 404;
-  const errMsg = 'Missing type and/or issuers in credentialRequests[0] Array input element';
-  const errMsg1 = 'issuers element in credentialRequests[0] object is not an Array';
-  const errMsg2 = 'credentialRequests[0].issuers input array is empty';
-  const errMsg3 = 'Missing name and/or did in one or more issuers Array input element';
+  it('returns a 400 status code with a descriptive error message when credentialRequests type is missing', async () => {
+    response = await callSendRequests(verifier, [{ issuers: credentialRequests[0].issuers }], metadata, expiresAt, eccPrivateKey, authToken);
 
-  credentialRequests = [{}];
-  it('Response code should be ' + stCode + ' when array with empty object is not passed', async () => {
-    response = await callSendRequests(verifier, credentialRequests, metadata, expiresAt, eccPrivateKey, authToken);
-    preReq = response.body;
-
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg);
+    expect(response.statusCode).toBe(400);
+    expect(response.body.message).toBe('Invalid credentialRequest: type is required.');
   });
 
-  it('Response code should be ' + stCode + ' when type or issuers element is not passed', async () => {
-    response = await callSendRequests(verifier, [{ type: '', issuers: '' }], metadata, expiresAt, eccPrivateKey, authToken);
-    preReq = response.body;
+  it('returns a 400 status code with a descriptive error message when credentialRequests issuers is missing', async () => {
+    response = await callSendRequests(verifier, [{ type: credentialRequests[0].type, issuers: undefined }], metadata, expiresAt, eccPrivateKey, authToken);
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg);
+    expect(response.statusCode).toBe(400);
+    expect(response.body.message).toBe('Invalid credentialRequest: issuers is required.');
   });
 
-  it('Response code should be ' + stCode + ' when issuers element is not passed', async () => {
-    response = await callSendRequests(verifier, [{ type: 'DummyCredential', issuers: '' }], metadata, expiresAt, eccPrivateKey, authToken);
-    preReq = response.body;
-
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg);
-  });
-
-  it('Response code should be ' + stCode + ' when type element is not passed', async () => {
-    response = await callSendRequests(verifier, [{ type: '', issuers: [{ did: 'did:unum:042b9089-9ee9-4217-844f-b01965cf569a', name: 'Dummy Issuer' }] }], metadata, expiresAt, eccPrivateKey, authToken);
-    preReq = response.body;
-
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg);
-  });
-
-  it('Response code should be ' + stCode + ' when issuers element is not an array', async () => {
+  it('returns a 400 status code with a descriptitve error message when credentialRequest issuers is not an array', async () => {
     response = await callSendRequests(verifier, [{ type: 'DummyCredential', issuers: {} }], metadata, expiresAt, eccPrivateKey, authToken);
-    preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg1);
+    expect(response.statusCode).toBe(400);
+    expect(response.body.message).toBe('Invalid credentialRequest: issuers must be an array.');
   });
 
-  it('Response code should be ' + stCode + ' when issuers element is empty array', async () => {
+  it('returns a 400 status code with a descriptive error message when credentialRequest issuers array is empty', async () => {
     response = await callSendRequests(verifier, [{ type: 'DummyCredential', issuers: [] }], metadata, expiresAt, eccPrivateKey, authToken);
-    preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg2);
+    expect(response.statusCode).toBe(400);
+    expect(response.body.message).toBe('Invalid credentialRequest: issuers array must not be empty.');
   });
 
-  it('Response code should be ' + stCode + ' when issuers element with both name and did are empty', async () => {
-    response = await callSendRequests(verifier, [{ type: 'DummyCredential', issuers: [{ did: '', name: '' }] }], metadata, expiresAt, eccPrivateKey, authToken);
-    preReq = response.body;
-
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg3);
-  });
-
-  it('Response code should be ' + stCode + ' when issuers element with only name element is passed', async () => {
+  it('returns a 400 status code with a descriptive error message when issuer did is missing', async () => {
     response = await callSendRequests(verifier, [{ type: 'DummyCredential', issuers: [{ name: 'Dummy Issuer' }] }], metadata, expiresAt, eccPrivateKey, authToken);
-    preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg3);
+    expect(response.statusCode).toBe(400);
+    expect(response.body.message).toBe('Invalid issuer: did and name are required.');
   });
 
-  it('Response code should be ' + stCode + ' when issuers element with only did element is passed', async () => {
+  it('returns a 400 status code with a descriptive error message when issuer name is missing', async () => {
     response = await callSendRequests(verifier, [{ type: 'DummyCredential', issuers: [{ did: 'did:unum:042b9089-9ee9-4217-844f-b01965cf569a' }] }], metadata, expiresAt, eccPrivateKey, authToken);
-    preReq = response.body;
 
-    expect(response.statusCode).toBe(stCode);
-    expect(preReq.message).toBe(errMsg3);
+    expect(response.statusCode).toBe(400);
+    expect(response.body.message).toBe('Invalid issuer: did and name are required.');
   });
 });
 

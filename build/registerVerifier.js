@@ -73,8 +73,14 @@ var constructKeyObjs = function (kpSet) {
 };
 var validateInParams = function (req) {
     var _a = req.body, name = _a.name, customerUuid = _a.customerUuid, apiKey = _a.apiKey;
-    if (!name || !customerUuid || !apiKey) {
-        throw new hlpr.CustError(404, 'Missing required name, customerUuid, and/or apiKey fields');
+    if (!name) {
+        throw new hlpr.CustError(400, 'Invalid Verifier Options: name is required.');
+    }
+    if (!customerUuid) {
+        throw new hlpr.CustError(400, 'Invalid Verifier Options: customerUuid is required.');
+    }
+    if (!apiKey) {
+        throw new hlpr.CustError(401, 'Not authenticated.');
     }
 };
 exports.registerVerifier = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {

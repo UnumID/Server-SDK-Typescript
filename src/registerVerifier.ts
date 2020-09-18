@@ -23,8 +23,16 @@ const constructKeyObjs = (kpSet: hlpr.KeyPairSet): Array<hlpr.PublicKeyInfo> => 
 const validateInParams = (req: express.Request): void => {
   const { name, customerUuid, apiKey } = req.body;
 
-  if (!name || !customerUuid || !apiKey) {
-    throw new hlpr.CustError(404, 'Missing required name, customerUuid, and/or apiKey fields');
+  if (!name) {
+    throw new hlpr.CustError(400, 'Invalid Verifier Options: name is required.');
+  }
+
+  if (!customerUuid) {
+    throw new hlpr.CustError(400, 'Invalid Verifier Options: customerUuid is required.');
+  }
+
+  if (!apiKey) {
+    throw new hlpr.CustError(401, 'Not authenticated.');
   }
 };
 

@@ -60,49 +60,54 @@ var hlpr = __importStar(require("library-issuer-verifier-utility"));
 var config_1 = require("./config");
 var validateInParams = function (req, authToken) {
     var _a = req.body, verifier = _a.verifier, credentialRequests = _a.credentialRequests, metadata = _a.metadata, expiresAt = _a.expiresAt, eccPrivateKey = _a.eccPrivateKey;
-    // Verifier input element validation
-    if (!verifier || !credentialRequests) {
-        throw new hlpr.CustError(404, 'Missing required verifier, and/or credentialRequests');
+    if (!verifier) {
+        throw new hlpr.CustError(400, 'Invalid PresentationRequest options: verifier is required.');
+    }
+    if (!credentialRequests) {
+        throw new hlpr.CustError(400, 'Invalid PresentationRequest options: credentialRequests is required.');
     }
     if (!verifier.name || !verifier.did || !verifier.url) {
-        throw new hlpr.CustError(404, 'Missing required name, did and/or url in verifier input element');
+        throw new hlpr.CustError(400, 'Invalid PresentationRequest options: verifier is not correctly formatted.');
     }
     // credentialRequests input element must be an array
     if (!Array.isArray(credentialRequests)) {
-        throw new hlpr.CustError(404, 'credentialRequests input is not an array');
+        throw new hlpr.CustError(400, 'Invalid PresentationRequest options: credentialRequests must be an array.');
     }
     var totCredReqs = credentialRequests.length;
     if (totCredReqs === 0) {
-        throw new hlpr.CustError(404, 'credentialRequests input array is empty');
+        throw new hlpr.CustError(400, 'Invalid PresentationRequest options: credentialRequests array must not be empty.');
     }
     // credentialRequests input element should have type and issuer elements
     for (var i = 0; i < totCredReqs; i++) {
-        var credPosStr = '[' + i + ']';
-        if (!credentialRequests[i].type || !credentialRequests[i].issuers) {
-            throw new hlpr.CustError(404, 'Missing type and/or issuers in credentialRequests' + credPosStr + ' Array input element');
+        var credentialRequest = credentialRequests[i];
+        if (!credentialRequest.type) {
+            throw new hlpr.CustError(400, 'Invalid credentialRequest: type is required.');
+        }
+        if (!credentialRequest.issuers) {
+            throw new hlpr.CustError(400, 'Invalid credentialRequest: issuers is required.');
         }
         // credentialRequests.issuers input element must be an array
-        if (!Array.isArray(credentialRequests[i].issuers)) {
-            throw new hlpr.CustError(404, 'issuers element in credentialRequests' + credPosStr + ' object is not an Array');
+        if (!Array.isArray(credentialRequest.issuers)) {
+            throw new hlpr.CustError(400, 'Invalid credentialRequest: issuers must be an array.');
         }
-        var totIssuers = credentialRequests[i].issuers.length;
+        var totIssuers = credentialRequest.issuers.length;
         if (totIssuers === 0) {
-            throw new hlpr.CustError(404, 'credentialRequests' + credPosStr + '.issuers input array is empty');
+            throw new hlpr.CustError(400, 'Invalid credentialRequest: issuers array must not be empty.');
         }
         // credentialRequests.issuers should have did and name attribute
         for (var j = 0; j < totIssuers; j++) {
-            if (!credentialRequests[i].issuers[j].did || !credentialRequests[i].issuers[j].name) {
-                throw new hlpr.CustError(404, 'Missing name and/or did in one or more issuers Array input element');
+            if (!credentialRequest.issuers[j].did || !credentialRequest.issuers[j].name) {
+                throw new hlpr.CustError(400, 'Invalid issuer: did and name are required.');
             }
         }
     }
     // ECC Private Key is mandatory input parameter
     if (!eccPrivateKey) {
-        throw new hlpr.CustError(404, 'eccPrivateKey input field is mandatory');
+        throw new hlpr.CustError(400, 'Invalid PresentationRequest options: eccPrivateKey is required.');
     }
     // x-auth-token is mandatory
     if (!authToken) {
-        throw new hlpr.CustError(401, 'Request not authenticated');
+        throw new hlpr.CustError(401, 'Not authenticated.');
     }
     var unsignedPR = {
         verifier: verifier,
