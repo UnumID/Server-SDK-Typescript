@@ -51,3 +51,10 @@ export interface UnsignedPresentation {
 export interface Presentation extends UnsignedPresentation {
   proof: Proof;
 }
+
+export interface NoPresentation {
+  type: ['NoPresentation', ...string[]];
+  proof: Proof;
+  holder: string;
+  presentationRequestUuid: string;
+}

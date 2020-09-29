@@ -58,6 +58,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyPresentation = void 0;
 var hlpr = __importStar(require("library-issuer-verifier-utility"));
 var config_1 = require("./config");
+var validateProof_1 = require("./validateProof");
 var isNotAnEmptyArray = function (paramValue) {
     if (!Array.isArray(paramValue)) {
         return (false);
@@ -67,14 +68,6 @@ var isNotAnEmptyArray = function (paramValue) {
         return (false);
     }
     return (true);
-};
-// returns the element names for populating the error.  For all validation methods
-// type is given as JSON intentionally, as we need to validate the existance of each and every value.
-var validateProof = function (proof) {
-    if (!proof.created || !proof.signatureValue || !proof.type || !proof.verificationMethod || !proof.proofPurpose) {
-        return false;
-    }
-    return true;
 };
 var validateCredentialInput = function (credentials) {
     var retObj = { valStat: true };
@@ -154,7 +147,7 @@ var validateCredentialInput = function (credentials) {
             break;
         }
         // Check that proof object is valid
-        if (!validateProof(credential.proof)) {
+        if (!validateProof_1.validateProof(credential.proof)) {
             retObj.valStat = false;
             retObj.msg = invalidMsg + " proof is not correctly formatted.";
             break;
@@ -193,7 +186,7 @@ var validateInParams = function (req, authToken) {
         throw new hlpr.CustError(400, retObj.msg);
     }
     // Check proof object is formatted correctly
-    if (!validateProof(proof)) {
+    if (!validateProof_1.validateProof(proof)) {
         throw new hlpr.CustError(400, 'Invalid Presentation: proof is not correctly formatted.');
     }
     // x-auth-token is mandatory

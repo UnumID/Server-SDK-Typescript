@@ -3,6 +3,7 @@ import * as hlpr from 'library-issuer-verifier-utility';
 
 import { configData } from './config';
 import { UnsignedPresentation } from './types';
+import { validateProof } from './validateProof';
 
 const isNotAnEmptyArray = (paramValue: any): boolean => {
   if (!Array.isArray(paramValue)) {
@@ -15,16 +16,6 @@ const isNotAnEmptyArray = (paramValue: any): boolean => {
   }
 
   return (true);
-};
-
-// returns the element names for populating the error.  For all validation methods
-// type is given as JSON intentionally, as we need to validate the existance of each and every value.
-const validateProof = (proof: hlpr.JSONObj): boolean => {
-  if (!proof.created || !proof.signatureValue || !proof.type || !proof.verificationMethod || !proof.proofPurpose) {
-    return false;
-  }
-
-  return true;
 };
 
 const validateCredentialInput = (credentials: hlpr.JSONObj): hlpr.JSONObj => {
