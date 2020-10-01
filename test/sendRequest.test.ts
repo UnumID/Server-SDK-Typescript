@@ -8,7 +8,7 @@ const callSendRequests = (verifier: hlpr.JSONObj, credentialRequests: hlpr.JSONO
   metadata: Record<string, unknown>, expiresAt: string, eccPrivateKey: string, authToken: string): Promise<hlpr.JSONObj> => {
   return (request(app)
     .post('/api/sendRequest')
-    .set('x-auth-token', authToken)
+    .set('Authorization', `Bearer ${authToken}`)
     .send({
       verifier,
       credentialRequests,
@@ -47,7 +47,7 @@ const populateMockData = (): hlpr.JSONObj => {
 describe('POST /api/sendRequest', () => {
   let createProofSpy, restCallSpy, preReq: PresentationRequestWithDeeplink, response: hlpr.JSONObj;
   const { verifier, credentialRequests, eccPrivateKey, authToken } = populateMockData();
-  const metadata, expiresAt;
+  let metadata, expiresAt;
 
   beforeEach(() => {
     createProofSpy = jest.spyOn(hlpr, 'createProof', 'get');
@@ -169,7 +169,7 @@ describe('POST /api/sendRequest - Failure cases', () => {
     expect(response.body.message).toBe('Invalid PresentationRequest options: eccPrivateKey is required.');
   });
 
-  it('returns a 401 status code when x-auth-token header is missing', async () => {
+  it('returns a 401 status code when Authorization header is missing', async () => {
     response = await callSendRequests(verifier, credentialRequests, metadata, expiresAt, eccPrivateKey, '');
 
     expect(response.statusCode).toBe(401);

@@ -4,6 +4,7 @@ import * as hlpr from 'library-issuer-verifier-utility';
 import { configData } from './config';
 import { UnsignedPresentation } from './types';
 import { validateProof } from './validateProof';
+import { requireAuth } from './requireAuth';
 
 const isNotAnEmptyArray = (paramValue: any): boolean => {
   if (!Array.isArray(paramValue)) {
@@ -122,7 +123,7 @@ const validateCredentialInput = (credentials: hlpr.JSONObj): hlpr.JSONObj => {
   return (retObj);
 };
 
-const validateInParams = (req: express.Request, authToken: string): UnsignedPresentation => {
+const validateInParams = (req: express.Request): UnsignedPresentation => {
   const context = req.body['@context'];
   const { type, verifiableCredential, proof, presentationRequestUuid } = req.body;
   let retObj: hlpr.JSONObj = {};
@@ -166,11 +167,6 @@ const validateInParams = (req: express.Request, authToken: string): UnsignedPres
     throw new hlpr.CustError(400, 'Invalid Presentation: proof is not correctly formatted.');
   }
 
-  // x-auth-token is mandatory
-  if (!authToken) {
-    throw new hlpr.CustError(401, 'Not authenticated');
-  }
-
   return ({
     '@context': context,
     type,
@@ -179,15 +175,20 @@ const validateInParams = (req: express.Request, authToken: string): UnsignedPres
   });
 };
 
-export const verifyPresentation = async (req: express.Request, res: express.Response, next: any): Promise<void> => {
+export const verifyPresentation = async (req: express.Request, res: express.Response, next: express.NextFunction): Promise<void> => {
   try {
-    const authToken: string = req.headers['x-auth-token'] as string;
+    const { authorization } = req.headers;
+
+    requireAuth(authorization);
+
     // Validate input Object
-    const data: UnsignedPresentation = validateInParams(req, authToken);
+    const data: UnsignedPresentation = validateInParams(req);
 
     const proof: hlpr.Proof = req.body.proof;
-    // Get the key info for verification from the did (req.body.proof.verificationMethod) with key type as 'secp256r1'
-    const pubKeyObj: hlpr.PublicKeyInfo[] = await hlpr.getKeyFromDIDDoc(configData.SaaSUrl, authToken, proof.verificationMethod, 'secp256r1');
+
+    const didDocumentResponse = await hlpr.getDIDDoc(configData.SaaSUrl, authorization as string, proof.verificationMethod);
+    const pubKeyObj: hlpr.PublicKeyInfo[] = hlpr.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
+
     if (pubKeyObj.length === 0) {
       throw new hlpr.CustError(401, 'Public key not found for the DID');
     }
@@ -201,7 +202,7 @@ export const verifyPresentation = async (req: express.Request, res: express.Resp
 
     // Set the X-Auth-Token header alone
     res.setHeader('Content-Type', 'application/json');
-    res.setHeader('x-auth-token', authToken);
+    res.setHeader('x-auth-token', didDocumentResponse.headers['x-auth-token']);
 
     res.send({ verifiedStatus: verifiedStatus });
   } catch (error) {

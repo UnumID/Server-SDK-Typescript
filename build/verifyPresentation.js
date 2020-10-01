@@ -59,6 +59,7 @@ exports.verifyPresentation = void 0;
 var hlpr = __importStar(require("library-issuer-verifier-utility"));
 var config_1 = require("./config");
 var validateProof_1 = require("./validateProof");
+var requireAuth_1 = require("./requireAuth");
 var isNotAnEmptyArray = function (paramValue) {
     if (!Array.isArray(paramValue)) {
         return (false);
@@ -155,7 +156,7 @@ var validateCredentialInput = function (credentials) {
     }
     return (retObj);
 };
-var validateInParams = function (req, authToken) {
+var validateInParams = function (req) {
     var context = req.body['@context'];
     var _a = req.body, type = _a.type, verifiableCredential = _a.verifiableCredential, proof = _a.proof, presentationRequestUuid = _a.presentationRequestUuid;
     var retObj = {};
@@ -189,10 +190,6 @@ var validateInParams = function (req, authToken) {
     if (!validateProof_1.validateProof(proof)) {
         throw new hlpr.CustError(400, 'Invalid Presentation: proof is not correctly formatted.');
     }
-    // x-auth-token is mandatory
-    if (!authToken) {
-        throw new hlpr.CustError(401, 'Not authenticated');
-    }
     return ({
         '@context': context,
         type: type,
@@ -201,24 +198,26 @@ var validateInParams = function (req, authToken) {
     });
 };
 exports.verifyPresentation = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var authToken, data, proof, pubKeyObj, verifiedStatus, error_1;
+    var authorization, data, proof, didDocumentResponse, pubKeyObj, verifiedStatus, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 2, , 3]);
-                authToken = req.headers['x-auth-token'];
-                data = validateInParams(req, authToken);
+                authorization = req.headers.authorization;
+                requireAuth_1.requireAuth(authorization);
+                data = validateInParams(req);
                 proof = req.body.proof;
-                return [4 /*yield*/, hlpr.getKeyFromDIDDoc(config_1.configData.SaaSUrl, authToken, proof.verificationMethod, 'secp256r1')];
+                return [4 /*yield*/, hlpr.getDIDDoc(config_1.configData.SaaSUrl, authorization, proof.verificationMethod)];
             case 1:
-                pubKeyObj = _a.sent();
+                didDocumentResponse = _a.sent();
+                pubKeyObj = hlpr.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 if (pubKeyObj.length === 0) {
                     throw new hlpr.CustError(401, 'Public key not found for the DID');
                 }
                 verifiedStatus = hlpr.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
                 // Set the X-Auth-Token header alone
                 res.setHeader('Content-Type', 'application/json');
-                res.setHeader('x-auth-token', authToken);
+                res.setHeader('x-auth-token', didDocumentResponse.headers['x-auth-token']);
                 res.send({ verifiedStatus: verifiedStatus });
                 return [3 /*break*/, 3];
             case 2:

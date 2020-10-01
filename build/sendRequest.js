@@ -58,7 +58,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendRequest = void 0;
 var hlpr = __importStar(require("library-issuer-verifier-utility"));
 var config_1 = require("./config");
-var validateInParams = function (req, authToken) {
+var requireAuth_1 = require("./requireAuth");
+var validateInParams = function (req) {
     var _a = req.body, verifier = _a.verifier, credentialRequests = _a.credentialRequests, metadata = _a.metadata, expiresAt = _a.expiresAt, eccPrivateKey = _a.eccPrivateKey;
     if (!verifier) {
         throw new hlpr.CustError(400, 'Invalid PresentationRequest options: verifier is required.');
@@ -105,10 +106,6 @@ var validateInParams = function (req, authToken) {
     if (!eccPrivateKey) {
         throw new hlpr.CustError(400, 'Invalid PresentationRequest options: eccPrivateKey is required.');
     }
-    // x-auth-token is mandatory
-    if (!authToken) {
-        throw new hlpr.CustError(401, 'Not authenticated.');
-    }
     var unsignedPR = {
         verifier: verifier,
         credentialRequests: credentialRequests,
@@ -129,19 +126,20 @@ var constructSignedPresentation = function (unsignedPR, privateKey) {
     return (signedPR);
 };
 exports.sendRequest = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var authToken, unsignedPR, signedPR, restData, restResp, prReqWithDeeplink, error_1;
+    var authorization, unsignedPR, signedPR, restData, restResp, prReqWithDeeplink, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 2, , 3]);
-                authToken = req.headers['x-auth-token'];
-                unsignedPR = validateInParams(req, authToken);
+                authorization = req.headers.authorization;
+                requireAuth_1.requireAuth(authorization);
+                unsignedPR = validateInParams(req);
                 signedPR = constructSignedPresentation(unsignedPR, req.body.eccPrivateKey);
                 restData = {
                     method: 'POST',
                     baseUrl: config_1.configData.SaaSUrl,
                     endPoint: 'presentationRequest',
-                    header: { Authorization: 'Bearer ' + authToken },
+                    header: { Authorization: authorization },
                     data: signedPR
                 };
                 return [4 /*yield*/, hlpr.makeRESTCall(restData)];

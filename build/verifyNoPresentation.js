@@ -41,6 +41,7 @@ var library_issuer_verifier_utility_1 = require("library-issuer-verifier-utility
 var lodash_1 = require("lodash");
 var validateProof_1 = require("./validateProof");
 var config_1 = require("./config");
+var requireAuth_1 = require("./requireAuth");
 exports.validateNoPresentationParams = function (noPresentation) {
     var type = noPresentation.type, holder = noPresentation.holder, proof = noPresentation.proof, presentationRequestUuid = noPresentation.presentationRequestUuid;
     if (!type) {
@@ -69,24 +70,24 @@ exports.validateNoPresentationParams = function (noPresentation) {
     }
 };
 exports.verifyNoPresentation = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var noPresentation, authToken, _a, verificationMethod, signatureValue, publicKeyInfos, _b, publicKey, encoding, unsignedNoPresentation, isVerified, e_1;
+    var noPresentation, authorization, _a, verificationMethod, signatureValue, didDocumentResponse, publicKeyInfos, _b, publicKey, encoding, unsignedNoPresentation, isVerified, e_1;
     return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
                 _c.trys.push([0, 2, , 3]);
                 noPresentation = req.body;
-                authToken = req.headers['x-auth-token'];
-                if (!authToken) {
-                    throw new library_issuer_verifier_utility_1.CustError(401, 'Not authenticated.');
-                }
+                authorization = req.headers.authorization;
+                requireAuth_1.requireAuth(authorization);
                 exports.validateNoPresentationParams(noPresentation);
                 _a = noPresentation.proof, verificationMethod = _a.verificationMethod, signatureValue = _a.signatureValue;
-                return [4 /*yield*/, library_issuer_verifier_utility_1.getKeyFromDIDDoc(config_1.configData.SaaSUrl, authToken, verificationMethod, 'secp256r1')];
+                return [4 /*yield*/, library_issuer_verifier_utility_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, verificationMethod)];
             case 1:
-                publicKeyInfos = _c.sent();
+                didDocumentResponse = _c.sent();
+                publicKeyInfos = library_issuer_verifier_utility_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 _b = publicKeyInfos[0], publicKey = _b.publicKey, encoding = _b.encoding;
                 unsignedNoPresentation = lodash_1.omit(noPresentation, 'proof');
                 isVerified = library_issuer_verifier_utility_1.doVerify(signatureValue, unsignedNoPresentation, publicKey, encoding);
+                res.setHeader('x-auth-token', didDocumentResponse.headers['x-auth-token']);
                 res.send({ isVerified: isVerified });
                 return [3 /*break*/, 3];
             case 2:

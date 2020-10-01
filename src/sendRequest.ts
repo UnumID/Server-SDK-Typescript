@@ -3,8 +3,9 @@ import * as hlpr from 'library-issuer-verifier-utility';
 
 import { configData } from './config';
 import { UnsignedPresentationRequest, SignedPresentationRequest, PresentationRequestWithDeeplink } from './types';
+import { requireAuth } from './requireAuth';
 
-const validateInParams = (req: express.Request, authToken: string): UnsignedPresentationRequest => {
+const validateInParams = (req: express.Request): UnsignedPresentationRequest => {
   const { verifier, credentialRequests, metadata, expiresAt, eccPrivateKey } = req.body;
 
   if (!verifier) {
@@ -63,11 +64,6 @@ const validateInParams = (req: express.Request, authToken: string): UnsignedPres
     throw new hlpr.CustError(400, 'Invalid PresentationRequest options: eccPrivateKey is required.');
   }
 
-  // x-auth-token is mandatory
-  if (!authToken) {
-    throw new hlpr.CustError(401, 'Not authenticated.');
-  }
-
   const unsignedPR: UnsignedPresentationRequest = {
     verifier,
     credentialRequests,
@@ -91,12 +87,14 @@ const constructSignedPresentation = (unsignedPR: UnsignedPresentationRequest, pr
   return (signedPR);
 };
 
-export const sendRequest = async (req: express.Request, res: express.Response, next: any): Promise<void> => {
+export const sendRequest = async (req: express.Request, res: express.Response, next: express.NextFunction): Promise<void> => {
   try {
-    const authToken: string = req.headers['x-auth-token'] as string;
+    const { authorization } = req.headers;
+
+    requireAuth(authorization);
 
     // Validate inputs and Create the unsignedPresentation Object
-    const unsignedPR: UnsignedPresentationRequest = validateInParams(req, authToken);
+    const unsignedPR: UnsignedPresentationRequest = validateInParams(req);
 
     // Create the signed presentation object from the unsignedPresentation object
     const signedPR: SignedPresentationRequest = constructSignedPresentation(unsignedPR, req.body.eccPrivateKey);
@@ -105,7 +103,7 @@ export const sendRequest = async (req: express.Request, res: express.Response, n
       method: 'POST',
       baseUrl: configData.SaaSUrl,
       endPoint: 'presentationRequest',
-      header: { Authorization: 'Bearer ' + authToken },
+      header: { Authorization: authorization },
       data: signedPR
     };
 

@@ -1,10 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
-import { CustError, getKeyFromDIDDoc, doVerify } from 'library-issuer-verifier-utility';
+import { CustError, getKeyFromDIDDoc, doVerify, getDIDDoc } from 'library-issuer-verifier-utility';
 import { omit } from 'lodash';
 
 import { NoPresentation } from './types';
 import { validateProof } from './validateProof';
 import { configData } from './config';
+import { requireAuth } from './requireAuth';
 
 export const validateNoPresentationParams = (noPresentation: NoPresentation): void => {
   const {
@@ -50,23 +51,25 @@ export const validateNoPresentationParams = (noPresentation: NoPresentation): vo
 export const verifyNoPresentation = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const noPresentation = req.body;
-    const authToken = req.headers['x-auth-token'] as string;
 
-    if (!authToken) {
-      throw new CustError(401, 'Not authenticated.');
-    }
+    const { authorization } = req.headers;
+
+    requireAuth(authorization);
 
     validateNoPresentationParams(noPresentation);
 
     const { proof: { verificationMethod, signatureValue } } = noPresentation;
 
-    const publicKeyInfos = await getKeyFromDIDDoc(configData.SaaSUrl, authToken, verificationMethod, 'secp256r1');
+    const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, verificationMethod);
+    const publicKeyInfos = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
     const { publicKey, encoding } = publicKeyInfos[0];
 
     const unsignedNoPresentation = omit(noPresentation, 'proof');
 
     const isVerified = doVerify(signatureValue, unsignedNoPresentation, publicKey, encoding);
+
+    res.setHeader('x-auth-token', didDocumentResponse.headers['x-auth-token']);
     res.send({ isVerified });
   } catch (e) {
     next(e);
