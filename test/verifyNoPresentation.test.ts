@@ -129,10 +129,9 @@ describe('POST /api/verifyNoPresentation', () => {
       expect(response.body.message).toEqual('Invalid presentationRequestUuid: must be a string.');
     });
 
-    it('returns a 400 status code with a descriptive error message if proof is invalid', async () => {
+    it('returns a 400 status code if proof is invalid', async () => {
       const response = await callVerifyNoPresentation(dummyNoPresentationBadProof, authHeader);
       expect(response.statusCode).toEqual(400);
-      expect(response.body.message).toEqual('Invalid proof.');
     });
   });
 });

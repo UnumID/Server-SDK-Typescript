@@ -148,11 +148,7 @@ var validateCredentialInput = function (credentials) {
             break;
         }
         // Check that proof object is valid
-        if (!validateProof_1.validateProof(credential.proof)) {
-            retObj.valStat = false;
-            retObj.msg = invalidMsg + " proof is not correctly formatted.";
-            break;
-        }
+        validateProof_1.validateProof(credential.proof);
     }
     return (retObj);
 };
@@ -187,9 +183,7 @@ var validateInParams = function (req) {
         throw new hlpr.CustError(400, retObj.msg);
     }
     // Check proof object is formatted correctly
-    if (!validateProof_1.validateProof(proof)) {
-        throw new hlpr.CustError(400, 'Invalid Presentation: proof is not correctly formatted.');
-    }
+    validateProof_1.validateProof(proof);
     return ({
         '@context': context,
         type: type,

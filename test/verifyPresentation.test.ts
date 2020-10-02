@@ -340,7 +340,7 @@ describe('POST /api/verifyPresentation - Validation for proof object', () => {
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
-    expect(preReq.message).toBe('Invalid Presentation: proof is not correctly formatted.');
+    expect(preReq.message).toBe('Invalid Presentation: proof.created is required.');
   });
 
   it('returns a 400 status code with a descriptive error message when signatureValue is missing', async () => {
@@ -349,7 +349,7 @@ describe('POST /api/verifyPresentation - Validation for proof object', () => {
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
-    expect(preReq.message).toBe('Invalid Presentation: proof is not correctly formatted.');
+    expect(preReq.message).toBe('Invalid Presentation: proof.signatureValue is required.');
   });
 
   it('returns a 400 status code with a descriptive error message when type is missing', async () => {
@@ -358,7 +358,7 @@ describe('POST /api/verifyPresentation - Validation for proof object', () => {
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
-    expect(preReq.message).toBe('Invalid Presentation: proof is not correctly formatted.');
+    expect(preReq.message).toBe('Invalid Presentation: proof.type is required.');
   });
 
   it('returns a 400 status code with a descriptive error message when verificationMethod is missing', async () => {
@@ -367,7 +367,7 @@ describe('POST /api/verifyPresentation - Validation for proof object', () => {
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
-    expect(preReq.message).toBe('Invalid Presentation: proof is not correctly formatted.');
+    expect(preReq.message).toBe('Invalid Presentation: proof.verificationMethod is required.');
   });
 
   it('returns a 400 status code with a descriptive error message when proofPurpose is missing', async () => {
@@ -376,6 +376,6 @@ describe('POST /api/verifyPresentation - Validation for proof object', () => {
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
-    expect(preReq.message).toBe('Invalid Presentation: proof is not correctly formatted.');
+    expect(preReq.message).toBe('Invalid Presentation: proof.proofPurpose is required.');
   });
 });

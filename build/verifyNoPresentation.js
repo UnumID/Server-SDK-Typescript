@@ -65,9 +65,7 @@ exports.validateNoPresentationParams = function (noPresentation) {
     if (typeof presentationRequestUuid !== 'string') {
         throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid presentationRequestUuid: must be a string.');
     }
-    if (!validateProof_1.validateProof(proof)) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid proof.');
-    }
+    validateProof_1.validateProof(proof);
 };
 exports.verifyNoPresentation = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var noPresentation, authorization, _a, verificationMethod, signatureValue, didDocumentResponse, publicKeyInfos, _b, publicKey, encoding, unsignedNoPresentation, isVerified, e_1;

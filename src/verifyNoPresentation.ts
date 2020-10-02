@@ -43,9 +43,7 @@ export const validateNoPresentationParams = (noPresentation: NoPresentation): vo
     throw new CustError(400, 'Invalid presentationRequestUuid: must be a string.');
   }
 
-  if (!validateProof(proof)) {
-    throw new CustError(400, 'Invalid proof.');
-  }
+  validateProof(proof);
 };
 
 export const verifyNoPresentation = async (req: Request, res: Response, next: NextFunction): Promise<void> => {

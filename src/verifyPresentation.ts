@@ -113,11 +113,7 @@ const validateCredentialInput = (credentials: hlpr.JSONObj): hlpr.JSONObj => {
     }
 
     // Check that proof object is valid
-    if (!validateProof(credential.proof)) {
-      retObj.valStat = false;
-      retObj.msg = `${invalidMsg} proof is not correctly formatted.`;
-      break;
-    }
+    validateProof(credential.proof);
   }
 
   return (retObj);
@@ -163,9 +159,7 @@ const validateInParams = (req: express.Request): UnsignedPresentation => {
   }
 
   // Check proof object is formatted correctly
-  if (!validateProof(proof)) {
-    throw new hlpr.CustError(400, 'Invalid Presentation: proof is not correctly formatted.');
-  }
+  validateProof(proof);
 
   return ({
     '@context': context,
