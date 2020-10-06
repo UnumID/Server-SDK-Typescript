@@ -46,6 +46,7 @@ export interface UnsignedPresentation {
   type: ['VerifiablePresentation', ...string[]];
   verifiableCredential: Credential;
   presentationRequestUuid: string;
+  uuid: string;
 }
 
 export interface Presentation extends UnsignedPresentation {

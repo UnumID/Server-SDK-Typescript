@@ -8,7 +8,7 @@
   "private": false,
   "scripts": {
     "pm2": "pm2",
-    "lint": "eslint \"src/**/*.ts\" \"test/**\"",
+    "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
     "build": "rm -rf build/ && tsc && cp src/types.d.ts build/",
     "jest": "jest --forceExit --runInBand",
     "test": "yarn run build && yarn run jest"

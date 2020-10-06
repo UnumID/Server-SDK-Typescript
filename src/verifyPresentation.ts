@@ -5,6 +5,7 @@ import { configData } from './config';
 import { UnsignedPresentation } from './types';
 import { validateProof } from './validateProof';
 import { requireAuth } from './requireAuth';
+import { omit } from 'lodash';
 
 const isNotAnEmptyArray = (paramValue: any): boolean => {
   if (!Array.isArray(paramValue)) {
@@ -119,7 +120,7 @@ const validateCredentialInput = (credentials: hlpr.JSONObj): hlpr.JSONObj => {
   return (retObj);
 };
 
-const validateInParams = (req: express.Request): UnsignedPresentation => {
+const validateInParams = (req: express.Request): void => {
   const context = req.body['@context'];
   const { type, verifiableCredential, proof, presentationRequestUuid } = req.body;
   let retObj: hlpr.JSONObj = {};
@@ -160,13 +161,6 @@ const validateInParams = (req: express.Request): UnsignedPresentation => {
 
   // Check proof object is formatted correctly
   validateProof(proof);
-
-  return ({
-    '@context': context,
-    type,
-    verifiableCredential,
-    presentationRequestUuid
-  });
 };
 
 export const verifyPresentation = async (req: express.Request, res: express.Response, next: express.NextFunction): Promise<void> => {
@@ -176,7 +170,8 @@ export const verifyPresentation = async (req: express.Request, res: express.Resp
     requireAuth(authorization);
 
     // Validate input Object
-    const data: UnsignedPresentation = validateInParams(req);
+    validateInParams(req);
+    const data = omit(req.body, 'proof');
 
     const proof: hlpr.Proof = req.body.proof;
 

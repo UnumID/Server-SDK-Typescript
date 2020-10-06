@@ -60,6 +60,7 @@ var hlpr = __importStar(require("library-issuer-verifier-utility"));
 var config_1 = require("./config");
 var validateProof_1 = require("./validateProof");
 var requireAuth_1 = require("./requireAuth");
+var lodash_1 = require("lodash");
 var isNotAnEmptyArray = function (paramValue) {
     if (!Array.isArray(paramValue)) {
         return (false);
@@ -184,12 +185,6 @@ var validateInParams = function (req) {
     }
     // Check proof object is formatted correctly
     validateProof_1.validateProof(proof);
-    return ({
-        '@context': context,
-        type: type,
-        verifiableCredential: verifiableCredential,
-        presentationRequestUuid: presentationRequestUuid
-    });
 };
 exports.verifyPresentation = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var authorization, data, proof, didDocumentResponse, pubKeyObj, verifiedStatus, error_1;
@@ -199,7 +194,9 @@ exports.verifyPresentation = function (req, res, next) { return __awaiter(void 0
                 _a.trys.push([0, 2, , 3]);
                 authorization = req.headers.authorization;
                 requireAuth_1.requireAuth(authorization);
-                data = validateInParams(req);
+                // Validate input Object
+                validateInParams(req);
+                data = lodash_1.omit(req.body, 'proof');
                 proof = req.body.proof;
                 return [4 /*yield*/, hlpr.getDIDDoc(config_1.configData.SaaSUrl, authorization, proof.verificationMethod)];
             case 1:
