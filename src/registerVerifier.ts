@@ -36,7 +36,7 @@ const validateInParams = (req: express.Request): void => {
   }
 };
 
-export const registerVerifier = async (req: express.Request, res: express.Response, next: any): Promise<void> => {
+export const registerVerifier = async (req: express.Request, res: express.Response, next: express.NextFunction): Promise<void> => {
   try {
     validateInParams(req);
 

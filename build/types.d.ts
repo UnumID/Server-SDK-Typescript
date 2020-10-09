@@ -59,3 +59,10 @@ export interface NoPresentation {
   holder: string;
   presentationRequestUuid: string;
 }
+
+export interface VerifierApiKey {
+  uuid: string;
+  type: 'Verifier';
+  key: string;
+  customerUuid: string;
+}
