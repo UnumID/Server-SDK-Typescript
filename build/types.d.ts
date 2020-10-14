@@ -4,27 +4,14 @@ export interface VerifierOptions {
   publicKeyInfo: Array<PublicKeyInfo>;
 }
 
-export interface VerifierInfo {
-  name: string;
-  did: string;
-  url: string;
-}
-
-export interface IssuerInfo {
-  did: string;
-  name: string;
-  url?: string;
-  required?: boolean;
-}
-
 export interface CredentialRequest {
   type: string;
-  issuers: IssuerInfo[];
+  issuers: string[];
   required?: boolean;
 }
 
 export interface UnsignedPresentationRequest {
-  verifier: VerifierInfo;
+  verifier: string;
   credentialRequests: CredentialRequest[];
   metadata?: any;
   expiresAt?: Date;

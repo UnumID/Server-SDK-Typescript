@@ -4,8 +4,14 @@ import * as hlpr from 'library-issuer-verifier-utility';
 import { app } from '../src/index';
 import { PresentationRequestWithDeeplink } from '../src/types';
 
-const callSendRequests = (verifier: hlpr.JSONObj, credentialRequests: hlpr.JSONObj[],
-  metadata: Record<string, unknown>, expiresAt: string, eccPrivateKey: string, authToken: string): Promise<hlpr.JSONObj> => {
+const callSendRequests = (
+  verifier: string,
+  credentialRequests: hlpr.JSONObj[],
+  metadata: Record<string, unknown>,
+  expiresAt: string,
+  eccPrivateKey: string,
+  authToken: string
+): Promise<hlpr.JSONObj> => {
   return (request(app)
     .post('/api/sendRequest')
     .set('Authorization', `Bearer ${authToken}`)
@@ -20,18 +26,10 @@ const callSendRequests = (verifier: hlpr.JSONObj, credentialRequests: hlpr.JSONO
 };
 
 const populateMockData = (): hlpr.JSONObj => {
-  const verifier: hlpr.JSONObj = {
-    name: 'Dummy Verifier',
-    did: 'did:unum:a40e162e-3297-4834-a1a3-a15e96554fac',
-    url: 'https://api-demo.dev-unumid.org'
-  };
-
+  const verifier = 'did:unum:a40e162e-3297-4834-a1a3-a15e96554fac';
   const credentialRequests: hlpr.JSONObj[] = [{
     type: 'DummyCredential',
-    issuers: hlpr.JSONObj = [{
-      did: 'did:unum:042b9089-9ee9-4217-844f-b01965cf569a',
-      name: 'Dummy Issuer'
-    }]
+    issuers: ['did:unum:042b9089-9ee9-4217-844f-b01965cf569a']
   }];
   const eccPrivateKey = '-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIKgEnAHdkJOWCr2HxgThssEnn4+4dXh+AXCK2ORgiM69oAoGCCqGSM49\nAwEHoUQDQgAEl1ZqPBLIa8QxEEx7nNWsVPnUd59UtVmRLS7axzA5VPeVOs2FIGkT\nFx+RgfZSF6J4kXd7F+/pd03fPV/lu/lJpA==\n-----END EC PRIVATE KEY-----\n';
   const authToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
@@ -134,11 +132,11 @@ describe('POST /api/sendRequest - Failure cases', () => {
     expect(response.body.message).toBe('Invalid PresentationRequest options: verifier is required.');
   });
 
-  it('returns a 400 status code with a descriptive error message when verifier is not formatted correctly', async () => {
+  it('returns a 400 status code with a descriptive error message when verifier is not a string', async () => {
     response = await callSendRequests({}, credentialRequests, metadata, expiresAt, eccPrivateKey, authToken);
 
     expect(response.statusCode).toBe(400);
-    expect(response.body.message).toBe('Invalid PresentationRequest options: verifier is not correctly formatted.');
+    expect(response.body.message).toBe('Invalid PresentationRequest options: verifier must be a string.');
   });
 
   it('returns a 400 status code with a descriptive error message when credentialRequests is missing', async () => {
@@ -211,18 +209,11 @@ describe('POST /api/sendRequest - Failure cases for credentialRequests element',
     expect(response.body.message).toBe('Invalid credentialRequest: issuers array must not be empty.');
   });
 
-  it('returns a 400 status code with a descriptive error message when issuer did is missing', async () => {
+  it('returns a 400 status code with a descriptive error message when issuer is not a string', async () => {
     response = await callSendRequests(verifier, [{ type: 'DummyCredential', issuers: [{ name: 'Dummy Issuer' }] }], metadata, expiresAt, eccPrivateKey, authToken);
 
     expect(response.statusCode).toBe(400);
-    expect(response.body.message).toBe('Invalid issuer: did and name are required.');
-  });
-
-  it('returns a 400 status code with a descriptive error message when issuer name is missing', async () => {
-    response = await callSendRequests(verifier, [{ type: 'DummyCredential', issuers: [{ did: 'did:unum:042b9089-9ee9-4217-844f-b01965cf569a' }] }], metadata, expiresAt, eccPrivateKey, authToken);
-
-    expect(response.statusCode).toBe(400);
-    expect(response.body.message).toBe('Invalid issuer: did and name are required.');
+    expect(response.body.message).toBe('Invalid issuer: must be a string.');
   });
 });
 
@@ -233,7 +224,6 @@ describe('POST /api/sendRequest - Failure cases - SaaS Errors', () => {
   const expiresAt = '2021-10-26T23:07:12.770Z';
 
   const stCode = 401;
-  const stCode1 = 400;
 
   it('Response code should be ' + stCode + ' when invalid auth token is passed', async () => {
     response = await callSendRequests(verifier, credentialRequests, metadata, expiresAt, eccPrivateKey, 'jkaskdhf');
@@ -241,24 +231,14 @@ describe('POST /api/sendRequest - Failure cases - SaaS Errors', () => {
     expect(response.statusCode).toBe(stCode);
   });
 
-  let verifier1 = { name: verifier.name, did: 'did', url: verifier.url };
-  it('Response code should be ' + stCode1 + ' when invalid did is passed in verifier object', async () => {
-    response = await callSendRequests(verifier1, credentialRequests, metadata, expiresAt, eccPrivateKey, authToken);
-
-    expect(response.statusCode).toBe(stCode1);
+  it('returns a 400 status code when an invalid verifier did is passed', async () => {
+    response = await callSendRequests({} as string, credentialRequests, metadata, expiresAt, eccPrivateKey, authToken);
+    expect(response.statusCode).toBe(400);
   });
 
-  verifier1 = { name: verifier.name, did: verifier.did, url: 'url' };
-  it('Response code should be ' + stCode1 + ' when invalid url is passed in verifier object', async () => {
-    response = await callSendRequests(verifier1, credentialRequests, metadata, expiresAt, eccPrivateKey, authToken);
-
-    expect(response.statusCode).toBe(stCode1);
-  });
-
-  credentialRequests[0].issuers[0].did = 'did';
-  it('Response code should be ' + stCode1 + ' when invalid did in issuers object is passed', async () => {
-    response = await callSendRequests(verifier1, credentialRequests, metadata, expiresAt, eccPrivateKey, authToken);
-
-    expect(response.statusCode).toBe(stCode1);
+  it('returns a 400 status code when an invalid issuer did is passed', async () => {
+    const badCredentialRequests = [{ ...credentialRequests[0], issuers: [{}] }];
+    response = await callSendRequests('did', badCredentialRequests, metadata, expiresAt, eccPrivateKey, authToken);
+    expect(response.statusCode).toBe(400);
   });
 });

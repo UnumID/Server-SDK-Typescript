@@ -12,12 +12,12 @@ const validateInParams = (req: express.Request): UnsignedPresentationRequest => 
     throw new hlpr.CustError(400, 'Invalid PresentationRequest options: verifier is required.');
   }
 
-  if (!credentialRequests) {
-    throw new hlpr.CustError(400, 'Invalid PresentationRequest options: credentialRequests is required.');
+  if (typeof verifier !== 'string') {
+    throw new hlpr.CustError(400, 'Invalid PresentationRequest options: verifier must be a string.');
   }
 
-  if (!verifier.name || !verifier.did || !verifier.url) {
-    throw new hlpr.CustError(400, 'Invalid PresentationRequest options: verifier is not correctly formatted.');
+  if (!credentialRequests) {
+    throw new hlpr.CustError(400, 'Invalid PresentationRequest options: credentialRequests is required.');
   }
 
   // credentialRequests input element must be an array
@@ -51,10 +51,10 @@ const validateInParams = (req: express.Request): UnsignedPresentationRequest => 
     if (totIssuers === 0) {
       throw new hlpr.CustError(400, 'Invalid credentialRequest: issuers array must not be empty.');
     }
-    // credentialRequests.issuers should have did and name attribute
-    for (let j = 0; j < totIssuers; j++) {
-      if (!credentialRequest.issuers[j].did || !credentialRequest.issuers[j].name) {
-        throw new hlpr.CustError(400, 'Invalid issuer: did and name are required.');
+
+    for (const issuer of credentialRequest.issuers) {
+      if (typeof issuer !== 'string') {
+        throw new hlpr.CustError(400, 'Invalid issuer: must be a string.');
       }
     }
   }
@@ -75,7 +75,7 @@ const validateInParams = (req: express.Request): UnsignedPresentationRequest => 
 };
 
 const constructSignedPresentation = (unsignedPR: UnsignedPresentationRequest, privateKey: string): SignedPresentationRequest => {
-  const proof: hlpr.Proof = hlpr.createProof(unsignedPR, privateKey, unsignedPR.verifier.did, 'pem');
+  const proof: hlpr.Proof = hlpr.createProof(unsignedPR, privateKey, unsignedPR.verifier, 'pem');
   const signedPR: SignedPresentationRequest = {
     verifier: unsignedPR.verifier,
     credentialRequests: unsignedPR.credentialRequests,

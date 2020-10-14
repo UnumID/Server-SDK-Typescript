@@ -64,11 +64,11 @@ var validateInParams = function (req) {
     if (!verifier) {
         throw new hlpr.CustError(400, 'Invalid PresentationRequest options: verifier is required.');
     }
+    if (typeof verifier !== 'string') {
+        throw new hlpr.CustError(400, 'Invalid PresentationRequest options: verifier must be a string.');
+    }
     if (!credentialRequests) {
         throw new hlpr.CustError(400, 'Invalid PresentationRequest options: credentialRequests is required.');
-    }
-    if (!verifier.name || !verifier.did || !verifier.url) {
-        throw new hlpr.CustError(400, 'Invalid PresentationRequest options: verifier is not correctly formatted.');
     }
     // credentialRequests input element must be an array
     if (!Array.isArray(credentialRequests)) {
@@ -95,10 +95,10 @@ var validateInParams = function (req) {
         if (totIssuers === 0) {
             throw new hlpr.CustError(400, 'Invalid credentialRequest: issuers array must not be empty.');
         }
-        // credentialRequests.issuers should have did and name attribute
-        for (var j = 0; j < totIssuers; j++) {
-            if (!credentialRequest.issuers[j].did || !credentialRequest.issuers[j].name) {
-                throw new hlpr.CustError(400, 'Invalid issuer: did and name are required.');
+        for (var _i = 0, _b = credentialRequest.issuers; _i < _b.length; _i++) {
+            var issuer = _b[_i];
+            if (typeof issuer !== 'string') {
+                throw new hlpr.CustError(400, 'Invalid issuer: must be a string.');
             }
         }
     }
@@ -115,7 +115,7 @@ var validateInParams = function (req) {
     return (unsignedPR);
 };
 var constructSignedPresentation = function (unsignedPR, privateKey) {
-    var proof = hlpr.createProof(unsignedPR, privateKey, unsignedPR.verifier.did, 'pem');
+    var proof = hlpr.createProof(unsignedPR, privateKey, unsignedPR.verifier, 'pem');
     var signedPR = {
         verifier: unsignedPR.verifier,
         credentialRequests: unsignedPR.credentialRequests,
