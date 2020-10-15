@@ -21,7 +21,7 @@ const constructKeyObjs = (kpSet: hlpr.KeyPairSet): Array<hlpr.PublicKeyInfo> => 
 };
 
 const validateInParams = (req: express.Request): void => {
-  const { name, customerUuid, apiKey } = req.body;
+  const { name, customerUuid, apiKey, url } = req.body;
 
   if (!name) {
     throw new hlpr.CustError(400, 'Invalid Verifier Options: name is required.');
@@ -29,6 +29,10 @@ const validateInParams = (req: express.Request): void => {
 
   if (!customerUuid) {
     throw new hlpr.CustError(400, 'Invalid Verifier Options: customerUuid is required.');
+  }
+
+  if (!url) {
+    throw new hlpr.CustError(400, 'Invalid Verifier Options: url is required.');
   }
 
   if (!apiKey) {
@@ -40,8 +44,10 @@ export const registerVerifier = async (req: express.Request, res: express.Respon
   try {
     validateInParams(req);
 
+    const { name, customerUuid, url } = req.body;
+
     const kpSet: hlpr.KeyPairSet = await hlpr.createToken();
-    const verifierOpt: VerifierOptions = { name: req.body.name, customerUuid: req.body.customerUuid, publicKeyInfo: constructKeyObjs(kpSet) };
+    const verifierOpt: VerifierOptions = { name, customerUuid, url, publicKeyInfo: constructKeyObjs(kpSet) };
     const restData: hlpr.RESTData = {
       method: 'POST',
       baseUrl: configData.SaaSUrl,

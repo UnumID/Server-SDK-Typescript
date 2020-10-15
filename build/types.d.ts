@@ -1,6 +1,7 @@
 export interface VerifierOptions {
   name: string;
   customerUuid: string;
+  url: string;
   publicKeyInfo: Array<PublicKeyInfo>;
 }
 

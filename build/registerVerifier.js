@@ -72,28 +72,32 @@ var constructKeyObjs = function (kpSet) {
     return ([signKey]);
 };
 var validateInParams = function (req) {
-    var _a = req.body, name = _a.name, customerUuid = _a.customerUuid, apiKey = _a.apiKey;
+    var _a = req.body, name = _a.name, customerUuid = _a.customerUuid, apiKey = _a.apiKey, url = _a.url;
     if (!name) {
         throw new hlpr.CustError(400, 'Invalid Verifier Options: name is required.');
     }
     if (!customerUuid) {
         throw new hlpr.CustError(400, 'Invalid Verifier Options: customerUuid is required.');
     }
+    if (!url) {
+        throw new hlpr.CustError(400, 'Invalid Verifier Options: url is required.');
+    }
     if (!apiKey) {
         throw new hlpr.CustError(401, 'Not authenticated.');
     }
 };
 exports.registerVerifier = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var kpSet, verifierOpt, restData, restResp, verifierResp, error_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
+    var _a, name_1, customerUuid, url, kpSet, verifierOpt, restData, restResp, verifierResp, error_1;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
             case 0:
-                _a.trys.push([0, 3, , 4]);
+                _b.trys.push([0, 3, , 4]);
                 validateInParams(req);
+                _a = req.body, name_1 = _a.name, customerUuid = _a.customerUuid, url = _a.url;
                 return [4 /*yield*/, hlpr.createToken()];
             case 1:
-                kpSet = _a.sent();
-                verifierOpt = { name: req.body.name, customerUuid: req.body.customerUuid, publicKeyInfo: constructKeyObjs(kpSet) };
+                kpSet = _b.sent();
+                verifierOpt = { name: name_1, customerUuid: customerUuid, url: url, publicKeyInfo: constructKeyObjs(kpSet) };
                 restData = {
                     method: 'POST',
                     baseUrl: config_1.configData.SaaSUrl,
@@ -103,7 +107,7 @@ exports.registerVerifier = function (req, res, next) { return __awaiter(void 0, 
                 };
                 return [4 /*yield*/, hlpr.makeRESTCall(restData)];
             case 2:
-                restResp = _a.sent();
+                restResp = _b.sent();
                 verifierResp = {};
                 verifierResp.uuid = restResp.body.uuid;
                 verifierResp.customerUuid = restResp.body.customerUuid;
@@ -119,7 +123,7 @@ exports.registerVerifier = function (req, res, next) { return __awaiter(void 0, 
                 res.send(verifierResp);
                 return [3 /*break*/, 4];
             case 3:
-                error_1 = _a.sent();
+                error_1 = _b.sent();
                 next(error_1);
                 return [3 /*break*/, 4];
             case 4: return [2 /*return*/];
