@@ -60,12 +60,18 @@ var hlpr = __importStar(require("library-issuer-verifier-utility"));
 var config_1 = require("./config");
 var requireAuth_1 = require("./requireAuth");
 var validateInParams = function (req) {
-    var _a = req.body, verifier = _a.verifier, credentialRequests = _a.credentialRequests, metadata = _a.metadata, expiresAt = _a.expiresAt, eccPrivateKey = _a.eccPrivateKey;
+    var _a = req.body, verifier = _a.verifier, credentialRequests = _a.credentialRequests, metadata = _a.metadata, expiresAt = _a.expiresAt, eccPrivateKey = _a.eccPrivateKey, holderAppUuid = _a.holderAppUuid;
     if (!verifier) {
         throw new hlpr.CustError(400, 'Invalid PresentationRequest options: verifier is required.');
     }
     if (typeof verifier !== 'string') {
         throw new hlpr.CustError(400, 'Invalid PresentationRequest options: verifier must be a string.');
+    }
+    if (!holderAppUuid) {
+        throw new hlpr.CustError(400, 'Invalid PresentationRequest options: holderAppUuid is required.');
+    }
+    if (typeof holderAppUuid !== 'string') {
+        throw new hlpr.CustError(400, 'Invalid PresentationRequest options: holderAppUuid must be a string.');
     }
     if (!credentialRequests) {
         throw new hlpr.CustError(400, 'Invalid PresentationRequest options: credentialRequests is required.');
@@ -110,7 +116,8 @@ var validateInParams = function (req) {
         verifier: verifier,
         credentialRequests: credentialRequests,
         metadata: metadata,
-        expiresAt: expiresAt
+        expiresAt: expiresAt,
+        holderAppUuid: holderAppUuid
     };
     return (unsignedPR);
 };
@@ -121,6 +128,7 @@ var constructSignedPresentation = function (unsignedPR, privateKey) {
         credentialRequests: unsignedPR.credentialRequests,
         metadata: unsignedPR.metadata,
         expiresAt: unsignedPR.expiresAt,
+        holderAppUuid: unsignedPR.holderAppUuid,
         proof: proof
     };
     return (signedPR);

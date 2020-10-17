@@ -16,6 +16,7 @@ export interface UnsignedPresentationRequest {
   credentialRequests: CredentialRequest[];
   metadata?: any;
   expiresAt?: Date;
+  holderAppUuid: string;
 }
 
 export interface SignedPresentationRequest extends UnsignedPresentationRequest {

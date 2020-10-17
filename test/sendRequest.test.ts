@@ -10,6 +10,7 @@ const callSendRequests = (
   metadata: Record<string, unknown>,
   expiresAt: string,
   eccPrivateKey: string,
+  holderAppUuid: string,
   authToken: string
 ): Promise<hlpr.JSONObj> => {
   return (request(app)
@@ -20,13 +21,15 @@ const callSendRequests = (
       credentialRequests,
       metadata,
       expiresAt,
-      eccPrivateKey
+      eccPrivateKey,
+      holderAppUuid
     })
   );
 };
 
 const populateMockData = (): hlpr.JSONObj => {
   const verifier = 'did:unum:a40e162e-3297-4834-a1a3-a15e96554fac';
+  const holderAppUuid = 'a91a5574-e338-46bd-9405-3a72acbd1b6a';
   const credentialRequests: hlpr.JSONObj[] = [{
     type: 'DummyCredential',
     issuers: ['did:unum:042b9089-9ee9-4217-844f-b01965cf569a']
@@ -38,18 +41,38 @@ const populateMockData = (): hlpr.JSONObj => {
     verifier,
     credentialRequests,
     eccPrivateKey,
-    authToken
+    authToken,
+    holderAppUuid
   });
 };
 
 describe('POST /api/sendRequest', () => {
   let createProofSpy, restCallSpy, preReq: PresentationRequestWithDeeplink, response: hlpr.JSONObj;
-  const { verifier, credentialRequests, eccPrivateKey, authToken } = populateMockData();
-  let metadata, expiresAt;
+  const {
+    verifier,
+    credentialRequests,
+    eccPrivateKey,
+    authToken,
+    holderAppUuid
+  } = populateMockData();
+  let metadata;
+  let expiresAt;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     createProofSpy = jest.spyOn(hlpr, 'createProof', 'get');
     restCallSpy = jest.spyOn(hlpr, 'makeRESTCall', 'get');
+
+    response = await callSendRequests(
+      verifier,
+      credentialRequests,
+      metadata,
+      expiresAt,
+      eccPrivateKey,
+      holderAppUuid,
+      authToken
+    );
+
+    preReq = response.body;
   });
 
   afterEach(() => {
@@ -57,9 +80,6 @@ describe('POST /api/sendRequest', () => {
   });
 
   it('Send request after signing the data', async () => {
-    response = await callSendRequests(verifier, credentialRequests, metadata, expiresAt, eccPrivateKey, authToken);
-    preReq = response.body;
-
     expect(createProofSpy).toBeCalled();
     expect(restCallSpy).toBeCalled();
   });
@@ -82,7 +102,14 @@ describe('POST /api/sendRequest', () => {
 
 describe('POST /api/sendRequest with expiry date and metadata', () => {
   let createProofSpy, restCallSpy, preReq: PresentationRequestWithDeeplink, response: hlpr.JSONObj;
-  const { verifier, credentialRequests, eccPrivateKey, authToken } = populateMockData();
+  const {
+    verifier,
+    credentialRequests,
+    eccPrivateKey,
+    authToken,
+    holderAppUuid
+  } = populateMockData();
+
   const metadata = {};
   const expiresAt = '2021-10-26T23:07:12.770Z';
 
@@ -96,7 +123,16 @@ describe('POST /api/sendRequest with expiry date and metadata', () => {
   });
 
   it('Send request after signing the data', async () => {
-    response = await callSendRequests(verifier, credentialRequests, metadata, expiresAt, eccPrivateKey, authToken);
+    response = await callSendRequests(
+      verifier,
+      credentialRequests,
+      metadata,
+      expiresAt,
+      eccPrivateKey,
+      holderAppUuid,
+      authToken
+    );
+
     preReq = response.body;
 
     expect(createProofSpy).toBeCalled();
@@ -121,54 +157,116 @@ describe('POST /api/sendRequest with expiry date and metadata', () => {
 
 describe('POST /api/sendRequest - Failure cases', () => {
   let response: hlpr.JSONObj;
-  const { verifier, credentialRequests, eccPrivateKey, authToken } = populateMockData();
+  const {
+    verifier,
+    credentialRequests,
+    eccPrivateKey,
+    authToken,
+    holderAppUuid
+  } = populateMockData();
   const metadata = {};
   const expiresAt = '2021-10-26T23:07:12.770Z';
 
   it('returns a 400 status code with a descriptive error message when verifier is missing', async () => {
-    response = await callSendRequests(undefined, credentialRequests, metadata, expiresAt, eccPrivateKey, authToken);
+    response = await callSendRequests(
+      undefined,
+      credentialRequests,
+      metadata,
+      expiresAt,
+      eccPrivateKey,
+      holderAppUuid,
+      authToken
+    );
 
     expect(response.statusCode).toBe(400);
     expect(response.body.message).toBe('Invalid PresentationRequest options: verifier is required.');
   });
 
   it('returns a 400 status code with a descriptive error message when verifier is not a string', async () => {
-    response = await callSendRequests({}, credentialRequests, metadata, expiresAt, eccPrivateKey, authToken);
+    response = await callSendRequests(
+      {} as string,
+      credentialRequests,
+      metadata,
+      expiresAt,
+      eccPrivateKey,
+      holderAppUuid,
+      authToken
+    );
 
     expect(response.statusCode).toBe(400);
     expect(response.body.message).toBe('Invalid PresentationRequest options: verifier must be a string.');
   });
 
   it('returns a 400 status code with a descriptive error message when credentialRequests is missing', async () => {
-    response = await callSendRequests(verifier, undefined, metadata, expiresAt, eccPrivateKey, authToken);
+    response = await callSendRequests(
+      verifier,
+      undefined,
+      metadata,
+      expiresAt,
+      eccPrivateKey,
+      holderAppUuid,
+      authToken
+    );
 
     expect(response.statusCode).toBe(400);
     expect(response.body.message).toBe('Invalid PresentationRequest options: credentialRequests is required.');
   });
 
   it('returns a 400 status code with a descriptive error message when credentialRequests is not an array', async () => {
-    response = await callSendRequests(verifier, {} as Array<unknown>, metadata, expiresAt, eccPrivateKey, authToken);
+    response = await callSendRequests(
+      verifier,
+      {} as Array<unknown>,
+      metadata,
+      expiresAt,
+      eccPrivateKey,
+      holderAppUuid,
+      authToken
+    );
 
     expect(response.statusCode).toBe(400);
     expect(response.body.message).toBe('Invalid PresentationRequest options: credentialRequests must be an array.');
   });
 
   it('returns a 400 status code with a descriptive error message when credentialRequests array is empty', async () => {
-    response = await callSendRequests(verifier, [], metadata, expiresAt, eccPrivateKey, authToken);
+    response = await callSendRequests(
+      verifier,
+      [],
+      metadata,
+      expiresAt,
+      eccPrivateKey,
+      holderAppUuid,
+      authToken
+    );
 
     expect(response.statusCode).toBe(400);
     expect(response.body.message).toBe('Invalid PresentationRequest options: credentialRequests array must not be empty.');
   });
 
   it('returns a 400 status code with a descriptive error message when eccPrivateKey is missing', async () => {
-    response = await callSendRequests(verifier, credentialRequests, metadata, expiresAt, '', authToken);
+    response = await callSendRequests(
+      verifier,
+      credentialRequests,
+      metadata,
+      expiresAt,
+      '',
+      holderAppUuid,
+      authToken
+    );
 
     expect(response.statusCode).toBe(400);
     expect(response.body.message).toBe('Invalid PresentationRequest options: eccPrivateKey is required.');
   });
 
   it('returns a 401 status code when Authorization header is missing', async () => {
-    response = await callSendRequests(verifier, credentialRequests, metadata, expiresAt, eccPrivateKey, '');
+    response = await callSendRequests(
+      verifier,
+      credentialRequests,
+      metadata,
+      expiresAt,
+      eccPrivateKey,
+      holderAppUuid,
+      ''
+    );
 
     expect(response.statusCode).toBe(401);
     expect(response.body.message).toBe('Not authenticated.');
@@ -177,68 +275,174 @@ describe('POST /api/sendRequest - Failure cases', () => {
 
 describe('POST /api/sendRequest - Failure cases for credentialRequests element', () => {
   let response: hlpr.JSONObj;
-  const { verifier, credentialRequests, eccPrivateKey, authToken } = populateMockData();
+  const {
+    verifier,
+    credentialRequests,
+    eccPrivateKey,
+    authToken,
+    holderAppUuid
+  } = populateMockData();
   const metadata = {};
   const expiresAt = '2021-10-26T23:07:12.770Z';
 
   it('returns a 400 status code with a descriptive error message when credentialRequests type is missing', async () => {
-    response = await callSendRequests(verifier, [{ issuers: credentialRequests[0].issuers }], metadata, expiresAt, eccPrivateKey, authToken);
+    response = await callSendRequests(
+      verifier,
+      [{ issuers: credentialRequests[0].issuers }],
+      metadata,
+      expiresAt,
+      eccPrivateKey,
+      holderAppUuid,
+      authToken
+    );
 
     expect(response.statusCode).toBe(400);
     expect(response.body.message).toBe('Invalid credentialRequest: type is required.');
   });
 
   it('returns a 400 status code with a descriptive error message when credentialRequests issuers is missing', async () => {
-    response = await callSendRequests(verifier, [{ type: credentialRequests[0].type, issuers: undefined }], metadata, expiresAt, eccPrivateKey, authToken);
+    response = await callSendRequests(
+      verifier,
+      [{ type: credentialRequests[0].type, issuers: undefined }],
+      metadata,
+      expiresAt,
+      eccPrivateKey,
+      holderAppUuid,
+      authToken
+    );
 
     expect(response.statusCode).toBe(400);
     expect(response.body.message).toBe('Invalid credentialRequest: issuers is required.');
   });
 
   it('returns a 400 status code with a descriptitve error message when credentialRequest issuers is not an array', async () => {
-    response = await callSendRequests(verifier, [{ type: 'DummyCredential', issuers: {} }], metadata, expiresAt, eccPrivateKey, authToken);
+    response = await callSendRequests(
+      verifier,
+      [{ type: 'DummyCredential', issuers: {} }],
+      metadata,
+      expiresAt,
+      eccPrivateKey,
+      holderAppUuid,
+      authToken
+    );
 
     expect(response.statusCode).toBe(400);
     expect(response.body.message).toBe('Invalid credentialRequest: issuers must be an array.');
   });
 
   it('returns a 400 status code with a descriptive error message when credentialRequest issuers array is empty', async () => {
-    response = await callSendRequests(verifier, [{ type: 'DummyCredential', issuers: [] }], metadata, expiresAt, eccPrivateKey, authToken);
+    response = await callSendRequests(
+      verifier,
+      [{ type: 'DummyCredential', issuers: [] }],
+      metadata,
+      expiresAt,
+      eccPrivateKey,
+      holderAppUuid,
+      authToken
+    )
+    ;
 
     expect(response.statusCode).toBe(400);
     expect(response.body.message).toBe('Invalid credentialRequest: issuers array must not be empty.');
   });
 
   it('returns a 400 status code with a descriptive error message when issuer is not a string', async () => {
-    response = await callSendRequests(verifier, [{ type: 'DummyCredential', issuers: [{ name: 'Dummy Issuer' }] }], metadata, expiresAt, eccPrivateKey, authToken);
+    response = await callSendRequests(
+      verifier,
+      [{ type: 'DummyCredential', issuers: [{ name: 'Dummy Issuer' }] }],
+      metadata,
+      expiresAt,
+      eccPrivateKey,
+      holderAppUuid,
+      authToken
+    );
 
     expect(response.statusCode).toBe(400);
     expect(response.body.message).toBe('Invalid issuer: must be a string.');
+  });
+
+  it('returns a 400 status code with a descriptive error message when holderAppUuid is missing', async () => {
+    response = await callSendRequests(
+      verifier,
+      credentialRequests,
+      metadata,
+      expiresAt,
+      eccPrivateKey,
+      undefined as unknown as string,
+      authToken
+    );
+
+    expect(response.statusCode).toBe(400);
+    expect(response.body.message).toEqual('Invalid PresentationRequest options: holderAppUuid is required.');
+  });
+
+  it('returns a 400 status code with a descriptive error message when holderAppUuid is not a string', async () => {
+    response = await callSendRequests(
+      verifier,
+      credentialRequests,
+      metadata,
+      expiresAt,
+      eccPrivateKey,
+      {} as string,
+      authToken
+    );
+
+    expect(response.statusCode).toBe(400);
+    expect(response.body.message).toEqual('Invalid PresentationRequest options: holderAppUuid must be a string.');
   });
 });
 
 describe('POST /api/sendRequest - Failure cases - SaaS Errors', () => {
   let response: hlpr.JSONObj;
-  const { verifier, credentialRequests, eccPrivateKey, authToken } = populateMockData();
+  const {
+    verifier,
+    credentialRequests,
+    eccPrivateKey,
+    authToken,
+    holderAppUuid
+  } = populateMockData();
   const metadata = {};
   const expiresAt = '2021-10-26T23:07:12.770Z';
 
   const stCode = 401;
 
   it('Response code should be ' + stCode + ' when invalid auth token is passed', async () => {
-    response = await callSendRequests(verifier, credentialRequests, metadata, expiresAt, eccPrivateKey, 'jkaskdhf');
+    response = await callSendRequests(
+      verifier,
+      credentialRequests,
+      metadata,
+      expiresAt,
+      eccPrivateKey,
+      holderAppUuid,
+      'jkaskdhf');
 
     expect(response.statusCode).toBe(stCode);
   });
 
   it('returns a 400 status code when an invalid verifier did is passed', async () => {
-    response = await callSendRequests({} as string, credentialRequests, metadata, expiresAt, eccPrivateKey, authToken);
+    response = await callSendRequests(
+      {} as string,
+      credentialRequests,
+      metadata,
+      expiresAt,
+      eccPrivateKey,
+      holderAppUuid,
+      authToken)
+    ;
     expect(response.statusCode).toBe(400);
   });
 
   it('returns a 400 status code when an invalid issuer did is passed', async () => {
     const badCredentialRequests = [{ ...credentialRequests[0], issuers: [{}] }];
-    response = await callSendRequests('did', badCredentialRequests, metadata, expiresAt, eccPrivateKey, authToken);
+    response = await callSendRequests(
+      'did',
+      badCredentialRequests,
+      metadata,
+      expiresAt,
+      eccPrivateKey,
+      holderAppUuid,
+      authToken
+    );
     expect(response.statusCode).toBe(400);
   });
 });

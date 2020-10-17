@@ -6,7 +6,14 @@ import { UnsignedPresentationRequest, SignedPresentationRequest, PresentationReq
 import { requireAuth } from './requireAuth';
 
 const validateInParams = (req: express.Request): UnsignedPresentationRequest => {
-  const { verifier, credentialRequests, metadata, expiresAt, eccPrivateKey } = req.body;
+  const {
+    verifier,
+    credentialRequests,
+    metadata,
+    expiresAt,
+    eccPrivateKey,
+    holderAppUuid
+  } = req.body;
 
   if (!verifier) {
     throw new hlpr.CustError(400, 'Invalid PresentationRequest options: verifier is required.');
@@ -14,6 +21,14 @@ const validateInParams = (req: express.Request): UnsignedPresentationRequest => 
 
   if (typeof verifier !== 'string') {
     throw new hlpr.CustError(400, 'Invalid PresentationRequest options: verifier must be a string.');
+  }
+
+  if (!holderAppUuid) {
+    throw new hlpr.CustError(400, 'Invalid PresentationRequest options: holderAppUuid is required.');
+  }
+
+  if (typeof holderAppUuid !== 'string') {
+    throw new hlpr.CustError(400, 'Invalid PresentationRequest options: holderAppUuid must be a string.');
   }
 
   if (!credentialRequests) {
@@ -68,7 +83,8 @@ const validateInParams = (req: express.Request): UnsignedPresentationRequest => 
     verifier,
     credentialRequests,
     metadata,
-    expiresAt
+    expiresAt,
+    holderAppUuid
   };
 
   return (unsignedPR);
@@ -81,6 +97,7 @@ const constructSignedPresentation = (unsignedPR: UnsignedPresentationRequest, pr
     credentialRequests: unsignedPR.credentialRequests,
     metadata: unsignedPR.metadata,
     expiresAt: unsignedPR.expiresAt,
+    holderAppUuid: unsignedPR.holderAppUuid,
     proof: proof
   };
 
