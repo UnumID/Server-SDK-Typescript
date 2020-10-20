@@ -2,7 +2,7 @@ import request from 'supertest';
 
 import * as hlpr from 'library-issuer-verifier-utility';
 import { app } from '../src/index';
-import { PresentationRequestWithDeeplink } from '../src/types';
+import { PresentationRequestResponse, PresentationRequest } from '../src/types';
 
 const callSendRequests = (
   verifier: string,
@@ -12,7 +12,7 @@ const callSendRequests = (
   eccPrivateKey: string,
   holderAppUuid: string,
   authToken: string
-): Promise<hlpr.JSONObj> => {
+): Promise<hlpr.RESTResponse<PresentationRequestResponse>> => {
   return (request(app)
     .post('/api/sendRequest')
     .set('Authorization', `Bearer ${authToken}`)
@@ -47,7 +47,12 @@ const populateMockData = (): hlpr.JSONObj => {
 };
 
 describe('POST /api/sendRequest', () => {
-  let createProofSpy, restCallSpy, preReq: PresentationRequestWithDeeplink, response: hlpr.JSONObj;
+  let createProofSpy;
+  let restCallSpy;
+  let apiResponse: hlpr.RESTResponse<PresentationRequestResponse>;
+  let presentationRequestResponse: PresentationRequestResponse;
+  let presentationRequest: PresentationRequest;
+
   const {
     verifier,
     credentialRequests,
@@ -62,7 +67,7 @@ describe('POST /api/sendRequest', () => {
     createProofSpy = jest.spyOn(hlpr, 'createProof', 'get');
     restCallSpy = jest.spyOn(hlpr, 'makeRESTCall', 'get');
 
-    response = await callSendRequests(
+    apiResponse = await callSendRequests(
       verifier,
       credentialRequests,
       metadata,
@@ -72,36 +77,65 @@ describe('POST /api/sendRequest', () => {
       authToken
     );
 
-    preReq = response.body;
+    presentationRequestResponse = apiResponse.body;
+    presentationRequest = presentationRequestResponse.presentationRequest;
   });
 
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  it('Send request after signing the data', async () => {
+  it('sends request after signing the data', async () => {
     expect(createProofSpy).toBeCalled();
     expect(restCallSpy).toBeCalled();
   });
 
-  it('Response status code should be 200', () => {
-    expect(response.statusCode).toBe(200);
+  it('returns a 200 status code', () => {
+    expect(apiResponse.status).toEqual(200);
   });
 
-  it('Response should have uuid, createdAt and updatedAt', () => {
-    expect(preReq.uuid).toBeDefined();
-    expect(preReq.createdAt).toBeDefined();
-    expect(preReq.updatedAt).toBeDefined();
+  it('returns the created PresentationRequest', () => {
+    expect(presentationRequest).toBeDefined();
+    expect(presentationRequest.uuid).toBeDefined();
   });
 
-  it('Response should have proof object and deeplink', () => {
-    expect(preReq.proof).toBeDefined();
-    expect(preReq.deeplink).toBeDefined();
+  it('returns verifier info', () => {
+    const { verifier } = presentationRequestResponse;
+    expect(verifier).toBeDefined();
+    expect(verifier.name).toBeDefined();
+    expect(verifier.url).toBeDefined();
+    expect(verifier.did).toBeDefined();
+    expect(verifier.did).toEqual(presentationRequest.verifier);
+  });
+
+  it('returns issuer info', () => {
+    const { issuers } = presentationRequestResponse;
+    expect(issuers).toBeDefined();
+    presentationRequest.credentialRequests.forEach((credentialRequest) => {
+      credentialRequest.issuers.forEach(issuerDid => {
+        expect(issuers[issuerDid]).toBeDefined();
+        expect(issuers[issuerDid].name).toBeDefined();
+        expect(issuers[issuerDid].did).toBeDefined();
+        expect(issuers[issuerDid].did).toEqual(issuerDid);
+      });
+    });
+  });
+
+  it('returns a deeplink', () => {
+    const { deeplink } = presentationRequestResponse;
+    expect(deeplink).toBeDefined();
+  });
+
+  it('returns a QR code', () => {
+    const { qrCode } = presentationRequestResponse;
+    expect(qrCode).toBeDefined();
   });
 });
 
 describe('POST /api/sendRequest with expiry date and metadata', () => {
-  let createProofSpy, restCallSpy, preReq: PresentationRequestWithDeeplink, response: hlpr.JSONObj;
+  let apiResponse: hlpr.RESTResponse<PresentationRequestResponse>;
+  let presentationRequestResponse: PresentationRequestResponse;
+
   const {
     verifier,
     credentialRequests,
@@ -110,20 +144,11 @@ describe('POST /api/sendRequest with expiry date and metadata', () => {
     holderAppUuid
   } = populateMockData();
 
-  const metadata = {};
+  const metadata = { test: 'test' };
   const expiresAt = '2021-10-26T23:07:12.770Z';
 
-  beforeEach(() => {
-    createProofSpy = jest.spyOn(hlpr, 'createProof', 'get');
-    restCallSpy = jest.spyOn(hlpr, 'makeRESTCall', 'get');
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it('Send request after signing the data', async () => {
-    response = await callSendRequests(
+  beforeEach(async () => {
+    apiResponse = await callSendRequests(
       verifier,
       credentialRequests,
       metadata,
@@ -132,26 +157,16 @@ describe('POST /api/sendRequest with expiry date and metadata', () => {
       holderAppUuid,
       authToken
     );
-
-    preReq = response.body;
-
-    expect(createProofSpy).toBeCalled();
-    expect(restCallSpy).toBeCalled();
+    presentationRequestResponse = apiResponse.body;
   });
 
-  it('Response status code should be 200', () => {
-    expect(response.statusCode).toBe(200);
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
-  it('Response should have uuid, createdAt and updatedAt', () => {
-    expect(preReq.uuid).toBeDefined();
-    expect(preReq.createdAt).toBeDefined();
-    expect(preReq.updatedAt).toBeDefined();
-  });
-
-  it('Response should have proof object and deeplink', () => {
-    expect(preReq.proof).toBeDefined();
-    expect(preReq.deeplink).toBeDefined();
+  it('includes the expiration and metadata in the returned PresentationRequest', () => {
+    expect(presentationRequestResponse.presentationRequest.metadata).toEqual(metadata);
+    expect(presentationRequestResponse.presentationRequest.expiresAt).toEqual(expiresAt);
   });
 });
 

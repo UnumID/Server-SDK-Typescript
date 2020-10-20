@@ -23,11 +23,10 @@ export interface SignedPresentationRequest extends UnsignedPresentationRequest {
   proof: Proof;
 }
 
-export interface PresentationRequestWithDeeplink extends SignedPresentationRequest {
+export interface PresentationRequest extends SignedPresentationRequest {
   uuid: string;
   createdAt: Date;
   updatedAt: Date;
-  deeplink: string;
 }
 
 export interface UnsignedPresentation {
@@ -54,4 +53,27 @@ export interface VerifierApiKey {
   type: 'Verifier';
   key: string;
   customerUuid: string;
+}
+
+export interface VerifierInfo {
+  did: string;
+  name: string;
+  url: string;
+}
+
+export interface IssuerInfo {
+  did: string;
+  name: string;
+}
+
+export interface IssuerInfoMap {
+  [did: string]: IssuerInfo;
+}
+
+export interface PresentationRequestResponse {
+  presentationRequest: PresentationRequest;
+  verifier: VerifierInfo;
+  issuers: IssuerInfoMap;
+  deeplink: string;
+  qrCode: string;
 }

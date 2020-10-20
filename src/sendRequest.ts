@@ -2,7 +2,7 @@ import * as express from 'express';
 import * as hlpr from 'library-issuer-verifier-utility';
 
 import { configData } from './config';
-import { UnsignedPresentationRequest, SignedPresentationRequest, PresentationRequestWithDeeplink } from './types';
+import { UnsignedPresentationRequest, SignedPresentationRequest, PresentationRequestResponse } from './types';
 import { requireAuth } from './requireAuth';
 
 const validateInParams = (req: express.Request): UnsignedPresentationRequest => {
@@ -124,16 +124,16 @@ export const sendRequest = async (req: express.Request, res: express.Response, n
       data: signedPR
     };
 
-    const restResp: hlpr.JSONObj = await hlpr.makeRESTCall(restData);
+    const restResp = await hlpr.makeRESTCall<PresentationRequestResponse>(restData);
 
     // Copy only the required elemnts from the body of the response got from SaaS REST call
-    const prReqWithDeeplink: PresentationRequestWithDeeplink = restResp.body;
+    const presentationRequestResponse = restResp.body;
 
     // Set the X-Auth-Token header alone
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('x-auth-token', restResp.headers['x-auth-token']);
 
-    res.send(prReqWithDeeplink);
+    res.send(presentationRequestResponse);
   } catch (error) {
     next(error);
   }

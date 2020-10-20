@@ -134,7 +134,7 @@ var constructSignedPresentation = function (unsignedPR, privateKey) {
     return (signedPR);
 };
 exports.sendRequest = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var authorization, unsignedPR, signedPR, restData, restResp, prReqWithDeeplink, error_1;
+    var authorization, unsignedPR, signedPR, restData, restResp, presentationRequestResponse, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -153,11 +153,11 @@ exports.sendRequest = function (req, res, next) { return __awaiter(void 0, void 
                 return [4 /*yield*/, hlpr.makeRESTCall(restData)];
             case 1:
                 restResp = _a.sent();
-                prReqWithDeeplink = restResp.body;
+                presentationRequestResponse = restResp.body;
                 // Set the X-Auth-Token header alone
                 res.setHeader('Content-Type', 'application/json');
                 res.setHeader('x-auth-token', restResp.headers['x-auth-token']);
-                res.send(prReqWithDeeplink);
+                res.send(presentationRequestResponse);
                 return [3 /*break*/, 3];
             case 2:
                 error_1 = _a.sent();
