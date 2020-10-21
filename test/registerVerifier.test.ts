@@ -59,8 +59,8 @@ describe('POST /api/register Verifier', () => {
     expect(response.body).toHaveProperty('did');
     expect(response.body.name).toBe('First Unumid Verifier');
     expect(response.body.customerUuid).toBe('5e46f1ba-4c82-471d-bbc7-251924a90532');
-    expect(response.body.keys.privateKey).toBeDefined();
-    expect(response.body.keys.publicKey).toBeDefined();
+    expect(response.body.keys.signing.privateKey).toBeDefined();
+    expect(response.body.keys.signing.publicKey).toBeDefined();
   });
 });
 

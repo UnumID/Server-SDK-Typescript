@@ -116,7 +116,7 @@ exports.registerVerifier = function (req, res, next) { return __awaiter(void 0, 
                 verifierResp.createdAt = restResp.body.createdAt;
                 verifierResp.updatedAt = restResp.body.updatedAt;
                 // Populate the key info into the response got from SaaS
-                verifierResp.keys = kpSet.signing;
+                verifierResp.keys = kpSet;
                 // Set the X-Auth-Token header alone
                 res.setHeader('Content-Type', 'application/json');
                 res.setHeader('x-auth-token', restResp.headers['x-auth-token']);

@@ -68,7 +68,7 @@ export const registerVerifier = async (req: express.Request, res: express.Respon
     verifierResp.updatedAt = restResp.body.updatedAt;
 
     // Populate the key info into the response got from SaaS
-    verifierResp.keys = kpSet.signing;
+    verifierResp.keys = kpSet;
 
     // Set the X-Auth-Token header alone
     res.setHeader('Content-Type', 'application/json');
