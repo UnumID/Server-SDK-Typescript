@@ -3,18 +3,19 @@ import request from 'supertest';
 import * as hlpr from 'library-issuer-verifier-utility';
 import { app } from '../src/index';
 
-const callVerifyPresentation = (context, type, verifiableCredential, presentationRequestUuid, proof, auth = ''): Promise<hlpr.JSONObj> => {
+const callVerifyPresentation = (context, type, verifiableCredential, presentationRequestUuid, proof, verifier, auth = ''): Promise<hlpr.JSONObj> => {
+  const presentation = {
+    '@context': context,
+    type,
+    verifiableCredential,
+    presentationRequestUuid,
+    proof
+  };
   return (request(app)
     .post('/api/verifyPresentation')
     .set('Content-Type', 'application/json')
     .set('Authorization', auth)
-    .send({
-      '@context': context,
-      type,
-      verifiableCredential,
-      presentationRequestUuid,
-      proof
-    })
+    .send({ presentation, verifier })
   );
 };
 
@@ -77,26 +78,30 @@ const populateMockData = (): hlpr.JSONObj => {
     proofPurpose: 'AssertionMethod'
   };
   const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
-
+  const verifier = 'did:unum:dd407b1a-ee7f-46a2-af2a-ccbb48cbb0dc';
   return ({
     context,
     type,
     verifiableCredential,
     presentationRequestUuid,
     proof,
-    authHeader
+    authHeader,
+    verifier
   });
 };
 
 describe('POST /api/verifyPresentation - Success Scenario', () => {
-  let getDidSpy, verifySpy, response: hlpr.JSONObj, verStatus;
-  const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader } = populateMockData();
+  let getDidSpy;
+  let verifySpy;
+  let response: hlpr.JSONObj;
+  let verStatus;
+  const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
   beforeAll(async () => {
     getDidSpy = jest.spyOn(hlpr, 'getKeyFromDIDDoc', 'get');
     verifySpy = jest.spyOn(hlpr, 'doVerify', 'get');
 
-    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, authHeader);
+    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
     verStatus = response.body.verifiedStatus;
   });
 
@@ -121,14 +126,14 @@ describe('POST /api/verifyPresentation - Success Scenario', () => {
 
 describe('POST /api/verifyPresentation - Failure Scenario', () => {
   let getDidSpy, verifySpy, response: hlpr.JSONObj, verStatus;
-  const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader } = populateMockData();
+  const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
   beforeAll(async () => {
     getDidSpy = jest.spyOn(hlpr, 'getKeyFromDIDDoc', 'get');
     verifySpy = jest.spyOn(hlpr, 'doVerify', 'get');
 
     verifiableCredential[0].proof.verificationMethod = proof.verificationMethod;
-    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, authHeader);
+    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
     verStatus = response.body.verifiedStatus;
   });
 
@@ -153,10 +158,10 @@ describe('POST /api/verifyPresentation - Failure Scenario', () => {
 
 describe('POST /api/verifyPresentation - Validation Failures', () => {
   let response: hlpr.JSONObj, preReq: hlpr.JSONObj;
-  const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader } = populateMockData();
+  const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
   it('returns a 400 status code with a descriptive error message when @context is missing', async () => {
-    response = await callVerifyPresentation('', type, verifiableCredential, presentationRequestUuid, proof, authHeader);
+    response = await callVerifyPresentation('', type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
@@ -164,7 +169,7 @@ describe('POST /api/verifyPresentation - Validation Failures', () => {
   });
 
   it('returns a 400 status code with a descriptive error message when type is missing', async () => {
-    response = await callVerifyPresentation(context, '', verifiableCredential, presentationRequestUuid, proof, authHeader);
+    response = await callVerifyPresentation(context, '', verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
@@ -172,7 +177,7 @@ describe('POST /api/verifyPresentation - Validation Failures', () => {
   });
 
   it('returns a 400 status code with a descriptive error message when verifiableCredential is missing', async () => {
-    response = await callVerifyPresentation(context, type, '', presentationRequestUuid, proof, authHeader);
+    response = await callVerifyPresentation(context, type, '', presentationRequestUuid, proof, verifier, authHeader);
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
@@ -180,7 +185,7 @@ describe('POST /api/verifyPresentation - Validation Failures', () => {
   });
 
   it('returns a 400 status code with a descriptive error message when presentationRequestUuid is missing', async () => {
-    response = await callVerifyPresentation(context, type, verifiableCredential, '', proof, authHeader);
+    response = await callVerifyPresentation(context, type, verifiableCredential, '', proof, verifier, authHeader);
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
@@ -188,7 +193,7 @@ describe('POST /api/verifyPresentation - Validation Failures', () => {
   });
 
   it('returns a 400 status code with a descriptive error message when proof is missing', async () => {
-    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, '', authHeader);
+    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, '', verifier, authHeader);
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
@@ -196,7 +201,7 @@ describe('POST /api/verifyPresentation - Validation Failures', () => {
   });
 
   it('returns a 400 status code with a descriptive error message when @context is not an array', async () => {
-    response = await callVerifyPresentation('https://www.w3.org/2018/credentials/v1', type, verifiableCredential, presentationRequestUuid, proof, authHeader);
+    response = await callVerifyPresentation('https://www.w3.org/2018/credentials/v1', type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
@@ -204,7 +209,7 @@ describe('POST /api/verifyPresentation - Validation Failures', () => {
   });
 
   it('returns a 400 status code with a descriptive error message when @context array is empty', async () => {
-    response = await callVerifyPresentation([], type, verifiableCredential, presentationRequestUuid, proof, authHeader);
+    response = await callVerifyPresentation([], type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
@@ -212,7 +217,7 @@ describe('POST /api/verifyPresentation - Validation Failures', () => {
   });
 
   it('returns a 400 status code with a descriptive error message when type is not an array', async () => {
-    response = await callVerifyPresentation(context, 'VerifiablePresentation', verifiableCredential, presentationRequestUuid, proof, authHeader);
+    response = await callVerifyPresentation(context, 'VerifiablePresentation', verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
@@ -220,7 +225,7 @@ describe('POST /api/verifyPresentation - Validation Failures', () => {
   });
 
   it('returns a 400 status code with a descriptive error message when type array is empty', async () => {
-    response = await callVerifyPresentation(context, [], verifiableCredential, presentationRequestUuid, proof, authHeader);
+    response = await callVerifyPresentation(context, [], verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
@@ -228,7 +233,7 @@ describe('POST /api/verifyPresentation - Validation Failures', () => {
   });
 
   it('returns a 400 status code with a descriptive error message when verifiableCredential is not an array', async () => {
-    response = await callVerifyPresentation(context, type, 'verifiableCredential', presentationRequestUuid, proof, authHeader);
+    response = await callVerifyPresentation(context, type, 'verifiableCredential', presentationRequestUuid, proof, verifier, authHeader);
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
@@ -236,7 +241,7 @@ describe('POST /api/verifyPresentation - Validation Failures', () => {
   });
 
   it('returns a 400 status code with a descriptive error message when verifiableCredential array is empty', async () => {
-    response = await callVerifyPresentation(context, type, [], presentationRequestUuid, proof, authHeader);
+    response = await callVerifyPresentation(context, type, [], presentationRequestUuid, proof, verifier, authHeader);
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
@@ -244,7 +249,7 @@ describe('POST /api/verifyPresentation - Validation Failures', () => {
   });
 
   it('returns a 401 status code if x-auth-token header is missing', async () => {
-    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, '');
+    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, '');
     preReq = response.body;
 
     expect(response.statusCode).toBe(401);
@@ -254,12 +259,12 @@ describe('POST /api/verifyPresentation - Validation Failures', () => {
 
 describe('POST /api/verifyPresentation - Validation for verifiableCredential object', () => {
   let response: hlpr.JSONObj, preReq: hlpr.JSONObj;
-  const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader } = populateMockData();
+  const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
   let cred;
   it('Response code should be ' + 400 + ' when @context is not passed', async () => {
     cred = copyCredentialObj(verifiableCredential[0], '@context');
-    response = await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, authHeader);
+    response = await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
@@ -268,7 +273,7 @@ describe('POST /api/verifyPresentation - Validation for verifiableCredential obj
 
   it('Response code should be ' + 400 + ' when credentialStatus is not passed', async () => {
     cred = copyCredentialObj(verifiableCredential[0], 'credentialStatus');
-    response = await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, authHeader);
+    response = await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
@@ -277,7 +282,7 @@ describe('POST /api/verifyPresentation - Validation for verifiableCredential obj
 
   it('Response code should be ' + 400 + ' when credentialSubject is not passed', async () => {
     cred = copyCredentialObj(verifiableCredential[0], 'credentialSubject');
-    response = await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, authHeader);
+    response = await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
@@ -286,7 +291,7 @@ describe('POST /api/verifyPresentation - Validation for verifiableCredential obj
 
   it('Response code should be ' + 400 + ' when issuer is not passed', async () => {
     cred = copyCredentialObj(verifiableCredential[0], 'issuer');
-    response = await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, authHeader);
+    response = await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
@@ -295,7 +300,7 @@ describe('POST /api/verifyPresentation - Validation for verifiableCredential obj
 
   it('Response code should be ' + 400 + ' when type is not passed', async () => {
     cred = copyCredentialObj(verifiableCredential[0], 'type');
-    response = await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, authHeader);
+    response = await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
@@ -304,7 +309,7 @@ describe('POST /api/verifyPresentation - Validation for verifiableCredential obj
 
   it('Response code should be ' + 400 + ' when id is not passed', async () => {
     cred = copyCredentialObj(verifiableCredential[0], 'id');
-    response = await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, authHeader);
+    response = await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
@@ -313,7 +318,7 @@ describe('POST /api/verifyPresentation - Validation for verifiableCredential obj
 
   it('Response code should be ' + 400 + ' when issuanceDate is not passed', async () => {
     cred = copyCredentialObj(verifiableCredential[0], 'issuanceDate');
-    response = await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, authHeader);
+    response = await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
@@ -322,7 +327,7 @@ describe('POST /api/verifyPresentation - Validation for verifiableCredential obj
 
   it('Response code should be ' + 400 + ' when proof is not passed', async () => {
     cred = copyCredentialObj(verifiableCredential[0], 'proof');
-    response = await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, authHeader);
+    response = await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
@@ -332,11 +337,11 @@ describe('POST /api/verifyPresentation - Validation for verifiableCredential obj
 
 describe('POST /api/verifyPresentation - Validation for proof object', () => {
   let response: hlpr.JSONObj, preReq: hlpr.JSONObj;
-  const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader } = populateMockData();
+  const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
   it('returns a 400 status code with a descriptive error message when created is missing', async () => {
     const invalidProof = { created: '', signatureValue: proof.signatureValue, type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
-    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, invalidProof, authHeader);
+    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, invalidProof, verifier, authHeader);
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
@@ -345,7 +350,7 @@ describe('POST /api/verifyPresentation - Validation for proof object', () => {
 
   it('returns a 400 status code with a descriptive error message when signatureValue is missing', async () => {
     const invlaidProof = { created: proof.created, signatureValue: '', type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
-    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, invlaidProof, authHeader);
+    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, invlaidProof, verifier, authHeader);
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
@@ -354,7 +359,7 @@ describe('POST /api/verifyPresentation - Validation for proof object', () => {
 
   it('returns a 400 status code with a descriptive error message when type is missing', async () => {
     const invalidProof = { created: proof.created, signatureValue: proof.signatureValue, type: '', verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
-    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, invalidProof, authHeader);
+    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, invalidProof, verifier, authHeader);
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
@@ -363,7 +368,7 @@ describe('POST /api/verifyPresentation - Validation for proof object', () => {
 
   it('returns a 400 status code with a descriptive error message when verificationMethod is missing', async () => {
     const invalidProof = { created: proof.created, signatureValue: proof.signatureValue, type: proof.type, verificationMethod: '', proofPurpose: proof.proofPurpose };
-    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, invalidProof, authHeader);
+    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, invalidProof, verifier, authHeader);
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);
@@ -372,7 +377,7 @@ describe('POST /api/verifyPresentation - Validation for proof object', () => {
 
   it('returns a 400 status code with a descriptive error message when proofPurpose is missing', async () => {
     const invalidProof = { created: proof.created, signatureValue: proof.signatureValue, type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: '' };
-    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, invalidProof, authHeader);
+    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, invalidProof, verifier, authHeader);
     preReq = response.body;
 
     expect(response.statusCode).toBe(400);

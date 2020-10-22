@@ -2,7 +2,7 @@ import * as express from 'express';
 import * as hlpr from 'library-issuer-verifier-utility';
 
 import { configData } from './config';
-import { UnsignedPresentation } from './types';
+import { UnsignedPresentation, Presentation } from './types';
 import { validateProof } from './validateProof';
 import { requireAuth } from './requireAuth';
 import { omit } from 'lodash';
@@ -120,9 +120,9 @@ const validateCredentialInput = (credentials: hlpr.JSONObj): hlpr.JSONObj => {
   return (retObj);
 };
 
-const validateInParams = (req: express.Request): void => {
-  const context = req.body['@context'];
-  const { type, verifiableCredential, proof, presentationRequestUuid } = req.body;
+const validatePresentation = (presentation: Presentation): void => {
+  const context = presentation['@context'];
+  const { type, verifiableCredential, proof, presentationRequestUuid } = presentation;
   let retObj: hlpr.JSONObj = {};
 
   // validate required fields
@@ -163,17 +163,28 @@ const validateInParams = (req: express.Request): void => {
   validateProof(proof);
 };
 
-export const verifyPresentation = async (req: express.Request, res: express.Response, next: express.NextFunction): Promise<void> => {
+type VerifyPresentationRequestType = express.Request<unknown, { verifiedStatus: boolean }, { presentation: Presentation, verifier: string }>;
+export const verifyPresentation = async (req: VerifyPresentationRequestType, res: express.Response, next: express.NextFunction): Promise<void> => {
   try {
     const { authorization } = req.headers;
 
     requireAuth(authorization);
 
     // Validate input Object
-    validateInParams(req);
-    const data = omit(req.body, 'proof');
+    const { presentation, verifier } = req.body;
 
-    const proof: hlpr.Proof = req.body.proof;
+    if (!presentation) {
+      throw new hlpr.CustError(400, 'presentation is required.');
+    }
+
+    if (!verifier) {
+      throw new hlpr.CustError(400, 'verifier is required.');
+    }
+
+    validatePresentation(presentation);
+    const data = omit(presentation, 'proof');
+
+    const proof: hlpr.Proof = presentation.proof;
 
     const didDocumentResponse = await hlpr.getDIDDoc(configData.SaaSUrl, authorization as string, proof.verificationMethod);
     const pubKeyObj: hlpr.PublicKeyInfo[] = hlpr.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
@@ -188,6 +199,30 @@ export const verifyPresentation = async (req: express.Request, res: express.Resp
     // verifiableCredential is an array.  As of now we are verifying the entire credential object together.  We will have to modify
     // this logic to verify each credential present separately.  We can take this up later.
     const verifiedStatus: boolean = hlpr.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
+
+    const credentialTypes = presentation.verifiableCredential.flatMap(cred => cred.type.slice(1));
+    const issuers = presentation.verifiableCredential.map(cred => cred.issuer);
+    const subject = proof.verificationMethod;
+    const receiptOptions = {
+      type: ['PresentationVerified'],
+      verifier,
+      subject,
+      data: {
+        credentialTypes,
+        issuers,
+        isVerified: verifiedStatus
+      }
+    };
+
+    const receiptCallOptions: hlpr.RESTData = {
+      method: 'POST',
+      baseUrl: configData.SaaSUrl,
+      endPoint: 'receipt',
+      header: { Authorization: authorization },
+      data: receiptOptions
+    };
+
+    await hlpr.makeRESTCall(receiptCallOptions);
 
     // Set the X-Auth-Token header alone
     res.setHeader('Content-Type', 'application/json');

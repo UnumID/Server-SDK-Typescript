@@ -29,10 +29,20 @@ export interface PresentationRequest extends SignedPresentationRequest {
   updatedAt: Date;
 }
 
+export interface VerifiableCredential {
+  ['@context']: ['https://www.w3.org/2018/credentials/v1', ...string[]];
+  credentialSubject: any;
+  issuer: string;
+  type: ['VerifiableCredential', ...string[]];
+  uuid: string;
+  issuanceDate: Date;
+  proof: Proof;
+}
+
 export interface UnsignedPresentation {
   '@context': ['https://www.w3.org/2018/credentials/v1', ...string[]];
   type: ['VerifiablePresentation', ...string[]];
-  verifiableCredential: Credential;
+  verifiableCredential: VerifiableCredential[];
   presentationRequestUuid: string;
   uuid: string;
 }

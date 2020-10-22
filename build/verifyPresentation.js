@@ -153,9 +153,9 @@ var validateCredentialInput = function (credentials) {
     }
     return (retObj);
 };
-var validateInParams = function (req) {
-    var context = req.body['@context'];
-    var _a = req.body, type = _a.type, verifiableCredential = _a.verifiableCredential, proof = _a.proof, presentationRequestUuid = _a.presentationRequestUuid;
+var validatePresentation = function (presentation) {
+    var context = presentation['@context'];
+    var type = presentation.type, verifiableCredential = presentation.verifiableCredential, proof = presentation.proof, presentationRequestUuid = presentation.presentationRequestUuid;
     var retObj = {};
     // validate required fields
     if (!context) {
@@ -187,35 +187,64 @@ var validateInParams = function (req) {
     validateProof_1.validateProof(proof);
 };
 exports.verifyPresentation = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var authorization, data, proof, didDocumentResponse, pubKeyObj, verifiedStatus, error_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
+    var authorization, _a, presentation, verifier, data, proof, didDocumentResponse, pubKeyObj, verifiedStatus, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, error_1;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
             case 0:
-                _a.trys.push([0, 2, , 3]);
+                _b.trys.push([0, 3, , 4]);
                 authorization = req.headers.authorization;
                 requireAuth_1.requireAuth(authorization);
-                // Validate input Object
-                validateInParams(req);
-                data = lodash_1.omit(req.body, 'proof');
-                proof = req.body.proof;
+                _a = req.body, presentation = _a.presentation, verifier = _a.verifier;
+                if (!presentation) {
+                    throw new hlpr.CustError(400, 'presentation is required.');
+                }
+                if (!verifier) {
+                    throw new hlpr.CustError(400, 'verifier is required.');
+                }
+                validatePresentation(presentation);
+                data = lodash_1.omit(presentation, 'proof');
+                proof = presentation.proof;
                 return [4 /*yield*/, hlpr.getDIDDoc(config_1.configData.SaaSUrl, authorization, proof.verificationMethod)];
             case 1:
-                didDocumentResponse = _a.sent();
+                didDocumentResponse = _b.sent();
                 pubKeyObj = hlpr.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 if (pubKeyObj.length === 0) {
                     throw new hlpr.CustError(401, 'Public key not found for the DID');
                 }
                 verifiedStatus = hlpr.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
+                credentialTypes = presentation.verifiableCredential.flatMap(function (cred) { return cred.type.slice(1); });
+                issuers = presentation.verifiableCredential.map(function (cred) { return cred.issuer; });
+                subject = proof.verificationMethod;
+                receiptOptions = {
+                    type: ['PresentationVerified'],
+                    verifier: verifier,
+                    subject: subject,
+                    data: {
+                        credentialTypes: credentialTypes,
+                        issuers: issuers,
+                        isVerified: verifiedStatus
+                    }
+                };
+                receiptCallOptions = {
+                    method: 'POST',
+                    baseUrl: config_1.configData.SaaSUrl,
+                    endPoint: 'receipt',
+                    header: { Authorization: authorization },
+                    data: receiptOptions
+                };
+                return [4 /*yield*/, hlpr.makeRESTCall(receiptCallOptions)];
+            case 2:
+                _b.sent();
                 // Set the X-Auth-Token header alone
                 res.setHeader('Content-Type', 'application/json');
                 res.setHeader('x-auth-token', didDocumentResponse.headers['x-auth-token']);
                 res.send({ verifiedStatus: verifiedStatus });
-                return [3 /*break*/, 3];
-            case 2:
-                error_1 = _a.sent();
+                return [3 /*break*/, 4];
+            case 3:
+                error_1 = _b.sent();
                 next(error_1);
-                return [3 /*break*/, 3];
-            case 3: return [2 /*return*/];
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
         }
     });
 }); };
