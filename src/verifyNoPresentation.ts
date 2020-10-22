@@ -1,5 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
-import { CustError, getKeyFromDIDDoc, doVerify, getDIDDoc } from 'library-issuer-verifier-utility';
+import {
+  CustError,
+  getKeyFromDIDDoc,
+  doVerify,
+  getDIDDoc,
+  makeRESTCall,
+  RESTData
+} from 'library-issuer-verifier-utility';
 import { omit } from 'lodash';
 
 import { NoPresentation } from './types';
@@ -48,7 +55,7 @@ export const validateNoPresentationParams = (noPresentation: NoPresentation): vo
 
 export const verifyNoPresentation = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const noPresentation = req.body;
+    const { noPresentation, verifier } = req.body;
 
     const { authorization } = req.headers;
 
@@ -66,6 +73,25 @@ export const verifyNoPresentation = async (req: Request, res: Response, next: Ne
     const unsignedNoPresentation = omit(noPresentation, 'proof');
 
     const isVerified = doVerify(signatureValue, unsignedNoPresentation, publicKey, encoding);
+
+    const receiptOptions = {
+      type: noPresentation.type,
+      verifier,
+      subject: noPresentation.holder,
+      data: {
+        isVerified
+      }
+    };
+
+    const receiptCallOptions: RESTData = {
+      method: 'POST',
+      baseUrl: configData.SaaSUrl,
+      endPoint: 'receipt',
+      header: { Authorization: authorization },
+      data: receiptOptions
+    };
+
+    await makeRESTCall(receiptCallOptions);
 
     res.setHeader('x-auth-token', didDocumentResponse.headers['x-auth-token']);
     res.send({ isVerified });

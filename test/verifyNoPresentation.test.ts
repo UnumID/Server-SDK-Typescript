@@ -7,13 +7,14 @@ import { NoPresentation } from '../src/types';
 import * as hlpr from 'library-issuer-verifier-utility';
 
 const callVerifyNoPresentation = (
-  data: NoPresentation,
+  noPresentation: NoPresentation,
+  verifier: string,
   authHeader?: string
 ): Promise<Record<string, any>> => {
   return supertest(app)
     .post('/api/verifyNoPresentation')
     .set('Authorization', authHeader)
-    .send(data);
+    .send({ noPresentation, verifier });
 };
 
 const dummyNoPresentation: NoPresentation = {
@@ -43,6 +44,7 @@ const dummyNoPresentationBadHolder = { ...dummyNoPresentation, holder: {} } as N
 const dummyNoPresentationBadProof = { ...dummyNoPresentation, proof: {} } as NoPresentation;
 
 const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
+const verifier = 'did:unum:dd407b1a-ee7f-46a2-af2a-ccbb48cbb0dc';
 
 describe('POST /api/verifyNoPresentation', () => {
   let getDidSpy: jest.SpyInstance;
@@ -61,7 +63,7 @@ describe('POST /api/verifyNoPresentation', () => {
     let response;
 
     beforeEach(async () => {
-      response = await callVerifyNoPresentation(dummyNoPresentation, authHeader);
+      response = await callVerifyNoPresentation(dummyNoPresentation, verifier, authHeader);
     });
 
     it('gets the holder did', () => {
@@ -83,54 +85,54 @@ describe('POST /api/verifyNoPresentation', () => {
 
   describe('error', () => {
     it('returns a 401 status code if the x-auth-token header is missing', async () => {
-      const response = await callVerifyNoPresentation(dummyNoPresentation, '');
+      const response = await callVerifyNoPresentation(dummyNoPresentation, verifier, '');
       expect(response.statusCode).toEqual(401);
     });
 
     it('returns a 400 status code with a descriptive error message if type is missing', async () => {
-      const response = await callVerifyNoPresentation(dummyNoPresentationWithoutType, authHeader);
+      const response = await callVerifyNoPresentation(dummyNoPresentationWithoutType, verifier, authHeader);
       expect(response.statusCode).toEqual(400);
       expect(response.body.message).toEqual('type is required.');
     });
 
     it('returns a 400 status code with a descriptive error message if proof is missing', async () => {
-      const response = await callVerifyNoPresentation(dummyNoPresentationWithoutProof, authHeader);
+      const response = await callVerifyNoPresentation(dummyNoPresentationWithoutProof, verifier, authHeader);
       expect(response.statusCode).toEqual(400);
       expect(response.body.message).toEqual('proof is required.');
     });
 
     it('returns a 400 status code with a descriptive error message if holder is missing', async () => {
-      const response = await callVerifyNoPresentation(dummyNoPresentationWithoutHolder, authHeader);
+      const response = await callVerifyNoPresentation(dummyNoPresentationWithoutHolder, verifier, authHeader);
       expect(response.statusCode).toEqual(400);
       expect(response.body.message).toEqual('holder is required.');
     });
 
     it('returns a 400 status code with a descriptive error message if presentationRequestUuid is missing', async () => {
-      const response = await callVerifyNoPresentation(dummyNoPresentationWithoutRequestUuid, authHeader);
+      const response = await callVerifyNoPresentation(dummyNoPresentationWithoutRequestUuid, verifier, authHeader);
       expect(response.statusCode).toEqual(400);
       expect(response.body.message).toEqual('presentationRequestUuid is required.');
     });
 
     it('returns a 400 status code with a descriptive error message if type is invalid', async () => {
-      const response = await callVerifyNoPresentation(dummyNoPresentationBadType, authHeader);
+      const response = await callVerifyNoPresentation(dummyNoPresentationBadType, verifier, authHeader);
       expect(response.statusCode).toEqual(400);
       expect(response.body.message).toEqual('Invalid type: first element must be \'NoPresentation\'.');
     });
 
     it('returns a 400 status code with a descriptive error message if holder is invalid', async () => {
-      const response = await callVerifyNoPresentation(dummyNoPresentationBadHolder, authHeader);
+      const response = await callVerifyNoPresentation(dummyNoPresentationBadHolder, verifier, authHeader);
       expect(response.statusCode).toEqual(400);
       expect(response.body.message).toEqual('Invalid holder: must be a string.');
     });
 
     it('returns a 400 status code with a descriptive error message if presentationRequestUuid is invalid', async () => {
-      const response = await callVerifyNoPresentation(dummyNoPresentationBadRequestUuid, authHeader);
+      const response = await callVerifyNoPresentation(dummyNoPresentationBadRequestUuid, verifier, authHeader);
       expect(response.statusCode).toEqual(400);
       expect(response.body.message).toEqual('Invalid presentationRequestUuid: must be a string.');
     });
 
     it('returns a 400 status code if proof is invalid', async () => {
-      const response = await callVerifyNoPresentation(dummyNoPresentationBadProof, authHeader);
+      const response = await callVerifyNoPresentation(dummyNoPresentationBadProof, verifier, authHeader);
       expect(response.statusCode).toEqual(400);
     });
   });

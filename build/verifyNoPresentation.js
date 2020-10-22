@@ -68,31 +68,49 @@ exports.validateNoPresentationParams = function (noPresentation) {
     validateProof_1.validateProof(proof);
 };
 exports.verifyNoPresentation = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var noPresentation, authorization, _a, verificationMethod, signatureValue, didDocumentResponse, publicKeyInfos, _b, publicKey, encoding, unsignedNoPresentation, isVerified, e_1;
-    return __generator(this, function (_c) {
-        switch (_c.label) {
+    var _a, noPresentation, verifier, authorization, _b, verificationMethod, signatureValue, didDocumentResponse, publicKeyInfos, _c, publicKey, encoding, unsignedNoPresentation, isVerified, receiptOptions, receiptCallOptions, e_1;
+    return __generator(this, function (_d) {
+        switch (_d.label) {
             case 0:
-                _c.trys.push([0, 2, , 3]);
-                noPresentation = req.body;
+                _d.trys.push([0, 3, , 4]);
+                _a = req.body, noPresentation = _a.noPresentation, verifier = _a.verifier;
                 authorization = req.headers.authorization;
                 requireAuth_1.requireAuth(authorization);
                 exports.validateNoPresentationParams(noPresentation);
-                _a = noPresentation.proof, verificationMethod = _a.verificationMethod, signatureValue = _a.signatureValue;
+                _b = noPresentation.proof, verificationMethod = _b.verificationMethod, signatureValue = _b.signatureValue;
                 return [4 /*yield*/, library_issuer_verifier_utility_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, verificationMethod)];
             case 1:
-                didDocumentResponse = _c.sent();
+                didDocumentResponse = _d.sent();
                 publicKeyInfos = library_issuer_verifier_utility_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
-                _b = publicKeyInfos[0], publicKey = _b.publicKey, encoding = _b.encoding;
+                _c = publicKeyInfos[0], publicKey = _c.publicKey, encoding = _c.encoding;
                 unsignedNoPresentation = lodash_1.omit(noPresentation, 'proof');
                 isVerified = library_issuer_verifier_utility_1.doVerify(signatureValue, unsignedNoPresentation, publicKey, encoding);
+                receiptOptions = {
+                    type: noPresentation.type,
+                    verifier: verifier,
+                    subject: noPresentation.holder,
+                    data: {
+                        isVerified: isVerified
+                    }
+                };
+                receiptCallOptions = {
+                    method: 'POST',
+                    baseUrl: config_1.configData.SaaSUrl,
+                    endPoint: 'receipt',
+                    header: { Authorization: authorization },
+                    data: receiptOptions
+                };
+                return [4 /*yield*/, library_issuer_verifier_utility_1.makeRESTCall(receiptCallOptions)];
+            case 2:
+                _d.sent();
                 res.setHeader('x-auth-token', didDocumentResponse.headers['x-auth-token']);
                 res.send({ isVerified: isVerified });
-                return [3 /*break*/, 3];
-            case 2:
-                e_1 = _c.sent();
+                return [3 /*break*/, 4];
+            case 3:
+                e_1 = _d.sent();
                 next(e_1);
-                return [3 /*break*/, 3];
-            case 3: return [2 /*return*/];
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
         }
     });
 }); };
