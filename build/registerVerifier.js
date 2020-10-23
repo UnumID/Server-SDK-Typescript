@@ -87,17 +87,17 @@ var validateInParams = function (req) {
     }
 };
 exports.registerVerifier = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, name_1, customerUuid, url, kpSet, verifierOpt, restData, restResp, verifierResp, error_1;
+    var _a, name, customerUuid, url, kpSet, verifierOpt, restData, restResp, verifierResp, error_1;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
                 _b.trys.push([0, 3, , 4]);
                 validateInParams(req);
-                _a = req.body, name_1 = _a.name, customerUuid = _a.customerUuid, url = _a.url;
+                _a = req.body, name = _a.name, customerUuid = _a.customerUuid, url = _a.url;
                 return [4 /*yield*/, hlpr.createToken()];
             case 1:
                 kpSet = _b.sent();
-                verifierOpt = { name: name_1, customerUuid: customerUuid, url: url, publicKeyInfo: constructKeyObjs(kpSet) };
+                verifierOpt = { name: name, customerUuid: customerUuid, url: url, publicKeyInfo: constructKeyObjs(kpSet) };
                 restData = {
                     method: 'POST',
                     baseUrl: config_1.configData.SaaSUrl,

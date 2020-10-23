@@ -1,11 +1,12 @@
 import * as express from 'express';
 import * as hlpr from 'library-issuer-verifier-utility';
+import { omit } from 'lodash';
 
 import { configData } from './config';
-import { UnsignedPresentation, Presentation } from './types';
+import { UnsignedPresentation, Presentation, VerifiableCredential } from './types';
 import { validateProof } from './validateProof';
 import { requireAuth } from './requireAuth';
-import { omit } from 'lodash';
+import { verifyCredential } from './verifyCredential';
 
 const isNotAnEmptyArray = (paramValue: any): boolean => {
   if (!Array.isArray(paramValue)) {
@@ -198,7 +199,19 @@ export const verifyPresentation = async (req: VerifyPresentationRequestType, res
     // The same scenario would be handled later.
     // verifiableCredential is an array.  As of now we are verifying the entire credential object together.  We will have to modify
     // this logic to verify each credential present separately.  We can take this up later.
-    const verifiedStatus: boolean = hlpr.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
+    const isPresentationVerified: boolean = hlpr.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
+
+    let areCredentialsVerified = true;
+
+    for (const credential of presentation.verifiableCredential) {
+      const isVerified = await verifyCredential(credential, authorization as string);
+      if (!isVerified) {
+        areCredentialsVerified = false;
+        break;
+      }
+    }
+
+    const verifiedStatus = isPresentationVerified && areCredentialsVerified;
 
     const credentialTypes = presentation.verifiableCredential.flatMap(cred => cred.type.slice(1));
     const issuers = presentation.verifiableCredential.map(cred => cred.issuer);

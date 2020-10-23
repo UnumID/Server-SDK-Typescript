@@ -57,10 +57,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyPresentation = void 0;
 var hlpr = __importStar(require("library-issuer-verifier-utility"));
+var lodash_1 = require("lodash");
 var config_1 = require("./config");
 var validateProof_1 = require("./validateProof");
 var requireAuth_1 = require("./requireAuth");
-var lodash_1 = require("lodash");
+var verifyCredential_1 = require("./verifyCredential");
 var isNotAnEmptyArray = function (paramValue) {
     if (!Array.isArray(paramValue)) {
         return (false);
@@ -187,11 +188,11 @@ var validatePresentation = function (presentation) {
     validateProof_1.validateProof(proof);
 };
 exports.verifyPresentation = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var authorization, _a, presentation, verifier, data, proof, didDocumentResponse, pubKeyObj, verifiedStatus, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, error_1;
-    return __generator(this, function (_b) {
-        switch (_b.label) {
+    var authorization, _a, presentation, verifier, data, proof, didDocumentResponse, pubKeyObj, isPresentationVerified, areCredentialsVerified, _i, _b, credential, isVerified, verifiedStatus, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, error_1;
+    return __generator(this, function (_c) {
+        switch (_c.label) {
             case 0:
-                _b.trys.push([0, 3, , 4]);
+                _c.trys.push([0, 7, , 8]);
                 authorization = req.headers.authorization;
                 requireAuth_1.requireAuth(authorization);
                 _a = req.body, presentation = _a.presentation, verifier = _a.verifier;
@@ -206,12 +207,31 @@ exports.verifyPresentation = function (req, res, next) { return __awaiter(void 0
                 proof = presentation.proof;
                 return [4 /*yield*/, hlpr.getDIDDoc(config_1.configData.SaaSUrl, authorization, proof.verificationMethod)];
             case 1:
-                didDocumentResponse = _b.sent();
+                didDocumentResponse = _c.sent();
                 pubKeyObj = hlpr.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 if (pubKeyObj.length === 0) {
                     throw new hlpr.CustError(401, 'Public key not found for the DID');
                 }
-                verifiedStatus = hlpr.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
+                isPresentationVerified = hlpr.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
+                areCredentialsVerified = true;
+                _i = 0, _b = presentation.verifiableCredential;
+                _c.label = 2;
+            case 2:
+                if (!(_i < _b.length)) return [3 /*break*/, 5];
+                credential = _b[_i];
+                return [4 /*yield*/, verifyCredential_1.verifyCredential(credential, authorization)];
+            case 3:
+                isVerified = _c.sent();
+                if (!isVerified) {
+                    areCredentialsVerified = false;
+                    return [3 /*break*/, 5];
+                }
+                _c.label = 4;
+            case 4:
+                _i++;
+                return [3 /*break*/, 2];
+            case 5:
+                verifiedStatus = isPresentationVerified && areCredentialsVerified;
                 credentialTypes = presentation.verifiableCredential.flatMap(function (cred) { return cred.type.slice(1); });
                 issuers = presentation.verifiableCredential.map(function (cred) { return cred.issuer; });
                 subject = proof.verificationMethod;
@@ -233,18 +253,18 @@ exports.verifyPresentation = function (req, res, next) { return __awaiter(void 0
                     data: receiptOptions
                 };
                 return [4 /*yield*/, hlpr.makeRESTCall(receiptCallOptions)];
-            case 2:
-                _b.sent();
+            case 6:
+                _c.sent();
                 // Set the X-Auth-Token header alone
                 res.setHeader('Content-Type', 'application/json');
                 res.setHeader('x-auth-token', didDocumentResponse.headers['x-auth-token']);
                 res.send({ verifiedStatus: verifiedStatus });
-                return [3 /*break*/, 4];
-            case 3:
-                error_1 = _b.sent();
+                return [3 /*break*/, 8];
+            case 7:
+                error_1 = _c.sent();
                 next(error_1);
-                return [3 /*break*/, 4];
-            case 4: return [2 /*return*/];
+                return [3 /*break*/, 8];
+            case 8: return [2 /*return*/];
         }
     });
 }); };

@@ -31,10 +31,11 @@ export interface PresentationRequest extends SignedPresentationRequest {
 
 export interface VerifiableCredential {
   ['@context']: ['https://www.w3.org/2018/credentials/v1', ...string[]];
+  id: string;
   credentialSubject: any;
+  credentialStatus: { id: string, type: string };
   issuer: string;
   type: ['VerifiableCredential', ...string[]];
-  uuid: string;
   issuanceDate: Date;
   proof: Proof;
 }

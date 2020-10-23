@@ -2,6 +2,8 @@ import request from 'supertest';
 
 import * as hlpr from 'library-issuer-verifier-utility';
 import { app } from '../src/index';
+import { configData } from '../src/config';
+import * as verifyCredentialModule from '../src/verifyCredential';
 
 const callVerifyPresentation = (context, type, verifiableCredential, presentationRequestUuid, proof, verifier, auth = ''): Promise<hlpr.JSONObj> => {
   const presentation = {
@@ -95,11 +97,13 @@ describe('POST /api/verifyPresentation - Success Scenario', () => {
   let verifySpy;
   let response: hlpr.JSONObj;
   let verStatus;
+  let verifyCredentialSpy;
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
   beforeAll(async () => {
     getDidSpy = jest.spyOn(hlpr, 'getKeyFromDIDDoc', 'get');
     verifySpy = jest.spyOn(hlpr, 'doVerify', 'get');
+    verifyCredentialSpy = jest.spyOn(verifyCredentialModule, 'verifyCredential');
 
     response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
     verStatus = response.body.verifiedStatus;
@@ -112,6 +116,12 @@ describe('POST /api/verifyPresentation - Success Scenario', () => {
   it('Verify the presentation object by calling the api', () => {
     expect(getDidSpy).toBeCalled();
     expect(verifySpy).toBeCalled();
+  });
+
+  it('verifies each credential', () => {
+    verifiableCredential.forEach((vc) => {
+      expect(verifyCredentialSpy).toBeCalledWith(vc, authHeader);
+    });
   });
 
   it('Response status code should be 200', () => {
