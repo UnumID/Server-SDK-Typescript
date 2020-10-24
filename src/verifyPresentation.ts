@@ -3,11 +3,12 @@ import * as hlpr from 'library-issuer-verifier-utility';
 import { omit } from 'lodash';
 
 import { configData } from './config';
-import { UnsignedPresentation, Presentation, VerifiableCredential } from './types';
+import { Presentation } from './types';
 import { validateProof } from './validateProof';
 import { requireAuth } from './requireAuth';
 import { verifyCredential } from './verifyCredential';
 import { isCredentialExpired } from './isCredentialExpired';
+import { checkCredentialStatus } from './checkCredentialStatus';
 
 const isNotAnEmptyArray = (paramValue: any): boolean => {
   if (!Array.isArray(paramValue)) {
@@ -208,6 +209,13 @@ export const verifyPresentation = async (req: VerifyPresentationRequestType, res
       const isExpired = isCredentialExpired(credential);
 
       if (isExpired) {
+        areCredentialsValid = false;
+        break;
+      }
+
+      const isStatusValid = await checkCredentialStatus(credential);
+
+      if (!isStatusValid) {
         areCredentialsValid = false;
         break;
       }

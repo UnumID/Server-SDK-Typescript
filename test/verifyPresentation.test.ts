@@ -2,9 +2,9 @@ import request from 'supertest';
 
 import * as hlpr from 'library-issuer-verifier-utility';
 import { app } from '../src/index';
-import { configData } from '../src/config';
 import * as verifyCredentialModule from '../src/verifyCredential';
 import * as isCredentialExpiredModule from '../src/isCredentialExpired';
+import * as checkCredentialStatusModule from '../src/checkCredentialStatus';
 
 const callVerifyPresentation = (context, type, verifiableCredential, presentationRequestUuid, proof, verifier, auth = ''): Promise<hlpr.JSONObj> => {
   const presentation = {
@@ -100,6 +100,7 @@ describe('POST /api/verifyPresentation - Success Scenario', () => {
   let verStatus;
   let verifyCredentialSpy;
   let isExpiredSpy;
+  let checkStatusSpy;
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
   beforeAll(async () => {
@@ -107,6 +108,7 @@ describe('POST /api/verifyPresentation - Success Scenario', () => {
     verifySpy = jest.spyOn(hlpr, 'doVerify', 'get');
     verifyCredentialSpy = jest.spyOn(verifyCredentialModule, 'verifyCredential');
     isExpiredSpy = jest.spyOn(isCredentialExpiredModule, 'isCredentialExpired');
+    checkStatusSpy = jest.spyOn(checkCredentialStatusModule, 'checkCredentialStatus');
 
     response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
     verStatus = response.body.verifiedStatus;
@@ -130,6 +132,12 @@ describe('POST /api/verifyPresentation - Success Scenario', () => {
   it('checks if each credential is expired', () => {
     verifiableCredential.forEach((vc) => {
       expect(isExpiredSpy).toBeCalledWith(vc);
+    });
+  });
+
+  it('checks the status of each credential', () => {
+    verifiableCredential.forEach((vc) => {
+      expect(checkStatusSpy).toBeCalledWith(vc);
     });
   });
 

@@ -89,3 +89,11 @@ export interface PresentationRequestResponse {
   deeplink: string;
   qrCode: string;
 }
+
+export interface CredentialStatus {
+  uuid: string;
+  createdAt: Date;
+  updatedAt: Date;
+  credentialId: string;
+  status: 'valid' | 'revoked';
+}

@@ -63,6 +63,7 @@ var validateProof_1 = require("./validateProof");
 var requireAuth_1 = require("./requireAuth");
 var verifyCredential_1 = require("./verifyCredential");
 var isCredentialExpired_1 = require("./isCredentialExpired");
+var checkCredentialStatus_1 = require("./checkCredentialStatus");
 var isNotAnEmptyArray = function (paramValue) {
     if (!Array.isArray(paramValue)) {
         return (false);
@@ -189,11 +190,11 @@ var validatePresentation = function (presentation) {
     validateProof_1.validateProof(proof);
 };
 exports.verifyPresentation = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var authorization, _a, presentation, verifier, data, proof, didDocumentResponse, pubKeyObj, isPresentationVerified, areCredentialsValid, _i, _b, credential, isExpired, isVerified, verifiedStatus, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, error_1;
+    var authorization, _a, presentation, verifier, data, proof, didDocumentResponse, pubKeyObj, isPresentationVerified, areCredentialsValid, _i, _b, credential, isExpired, isStatusValid, isVerified, verifiedStatus, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, error_1;
     return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
-                _c.trys.push([0, 7, , 8]);
+                _c.trys.push([0, 8, , 9]);
                 authorization = req.headers.authorization;
                 requireAuth_1.requireAuth(authorization);
                 _a = req.body, presentation = _a.presentation, verifier = _a.verifier;
@@ -218,25 +219,32 @@ exports.verifyPresentation = function (req, res, next) { return __awaiter(void 0
                 _i = 0, _b = presentation.verifiableCredential;
                 _c.label = 2;
             case 2:
-                if (!(_i < _b.length)) return [3 /*break*/, 5];
+                if (!(_i < _b.length)) return [3 /*break*/, 6];
                 credential = _b[_i];
                 isExpired = isCredentialExpired_1.isCredentialExpired(credential);
                 if (isExpired) {
                     areCredentialsValid = false;
-                    return [3 /*break*/, 5];
+                    return [3 /*break*/, 6];
+                }
+                return [4 /*yield*/, checkCredentialStatus_1.checkCredentialStatus(credential)];
+            case 3:
+                isStatusValid = _c.sent();
+                if (!isStatusValid) {
+                    areCredentialsValid = false;
+                    return [3 /*break*/, 6];
                 }
                 return [4 /*yield*/, verifyCredential_1.verifyCredential(credential, authorization)];
-            case 3:
+            case 4:
                 isVerified = _c.sent();
                 if (!isVerified) {
                     areCredentialsValid = false;
-                    return [3 /*break*/, 5];
+                    return [3 /*break*/, 6];
                 }
-                _c.label = 4;
-            case 4:
+                _c.label = 5;
+            case 5:
                 _i++;
                 return [3 /*break*/, 2];
-            case 5:
+            case 6:
                 verifiedStatus = isPresentationVerified && areCredentialsValid;
                 credentialTypes = presentation.verifiableCredential.flatMap(function (cred) { return cred.type.slice(1); });
                 issuers = presentation.verifiableCredential.map(function (cred) { return cred.issuer; });
@@ -259,18 +267,18 @@ exports.verifyPresentation = function (req, res, next) { return __awaiter(void 0
                     data: receiptOptions
                 };
                 return [4 /*yield*/, hlpr.makeRESTCall(receiptCallOptions)];
-            case 6:
+            case 7:
                 _c.sent();
                 // Set the X-Auth-Token header alone
                 res.setHeader('Content-Type', 'application/json');
                 res.setHeader('x-auth-token', didDocumentResponse.headers['x-auth-token']);
                 res.send({ verifiedStatus: verifiedStatus });
-                return [3 /*break*/, 8];
-            case 7:
+                return [3 /*break*/, 9];
+            case 8:
                 error_1 = _c.sent();
                 next(error_1);
-                return [3 /*break*/, 8];
-            case 8: return [2 /*return*/];
+                return [3 /*break*/, 9];
+            case 9: return [2 /*return*/];
         }
     });
 }); };
