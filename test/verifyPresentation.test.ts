@@ -4,6 +4,7 @@ import * as hlpr from 'library-issuer-verifier-utility';
 import { app } from '../src/index';
 import { configData } from '../src/config';
 import * as verifyCredentialModule from '../src/verifyCredential';
+import * as isCredentialExpiredModule from '../src/isCredentialExpired';
 
 const callVerifyPresentation = (context, type, verifiableCredential, presentationRequestUuid, proof, verifier, auth = ''): Promise<hlpr.JSONObj> => {
   const presentation = {
@@ -98,12 +99,14 @@ describe('POST /api/verifyPresentation - Success Scenario', () => {
   let response: hlpr.JSONObj;
   let verStatus;
   let verifyCredentialSpy;
+  let isExpiredSpy;
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
   beforeAll(async () => {
     getDidSpy = jest.spyOn(hlpr, 'getKeyFromDIDDoc', 'get');
     verifySpy = jest.spyOn(hlpr, 'doVerify', 'get');
     verifyCredentialSpy = jest.spyOn(verifyCredentialModule, 'verifyCredential');
+    isExpiredSpy = jest.spyOn(isCredentialExpiredModule, 'isCredentialExpired');
 
     response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
     verStatus = response.body.verifiedStatus;
@@ -121,6 +124,12 @@ describe('POST /api/verifyPresentation - Success Scenario', () => {
   it('verifies each credential', () => {
     verifiableCredential.forEach((vc) => {
       expect(verifyCredentialSpy).toBeCalledWith(vc, authHeader);
+    });
+  });
+
+  it('checks if each credential is expired', () => {
+    verifiableCredential.forEach((vc) => {
+      expect(isExpiredSpy).toBeCalledWith(vc);
     });
   });
 

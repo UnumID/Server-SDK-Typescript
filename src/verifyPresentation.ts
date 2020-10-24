@@ -7,6 +7,7 @@ import { UnsignedPresentation, Presentation, VerifiableCredential } from './type
 import { validateProof } from './validateProof';
 import { requireAuth } from './requireAuth';
 import { verifyCredential } from './verifyCredential';
+import { isCredentialExpired } from './isCredentialExpired';
 
 const isNotAnEmptyArray = (paramValue: any): boolean => {
   if (!Array.isArray(paramValue)) {
@@ -201,17 +202,24 @@ export const verifyPresentation = async (req: VerifyPresentationRequestType, res
     // this logic to verify each credential present separately.  We can take this up later.
     const isPresentationVerified: boolean = hlpr.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
 
-    let areCredentialsVerified = true;
+    let areCredentialsValid = true;
 
     for (const credential of presentation.verifiableCredential) {
+      const isExpired = isCredentialExpired(credential);
+
+      if (isExpired) {
+        areCredentialsValid = false;
+        break;
+      }
+
       const isVerified = await verifyCredential(credential, authorization as string);
       if (!isVerified) {
-        areCredentialsVerified = false;
+        areCredentialsValid = false;
         break;
       }
     }
 
-    const verifiedStatus = isPresentationVerified && areCredentialsVerified;
+    const verifiedStatus = isPresentationVerified && areCredentialsValid;
 
     const credentialTypes = presentation.verifiableCredential.flatMap(cred => cred.type.slice(1));
     const issuers = presentation.verifiableCredential.map(cred => cred.issuer);

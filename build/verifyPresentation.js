@@ -62,6 +62,7 @@ var config_1 = require("./config");
 var validateProof_1 = require("./validateProof");
 var requireAuth_1 = require("./requireAuth");
 var verifyCredential_1 = require("./verifyCredential");
+var isCredentialExpired_1 = require("./isCredentialExpired");
 var isNotAnEmptyArray = function (paramValue) {
     if (!Array.isArray(paramValue)) {
         return (false);
@@ -188,7 +189,7 @@ var validatePresentation = function (presentation) {
     validateProof_1.validateProof(proof);
 };
 exports.verifyPresentation = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var authorization, _a, presentation, verifier, data, proof, didDocumentResponse, pubKeyObj, isPresentationVerified, areCredentialsVerified, _i, _b, credential, isVerified, verifiedStatus, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, error_1;
+    var authorization, _a, presentation, verifier, data, proof, didDocumentResponse, pubKeyObj, isPresentationVerified, areCredentialsValid, _i, _b, credential, isExpired, isVerified, verifiedStatus, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, error_1;
     return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
@@ -213,17 +214,22 @@ exports.verifyPresentation = function (req, res, next) { return __awaiter(void 0
                     throw new hlpr.CustError(401, 'Public key not found for the DID');
                 }
                 isPresentationVerified = hlpr.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
-                areCredentialsVerified = true;
+                areCredentialsValid = true;
                 _i = 0, _b = presentation.verifiableCredential;
                 _c.label = 2;
             case 2:
                 if (!(_i < _b.length)) return [3 /*break*/, 5];
                 credential = _b[_i];
+                isExpired = isCredentialExpired_1.isCredentialExpired(credential);
+                if (isExpired) {
+                    areCredentialsValid = false;
+                    return [3 /*break*/, 5];
+                }
                 return [4 /*yield*/, verifyCredential_1.verifyCredential(credential, authorization)];
             case 3:
                 isVerified = _c.sent();
                 if (!isVerified) {
-                    areCredentialsVerified = false;
+                    areCredentialsValid = false;
                     return [3 /*break*/, 5];
                 }
                 _c.label = 4;
@@ -231,7 +237,7 @@ exports.verifyPresentation = function (req, res, next) { return __awaiter(void 0
                 _i++;
                 return [3 /*break*/, 2];
             case 5:
-                verifiedStatus = isPresentationVerified && areCredentialsVerified;
+                verifiedStatus = isPresentationVerified && areCredentialsValid;
                 credentialTypes = presentation.verifiableCredential.flatMap(function (cred) { return cred.type.slice(1); });
                 issuers = presentation.verifiableCredential.map(function (cred) { return cred.issuer; });
                 subject = proof.verificationMethod;

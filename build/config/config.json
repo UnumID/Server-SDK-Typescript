@@ -1,4 +1,5 @@
 {
     "port": "8080",
-    "SaaSUrl": "https://api.dev-unumid.org/"
+    "SaaSUrl": "https://api.dev-unumid.org/",
+    "IssuerAppUrl": "https://issuer.dev-unumid.org/"
 }

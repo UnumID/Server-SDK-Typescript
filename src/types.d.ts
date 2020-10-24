@@ -37,6 +37,7 @@ export interface VerifiableCredential {
   issuer: string;
   type: ['VerifiableCredential', ...string[]];
   issuanceDate: Date;
+  expirationDate?: Date;
   proof: Proof;
 }
 
