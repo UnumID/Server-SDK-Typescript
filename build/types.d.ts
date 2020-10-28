@@ -11,12 +11,20 @@ export interface CredentialRequest {
   required?: boolean;
 }
 
-export interface UnsignedPresentationRequest {
-  verifier: string;
+export interface PresentationRequestParams {
   credentialRequests: CredentialRequest[];
-  metadata?: any;
   expiresAt?: Date;
   holderAppUuid: string;
+  metadata?: any;
+  verifier: string;
+}
+
+export interface SendRequestReqBody extends PresentationRequestParams {
+  eccPrivateKey: string;
+}
+
+export interface UnsignedPresentationRequest extends PresentationRequestParams {
+  uuid: string;
 }
 
 export interface SignedPresentationRequest extends UnsignedPresentationRequest {
@@ -24,7 +32,6 @@ export interface SignedPresentationRequest extends UnsignedPresentationRequest {
 }
 
 export interface PresentationRequest extends SignedPresentationRequest {
-  uuid: string;
   createdAt: Date;
   updatedAt: Date;
 }

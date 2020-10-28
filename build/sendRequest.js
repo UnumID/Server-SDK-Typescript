@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
@@ -55,12 +66,32 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendRequest = void 0;
+exports.sendRequest = exports.constructSignedPresentationRequest = exports.constructUnsignedPresentationRequest = void 0;
 var hlpr = __importStar(require("library-issuer-verifier-utility"));
 var config_1 = require("./config");
 var requireAuth_1 = require("./requireAuth");
-var validateInParams = function (req) {
-    var _a = req.body, verifier = _a.verifier, credentialRequests = _a.credentialRequests, metadata = _a.metadata, expiresAt = _a.expiresAt, eccPrivateKey = _a.eccPrivateKey, holderAppUuid = _a.holderAppUuid;
+// constructs an unsigned PresentationRequest from the incoming request body
+exports.constructUnsignedPresentationRequest = function (reqBody) {
+    var verifier = reqBody.verifier, holderAppUuid = reqBody.holderAppUuid, credentialRequests = reqBody.credentialRequests, metadata = reqBody.metadata, expiresAt = reqBody.expiresAt;
+    var uuid = hlpr.getUUID();
+    return {
+        credentialRequests: credentialRequests,
+        expiresAt: expiresAt,
+        holderAppUuid: holderAppUuid,
+        metadata: metadata,
+        uuid: uuid,
+        verifier: verifier
+    };
+};
+// signs an unsigned PresentationRequest and attaches the resulting Proof
+exports.constructSignedPresentationRequest = function (unsignedPresentationRequest, privateKey) {
+    var proof = hlpr.createProof(unsignedPresentationRequest, privateKey, unsignedPresentationRequest.verifier, 'pem');
+    var signedPresentationRequest = __assign(__assign({}, unsignedPresentationRequest), { proof: proof });
+    return signedPresentationRequest;
+};
+// validates incoming request body
+var validateSendRequestBody = function (sendRequestBody) {
+    var verifier = sendRequestBody.verifier, credentialRequests = sendRequestBody.credentialRequests, eccPrivateKey = sendRequestBody.eccPrivateKey, holderAppUuid = sendRequestBody.holderAppUuid;
     if (!verifier) {
         throw new hlpr.CustError(400, 'Invalid PresentationRequest options: verifier is required.');
     }
@@ -101,8 +132,8 @@ var validateInParams = function (req) {
         if (totIssuers === 0) {
             throw new hlpr.CustError(400, 'Invalid credentialRequest: issuers array must not be empty.');
         }
-        for (var _i = 0, _b = credentialRequest.issuers; _i < _b.length; _i++) {
-            var issuer = _b[_i];
+        for (var _i = 0, _a = credentialRequest.issuers; _i < _a.length; _i++) {
+            var issuer = _a[_i];
             if (typeof issuer !== 'string') {
                 throw new hlpr.CustError(400, 'Invalid issuer: must be a string.');
             }
@@ -112,37 +143,20 @@ var validateInParams = function (req) {
     if (!eccPrivateKey) {
         throw new hlpr.CustError(400, 'Invalid PresentationRequest options: eccPrivateKey is required.');
     }
-    var unsignedPR = {
-        verifier: verifier,
-        credentialRequests: credentialRequests,
-        metadata: metadata,
-        expiresAt: expiresAt,
-        holderAppUuid: holderAppUuid
-    };
-    return (unsignedPR);
 };
-var constructSignedPresentation = function (unsignedPR, privateKey) {
-    var proof = hlpr.createProof(unsignedPR, privateKey, unsignedPR.verifier, 'pem');
-    var signedPR = {
-        verifier: unsignedPR.verifier,
-        credentialRequests: unsignedPR.credentialRequests,
-        metadata: unsignedPR.metadata,
-        expiresAt: unsignedPR.expiresAt,
-        holderAppUuid: unsignedPR.holderAppUuid,
-        proof: proof
-    };
-    return (signedPR);
-};
+// handler for /api/sendRequest route
 exports.sendRequest = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var authorization, unsignedPR, signedPR, restData, restResp, presentationRequestResponse, error_1;
+    var body, authorization, unsignedPresentationRequest, signedPR, restData, restResp, presentationRequestResponse, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 2, , 3]);
-                authorization = req.headers.authorization;
+                body = req.body, authorization = req.headers.authorization;
                 requireAuth_1.requireAuth(authorization);
-                unsignedPR = validateInParams(req);
-                signedPR = constructSignedPresentation(unsignedPR, req.body.eccPrivateKey);
+                // Validate inputs
+                validateSendRequestBody(body);
+                unsignedPresentationRequest = exports.constructUnsignedPresentationRequest(body);
+                signedPR = exports.constructSignedPresentationRequest(unsignedPresentationRequest, req.body.eccPrivateKey);
                 restData = {
                     method: 'POST',
                     baseUrl: config_1.configData.SaaSUrl,

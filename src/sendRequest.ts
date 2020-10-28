@@ -2,18 +2,63 @@ import * as express from 'express';
 import * as hlpr from 'library-issuer-verifier-utility';
 
 import { configData } from './config';
-import { UnsignedPresentationRequest, SignedPresentationRequest, PresentationRequestResponse } from './types';
+import {
+  PresentationRequestResponse,
+  SendRequestReqBody,
+  SignedPresentationRequest,
+  UnsignedPresentationRequest
+} from './types';
 import { requireAuth } from './requireAuth';
 
-const validateInParams = (req: express.Request): UnsignedPresentationRequest => {
+type SendRequestReqType = express.Request<Record<string, unknown>, PresentationRequestResponse, SendRequestReqBody>
+
+// constructs an unsigned PresentationRequest from the incoming request body
+export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody): UnsignedPresentationRequest => {
+  const {
+    verifier,
+    holderAppUuid,
+    credentialRequests,
+    metadata,
+    expiresAt
+  } = reqBody;
+
+  const uuid = hlpr.getUUID();
+
+  return {
+    credentialRequests,
+    expiresAt,
+    holderAppUuid,
+    metadata,
+    uuid,
+    verifier
+  };
+};
+
+// signs an unsigned PresentationRequest and attaches the resulting Proof
+export const constructSignedPresentationRequest = (unsignedPresentationRequest: UnsignedPresentationRequest, privateKey: string): SignedPresentationRequest => {
+  const proof = hlpr.createProof(
+    unsignedPresentationRequest,
+    privateKey,
+    unsignedPresentationRequest.verifier,
+    'pem'
+  );
+
+  const signedPresentationRequest = {
+    ...unsignedPresentationRequest,
+    proof: proof
+  };
+
+  return signedPresentationRequest;
+};
+
+// validates incoming request body
+const validateSendRequestBody = (sendRequestBody: SendRequestReqBody): void => {
   const {
     verifier,
     credentialRequests,
-    metadata,
-    expiresAt,
     eccPrivateKey,
     holderAppUuid
-  } = req.body;
+  } = sendRequestBody;
 
   if (!verifier) {
     throw new hlpr.CustError(400, 'Invalid PresentationRequest options: verifier is required.');
@@ -78,43 +123,22 @@ const validateInParams = (req: express.Request): UnsignedPresentationRequest => 
   if (!eccPrivateKey) {
     throw new hlpr.CustError(400, 'Invalid PresentationRequest options: eccPrivateKey is required.');
   }
-
-  const unsignedPR: UnsignedPresentationRequest = {
-    verifier,
-    credentialRequests,
-    metadata,
-    expiresAt,
-    holderAppUuid
-  };
-
-  return (unsignedPR);
 };
 
-const constructSignedPresentation = (unsignedPR: UnsignedPresentationRequest, privateKey: string): SignedPresentationRequest => {
-  const proof: hlpr.Proof = hlpr.createProof(unsignedPR, privateKey, unsignedPR.verifier, 'pem');
-  const signedPR: SignedPresentationRequest = {
-    verifier: unsignedPR.verifier,
-    credentialRequests: unsignedPR.credentialRequests,
-    metadata: unsignedPR.metadata,
-    expiresAt: unsignedPR.expiresAt,
-    holderAppUuid: unsignedPR.holderAppUuid,
-    proof: proof
-  };
-
-  return (signedPR);
-};
-
-export const sendRequest = async (req: express.Request, res: express.Response, next: express.NextFunction): Promise<void> => {
+// handler for /api/sendRequest route
+export const sendRequest = async (req: SendRequestReqType, res: express.Response<PresentationRequestResponse>, next: express.NextFunction): Promise<void> => {
   try {
-    const { authorization } = req.headers;
+    const { body, headers: { authorization } } = req;
 
     requireAuth(authorization);
 
-    // Validate inputs and Create the unsignedPresentation Object
-    const unsignedPR: UnsignedPresentationRequest = validateInParams(req);
+    // Validate inputs
+    validateSendRequestBody(body);
+
+    const unsignedPresentationRequest = constructUnsignedPresentationRequest(body);
 
     // Create the signed presentation object from the unsignedPresentation object
-    const signedPR: SignedPresentationRequest = constructSignedPresentation(unsignedPR, req.body.eccPrivateKey);
+    const signedPR = constructSignedPresentationRequest(unsignedPresentationRequest, req.body.eccPrivateKey);
 
     const restData: hlpr.RESTData = {
       method: 'POST',
