@@ -131,3 +131,25 @@ Response Headers
 ```
 "x-auth-token": Verifier Auth Token // if this is different from the token you provided, it means your previous token expired and you were automatically issued a new one. You should replace it with this one for the next call.
 ```
+
+### Send an SMS
+Send an SMS by sending a POST request to the `/api/sendSms` API endpoint
+
+Request Headers
+```
+"Authorization": Verifier Auth Token // the Verifier Auth Token recieved when you registered your Verifier
+"Content-Type": "application/json"
+```
+
+Request Body (JSON)
+```typescript
+{
+  "to": string, // phone number to send the SMS to
+  "msg": string // message to send
+}
+```
+
+Response Headers
+```
+"x-auth-token": Verifier Auth Token // if this is different from the token you provided, it means your previous token expired and you were automatically issued a new one. You should replace it with this one for the next call.
+```

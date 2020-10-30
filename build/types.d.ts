@@ -104,3 +104,8 @@ export interface CredentialStatus {
   credentialId: string;
   status: 'valid' | 'revoked';
 }
+
+export interface ErrorResponseBody {
+  code: number;
+  message: string;
+}
