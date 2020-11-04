@@ -114,3 +114,6 @@ temp/
 
 # environment
 .env
+
+# pm2 config
+ecosystem.config.js

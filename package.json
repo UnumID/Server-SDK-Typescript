@@ -11,7 +11,9 @@
     "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
     "build": "rm -rf build/ && tsc && cp src/types.d.ts build/",
     "jest": "jest --forceExit --runInBand",
-    "test": "yarn run build && yarn run jest"
+    "test": "yarn run build && yarn run jest",
+    "start": "node build/server.js",
+    "debug": "ts-node src/server.ts"
   },
   "devDependencies": {
     "@types/express": "^4.17.7",
@@ -35,6 +37,7 @@
   "dependencies": {
     "express": "^4.17.1",
     "library-issuer-verifier-utility": "https://github.com/UnumID/library-issuer-verifier-utility.git",
-    "lodash": "^4.17.20"
+    "lodash": "^4.17.20",
+    "ts-node": "^9.0.0"
   }
 }
