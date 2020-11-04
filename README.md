@@ -153,3 +153,27 @@ Response Headers
 ```
 "x-auth-token": Verifier Auth Token // if this is different from the token you provided, it means your previous token expired and you were automatically issued a new one. You should replace it with this one for the next call.
 ```
+### Send an Email
+Send an email by sending a POST request to the `/api/sendEmail` API endpoint
+
+Request Headers
+```
+"Authorization": Verifier Auth Token // the Verifier Auth Token recieved when you registered your Verifier
+"Content-Type": "application/json"
+```
+
+Request Body (JSON)
+```typescript
+{
+  "to": string, // target email
+  "from": string, // from email
+  "replyTo": string, // replyTo email
+  "subject": string, // subject of the email
+  "textBody": string, // email message body
+}
+```
+
+Response Headers
+```
+"x-auth-token": Verifier Auth Token // if this is different from the token you provided, it means your previous token expired and you were automatically issued a new one. You should replace it with this one for the next call.
+```

@@ -7,6 +7,7 @@ import { verifyPresentation } from './verifyPresentation';
 import { verifyNoPresentation } from './verifyNoPresentation';
 import { createVerifierApiKey } from './createVerifierApiKey';
 import { sendSms } from './sendSms';
+import { sendEmail } from './sendEmail';
 
 const app = initServer();
 
@@ -16,6 +17,7 @@ app.post('/api/verifyPresentation', verifyPresentation);
 app.post('/api/verifyNoPresentation', verifyNoPresentation);
 app.post('/api/createVerifierApiKey', createVerifierApiKey);
 app.post('/api/sendSms', sendSms);
+app.post('/api/sendEmail', sendEmail);
 
 app.use((err: CustError, req: express.Request, res: express.Response, next: express.NextFunction) => {
   customErrFormatter(err, res);
