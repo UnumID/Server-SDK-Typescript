@@ -5,6 +5,21 @@ import { omit } from 'lodash';
 import { app } from '../src';
 import { NoPresentation } from '../src/types';
 import * as hlpr from 'library-issuer-verifier-utility';
+import { dummyAuthToken, makeDummyDidDocument } from './mocks';
+
+jest.mock('library-issuer-verifier-utility', () => {
+  const actual = jest.requireActual('library-issuer-verifier-utility');
+  return {
+    ...actual,
+    getDIDDoc: jest.fn(),
+    doVerify: jest.fn(() => actual.doVerify),
+    makeRESTCall: jest.fn()
+  };
+});
+
+const mockGetDIDDoc = hlpr.getDIDDoc as jest.Mock;
+const mockDoVerify = hlpr.doVerify as jest.Mock;
+const mockMakeRESTCall = hlpr.makeRESTCall as jest.Mock;
 
 const callVerifyNoPresentation = (
   noPresentation: NoPresentation,
@@ -47,12 +62,11 @@ const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVy
 const verifier = 'did:unum:dd407b1a-ee7f-46a2-af2a-ccbb48cbb0dc';
 
 describe('POST /api/verifyNoPresentation', () => {
-  let getDidSpy: jest.SpyInstance;
-  let verifySpy: jest.SpyInstance;
-
-  beforeAll(() => {
-    getDidSpy = jest.spyOn(hlpr, 'getKeyFromDIDDoc', 'get');
-    verifySpy = jest.spyOn(hlpr, 'doVerify', 'get');
+  beforeAll(async () => {
+    const dummyDidDoc = await makeDummyDidDocument({ id: dummyNoPresentation.holder });
+    const headers = { 'x-auth-token': dummyAuthToken };
+    mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
+    mockMakeRESTCall.mockResolvedValue({ body: { success: true }, headers });
   });
 
   afterAll(() => {
@@ -63,15 +77,16 @@ describe('POST /api/verifyNoPresentation', () => {
     let response;
 
     beforeEach(async () => {
+      mockDoVerify.mockReturnValue(true);
       response = await callVerifyNoPresentation(dummyNoPresentation, verifier, authHeader);
     });
 
     it('gets the holder did', () => {
-      expect(getDidSpy).toBeCalled();
+      expect(mockGetDIDDoc).toBeCalled();
     });
 
     it('verifies the NoPresentation', () => {
-      expect(verifySpy).toBeCalled();
+      expect(mockDoVerify).toBeCalled();
     });
 
     it('returns a 200 status code', () => {

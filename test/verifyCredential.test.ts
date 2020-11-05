@@ -2,6 +2,19 @@ import * as utility from 'library-issuer-verifier-utility';
 
 import { VerifiableCredential } from '../src/types';
 import { verifyCredential } from '../src/verifyCredential';
+import { makeDummyDidDocument } from './mocks';
+
+jest.mock('library-issuer-verifier-utility', () => {
+  const actual = jest.requireActual('library-issuer-verifier-utility');
+  return {
+    ...actual,
+    getDIDDoc: jest.fn(),
+    doVerify: jest.fn(() => actual.doVerify)
+  };
+});
+
+const mockGetDIDDoc = utility.getDIDDoc as jest.Mock;
+const mockDoVerify = utility.doVerify as jest.Mock;
 
 describe('verifyCredential', () => {
   const credential: VerifiableCredential = {
@@ -34,14 +47,12 @@ describe('verifyCredential', () => {
 
   const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
 
-  let getDidDocSpy;
-  let verifySpy;
   let isVerified: boolean;
 
   beforeAll(async () => {
-    getDidDocSpy = jest.spyOn(utility, 'getDIDDoc', 'get');
-    verifySpy = jest.spyOn(utility, 'doVerify', 'get');
-
+    const dummyDidDoc = await makeDummyDidDocument({ id: credential.issuer });
+    mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc });
+    mockDoVerify.mockReturnValueOnce(true);
     isVerified = await verifyCredential(credential, authHeader);
   });
 
@@ -50,11 +61,11 @@ describe('verifyCredential', () => {
   });
 
   it('gets the did document', () => {
-    expect(getDidDocSpy).toBeCalled();
+    expect(mockGetDIDDoc).toBeCalled();
   });
 
   it('verifies the credential', () => {
-    expect(verifySpy).toBeCalled();
+    expect(utility.doVerify).toBeCalled();
   });
 
   it('returns true for a valid credential', () => {
@@ -90,6 +101,7 @@ describe('verifyCredential', () => {
       }
     };
 
+    mockDoVerify.mockReturnValueOnce(false);
     const isInvalidVerified = await verifyCredential(invalidCredential, authHeader);
     expect(isInvalidVerified).toBe(false);
   });

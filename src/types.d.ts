@@ -72,6 +72,8 @@ export interface VerifierApiKey {
   type: 'Verifier';
   key: string;
   customerUuid: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface VerifierInfo {
@@ -108,4 +110,15 @@ export interface CredentialStatus {
 export interface ErrorResponseBody {
   code: number;
   message: string;
+}
+
+export interface Verifier {
+  uuid: string;
+  createdAt: Date;
+  updatedAt: Date;
+  isAuthorized: boolean;
+  customerUuid: string;
+  name: string;
+  did: string;
+  url: string;
 }

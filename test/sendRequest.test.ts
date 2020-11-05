@@ -3,6 +3,19 @@ import request from 'supertest';
 import * as hlpr from 'library-issuer-verifier-utility';
 import { app } from '../src/index';
 import { PresentationRequestResponse, PresentationRequest } from '../src/types';
+import { dummyAuthToken, makeDummyPresentationRequestResponse } from './mocks';
+
+jest.mock('library-issuer-verifier-utility', () => {
+  const actual = jest.requireActual('library-issuer-verifier-utility');
+
+  return {
+    ...actual,
+    makeRESTCall: jest.fn(),
+    createProof: jest.fn(() => actual.createProof)
+  };
+});
+
+const mockMakeRESTCall = hlpr.makeRESTCall as jest.Mock;
 
 const callSendRequests = (
   verifier: string,
@@ -47,8 +60,6 @@ const populateMockData = (): hlpr.JSONObj => {
 };
 
 describe('POST /api/sendRequest', () => {
-  let createProofSpy;
-  let restCallSpy;
   let apiResponse: hlpr.RESTResponse<PresentationRequestResponse>;
   let presentationRequestResponse: PresentationRequestResponse;
   let presentationRequest: PresentationRequest;
@@ -64,9 +75,10 @@ describe('POST /api/sendRequest', () => {
   let expiresAt;
 
   beforeEach(async () => {
-    createProofSpy = jest.spyOn(hlpr, 'createProof', 'get');
-    restCallSpy = jest.spyOn(hlpr, 'makeRESTCall', 'get');
-
+    const dummyPresentationRequestResponse = await makeDummyPresentationRequestResponse();
+    const headers = { 'x-auth-token': dummyAuthToken };
+    const dummyApiResponse = { body: dummyPresentationRequestResponse, headers };
+    mockMakeRESTCall.mockResolvedValueOnce(dummyApiResponse);
     apiResponse = await callSendRequests(
       verifier,
       credentialRequests,
@@ -85,9 +97,12 @@ describe('POST /api/sendRequest', () => {
     jest.clearAllMocks();
   });
 
-  it('sends request after signing the data', async () => {
-    expect(createProofSpy).toBeCalled();
-    expect(restCallSpy).toBeCalled();
+  it('signs the request', () => {
+    expect(hlpr.createProof).toBeCalled();
+  });
+
+  it('sends the request to the saas', () => {
+    expect(mockMakeRESTCall).toBeCalled();
   });
 
   it('returns a 200 status code', () => {
@@ -129,44 +144,6 @@ describe('POST /api/sendRequest', () => {
   it('returns a QR code', () => {
     const { qrCode } = presentationRequestResponse;
     expect(qrCode).toBeDefined();
-  });
-});
-
-describe('POST /api/sendRequest with expiry date and metadata', () => {
-  let apiResponse: hlpr.RESTResponse<PresentationRequestResponse>;
-  let presentationRequestResponse: PresentationRequestResponse;
-
-  const {
-    verifier,
-    credentialRequests,
-    eccPrivateKey,
-    authToken,
-    holderAppUuid
-  } = populateMockData();
-
-  const metadata = { test: 'test' };
-  const expiresAt = '2021-10-26T23:07:12.770Z';
-
-  beforeEach(async () => {
-    apiResponse = await callSendRequests(
-      verifier,
-      credentialRequests,
-      metadata,
-      expiresAt,
-      eccPrivateKey,
-      holderAppUuid,
-      authToken
-    );
-    presentationRequestResponse = apiResponse.body;
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it('includes the expiration and metadata in the returned PresentationRequest', () => {
-    expect(presentationRequestResponse.presentationRequest.metadata).toEqual(metadata);
-    expect(presentationRequestResponse.presentationRequest.expiresAt).toEqual(expiresAt);
   });
 });
 
@@ -422,6 +399,7 @@ describe('POST /api/sendRequest - Failure cases - SaaS Errors', () => {
   const stCode = 401;
 
   it('Response code should be ' + stCode + ' when invalid auth token is passed', async () => {
+    mockMakeRESTCall.mockRejectedValueOnce(new hlpr.CustError(401, 'Not authenticated.'));
     response = await callSendRequests(
       verifier,
       credentialRequests,
@@ -435,6 +413,7 @@ describe('POST /api/sendRequest - Failure cases - SaaS Errors', () => {
   });
 
   it('returns a 400 status code when an invalid verifier did is passed', async () => {
+    mockMakeRESTCall.mockRejectedValueOnce(new hlpr.CustError(400, 'Invalid \'verifier\': expected string.'));
     response = await callSendRequests(
       {} as string,
       credentialRequests,
@@ -449,6 +428,7 @@ describe('POST /api/sendRequest - Failure cases - SaaS Errors', () => {
 
   it('returns a 400 status code when an invalid issuer did is passed', async () => {
     const badCredentialRequests = [{ ...credentialRequests[0], issuers: [{}] }];
+    mockMakeRESTCall.mockRejectedValueOnce(new hlpr.CustError(400, 'Invalid \'credentialRequests\': expected \'issuers\' to be an array of strings.'));
     response = await callSendRequests(
       'did',
       badCredentialRequests,

@@ -2,9 +2,28 @@ import request from 'supertest';
 
 import * as hlpr from 'library-issuer-verifier-utility';
 import { app } from '../src/index';
-import * as verifyCredentialModule from '../src/verifyCredential';
-import * as isCredentialExpiredModule from '../src/isCredentialExpired';
-import * as checkCredentialStatusModule from '../src/checkCredentialStatus';
+import { verifyCredential } from '../src/verifyCredential';
+import { isCredentialExpired } from '../src/isCredentialExpired';
+import { checkCredentialStatus } from '../src/checkCredentialStatus';
+import { dummyAuthToken, makeDummyDidDocument } from './mocks';
+
+jest.mock('library-issuer-verifier-utility', () => ({
+  ...jest.requireActual('library-issuer-verifier-utility'),
+  getDIDDoc: jest.fn(),
+  doVerify: jest.fn(),
+  makeRESTCall: jest.fn()
+}));
+
+jest.mock('../src/verifyCredential');
+jest.mock('../src/isCredentialExpired');
+jest.mock('../src/checkCredentialStatus');
+
+const mockVerifyCredential = verifyCredential as jest.Mock;
+const mockIsCredentialExpired = isCredentialExpired as jest.Mock;
+const mockCheckCredentialStatus = checkCredentialStatus as jest.Mock;
+const mockGetDIDDoc = hlpr.getDIDDoc as jest.Mock;
+const mockDoVerify = hlpr.doVerify as jest.Mock;
+const mockMakeRESTCall = hlpr.makeRESTCall as jest.Mock;
 
 const callVerifyPresentation = (context, type, verifiableCredential, presentationRequestUuid, proof, verifier, auth = ''): Promise<hlpr.JSONObj> => {
   const presentation = {
@@ -94,22 +113,21 @@ const populateMockData = (): hlpr.JSONObj => {
 };
 
 describe('POST /api/verifyPresentation - Success Scenario', () => {
-  let getDidSpy;
-  let verifySpy;
   let response: hlpr.JSONObj;
   let verStatus;
-  let verifyCredentialSpy;
-  let isExpiredSpy;
-  let checkStatusSpy;
+
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
   beforeAll(async () => {
-    getDidSpy = jest.spyOn(hlpr, 'getKeyFromDIDDoc', 'get');
-    verifySpy = jest.spyOn(hlpr, 'doVerify', 'get');
-    verifyCredentialSpy = jest.spyOn(verifyCredentialModule, 'verifyCredential');
-    isExpiredSpy = jest.spyOn(isCredentialExpiredModule, 'isCredentialExpired');
-    checkStatusSpy = jest.spyOn(checkCredentialStatusModule, 'checkCredentialStatus');
+    const dummySubjectDidDoc = await makeDummyDidDocument();
 
+    const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
+    mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
+    mockDoVerify.mockReturnValueOnce(true);
+    mockVerifyCredential.mockResolvedValue(true);
+    mockIsCredentialExpired.mockReturnValue(false);
+    mockCheckCredentialStatus.mockReturnValue(true);
+    mockMakeRESTCall.mockResolvedValue({ body: { success: true }, headers: dummyResponseHeaders });
     response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
     verStatus = response.body.verifiedStatus;
   });
@@ -118,26 +136,29 @@ describe('POST /api/verifyPresentation - Success Scenario', () => {
     jest.clearAllMocks();
   });
 
-  it('Verify the presentation object by calling the api', () => {
-    expect(getDidSpy).toBeCalled();
-    expect(verifySpy).toBeCalled();
+  it('gets the subject did document', () => {
+    expect(mockGetDIDDoc).toBeCalled();
+  });
+
+  it('verifies the presentation', () => {
+    expect(mockDoVerify).toBeCalled();
   });
 
   it('verifies each credential', () => {
     verifiableCredential.forEach((vc) => {
-      expect(verifyCredentialSpy).toBeCalledWith(vc, authHeader);
+      expect(mockVerifyCredential).toBeCalledWith(vc, authHeader);
     });
   });
 
   it('checks if each credential is expired', () => {
     verifiableCredential.forEach((vc) => {
-      expect(isExpiredSpy).toBeCalledWith(vc);
+      expect(mockIsCredentialExpired).toBeCalledWith(vc);
     });
   });
 
   it('checks the status of each credential', () => {
     verifiableCredential.forEach((vc) => {
-      expect(checkStatusSpy).toBeCalledWith(vc);
+      expect(mockCheckCredentialStatus).toBeCalledWith(vc);
     });
   });
 
@@ -152,13 +173,19 @@ describe('POST /api/verifyPresentation - Success Scenario', () => {
 });
 
 describe('POST /api/verifyPresentation - Failure Scenario', () => {
-  let getDidSpy, verifySpy, response: hlpr.JSONObj, verStatus;
+  let response: hlpr.JSONObj;
+  let verStatus: boolean;
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
   beforeAll(async () => {
-    getDidSpy = jest.spyOn(hlpr, 'getKeyFromDIDDoc', 'get');
-    verifySpy = jest.spyOn(hlpr, 'doVerify', 'get');
+    const dummySubjectDidDoc = await makeDummyDidDocument();
 
+    const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
+    mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
+    mockDoVerify.mockReturnValueOnce(false);
+    mockVerifyCredential.mockResolvedValue(false);
+    mockIsCredentialExpired.mockReturnValue(true);
+    mockCheckCredentialStatus.mockReturnValue(false);
     verifiableCredential[0].proof.verificationMethod = proof.verificationMethod;
     response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
     verStatus = response.body.verifiedStatus;
@@ -168,9 +195,12 @@ describe('POST /api/verifyPresentation - Failure Scenario', () => {
     jest.clearAllMocks();
   });
 
-  it('Verify the presentation object by calling the api', async () => {
-    expect(getDidSpy).toBeCalled();
-    expect(verifySpy).toBeCalled();
+  it('gets the subject did document', () => {
+    expect(mockGetDIDDoc).toBeCalled();
+  });
+
+  it('verifies the presentation', () => {
+    expect(mockDoVerify).toBeCalled();
   });
 
   it('Response status code should be 200', () => {

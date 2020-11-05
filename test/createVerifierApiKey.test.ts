@@ -2,6 +2,17 @@ import request from 'supertest';
 import * as helper from 'library-issuer-verifier-utility';
 
 import { app } from '../src';
+import { makeDummyVerifierApiKey } from './mocks';
+
+jest.mock('library-issuer-verifier-utility', () => {
+  const actual = jest.requireActual('library-issuer-verifier-utility');
+  return {
+    ...actual,
+    makeRESTCall: jest.fn()
+  };
+});
+
+const mockMakeRESTCall = helper.makeRESTCall as jest.Mock;
 
 const callApi = (customerUuid, customerApiKey): Promise<helper.RESTResponse> => {
   return request(app)
@@ -12,6 +23,16 @@ const callApi = (customerUuid, customerApiKey): Promise<helper.RESTResponse> => 
 describe('POST /api/createVerifierApiKey', () => {
   const customerUuid = '5e46f1ba-4c82-471d-bbc7-251924a90532';
   const customerApiKey = '/7uLH4LB+etgKb5LUR5vm2cebS49EmPwxmBoS/TpfXM=';
+
+  beforeAll(() => {
+    const dummyResponse = { body: makeDummyVerifierApiKey() };
+    mockMakeRESTCall.mockResolvedValue(dummyResponse);
+  });
+
+  it('calls the saas to create a verifier api key', async () => {
+    await callApi(customerUuid, customerApiKey);
+    expect(mockMakeRESTCall).toBeCalled();
+  });
 
   it('returns a 201 status', async () => {
     const response = await callApi(customerUuid, customerApiKey);
