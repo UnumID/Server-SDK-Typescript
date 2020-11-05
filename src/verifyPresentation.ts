@@ -1,11 +1,13 @@
 import * as express from 'express';
 import * as hlpr from 'library-issuer-verifier-utility';
+import stringify from 'fast-json-stable-stringify';
 import { omit } from 'lodash';
 
 import { configData } from './config';
 import { Presentation } from './types';
 import { validateProof } from './validateProof';
 import { requireAuth } from './requireAuth';
+import logger from './logger';
 import { verifyCredential } from './verifyCredential';
 import { isCredentialExpired } from './isCredentialExpired';
 import { checkCredentialStatus } from './checkCredentialStatus';
