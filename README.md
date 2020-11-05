@@ -27,6 +27,27 @@ The Verifier Server App is used by a customer acting as a verifier and is run on
 - (optional) run `yarn build` to transpile TypeScript. This is optional as this repository does include a pretranspiled `build` directory. If you changed the default port, you will need to do this step as well.
 - run `yarn pm2 start .` or yarn pm2 start build/server.js` to start the server with pm2
 
+## Docker For Local Use
+### Build
+docker build -t verifier-app:latest .
+### Run 
+Default port 8080:
+  docker run --rm --name verifier -p 8080:8080 verifier-app:latest
+
+Specifying none default PORT env var 
+  docker run --rm --name verifier -e PORT=9090 -p 9090:9090 verifier-app:latest
+
+## Docker For External Deployment / Packaging
+### Build
+`docker build -t verifier-app:latest .`
+### Create a TAR file
+Run `docker save verifier-app -o verifier-app.tar` to create a .tar file of the image
+
+To create a gun zipped the tar file of the image:
+`docker save verifier-app:latest | gzip > verifier-app_latest.tar.gz`
+### Unpacking the image TAR file
+`docker load -i verifier.tar` which then adds the image to the local docker image list
+
 ## API functionality
 
 ### Register a Verifier

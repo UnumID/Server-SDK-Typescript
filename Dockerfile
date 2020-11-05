@@ -4,14 +4,15 @@ RUN apk update && \
     apk upgrade && \
     apk add git
 
-WORKDIR /src/app
+WORKDIR /app
 
-COPY package*.json ./
+COPY package*.json /app/
+COPY yarn.lock /app/
 
 RUN yarn install --only=prod
 
-COPY build/ ./
+COPY ./ /app/
 
-EXPOSE 8080
+RUN yarn build
 
-CMD ["node", "."]
+CMD [ "node", "build/server.js" ]
