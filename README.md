@@ -48,6 +48,9 @@ To create a gun zipped the tar file of the image:
 ### Unpacking the image TAR file
 `docker load -i verifier.tar` which then adds the image to the local docker image list
 
+## Logging
+One can set the log level via the env var LOG_LEVEL. It defaults to info. Set to debug for more information, i.e. LOG_LEVEL=debug.
+
 ## API functionality
 
 ### Register a Verifier
