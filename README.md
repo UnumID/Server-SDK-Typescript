@@ -54,6 +54,8 @@ Specifying none default PORT env var and more verbose logging
 ## Logging
 One can set the log level via the env var LOG_LEVEL. It defaults to info. Set to debug for more information, i.e. LOG_LEVEL=debug.
 
+More details on the various log levels [here](https://github.com/winstonjs/winston#logging-levels)
+
 ## API functionality
 
 ### Register a Verifier
