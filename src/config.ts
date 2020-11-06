@@ -1,5 +1,8 @@
 // File for config values.
 // Using .ts file so can add comments and can handle populating values via env vars at build time, i.e. PORT=9090 node build/server.js
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const configData = {
   port: process.env.PORT || '8080',

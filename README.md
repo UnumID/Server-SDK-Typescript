@@ -2,10 +2,24 @@
 
 The Verifier Server App is used by a customer acting as a verifier and is run on their servers. It allows them to register verifiers and perform various actions as them, most importantly sending PresentationRequests and verifiying Presentations.
 
+## Docker For External Deployment / Packaging
+### Build
+`docker build -t verifier-app:latest .`
+
+### Create a TAR file
+Run `docker save verifier-app -o verifier-app.tar` to create a .tar file of the image
+
+To create a gun zipped the tar file of the image:
+`docker save verifier-app:latest | gzip > verifier-app_latest.tar.gz`
+
+### Unpacking the image TAR file
+`docker load -i verifier.tar` which then adds the image to the local docker image list
+
 ## Installating and running the app
 ### Installation
 - Clone this repo
-- In the future, the app may also be available as a pre-built Docker image
+- In the future, the app may also be available as a pre-built Docker image from a image repo
+  - If distributed via a docker image tar file see the "Unpacking the image TAR file" section"
 
 ## Running the app
 #### Global Dependencies
@@ -19,7 +33,7 @@ The Verifier Server App is used by a customer acting as a verifier and is run on
 - (optional) run `yarn build` to transpile TypeScript. This is optional as this repository does include a pretranspiled `build` directory. If you changed the default port, you will need to do this step as well.
 - run `node build/server.js` to start the application.
 
-## Running the app with pm2
+### Running the app with pm2
 - install pm2 `yarn add pm2` or `yarn global add pm2`
 - In the Verifier-Server-App directory (or whatever directory it was cloned into)
 - run `yarn` to install dependencies
@@ -27,26 +41,15 @@ The Verifier Server App is used by a customer acting as a verifier and is run on
 - (optional) run `yarn build` to transpile TypeScript. This is optional as this repository does include a pretranspiled `build` directory. If you changed the default port, you will need to do this step as well.
 - run `yarn pm2 start .` or yarn pm2 start build/server.js` to start the server with pm2
 
-## Docker For Local Use
-### Build
-docker build -t verifier-app:latest .
-### Run 
+### Running with Docker
 Default port 8080:
-  docker run --rm --name verifier -p 8080:8080 verifier-app:latest
+  `docker run --rm --name verifier -p 8080:8080 verifier-app:latest`
 
 Specifying none default PORT env var 
-  docker run --rm --name verifier -e PORT=9090 -p 9090:9090 verifier-app:latest
+  `docker run --rm --name verifier -e PORT=9090 -p 9090:9090 verifier-app:latest`
 
-## Docker For External Deployment / Packaging
-### Build
-`docker build -t verifier-app:latest .`
-### Create a TAR file
-Run `docker save verifier-app -o verifier-app.tar` to create a .tar file of the image
-
-To create a gun zipped the tar file of the image:
-`docker save verifier-app:latest | gzip > verifier-app_latest.tar.gz`
-### Unpacking the image TAR file
-`docker load -i verifier.tar` which then adds the image to the local docker image list
+Specifying none default PORT env var and more verbose logging
+  `docker run --rm --name verifier -e LOG_LEVEL=debug -e PORT=9090 -p 9090:9090 verifier-app:latest`
 
 ## Logging
 One can set the log level via the env var LOG_LEVEL. It defaults to info. Set to debug for more information, i.e. LOG_LEVEL=debug.

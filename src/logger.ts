@@ -6,7 +6,10 @@ import os from 'os';
 dotenv.config();
 const localhost = os.hostname();
 
-// only if LOGGING_ENV is set to internal should the logs be reported to paper trail
+// Only if LOGGING_ENV is set to internal should the logs be reported to paper trail.
+// This is still a temporary solution as it would be much better to have a logging agent
+// at the infrastructure level not the application. For this reason not including LOGGING_ENV
+// in the app's config.ts, configData.
 const options = (process.env.LOGGING_ENV === 'internal') ? {
   host: 'logs.papertrailapp.com',
   port: parseInt(process.env.PAPERTRAIL_PORT || ''),
