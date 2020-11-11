@@ -11,6 +11,7 @@ dotenv_1.default.config();
 var configData = {
     port: process.env.PORT || '8080',
     SaaSUrl: process.env.SAAS_URL || 'https://api.dev-unumid.org/',
-    IssuerAppUrl: process.env.ISSUER_APP_URL || 'https://issuer.dev-unumid.org/'
+    IssuerAppUrl: process.env.ISSUER_APP_URL || 'https://issuer.dev-unumid.org/',
+    logLevel: process.env.LOG_LEVEL || 'info' // Turns out Winston defaults to info if the LOG_LEVEL is not present but just setting explicitly anyway.
 };
 exports.configData = configData;

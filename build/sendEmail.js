@@ -75,7 +75,7 @@ var validateEmailRequestBody = function (body) {
     }
 };
 exports.sendEmail = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var body, authorization, data, apiResponse, e_1;
+    var body, authorization, data, apiResponse, authToken, e_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -93,7 +93,10 @@ exports.sendEmail = function (req, res, next) { return __awaiter(void 0, void 0,
                 return [4 /*yield*/, library_issuer_verifier_utility_1.makeRESTCall(data)];
             case 1:
                 apiResponse = _a.sent();
-                res.setHeader('x-auth-token', apiResponse.headers['x-auth-token']);
+                authToken = apiResponse.headers['x-auth-token'];
+                if (authToken) {
+                    res.setHeader('x-auth-token', apiResponse.headers['x-auth-token']);
+                }
                 res.json(apiResponse.body);
                 return [3 /*break*/, 3];
             case 2:

@@ -83,7 +83,12 @@ export const sendEmail = async (req: SendEmailRequest, res: SendEmailResponse, n
 
     const apiResponse = await makeRESTCall<EmailResponseBody>(data);
 
-    res.setHeader('x-auth-token', apiResponse.headers['x-auth-token']);
+    const authToken = apiResponse.headers['x-auth-token'];
+
+    if (authToken) {
+      res.setHeader('x-auth-token', apiResponse.headers['x-auth-token']);
+    }
+
     res.json(apiResponse.body);
   } catch (e) {
     next(e);

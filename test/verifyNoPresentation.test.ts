@@ -96,6 +96,19 @@ describe('POST /api/verifyNoPresentation', () => {
     it('returns the result of verification', () => {
       expect(response.body.isVerified).toBe(true);
     });
+
+    it('returns the x-auth-token header returned from the SaaS api in the x-auth-token header', () => {
+      expect(response.headers['x-auth-token']).toEqual(dummyAuthToken);
+    });
+
+    it('does not return an x-auth-token header if the SaaS does not return an x-auth-token header', async () => {
+      const dummySubjectDidDoc = await makeDummyDidDocument();
+      const dummyApiResponse = { body: dummySubjectDidDoc };
+      mockMakeRESTCall.mockResolvedValueOnce(dummyApiResponse);
+      mockGetDIDDoc.mockResolvedValue({ body: dummySubjectDidDoc });
+      response = await callVerifyNoPresentation(dummyNoPresentation, verifier, authHeader);
+      expect(response.headers['x-auth-token']).toBeUndefined();
+    });
   });
 
   describe('error', () => {

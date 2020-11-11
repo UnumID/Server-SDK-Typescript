@@ -54,7 +54,11 @@ export const sendSms = async (req: SendSmsRequest, res: SendSmsResponse, next: N
 
     const apiResponse = await makeRESTCall<SmsResponseBody>(data);
 
-    res.setHeader('x-auth-token', apiResponse.headers['x-auth-token']);
+    const authToken = apiResponse.headers['x-auth-token'];
+
+    if (authToken) {
+      res.setHeader('x-auth-token', apiResponse.headers['x-auth-token']);
+    }
     res.json(apiResponse.body);
   } catch (e) {
     next(e);

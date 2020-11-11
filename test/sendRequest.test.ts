@@ -145,6 +145,26 @@ describe('POST /api/sendRequest', () => {
     const { qrCode } = presentationRequestResponse;
     expect(qrCode).toBeDefined();
   });
+
+  it('returns the x-auth-token header returned from the SaaS api in the x-auth-token header', () => {
+    expect(apiResponse.headers['x-auth-token']).toEqual(dummyAuthToken);
+  });
+
+  it('does not return an x-auth-token header if the SaaS does not return an x-auth-token header', async () => {
+    const dummyPresentationRequestResponse = await makeDummyPresentationRequestResponse();
+    const dummyApiResponse = { body: dummyPresentationRequestResponse };
+    mockMakeRESTCall.mockResolvedValueOnce(dummyApiResponse);
+    apiResponse = await callSendRequests(
+      verifier,
+      credentialRequests,
+      metadata,
+      expiresAt,
+      eccPrivateKey,
+      holderAppUuid,
+      authToken
+    );
+    expect(apiResponse.headers['x-auth-token']).toBeUndefined();
+  });
 });
 
 describe('POST /api/sendRequest - Failure cases', () => {

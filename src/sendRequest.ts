@@ -155,7 +155,11 @@ export const sendRequest = async (req: SendRequestReqType, res: express.Response
 
     // Set the X-Auth-Token header alone
     res.setHeader('Content-Type', 'application/json');
-    res.setHeader('x-auth-token', restResp.headers['x-auth-token']);
+    const authToken = restResp.headers['x-auth-token'];
+
+    if (authToken) {
+      res.setHeader('x-auth-token', restResp.headers['x-auth-token']);
+    }
 
     res.send(presentationRequestResponse);
   } catch (error) {

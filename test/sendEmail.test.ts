@@ -65,6 +65,17 @@ describe('POST /api/sendEmail', () => {
     it('returns the x-auth-token header returned from the SaaS api in the x-auth-token header', () => {
       expect(apiResponse.headers['x-auth-token']).toEqual(mockSaasResponseHeaders['x-auth-token']);
     });
+
+    it('does not return an x-auth-token header if the SaaS does not return an x-auth-token header', async () => {
+      const mockSaasApiResponse = {
+        json: () => (mockSaasResponseBody),
+        headers: { raw: () => ({}) },
+        ok: true
+      };
+      mockFetch.mockResolvedValueOnce(mockSaasApiResponse);
+      apiResponse = await makeApiCall(to, from, replyTo, subject, textBody, auth);
+      expect(apiResponse.headers['x-auth-token']).toBeUndefined();
+    });
   });
 
   describe('failure', () => {

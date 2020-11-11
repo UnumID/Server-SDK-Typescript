@@ -146,7 +146,7 @@ var validateSendRequestBody = function (sendRequestBody) {
 };
 // handler for /api/sendRequest route
 exports.sendRequest = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var body, authorization, unsignedPresentationRequest, signedPR, restData, restResp, presentationRequestResponse, error_1;
+    var body, authorization, unsignedPresentationRequest, signedPR, restData, restResp, presentationRequestResponse, authToken, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -170,7 +170,10 @@ exports.sendRequest = function (req, res, next) { return __awaiter(void 0, void 
                 presentationRequestResponse = restResp.body;
                 // Set the X-Auth-Token header alone
                 res.setHeader('Content-Type', 'application/json');
-                res.setHeader('x-auth-token', restResp.headers['x-auth-token']);
+                authToken = restResp.headers['x-auth-token'];
+                if (authToken) {
+                    res.setHeader('x-auth-token', restResp.headers['x-auth-token']);
+                }
                 res.send(presentationRequestResponse);
                 return [3 /*break*/, 3];
             case 2:

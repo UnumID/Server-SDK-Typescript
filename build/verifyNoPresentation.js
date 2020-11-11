@@ -68,7 +68,7 @@ exports.validateNoPresentationParams = function (noPresentation) {
     validateProof_1.validateProof(proof);
 };
 exports.verifyNoPresentation = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, noPresentation, verifier, authorization, _b, verificationMethod, signatureValue, didDocumentResponse, publicKeyInfos, _c, publicKey, encoding, unsignedNoPresentation, isVerified, receiptOptions, receiptCallOptions, e_1;
+    var _a, noPresentation, verifier, authorization, _b, verificationMethod, signatureValue, didDocumentResponse, publicKeyInfos, _c, publicKey, encoding, unsignedNoPresentation, isVerified, receiptOptions, receiptCallOptions, authToken, e_1;
     return __generator(this, function (_d) {
         switch (_d.label) {
             case 0:
@@ -103,7 +103,10 @@ exports.verifyNoPresentation = function (req, res, next) { return __awaiter(void
                 return [4 /*yield*/, library_issuer_verifier_utility_1.makeRESTCall(receiptCallOptions)];
             case 2:
                 _d.sent();
-                res.setHeader('x-auth-token', didDocumentResponse.headers['x-auth-token']);
+                authToken = didDocumentResponse.headers['x-auth-token'];
+                if (authToken) {
+                    res.setHeader('x-auth-token', didDocumentResponse.headers['x-auth-token']);
+                }
                 res.send({ isVerified: isVerified });
                 return [3 /*break*/, 4];
             case 3:

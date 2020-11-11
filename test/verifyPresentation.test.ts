@@ -170,6 +170,18 @@ describe('POST /api/verifyPresentation - Success Scenario', () => {
     expect(verStatus).toBeDefined();
     expect(verStatus).toBe(true);
   });
+
+  it('returns the x-auth-token header returned from the SaaS api in the x-auth-token header', () => {
+    expect(response.headers['x-auth-token']).toEqual(dummyAuthToken);
+  });
+
+  it('does not return an x-auth-token header if the SaaS does not return an x-auth-token header', async () => {
+    const dummySubjectDidDoc = await makeDummyDidDocument();
+    const dummyApiResponse = { body: dummySubjectDidDoc };
+    mockMakeRESTCall.mockResolvedValueOnce(dummyApiResponse);
+    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+    expect(response.headers['x-auth-token']).toBeUndefined();
+  });
 });
 
 describe('POST /api/verifyPresentation - Failure Scenario', () => {

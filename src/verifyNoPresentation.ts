@@ -93,7 +93,11 @@ export const verifyNoPresentation = async (req: Request, res: Response, next: Ne
 
     await makeRESTCall(receiptCallOptions);
 
-    res.setHeader('x-auth-token', didDocumentResponse.headers['x-auth-token']);
+    const authToken = didDocumentResponse.headers['x-auth-token'];
+
+    if (authToken) {
+      res.setHeader('x-auth-token', didDocumentResponse.headers['x-auth-token']);
+    }
     res.send({ isVerified });
   } catch (e) {
     next(e);

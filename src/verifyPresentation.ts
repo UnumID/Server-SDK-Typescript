@@ -257,7 +257,11 @@ export const verifyPresentation = async (req: VerifyPresentationRequestType, res
 
     // Set the X-Auth-Token header alone
     res.setHeader('Content-Type', 'application/json');
-    res.setHeader('x-auth-token', didDocumentResponse.headers['x-auth-token']);
+    const authToken = didDocumentResponse.headers['x-auth-token'];
+
+    if (authToken) {
+      res.setHeader('x-auth-token', didDocumentResponse.headers['x-auth-token']);
+    }
 
     res.send({ verifiedStatus: verifiedStatus });
   } catch (error) {

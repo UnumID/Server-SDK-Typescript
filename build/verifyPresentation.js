@@ -190,7 +190,7 @@ var validatePresentation = function (presentation) {
     validateProof_1.validateProof(proof);
 };
 exports.verifyPresentation = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var authorization, _a, presentation, verifier, data, proof, didDocumentResponse, pubKeyObj, isPresentationVerified, areCredentialsValid, _i, _b, credential, isExpired, isStatusValid, isVerified, verifiedStatus, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, error_1;
+    var authorization, _a, presentation, verifier, data, proof, didDocumentResponse, pubKeyObj, isPresentationVerified, areCredentialsValid, _i, _b, credential, isExpired, isStatusValid, isVerified, verifiedStatus, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, authToken, error_1;
     return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
@@ -271,7 +271,10 @@ exports.verifyPresentation = function (req, res, next) { return __awaiter(void 0
                 _c.sent();
                 // Set the X-Auth-Token header alone
                 res.setHeader('Content-Type', 'application/json');
-                res.setHeader('x-auth-token', didDocumentResponse.headers['x-auth-token']);
+                authToken = didDocumentResponse.headers['x-auth-token'];
+                if (authToken) {
+                    res.setHeader('x-auth-token', didDocumentResponse.headers['x-auth-token']);
+                }
                 res.send({ verifiedStatus: verifiedStatus });
                 return [3 /*break*/, 9];
             case 8:
