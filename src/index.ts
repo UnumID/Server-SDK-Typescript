@@ -6,7 +6,6 @@ import { sendRequest } from './sendRequest';
 import { verifyPresentation } from './verifyPresentation';
 import logger from './logger';
 import { verifyNoPresentation } from './verifyNoPresentation';
-import { createVerifierApiKey } from './createVerifierApiKey';
 import { sendSms } from './sendSms';
 import { sendEmail } from './sendEmail';
 
@@ -24,7 +23,6 @@ app.post('/api/register', registerVerifier);
 app.post('/api/sendRequest', sendRequest);
 app.post('/api/verifyPresentation', verifyPresentation);
 app.post('/api/verifyNoPresentation', verifyNoPresentation);
-app.post('/api/createVerifierApiKey', createVerifierApiKey);
 app.post('/api/sendSms', sendSms);
 app.post('/api/sendEmail', sendEmail);
 
