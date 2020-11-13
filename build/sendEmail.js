@@ -41,37 +41,28 @@ var library_issuer_verifier_utility_1 = require("library-issuer-verifier-utility
 var config_1 = require("./config");
 var requireAuth_1 = require("./requireAuth");
 var validateEmailRequestBody = function (body) {
-    var to = body.to, from = body.from, replyTo = body.replyTo, subject = body.subject, textBody = body.textBody;
+    var to = body.to, subject = body.subject, textBody = body.textBody, htmlBody = body.htmlBody;
     // Todo: validate the emails in teh to, from, and replyTo field.
     if (!to) {
         throw new library_issuer_verifier_utility_1.CustError(400, 'to is required.');
     }
-    if (!from) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'from is required.');
-    }
-    if (!replyTo) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'replyTo is required.');
-    }
     if (!subject) {
         throw new library_issuer_verifier_utility_1.CustError(400, 'subject is required.');
     }
-    if (!textBody) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'textBody is required.');
+    if (!textBody && !htmlBody) {
+        throw new library_issuer_verifier_utility_1.CustError(400, 'Either textBody or htmlBody is required.');
     }
     if (typeof to !== 'string') {
         throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid to: expected string.');
     }
-    if (typeof from !== 'string') {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid from: expected string.');
-    }
-    if (typeof replyTo !== 'string') {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid replyTo: expected string.');
-    }
     if (typeof subject !== 'string') {
         throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid subject: expected string.');
     }
-    if (typeof textBody !== 'string') {
+    if (textBody && (typeof textBody !== 'string')) {
         throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid textBody: expected string.');
+    }
+    if (htmlBody && (typeof htmlBody !== 'string')) {
+        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid htmlBody: expected string.');
     }
 };
 exports.sendEmail = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {

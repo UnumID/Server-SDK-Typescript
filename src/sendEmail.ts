@@ -7,10 +7,9 @@ import { requireAuth } from './requireAuth';
 
 interface EmailRequestBody {
   to: string;
-  from: string;
-  replyTo: string;
   subject: string;
-  textBody: string;
+  textBody?: string;
+  htmlBody?: string;
 }
 
 export interface EmailResponseBody {
@@ -21,7 +20,7 @@ type SendEmailRequest = Request<ParamsDictionary, EmailResponseBody, EmailReques
 type SendEmailResponse = Response<EmailResponseBody>;
 
 const validateEmailRequestBody = (body: EmailRequestBody): void => {
-  const { to, from, replyTo, subject, textBody } = body;
+  const { to, subject, textBody, htmlBody } = body;
 
   // Todo: validate the emails in teh to, from, and replyTo field.
 
@@ -29,40 +28,28 @@ const validateEmailRequestBody = (body: EmailRequestBody): void => {
     throw new CustError(400, 'to is required.');
   }
 
-  if (!from) {
-    throw new CustError(400, 'from is required.');
-  }
-
-  if (!replyTo) {
-    throw new CustError(400, 'replyTo is required.');
-  }
-
   if (!subject) {
     throw new CustError(400, 'subject is required.');
   }
 
-  if (!textBody) {
-    throw new CustError(400, 'textBody is required.');
+  if (!textBody && !htmlBody) {
+    throw new CustError(400, 'Either textBody or htmlBody is required.');
   }
 
   if (typeof to !== 'string') {
     throw new CustError(400, 'Invalid to: expected string.');
   }
 
-  if (typeof from !== 'string') {
-    throw new CustError(400, 'Invalid from: expected string.');
-  }
-
-  if (typeof replyTo !== 'string') {
-    throw new CustError(400, 'Invalid replyTo: expected string.');
-  }
-
   if (typeof subject !== 'string') {
     throw new CustError(400, 'Invalid subject: expected string.');
   }
 
-  if (typeof textBody !== 'string') {
+  if (textBody && (typeof textBody !== 'string')) {
     throw new CustError(400, 'Invalid textBody: expected string.');
+  }
+
+  if (htmlBody && (typeof htmlBody !== 'string')) {
+    throw new CustError(400, 'Invalid htmlBody: expected string.');
   }
 };
 
