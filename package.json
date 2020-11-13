@@ -42,7 +42,7 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "fast-json-stable-stringify": "^2.1.0",
-    "library-issuer-verifier-utility": "https://github.com/UnumID/library-issuer-verifier-utility.git",
+    "library-issuer-verifier-utility": "https://github.com/UnumID/library-issuer-verifier-utility.git#c5550ee2e5f77949a156a9befd9fe9563db8ffb7",
     "lodash": "^4.17.20",
     "winston": "^3.3.3",
     "winston-syslog": "^2.4.4",

@@ -206,3 +206,6 @@ Response Headers
 ```
 "x-auth-token": Verifier Auth Token // if this is different from the token you provided, it means your previous token expired and you were automatically issued a new one. You should replace it with this one for the next call.
 ```
+
+### Health
+One can confirm that the app is running by using the `/health/alive` API endpoint. No auth necessary.
