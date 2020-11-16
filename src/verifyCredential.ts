@@ -8,6 +8,10 @@ export const verifyCredential = async (credential: VerifiableCredential, authori
   const { proof } = credential;
   const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization, proof.verificationMethod);
 
+  if (didDocumentResponse instanceof Error) {
+    throw didDocumentResponse;
+  }
+
   const publicKeyObject = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
   const data = omit(credential, 'proof');
 

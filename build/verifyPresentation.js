@@ -210,9 +210,12 @@ exports.verifyPresentation = function (req, res, next) { return __awaiter(void 0
                 return [4 /*yield*/, hlpr.getDIDDoc(config_1.configData.SaaSUrl, authorization, proof.verificationMethod)];
             case 1:
                 didDocumentResponse = _c.sent();
+                if (didDocumentResponse instanceof Error) {
+                    throw didDocumentResponse;
+                }
                 pubKeyObj = hlpr.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 if (pubKeyObj.length === 0) {
-                    throw new hlpr.CustError(401, 'Public key not found for the DID');
+                    throw new hlpr.CustError(404, 'Public key not found for the DID');
                 }
                 isPresentationVerified = hlpr.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
                 areCredentialsValid = true;

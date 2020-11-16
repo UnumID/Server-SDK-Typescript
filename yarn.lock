@@ -3358,9 +3358,9 @@ levn@~0.3.0:
     bs58 "^4.0.1"
     fast-json-stable-stringify "^2.1.0"
 
-"library-issuer-verifier-utility@https://github.com/UnumID/library-issuer-verifier-utility.git":
+"library-issuer-verifier-utility@https://github.com/UnumID/library-issuer-verifier-utility.git#98c0daf62ae758827411dd987b6f7ccdc8b7c71d":
   version "1.0.0"
-  resolved "https://github.com/UnumID/library-issuer-verifier-utility.git#2a626a057903926051bae0aa04f36daaca55163c"
+  resolved "https://github.com/UnumID/library-issuer-verifier-utility.git#98c0daf62ae758827411dd987b6f7ccdc8b7c71d"
   dependencies:
     express "^4.17.1"
     library-crypto-typescript "https://github.com/UnumID/Library-Crypto-TypeScript.git"

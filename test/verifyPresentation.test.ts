@@ -184,7 +184,7 @@ describe('POST /api/verifyPresentation - Success Scenario', () => {
   });
 });
 
-describe('POST /api/verifyPresentation - Failure Scenario', () => {
+describe('POST /api/verifyPresentation - Failure Scenarios', () => {
   let response: hlpr.JSONObj;
   let verStatus: boolean;
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
@@ -222,6 +222,25 @@ describe('POST /api/verifyPresentation - Failure Scenario', () => {
   it('Result should be false', () => {
     expect(verStatus).toBeDefined();
     expect(verStatus).toBe(false);
+  });
+
+  it('returns a 404 status code if the did document has no public keys', async () => {
+    const dummyDidDocWithoutKeys = {
+      ...makeDummyDidDocument(),
+      publicKey: []
+    };
+    const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
+    mockGetDIDDoc.mockResolvedValueOnce({ body: dummyDidDocWithoutKeys, headers: dummyResponseHeaders });
+
+    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+    expect(response.statusCode).toEqual(404);
+  });
+
+  it.only('returns a 404 status code if the did document is not found', async () => {
+    mockGetDIDDoc.mockResolvedValueOnce(new hlpr.CustError(404, 'DID Document not found.'));
+
+    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+    expect(response.statusCode).toEqual(404);
   });
 });
 

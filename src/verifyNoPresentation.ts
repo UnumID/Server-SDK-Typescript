@@ -66,6 +66,11 @@ export const verifyNoPresentation = async (req: Request, res: Response, next: Ne
     const { proof: { verificationMethod, signatureValue } } = noPresentation;
 
     const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, verificationMethod);
+
+    if (didDocumentResponse instanceof Error) {
+      throw didDocumentResponse;
+    }
+
     const publicKeyInfos = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
     const { publicKey, encoding } = publicKeyInfos[0];

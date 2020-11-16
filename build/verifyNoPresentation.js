@@ -81,6 +81,9 @@ exports.verifyNoPresentation = function (req, res, next) { return __awaiter(void
                 return [4 /*yield*/, library_issuer_verifier_utility_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, verificationMethod)];
             case 1:
                 didDocumentResponse = _d.sent();
+                if (didDocumentResponse instanceof Error) {
+                    throw didDocumentResponse;
+                }
                 publicKeyInfos = library_issuer_verifier_utility_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 _c = publicKeyInfos[0], publicKey = _c.publicKey, encoding = _c.encoding;
                 unsignedNoPresentation = lodash_1.omit(noPresentation, 'proof');

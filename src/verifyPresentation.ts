@@ -192,10 +192,15 @@ export const verifyPresentation = async (req: VerifyPresentationRequestType, res
     const proof: hlpr.Proof = presentation.proof;
 
     const didDocumentResponse = await hlpr.getDIDDoc(configData.SaaSUrl, authorization as string, proof.verificationMethod);
+
+    if (didDocumentResponse instanceof Error) {
+      throw didDocumentResponse;
+    }
+
     const pubKeyObj: hlpr.PublicKeyInfo[] = hlpr.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
     if (pubKeyObj.length === 0) {
-      throw new hlpr.CustError(401, 'Public key not found for the DID');
+      throw new hlpr.CustError(404, 'Public key not found for the DID');
     }
 
     // Verify the data given.  As of now only one secp256r1 public key is expected.
