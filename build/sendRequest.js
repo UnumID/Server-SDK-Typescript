@@ -72,13 +72,24 @@ var config_1 = require("./config");
 var requireAuth_1 = require("./requireAuth");
 // constructs an unsigned PresentationRequest from the incoming request body
 exports.constructUnsignedPresentationRequest = function (reqBody) {
-    var verifier = reqBody.verifier, holderAppUuid = reqBody.holderAppUuid, credentialRequests = reqBody.credentialRequests, metadata = reqBody.metadata, expiresAt = reqBody.expiresAt;
+    var verifier = reqBody.verifier, holderAppUuid = reqBody.holderAppUuid, credentialRequests = reqBody.credentialRequests, metadata = reqBody.metadata, expiresAt = reqBody.expiresAt, createdAt = reqBody.createdAt, updatedAt = reqBody.updatedAt;
     var uuid = hlpr.getUUID();
+    // any/all default values must be set before signing, or signature will always fail to verify
+    var now = new Date();
+    var tenMinutesFromNow = new Date(now.getTime() + 10 * 60 * 1000);
+    var defaultCreatedAt = now;
+    var defaultUpdatedAt = now;
+    var defaultExpiresAt = tenMinutesFromNow;
+    var credentialRequestsWithDefaults = credentialRequests.map(function (cr) {
+        return cr.required ? cr : __assign(__assign({}, cr), { required: false });
+    });
     return {
-        credentialRequests: credentialRequests,
-        expiresAt: expiresAt,
+        credentialRequests: credentialRequestsWithDefaults,
+        createdAt: createdAt || defaultCreatedAt,
+        updatedAt: updatedAt || defaultUpdatedAt,
+        expiresAt: expiresAt || defaultExpiresAt,
         holderAppUuid: holderAppUuid,
-        metadata: metadata,
+        metadata: metadata || {},
         uuid: uuid,
         verifier: verifier
     };

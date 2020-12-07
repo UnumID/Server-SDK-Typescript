@@ -105,6 +105,18 @@ describe('POST /api/sendRequest', () => {
     expect(mockMakeRESTCall).toBeCalled();
   });
 
+  it('sets default values before sending the request to the saas', () => {
+    const { data } = mockMakeRESTCall.mock.calls[0][0];
+    expect(data.uuid).toBeDefined();
+    expect(data.createdAt).toBeDefined();
+    expect(data.updatedAt).toBeDefined();
+    expect(data.expiresAt).toBeDefined();
+    expect(data.metadata).toBeDefined();
+    data.credentialRequests.forEach(cr => {
+      expect(cr.required).toBeDefined();
+    });
+  });
+
   it('returns a 200 status code', () => {
     expect(apiResponse.status).toEqual(200);
   });

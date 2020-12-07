@@ -19,16 +19,30 @@ export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody
     holderAppUuid,
     credentialRequests,
     metadata,
-    expiresAt
+    expiresAt,
+    createdAt,
+    updatedAt
   } = reqBody;
 
   const uuid = hlpr.getUUID();
 
+  // any/all default values must be set before signing, or signature will always fail to verify
+  const now = new Date();
+  const tenMinutesFromNow = new Date(now.getTime() + 10 * 60 * 1000);
+  const defaultCreatedAt = now;
+  const defaultUpdatedAt = now;
+  const defaultExpiresAt = tenMinutesFromNow;
+  const credentialRequestsWithDefaults = credentialRequests.map(cr => {
+    return cr.required ? cr : { ...cr, required: false };
+  });
+
   return {
-    credentialRequests,
-    expiresAt,
+    credentialRequests: credentialRequestsWithDefaults,
+    createdAt: createdAt || defaultCreatedAt,
+    updatedAt: updatedAt || defaultUpdatedAt,
+    expiresAt: expiresAt || defaultExpiresAt,
     holderAppUuid,
-    metadata,
+    metadata: metadata || {},
     uuid,
     verifier
   };

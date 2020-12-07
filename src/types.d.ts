@@ -13,6 +13,8 @@ export interface CredentialRequest {
 
 export interface PresentationRequestParams {
   credentialRequests: CredentialRequest[];
+  createdAt?: Date;
+  updatedAt?: Date;
   expiresAt?: Date;
   holderAppUuid: string;
   metadata?: any;

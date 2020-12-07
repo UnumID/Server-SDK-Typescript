@@ -236,7 +236,7 @@ describe('POST /api/verifyPresentation - Failure Scenarios', () => {
     expect(response.statusCode).toEqual(404);
   });
 
-  it.only('returns a 404 status code if the did document is not found', async () => {
+  it('returns a 404 status code if the did document is not found', async () => {
     mockGetDIDDoc.mockResolvedValueOnce(new hlpr.CustError(404, 'DID Document not found.'));
 
     response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
