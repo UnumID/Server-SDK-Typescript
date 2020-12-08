@@ -158,7 +158,7 @@ describe('POST /api/verifyPresentation - Success Scenario', () => {
 
   it('checks the status of each credential', () => {
     verifiableCredential.forEach((vc) => {
-      expect(mockCheckCredentialStatus).toBeCalledWith(vc);
+      expect(mockCheckCredentialStatus).toBeCalledWith(vc, authHeader);
     });
   });
 

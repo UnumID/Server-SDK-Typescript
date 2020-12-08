@@ -39,12 +39,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkCredentialStatus = void 0;
 var library_issuer_verifier_utility_1 = require("library-issuer-verifier-utility");
 var config_1 = require("./config");
-exports.checkCredentialStatus = function (credential) { return __awaiter(void 0, void 0, void 0, function () {
-    var authHeader, options, credentialStatusResponse, credentialStatus;
+exports.checkCredentialStatus = function (credential, authHeader) { return __awaiter(void 0, void 0, void 0, function () {
+    var options, credentialStatusResponse, credentialStatus;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
                 options = {
                     baseUrl: config_1.configData.SaaSUrl,
                     endPoint: "credentialStatus/" + credential.id,

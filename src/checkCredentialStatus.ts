@@ -3,8 +3,7 @@ import { makeRESTCall } from 'library-issuer-verifier-utility';
 import { VerifiableCredential, CredentialStatus } from './types';
 import { configData } from './config';
 
-export const checkCredentialStatus = async (credential: VerifiableCredential): Promise<boolean> => {
-  const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
+export const checkCredentialStatus = async (credential: VerifiableCredential, authHeader: string): Promise<boolean> => {
   const options = {
     baseUrl: configData.SaaSUrl,
     endPoint: `credentialStatus/${credential.id}`,

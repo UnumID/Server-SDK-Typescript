@@ -220,7 +220,7 @@ export const verifyPresentation = async (req: VerifyPresentationRequestType, res
         break;
       }
 
-      const isStatusValid = await checkCredentialStatus(credential);
+      const isStatusValid = await checkCredentialStatus(credential, authorization as string);
 
       if (!isStatusValid) {
         areCredentialsValid = false;

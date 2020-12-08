@@ -229,7 +229,7 @@ exports.verifyPresentation = function (req, res, next) { return __awaiter(void 0
                     areCredentialsValid = false;
                     return [3 /*break*/, 6];
                 }
-                return [4 /*yield*/, checkCredentialStatus_1.checkCredentialStatus(credential)];
+                return [4 /*yield*/, checkCredentialStatus_1.checkCredentialStatus(credential, authorization)];
             case 3:
                 isStatusValid = _c.sent();
                 if (!isStatusValid) {
