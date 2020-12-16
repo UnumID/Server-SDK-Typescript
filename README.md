@@ -1,29 +1,47 @@
 # Verifier Server App
 
-The Verifier Server App is used by a customer acting as a verifier and is run on their servers. It allows them to register verifiers and perform various actions as them, most importantly sending PresentationRequests and verifiying Presentations.
+The Verifier Server App is used by a customer acting as a verifier and is run on their servers. It allows them to register verifiers and perform various actions as them, most importantly sending PresentationRequests and verifying Presentations.
 
 ## Docker For External Deployment / Packaging
 ### Build
 `docker build -t verifier-app:latest .`
 
-### Create a TAR file
+### Distribution
+
+Currently this project is still closed source, so standard distribution options via public source code repository or a docker registry are not viable. However, in order to distribute access to the app it is advised to leverage Github repository deployment keys. 
+
+#### Source code 
+
+Github deployment keys allows fine grained, read-only access that is easy to manage with basic usage information. The interested party just needs to provide us with a RSA public key and we will give them read-only access to pull the source using that corresponding private key.
+
+When open sourced this application can be distributed more naturally via a public a public git repository or package manager, i.e. npm.
+
+#### Docker registry
+
+##### Private Docker registry
+This distribution option makes less sense than at first glance. While it is possible to host the images in a private registry, the need to provide access to the registry remains. Opting to simply give ready only access to the source code repo from which the image can be built and deploy. 
+
+##### Public Docker registry
+When open sourced this application can be distributed more naturally via a public Docker registry, DockerHub.
+
+#### TAR file
+##### Create a TAR file
 Run `docker save verifier-app -o verifier-app.tar` to create a .tar file of the image
 
 To create a gun zipped the tar file of the image:
 `docker save verifier-app:latest | gzip > verifier-app_latest.tar.gz`
 
-### Unpacking the image TAR file
+##### Unpacking the image TAR file
 `docker load -i verifier.tar` which then adds the image to the local docker image list
-
-## Installating and running the app
+## Installing and running the app
 ### Installation
-- Clone this repo
-- In the future, the app may also be available as a pre-built Docker image from a image repo
-  - If distributed via a docker image tar file see the "Unpacking the image TAR file" section"
+- If distributed via a docker image tar file see the "Unpacking the image TAR file" section"
+- Clone this repo, if open sourced.
+- In the future, the app may also be hosted in a private docker registry and a public registry once open sourced.
 
 ## Running the app
-#### Global Dependencies
-- NodeJS v14.0.0 or higher, preferrably v14.15.0 or higher
+### Global Dependencies
+- NodeJS v14.0.0 or higher, preferably v14.15.0 or higher
 - yarn
 
 ### Running the app directly
@@ -54,7 +72,9 @@ Specifying none default PORT env var and more verbose logging
 ## Logging
 One can set the log level via the env var LOG_LEVEL. It defaults to info. Set to debug for more information, i.e. LOG_LEVEL=debug.
 
-More details on the various log levels [here](https://github.com/winstonjs/winston#logging-levels)
+More details on the various log levels [here](https://github.com/winstonjs/winston#logging-levels).
+
+The logs default to stdout so can be aggregated and using any log provider you would like from disk.
 
 ## API functionality
 

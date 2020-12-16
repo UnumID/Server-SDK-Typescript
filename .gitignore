@@ -117,3 +117,6 @@ temp/
 
 # pm2 config
 ecosystem.config.js
+
+# github personal access token
+github_token.txt
