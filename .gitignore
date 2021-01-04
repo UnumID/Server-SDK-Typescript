@@ -2,6 +2,9 @@
 logs
 *.log
 
+# Build directory
+build/*
+
 # Runtime data
 pids
 *.pid
@@ -120,3 +123,6 @@ ecosystem.config.js
 
 # github personal access token
 github_token.txt
+
+# tar docker images
+verifier-app*

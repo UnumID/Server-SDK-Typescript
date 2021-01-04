@@ -1,6 +1,6 @@
 import request from 'supertest';
 
-import * as hlpr from 'library-issuer-verifier-utility';
+import * as utilLib from 'library-issuer-verifier-utility';
 import { app } from '../src/index';
 import {
   dummyAuthToken,
@@ -11,10 +11,10 @@ import {
 
 jest.mock('library-issuer-verifier-utility', () => ({
   ...jest.requireActual('library-issuer-verifier-utility'),
-  makeRESTCall: jest.fn()
+  makeNetworkRequest: jest.fn()
 }));
 
-const mockMakeRESTCall = hlpr.makeRESTCall as jest.Mock;
+const mockMakeNetworkRequest = utilLib.makeNetworkRequest as jest.Mock;
 
 const callApi = async (name: string, customerUuid: string, apiKey: string, url: string): Promise<request.Response> => {
   return (request(app)
@@ -37,7 +37,7 @@ describe('POST /api/register Verifier', () => {
   beforeEach(async () => {
     const dummyVerifier = makeDummyVerifier({ name, customerUuid, url });
     const dummyVerifierResponse = makeDummyVerifierResponse({ verifier: dummyVerifier, authToken: dummyAuthToken });
-    mockMakeRESTCall.mockResolvedValueOnce(dummyVerifierResponse);
+    mockMakeNetworkRequest.mockResolvedValueOnce(dummyVerifierResponse);
     response = await callApi(name, customerUuid, dummyVerifierApiKey, url);
   });
 
@@ -102,16 +102,16 @@ describe('POST /api/register Verifier - Failure cases - SaaS Errors', () => {
   const url = 'https://customer-api.dev-unumid.org/presentation';
 
   it('returns a 403 status code if the customerUuid is not valid', async () => {
-    const dummyResponseError = new hlpr.CustError(403, 'Forbidden');
-    mockMakeRESTCall.mockRejectedValueOnce(dummyResponseError);
+    const dummyResponseError = new utilLib.CustError(403, 'Forbidden');
+    mockMakeNetworkRequest.mockRejectedValueOnce(dummyResponseError);
     const response = await callApi(name, '123', dummyVerifierApiKey, url);
 
     expect(response.status).toBe(403);
   });
 
   it('returns a 403 status code if the verifier Api Key is not valid', async () => {
-    const dummyResponseError = new hlpr.CustError(403, 'Forbidden');
-    mockMakeRESTCall.mockRejectedValueOnce(dummyResponseError);
+    const dummyResponseError = new utilLib.CustError(403, 'Forbidden');
+    mockMakeNetworkRequest.mockRejectedValueOnce(dummyResponseError);
     const response = await callApi(name, customerUuid, 'abc', url);
 
     expect(response.status).toBe(403);

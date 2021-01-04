@@ -4,6 +4,11 @@ import { omit } from 'lodash';
 import { VerifiableCredential } from './types';
 import { configData } from './config';
 
+/**
+ * Used to verify the credential signature given the corresponding Did document's public key.
+ * @param credential
+ * @param authorization
+ */
 export const verifyCredential = async (credential: VerifiableCredential, authorization: string): Promise<boolean> => {
   const { proof } = credential;
   const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization, proof.verificationMethod);

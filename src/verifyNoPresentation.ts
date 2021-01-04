@@ -4,7 +4,7 @@ import {
   getKeyFromDIDDoc,
   doVerify,
   getDIDDoc,
-  makeRESTCall,
+  makeNetworkRequest,
   RESTData
 } from 'library-issuer-verifier-utility';
 import { omit } from 'lodash';
@@ -14,6 +14,10 @@ import { validateProof } from './validateProof';
 import { configData } from './config';
 import { requireAuth } from './requireAuth';
 
+/**
+ * Validates the NoPresentation type to ensure the necessary attributes.
+ * @param noPresentation NoPresentation
+ */
 export const validateNoPresentationParams = (noPresentation: NoPresentation): void => {
   const {
     type,
@@ -53,6 +57,14 @@ export const validateNoPresentationParams = (noPresentation: NoPresentation): vo
   validateProof(proof);
 };
 
+/**
+ * Request middleware to handle a user not agreeing to share the information in the credential request.
+ *
+ * Note: The request body is exaclty the information sent by the mobile SDK serving the prompt via the deeplink for credential sharing to your application.
+ * @param req Request
+ * @param res Response
+ * @param next NextFunction
+ */
 export const verifyNoPresentation = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { noPresentation, verifier } = req.body;
@@ -96,7 +108,7 @@ export const verifyNoPresentation = async (req: Request, res: Response, next: Ne
       data: receiptOptions
     };
 
-    await makeRESTCall(receiptCallOptions);
+    await makeNetworkRequest(receiptCallOptions);
 
     const authToken = didDocumentResponse.headers['x-auth-token'];
 

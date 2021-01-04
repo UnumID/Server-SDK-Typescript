@@ -1,5 +1,9 @@
 import { JSONObj, CustError } from 'library-issuer-verifier-utility';
 
+/**
+ * Helper to validate a proof has the required attributes.
+ * @param proof JSONObj
+ */
 export const validateProof = (proof: JSONObj): void => {
   const {
     created,

@@ -1,5 +1,9 @@
 import { CustError } from 'library-issuer-verifier-utility';
 
+/**
+ * Helper to enforce proper authorization token format.
+ * @param auth String
+ */
 export const requireAuth = (auth: string | undefined): void => {
   if (!auth) {
     throw new CustError(401, 'Not authenticated.');

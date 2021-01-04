@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
-import { CustError, makeRESTCall } from 'library-issuer-verifier-utility';
+import { CustError, makeNetworkRequest } from 'library-issuer-verifier-utility';
 
 import { configData } from './config';
 import { requireAuth } from './requireAuth';
@@ -19,10 +19,12 @@ export interface EmailResponseBody {
 type SendEmailRequest = Request<ParamsDictionary, EmailResponseBody, EmailRequestBody>;
 type SendEmailResponse = Response<EmailResponseBody>;
 
+/**
+ * Validates the EmailRequestBody attributes.
+ * @param body EmailRequestBody
+ */
 const validateEmailRequestBody = (body: EmailRequestBody): void => {
   const { to, subject, textBody, htmlBody } = body;
-
-  // Todo: validate the emails in teh to, from, and replyTo field.
 
   if (!to) {
     throw new CustError(400, 'to is required.');
@@ -53,6 +55,15 @@ const validateEmailRequestBody = (body: EmailRequestBody): void => {
   }
 };
 
+/**
+ * Request middleware to send an email using UnumID's SaaS.
+ *
+ * Note: the email with have a from attribute: no-reply@unumid.org
+ * If you would like to have your own domain you will need to handle this email functionality independently.
+ * @param req SendEmailRequest
+ * @param res SendEmailResponse
+ * @param next NextFunction
+ */
 export const sendEmail = async (req: SendEmailRequest, res: SendEmailResponse, next: NextFunction): Promise<void> => {
   try {
     const { body, headers: { authorization } } = req;
@@ -68,7 +79,7 @@ export const sendEmail = async (req: SendEmailRequest, res: SendEmailResponse, n
       data: body
     };
 
-    const apiResponse = await makeRESTCall<EmailResponseBody>(data);
+    const apiResponse = await makeNetworkRequest<EmailResponseBody>(data);
 
     const authToken = apiResponse.headers['x-auth-token'];
 

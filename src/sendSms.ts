@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
-import { CustError, makeRESTCall } from 'library-issuer-verifier-utility';
+import { CustError, makeNetworkRequest } from 'library-issuer-verifier-utility';
 
 import { configData } from './config';
 import { requireAuth } from './requireAuth';
@@ -17,6 +17,10 @@ export interface SmsResponseBody {
 type SendSmsRequest = Request<ParamsDictionary, SmsResponseBody, SmsRequestBody>;
 type SendSmsResponse = Response<SmsResponseBody>;
 
+/**
+ * Validates the SmsRequestBody attributes.
+ * @param body SmsRequestBody
+ */
 const validateSmsRequestBody = (body: SmsRequestBody): void => {
   const { to, msg } = body;
 
@@ -37,6 +41,15 @@ const validateSmsRequestBody = (body: SmsRequestBody): void => {
   }
 };
 
+/**
+ * Request middleware to send a SMS using UnumID's SaaS.
+ * Designed to be used to present a deeplink.
+ *
+ * Note: This message will be delivered from an UnumID associated phone number.
+ * @param req
+ * @param res
+ * @param next
+ */
 export const sendSms = async (req: SendSmsRequest, res: SendSmsResponse, next: NextFunction): Promise<void> => {
   try {
     const { body, headers: { authorization } } = req;
@@ -52,7 +65,7 @@ export const sendSms = async (req: SendSmsRequest, res: SendSmsResponse, next: N
       data: body
     };
 
-    const apiResponse = await makeRESTCall<SmsResponseBody>(data);
+    const apiResponse = await makeNetworkRequest<SmsResponseBody>(data);
 
     const authToken = apiResponse.headers['x-auth-token'];
 

@@ -1,6 +1,6 @@
 import request from 'supertest';
 
-import * as hlpr from 'library-issuer-verifier-utility';
+import * as utilLib from 'library-issuer-verifier-utility';
 import { app } from '../src/index';
 import { verifyCredential } from '../src/verifyCredential';
 import { isCredentialExpired } from '../src/isCredentialExpired';
@@ -11,7 +11,7 @@ jest.mock('library-issuer-verifier-utility', () => ({
   ...jest.requireActual('library-issuer-verifier-utility'),
   getDIDDoc: jest.fn(),
   doVerify: jest.fn(),
-  makeRESTCall: jest.fn()
+  makeNetworkRequest: jest.fn()
 }));
 
 jest.mock('../src/verifyCredential');
@@ -21,11 +21,11 @@ jest.mock('../src/checkCredentialStatus');
 const mockVerifyCredential = verifyCredential as jest.Mock;
 const mockIsCredentialExpired = isCredentialExpired as jest.Mock;
 const mockCheckCredentialStatus = checkCredentialStatus as jest.Mock;
-const mockGetDIDDoc = hlpr.getDIDDoc as jest.Mock;
-const mockDoVerify = hlpr.doVerify as jest.Mock;
-const mockMakeRESTCall = hlpr.makeRESTCall as jest.Mock;
+const mockGetDIDDoc = utilLib.getDIDDoc as jest.Mock;
+const mockDoVerify = utilLib.doVerify as jest.Mock;
+const mockMakeNetworkRequest = utilLib.makeNetworkRequest as jest.Mock;
 
-const callVerifyPresentation = (context, type, verifiableCredential, presentationRequestUuid, proof, verifier, auth = ''): Promise<hlpr.JSONObj> => {
+const callVerifyPresentation = (context, type, verifiableCredential, presentationRequestUuid, proof, verifier, auth = ''): Promise<utilLib.JSONObj> => {
   const presentation = {
     '@context': context,
     type,
@@ -41,8 +41,8 @@ const callVerifyPresentation = (context, type, verifiableCredential, presentatio
   );
 };
 
-const copyCredentialObj = (credential: hlpr.JSONObj, elemName: string, elemValue = ''): hlpr.JSONObj => {
-  const newCred: hlpr.JSONObj = [
+const copyCredentialObj = (credential: utilLib.JSONObj, elemName: string, elemValue = ''): utilLib.JSONObj => {
+  const newCred: utilLib.JSONObj = [
     {
       '@context': credential['@context'],
       credentialStatus: credential.credentialStatus,
@@ -59,10 +59,10 @@ const copyCredentialObj = (credential: hlpr.JSONObj, elemName: string, elemValue
   return (newCred);
 };
 
-const populateMockData = (): hlpr.JSONObj => {
+const populateMockData = (): utilLib.JSONObj => {
   const context: string[] = ['https://www.w3.org/2018/credentials/v1'];
   const type: string[] = ['VerifiablePresentation'];
-  const verifiableCredential: hlpr.JSONObj[] = [
+  const verifiableCredential: utilLib.JSONObj[] = [
     {
       '@context': [
         'https://www.w3.org/2018/credentials/v1'
@@ -92,7 +92,7 @@ const populateMockData = (): hlpr.JSONObj => {
     }
   ];
   const presentationRequestUuid = '0cebee3b-3295-4ef6-a4d6-7dfea413b3aa';
-  const proof: hlpr.JSONObj = {
+  const proof: utilLib.JSONObj = {
     created: '2020-09-03T18:50:52.105Z',
     signatureValue: 'iKx1CJLYue7vopUo2fqGps3TWmxqRxoBDTupumLkaNp2W3UeAjwLUf5WxLRCRkDzEFeKCgT7JdF5fqbpvqnBZoHyYzWYbmW4YQ',
     type: 'secp256r1Signature2020',
@@ -113,7 +113,7 @@ const populateMockData = (): hlpr.JSONObj => {
 };
 
 describe('POST /api/verifyPresentation - Success Scenario', () => {
-  let response: hlpr.JSONObj;
+  let response: utilLib.JSONObj;
   let verStatus;
 
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
@@ -127,7 +127,7 @@ describe('POST /api/verifyPresentation - Success Scenario', () => {
     mockVerifyCredential.mockResolvedValue(true);
     mockIsCredentialExpired.mockReturnValue(false);
     mockCheckCredentialStatus.mockReturnValue(true);
-    mockMakeRESTCall.mockResolvedValue({ body: { success: true }, headers: dummyResponseHeaders });
+    mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers: dummyResponseHeaders });
     response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
     verStatus = response.body.verifiedStatus;
   });
@@ -178,14 +178,14 @@ describe('POST /api/verifyPresentation - Success Scenario', () => {
   it('does not return an x-auth-token header if the SaaS does not return an x-auth-token header', async () => {
     const dummySubjectDidDoc = await makeDummyDidDocument();
     const dummyApiResponse = { body: dummySubjectDidDoc };
-    mockMakeRESTCall.mockResolvedValueOnce(dummyApiResponse);
+    mockMakeNetworkRequest.mockResolvedValueOnce(dummyApiResponse);
     response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
     expect(response.headers['x-auth-token']).toBeUndefined();
   });
 });
 
 describe('POST /api/verifyPresentation - Failure Scenarios', () => {
-  let response: hlpr.JSONObj;
+  let response: utilLib.JSONObj;
   let verStatus: boolean;
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
@@ -237,7 +237,7 @@ describe('POST /api/verifyPresentation - Failure Scenarios', () => {
   });
 
   it('returns a 404 status code if the did document is not found', async () => {
-    mockGetDIDDoc.mockResolvedValueOnce(new hlpr.CustError(404, 'DID Document not found.'));
+    mockGetDIDDoc.mockResolvedValueOnce(new utilLib.CustError(404, 'DID Document not found.'));
 
     response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
     expect(response.statusCode).toEqual(404);
@@ -245,7 +245,7 @@ describe('POST /api/verifyPresentation - Failure Scenarios', () => {
 });
 
 describe('POST /api/verifyPresentation - Validation Failures', () => {
-  let response: hlpr.JSONObj, preReq: hlpr.JSONObj;
+  let response: utilLib.JSONObj, preReq: utilLib.JSONObj;
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
   it('returns a 400 status code with a descriptive error message when @context is missing', async () => {
@@ -346,7 +346,7 @@ describe('POST /api/verifyPresentation - Validation Failures', () => {
 });
 
 describe('POST /api/verifyPresentation - Validation for verifiableCredential object', () => {
-  let response: hlpr.JSONObj, preReq: hlpr.JSONObj;
+  let response: utilLib.JSONObj, preReq: utilLib.JSONObj;
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
   let cred;
@@ -424,7 +424,7 @@ describe('POST /api/verifyPresentation - Validation for verifiableCredential obj
 });
 
 describe('POST /api/verifyPresentation - Validation for proof object', () => {
-  let response: hlpr.JSONObj, preReq: hlpr.JSONObj;
+  let response: utilLib.JSONObj, preReq: utilLib.JSONObj;
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
   it('returns a 400 status code with a descriptive error message when created is missing', async () => {

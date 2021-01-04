@@ -3358,13 +3358,13 @@ levn@~0.3.0:
     bs58 "^4.0.1"
     fast-json-stable-stringify "^2.1.0"
 
-"library-issuer-verifier-utility@https://github.com/UnumID/library-issuer-verifier-utility.git#98c0daf62ae758827411dd987b6f7ccdc8b7c71d":
+"library-issuer-verifier-utility@https://github.com/UnumID/library-issuer-verifier-utility.git#v0.2.0":
   version "1.0.0"
-  resolved "https://github.com/UnumID/library-issuer-verifier-utility.git#98c0daf62ae758827411dd987b6f7ccdc8b7c71d"
+  resolved "https://github.com/UnumID/library-issuer-verifier-utility.git#1dbfd280e729123d9adf66a02df53ce7c876ec47"
   dependencies:
     express "^4.17.1"
     library-crypto-typescript "https://github.com/UnumID/Library-Crypto-TypeScript.git"
-    node-fetch "^2.6.0"
+    node-fetch "^2.6.1"
     uuid "^8.2.0"
 
 lines-and-columns@^1.1.6:
@@ -3607,7 +3607,7 @@ nice-try@^1.0.4:
   resolved "https://registry.yarnpkg.com/nice-try/-/nice-try-1.0.5.tgz#a3378a7696ce7d223e88fc9b764bd7ef1089e366"
   integrity sha512-1nh45deeb5olNY7eX82BkPO7SSxR5SSYJiPTrTdFUVYwAl8CKMA5N9PjTYkHiRjisVcxcQ1HXdLhx2qxxJzLNQ==
 
-node-fetch@^2.6.0:
+node-fetch@^2.6.1:
   version "2.6.1"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.1.tgz#045bd323631f76ed2e2b55573394416b639a0052"
   integrity sha512-V4aYg89jEoVRxRb2fJdAg8FHvI7cEyYdVAh94HH0UIK8oJxUfkjlDQN9RbMx+bEjP7+ggMiFRprSti032Oipxw==

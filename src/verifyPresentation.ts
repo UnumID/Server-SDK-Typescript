@@ -1,34 +1,23 @@
 import * as express from 'express';
-import * as hlpr from 'library-issuer-verifier-utility';
-import stringify from 'fast-json-stable-stringify';
 import { omit } from 'lodash';
 
 import { configData } from './config';
 import { Presentation } from './types';
 import { validateProof } from './validateProof';
 import { requireAuth } from './requireAuth';
-import logger from './logger';
 import { verifyCredential } from './verifyCredential';
 import { isCredentialExpired } from './isCredentialExpired';
 import { checkCredentialStatus } from './checkCredentialStatus';
+import { JSONObj, CustError, Proof, getDIDDoc, PublicKeyInfo, getKeyFromDIDDoc, doVerify, RESTData, makeNetworkRequest, isArrayEmpty } from 'library-issuer-verifier-utility';
 
-const isNotAnEmptyArray = (paramValue: any): boolean => {
-  if (!Array.isArray(paramValue)) {
-    return (false);
-  }
+/**
+ * Validates the attributes for a credential request to UnumID's SaaS.
+ * @param credentials JSONObj
+ */
+const validateCredentialInput = (credentials: JSONObj): JSONObj => {
+  const retObj: JSONObj = { valStat: true };
 
-  const arrLen = paramValue.length;
-  if (arrLen === 0) {
-    return (false);
-  }
-
-  return (true);
-};
-
-const validateCredentialInput = (credentials: hlpr.JSONObj): hlpr.JSONObj => {
-  const retObj: hlpr.JSONObj = { valStat: true };
-
-  if (!isNotAnEmptyArray(credentials)) {
+  if (isArrayEmpty(credentials)) {
     retObj.valStat = false;
     retObj.msg = 'Invalid Presentation: verifiableCredential must be a non-empty array.';
 
@@ -91,7 +80,7 @@ const validateCredentialInput = (credentials: hlpr.JSONObj): hlpr.JSONObj => {
     }
 
     // Check @context is an array and not empty
-    if (!isNotAnEmptyArray(credential['@context'])) {
+    if (isArrayEmpty(credential['@context'])) {
       retObj.valStat = false;
       retObj.msg = `${invalidMsg} @context must be a non-empty array.`;
       break;
@@ -112,7 +101,7 @@ const validateCredentialInput = (credentials: hlpr.JSONObj): hlpr.JSONObj => {
     }
 
     // Check type is an array and not empty
-    if (!isNotAnEmptyArray(credential.type)) {
+    if (isArrayEmpty(credential.type)) {
       retObj.valStat = false;
       retObj.msg = `${invalidMsg} type must be a non-empty array.`;
       break;
@@ -125,50 +114,66 @@ const validateCredentialInput = (credentials: hlpr.JSONObj): hlpr.JSONObj => {
   return (retObj);
 };
 
+/**
+ * Validates the presentation object has the proper attributes.
+ * @param presentation Presentation
+ */
 const validatePresentation = (presentation: Presentation): void => {
   const context = presentation['@context'];
   const { type, verifiableCredential, proof, presentationRequestUuid } = presentation;
-  let retObj: hlpr.JSONObj = {};
+  let retObj: JSONObj = {};
 
   // validate required fields
   if (!context) {
-    throw new hlpr.CustError(400, 'Invalid Presentation: @context is required.');
+    throw new CustError(400, 'Invalid Presentation: @context is required.');
   }
 
   if (!type) {
-    throw new hlpr.CustError(400, 'Invalid Presentation: type is required.');
+    throw new CustError(400, 'Invalid Presentation: type is required.');
   }
 
   if (!verifiableCredential) {
-    throw new hlpr.CustError(400, 'Invalid Presentation: verifiableCredential is required.');
+    throw new CustError(400, 'Invalid Presentation: verifiableCredential is required.');
   }
 
   if (!proof) {
-    throw new hlpr.CustError(400, 'Invalid Presentation: proof is required.');
+    throw new CustError(400, 'Invalid Presentation: proof is required.');
   }
 
   if (!presentationRequestUuid) {
-    throw new hlpr.CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
+    throw new CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
   }
 
-  if (!isNotAnEmptyArray(context)) {
-    throw new hlpr.CustError(400, 'Invalid Presentation: @context must be a non-empty array.');
+  if (isArrayEmpty(context)) {
+    throw new CustError(400, 'Invalid Presentation: @context must be a non-empty array.');
   }
 
-  if (!isNotAnEmptyArray(type)) {
-    throw new hlpr.CustError(400, 'Invalid Presentation: type must be a non-empty array.');
+  if (isArrayEmpty(type)) {
+    throw new CustError(400, 'Invalid Presentation: type must be a non-empty array.');
   }
 
   retObj = validateCredentialInput(verifiableCredential);
   if (!retObj.valStat) {
-    throw new hlpr.CustError(400, retObj.msg);
+    throw new CustError(400, retObj.msg);
   }
 
   // Check proof object is formatted correctly
   validateProof(proof);
 };
 
+/**
+ * Type to encapsulate the verify presentation request type attributes.
+ */
 type VerifyPresentationRequestType = express.Request<unknown, { verifiedStatus: boolean }, { presentation: Presentation, verifier: string }>;
+
+/**
+ * Request middleware for sending information regarding the user agreeing to share a credential Presentation.
+ *
+ * Note: The request body is exactly the information sent by the mobile SDK serving the prompt via the deeplink for credential sharing to your application.
+ * @param req Request
+ * @param res Response
+ * @param next NextFunction
+ */
 export const verifyPresentation = async (req: VerifyPresentationRequestType, res: express.Response, next: express.NextFunction): Promise<void> => {
   try {
     const { authorization } = req.headers;
@@ -179,28 +184,28 @@ export const verifyPresentation = async (req: VerifyPresentationRequestType, res
     const { presentation, verifier } = req.body;
 
     if (!presentation) {
-      throw new hlpr.CustError(400, 'presentation is required.');
+      throw new CustError(400, 'presentation is required.');
     }
 
     if (!verifier) {
-      throw new hlpr.CustError(400, 'verifier is required.');
+      throw new CustError(400, 'verifier is required.');
     }
 
     validatePresentation(presentation);
     const data = omit(presentation, 'proof');
 
-    const proof: hlpr.Proof = presentation.proof;
+    const proof: Proof = presentation.proof;
 
-    const didDocumentResponse = await hlpr.getDIDDoc(configData.SaaSUrl, authorization as string, proof.verificationMethod);
+    const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, proof.verificationMethod);
 
     if (didDocumentResponse instanceof Error) {
       throw didDocumentResponse;
     }
 
-    const pubKeyObj: hlpr.PublicKeyInfo[] = hlpr.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
+    const pubKeyObj: PublicKeyInfo[] = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
     if (pubKeyObj.length === 0) {
-      throw new hlpr.CustError(404, 'Public key not found for the DID');
+      throw new CustError(404, 'Public key not found for the DID');
     }
 
     // Verify the data given.  As of now only one secp256r1 public key is expected.
@@ -208,7 +213,7 @@ export const verifyPresentation = async (req: VerifyPresentationRequestType, res
     // The same scenario would be handled later.
     // verifiableCredential is an array.  As of now we are verifying the entire credential object together.  We will have to modify
     // this logic to verify each credential present separately.  We can take this up later.
-    const isPresentationVerified: boolean = hlpr.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
+    const isPresentationVerified: boolean = doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
 
     let areCredentialsValid = true;
 
@@ -250,7 +255,7 @@ export const verifyPresentation = async (req: VerifyPresentationRequestType, res
       }
     };
 
-    const receiptCallOptions: hlpr.RESTData = {
+    const receiptCallOptions: RESTData = {
       method: 'POST',
       baseUrl: configData.SaaSUrl,
       endPoint: 'receipt',
@@ -258,7 +263,7 @@ export const verifyPresentation = async (req: VerifyPresentationRequestType, res
       data: receiptOptions
     };
 
-    await hlpr.makeRESTCall(receiptCallOptions);
+    await makeNetworkRequest(receiptCallOptions);
 
     // Set the X-Auth-Token header alone
     res.setHeader('Content-Type', 'application/json');

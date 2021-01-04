@@ -4,7 +4,7 @@ import { omit } from 'lodash';
 
 import { app } from '../src';
 import { NoPresentation } from '../src/types';
-import * as hlpr from 'library-issuer-verifier-utility';
+import * as utilLib from 'library-issuer-verifier-utility';
 import { dummyAuthToken, makeDummyDidDocument } from './mocks';
 
 jest.mock('library-issuer-verifier-utility', () => {
@@ -13,13 +13,13 @@ jest.mock('library-issuer-verifier-utility', () => {
     ...actual,
     getDIDDoc: jest.fn(),
     doVerify: jest.fn(() => actual.doVerify),
-    makeRESTCall: jest.fn()
+    makeNetworkRequest: jest.fn()
   };
 });
 
-const mockGetDIDDoc = hlpr.getDIDDoc as jest.Mock;
-const mockDoVerify = hlpr.doVerify as jest.Mock;
-const mockMakeRESTCall = hlpr.makeRESTCall as jest.Mock;
+const mockGetDIDDoc = utilLib.getDIDDoc as jest.Mock;
+const mockDoVerify = utilLib.doVerify as jest.Mock;
+const mockMakeNetworkRequest = utilLib.makeNetworkRequest as jest.Mock;
 
 const callVerifyNoPresentation = (
   noPresentation: NoPresentation,
@@ -66,7 +66,7 @@ describe('POST /api/verifyNoPresentation', () => {
     const dummyDidDoc = await makeDummyDidDocument({ id: dummyNoPresentation.holder });
     const headers = { 'x-auth-token': dummyAuthToken };
     mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
-    mockMakeRESTCall.mockResolvedValue({ body: { success: true }, headers });
+    mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers });
   });
 
   afterAll(() => {
@@ -104,7 +104,7 @@ describe('POST /api/verifyNoPresentation', () => {
     it('does not return an x-auth-token header if the SaaS does not return an x-auth-token header', async () => {
       const dummySubjectDidDoc = await makeDummyDidDocument();
       const dummyApiResponse = { body: dummySubjectDidDoc };
-      mockMakeRESTCall.mockResolvedValueOnce(dummyApiResponse);
+      mockMakeNetworkRequest.mockResolvedValueOnce(dummyApiResponse);
       mockGetDIDDoc.mockResolvedValue({ body: dummySubjectDidDoc });
       response = await callVerifyNoPresentation(dummyNoPresentation, verifier, authHeader);
       expect(response.headers['x-auth-token']).toBeUndefined();

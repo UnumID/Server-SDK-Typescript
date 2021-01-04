@@ -1,18 +1,21 @@
 import * as express from 'express';
-import * as hlpr from 'library-issuer-verifier-utility';
-
 import { configData } from './config';
+import { requireAuth } from './requireAuth';
+import { getUUID, createProof, CustError, RESTData, makeNetworkRequest } from 'library-issuer-verifier-utility';
+
 import {
   PresentationRequestResponse,
   SendRequestReqBody,
   SignedPresentationRequest,
   UnsignedPresentationRequest
 } from './types';
-import { requireAuth } from './requireAuth';
 
 type SendRequestReqType = express.Request<Record<string, unknown>, PresentationRequestResponse, SendRequestReqBody>
 
-// constructs an unsigned PresentationRequest from the incoming request body
+/**
+ * Constructs an unsigned PresentationRequest from the incoming request body.
+ * @param reqBody SendRequestReqBody
+ */
 export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody): UnsignedPresentationRequest => {
   const {
     verifier,
@@ -24,7 +27,7 @@ export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody
     updatedAt
   } = reqBody;
 
-  const uuid = hlpr.getUUID();
+  const uuid = getUUID();
 
   // any/all default values must be set before signing, or signature will always fail to verify
   const now = new Date();
@@ -48,9 +51,13 @@ export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody
   };
 };
 
-// signs an unsigned PresentationRequest and attaches the resulting Proof
+/**
+ * Signs an unsigned PresentationRequest and attaches the resulting Proof
+ * @param unsignedPresentationRequest UnsignedPresentationRequest
+ * @param privateKey String
+ */
 export const constructSignedPresentationRequest = (unsignedPresentationRequest: UnsignedPresentationRequest, privateKey: string): SignedPresentationRequest => {
-  const proof = hlpr.createProof(
+  const proof = createProof(
     unsignedPresentationRequest,
     privateKey,
     unsignedPresentationRequest.verifier,
@@ -75,33 +82,33 @@ const validateSendRequestBody = (sendRequestBody: SendRequestReqBody): void => {
   } = sendRequestBody;
 
   if (!verifier) {
-    throw new hlpr.CustError(400, 'Invalid PresentationRequest options: verifier is required.');
+    throw new CustError(400, 'Invalid PresentationRequest options: verifier is required.');
   }
 
   if (typeof verifier !== 'string') {
-    throw new hlpr.CustError(400, 'Invalid PresentationRequest options: verifier must be a string.');
+    throw new CustError(400, 'Invalid PresentationRequest options: verifier must be a string.');
   }
 
   if (!holderAppUuid) {
-    throw new hlpr.CustError(400, 'Invalid PresentationRequest options: holderAppUuid is required.');
+    throw new CustError(400, 'Invalid PresentationRequest options: holderAppUuid is required.');
   }
 
   if (typeof holderAppUuid !== 'string') {
-    throw new hlpr.CustError(400, 'Invalid PresentationRequest options: holderAppUuid must be a string.');
+    throw new CustError(400, 'Invalid PresentationRequest options: holderAppUuid must be a string.');
   }
 
   if (!credentialRequests) {
-    throw new hlpr.CustError(400, 'Invalid PresentationRequest options: credentialRequests is required.');
+    throw new CustError(400, 'Invalid PresentationRequest options: credentialRequests is required.');
   }
 
   // credentialRequests input element must be an array
   if (!Array.isArray(credentialRequests)) {
-    throw new hlpr.CustError(400, 'Invalid PresentationRequest options: credentialRequests must be an array.');
+    throw new CustError(400, 'Invalid PresentationRequest options: credentialRequests must be an array.');
   }
 
   const totCredReqs = credentialRequests.length;
   if (totCredReqs === 0) {
-    throw new hlpr.CustError(400, 'Invalid PresentationRequest options: credentialRequests array must not be empty.');
+    throw new CustError(400, 'Invalid PresentationRequest options: credentialRequests array must not be empty.');
   }
 
   // credentialRequests input element should have type and issuer elements
@@ -109,37 +116,44 @@ const validateSendRequestBody = (sendRequestBody: SendRequestReqBody): void => {
     const credentialRequest = credentialRequests[i];
 
     if (!credentialRequest.type) {
-      throw new hlpr.CustError(400, 'Invalid credentialRequest: type is required.');
+      throw new CustError(400, 'Invalid credentialRequest: type is required.');
     }
 
     if (!credentialRequest.issuers) {
-      throw new hlpr.CustError(400, 'Invalid credentialRequest: issuers is required.');
+      throw new CustError(400, 'Invalid credentialRequest: issuers is required.');
     }
 
     // credentialRequests.issuers input element must be an array
     if (!Array.isArray(credentialRequest.issuers)) {
-      throw new hlpr.CustError(400, 'Invalid credentialRequest: issuers must be an array.');
+      throw new CustError(400, 'Invalid credentialRequest: issuers must be an array.');
     }
 
     const totIssuers = credentialRequest.issuers.length;
     if (totIssuers === 0) {
-      throw new hlpr.CustError(400, 'Invalid credentialRequest: issuers array must not be empty.');
+      throw new CustError(400, 'Invalid credentialRequest: issuers array must not be empty.');
     }
 
     for (const issuer of credentialRequest.issuers) {
       if (typeof issuer !== 'string') {
-        throw new hlpr.CustError(400, 'Invalid issuer: must be a string.');
+        throw new CustError(400, 'Invalid issuer: must be a string.');
       }
     }
   }
 
   // ECC Private Key is mandatory input parameter
   if (!eccPrivateKey) {
-    throw new hlpr.CustError(400, 'Invalid PresentationRequest options: eccPrivateKey is required.');
+    throw new CustError(400, 'Invalid PresentationRequest options: eccPrivateKey is required.');
   }
 };
 
-// handler for /api/sendRequest route
+/**
+ * Request middleware for sending a PresentationRequest to UnumID's SaaS.
+ *
+ * Note: handler for /api/sendRequest route
+ * @param req Request
+ * @param res Response
+ * @param next NextFunction
+ */
 export const sendRequest = async (req: SendRequestReqType, res: express.Response<PresentationRequestResponse>, next: express.NextFunction): Promise<void> => {
   try {
     const { body, headers: { authorization } } = req;
@@ -154,7 +168,7 @@ export const sendRequest = async (req: SendRequestReqType, res: express.Response
     // Create the signed presentation object from the unsignedPresentation object
     const signedPR = constructSignedPresentationRequest(unsignedPresentationRequest, req.body.eccPrivateKey);
 
-    const restData: hlpr.RESTData = {
+    const restData: RESTData = {
       method: 'POST',
       baseUrl: configData.SaaSUrl,
       endPoint: 'presentationRequest',
@@ -162,7 +176,7 @@ export const sendRequest = async (req: SendRequestReqType, res: express.Response
       data: signedPR
     };
 
-    const restResp = await hlpr.makeRESTCall<PresentationRequestResponse>(restData);
+    const restResp = await makeNetworkRequest<PresentationRequestResponse>(restData);
 
     // Copy only the required elemnts from the body of the response got from SaaS REST call
     const presentationRequestResponse = restResp.body;

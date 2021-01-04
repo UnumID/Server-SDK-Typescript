@@ -1,6 +1,6 @@
 import request from 'supertest';
 
-import * as hlpr from 'library-issuer-verifier-utility';
+import * as utilLib from 'library-issuer-verifier-utility';
 import { app } from '../src/index';
 import { PresentationRequestResponse, PresentationRequest } from '../src/types';
 import { dummyAuthToken, makeDummyPresentationRequestResponse } from './mocks';
@@ -10,22 +10,22 @@ jest.mock('library-issuer-verifier-utility', () => {
 
   return {
     ...actual,
-    makeRESTCall: jest.fn(),
+    makeNetworkRequest: jest.fn(),
     createProof: jest.fn(() => actual.createProof)
   };
 });
 
-const mockMakeRESTCall = hlpr.makeRESTCall as jest.Mock;
+const mockMakeNetworkRequest = utilLib.makeNetworkRequest as jest.Mock;
 
 const callSendRequests = (
   verifier: string,
-  credentialRequests: hlpr.JSONObj[],
+  credentialRequests: utilLib.JSONObj[],
   metadata: Record<string, unknown>,
   expiresAt: string,
   eccPrivateKey: string,
   holderAppUuid: string,
   authToken: string
-): Promise<hlpr.RESTResponse<PresentationRequestResponse>> => {
+): Promise<utilLib.RESTResponse<PresentationRequestResponse>> => {
   return (request(app)
     .post('/api/sendRequest')
     .set('Authorization', `Bearer ${authToken}`)
@@ -40,10 +40,10 @@ const callSendRequests = (
   );
 };
 
-const populateMockData = (): hlpr.JSONObj => {
+const populateMockData = (): utilLib.JSONObj => {
   const verifier = 'did:unum:a40e162e-3297-4834-a1a3-a15e96554fac';
   const holderAppUuid = 'a91a5574-e338-46bd-9405-3a72acbd1b6a';
-  const credentialRequests: hlpr.JSONObj[] = [{
+  const credentialRequests: utilLib.JSONObj[] = [{
     type: 'DummyCredential',
     issuers: ['did:unum:042b9089-9ee9-4217-844f-b01965cf569a']
   }];
@@ -60,7 +60,7 @@ const populateMockData = (): hlpr.JSONObj => {
 };
 
 describe('POST /api/sendRequest', () => {
-  let apiResponse: hlpr.RESTResponse<PresentationRequestResponse>;
+  let apiResponse: utilLib.RESTResponse<PresentationRequestResponse>;
   let presentationRequestResponse: PresentationRequestResponse;
   let presentationRequest: PresentationRequest;
 
@@ -78,7 +78,7 @@ describe('POST /api/sendRequest', () => {
     const dummyPresentationRequestResponse = await makeDummyPresentationRequestResponse();
     const headers = { 'x-auth-token': dummyAuthToken };
     const dummyApiResponse = { body: dummyPresentationRequestResponse, headers };
-    mockMakeRESTCall.mockResolvedValueOnce(dummyApiResponse);
+    mockMakeNetworkRequest.mockResolvedValueOnce(dummyApiResponse);
     apiResponse = await callSendRequests(
       verifier,
       credentialRequests,
@@ -98,15 +98,15 @@ describe('POST /api/sendRequest', () => {
   });
 
   it('signs the request', () => {
-    expect(hlpr.createProof).toBeCalled();
+    expect(utilLib.createProof).toBeCalled();
   });
 
   it('sends the request to the saas', () => {
-    expect(mockMakeRESTCall).toBeCalled();
+    expect(mockMakeNetworkRequest).toBeCalled();
   });
 
   it('sets default values before sending the request to the saas', () => {
-    const { data } = mockMakeRESTCall.mock.calls[0][0];
+    const { data } = mockMakeNetworkRequest.mock.calls[0][0];
     expect(data.uuid).toBeDefined();
     expect(data.createdAt).toBeDefined();
     expect(data.updatedAt).toBeDefined();
@@ -165,7 +165,7 @@ describe('POST /api/sendRequest', () => {
   it('does not return an x-auth-token header if the SaaS does not return an x-auth-token header', async () => {
     const dummyPresentationRequestResponse = await makeDummyPresentationRequestResponse();
     const dummyApiResponse = { body: dummyPresentationRequestResponse };
-    mockMakeRESTCall.mockResolvedValueOnce(dummyApiResponse);
+    mockMakeNetworkRequest.mockResolvedValueOnce(dummyApiResponse);
     apiResponse = await callSendRequests(
       verifier,
       credentialRequests,
@@ -180,7 +180,7 @@ describe('POST /api/sendRequest', () => {
 });
 
 describe('POST /api/sendRequest - Failure cases', () => {
-  let response: hlpr.JSONObj;
+  let response: utilLib.JSONObj;
   const {
     verifier,
     credentialRequests,
@@ -298,7 +298,7 @@ describe('POST /api/sendRequest - Failure cases', () => {
 });
 
 describe('POST /api/sendRequest - Failure cases for credentialRequests element', () => {
-  let response: hlpr.JSONObj;
+  let response: utilLib.JSONObj;
   const {
     verifier,
     credentialRequests,
@@ -417,7 +417,7 @@ describe('POST /api/sendRequest - Failure cases for credentialRequests element',
 });
 
 describe('POST /api/sendRequest - Failure cases - SaaS Errors', () => {
-  let response: hlpr.JSONObj;
+  let response: utilLib.JSONObj;
   const {
     verifier,
     credentialRequests,
@@ -431,7 +431,7 @@ describe('POST /api/sendRequest - Failure cases - SaaS Errors', () => {
   const stCode = 401;
 
   it('Response code should be ' + stCode + ' when invalid auth token is passed', async () => {
-    mockMakeRESTCall.mockRejectedValueOnce(new hlpr.CustError(401, 'Not authenticated.'));
+    mockMakeNetworkRequest.mockRejectedValueOnce(new utilLib.CustError(401, 'Not authenticated.'));
     response = await callSendRequests(
       verifier,
       credentialRequests,
@@ -445,7 +445,7 @@ describe('POST /api/sendRequest - Failure cases - SaaS Errors', () => {
   });
 
   it('returns a 400 status code when an invalid verifier did is passed', async () => {
-    mockMakeRESTCall.mockRejectedValueOnce(new hlpr.CustError(400, 'Invalid \'verifier\': expected string.'));
+    mockMakeNetworkRequest.mockRejectedValueOnce(new utilLib.CustError(400, 'Invalid \'verifier\': expected string.'));
     response = await callSendRequests(
       {} as string,
       credentialRequests,
@@ -460,7 +460,7 @@ describe('POST /api/sendRequest - Failure cases - SaaS Errors', () => {
 
   it('returns a 400 status code when an invalid issuer did is passed', async () => {
     const badCredentialRequests = [{ ...credentialRequests[0], issuers: [{}] }];
-    mockMakeRESTCall.mockRejectedValueOnce(new hlpr.CustError(400, 'Invalid \'credentialRequests\': expected \'issuers\' to be an array of strings.'));
+    mockMakeNetworkRequest.mockRejectedValueOnce(new utilLib.CustError(400, 'Invalid \'credentialRequests\': expected \'issuers\' to be an array of strings.'));
     response = await callSendRequests(
       'did',
       badCredentialRequests,

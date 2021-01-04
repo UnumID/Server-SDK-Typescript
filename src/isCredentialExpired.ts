@@ -1,5 +1,9 @@
 import { VerifiableCredential } from './types';
 
+/**
+ * Helper to assess the expiration status of a credential.
+ * @param credential VerifiableCredential
+ */
 export const isCredentialExpired = (credential: VerifiableCredential): boolean => {
   const { expirationDate } = credential;
 

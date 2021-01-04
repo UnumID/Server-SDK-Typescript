@@ -11,6 +11,7 @@ const localhost = os.hostname();
 // This is still a temporary solution as it would be much better to have a logging agent
 // at the infrastructure level not the application. For this reason not including LOGGING_ENV
 // in the app's config.ts, configData.
+// NOTE: THIS PROBABLY OUGHT TO BE DELETED PRIOR TO PUBLISHING PUBLICLY.
 const options = (process.env.LOGGING_ENV === 'internal') ? {
   host: 'logs.papertrailapp.com',
   port: parseInt(process.env.PAPERTRAIL_PORT || ''),

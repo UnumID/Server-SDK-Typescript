@@ -1,8 +1,13 @@
-import { makeRESTCall } from 'library-issuer-verifier-utility';
+import { makeNetworkRequest } from 'library-issuer-verifier-utility';
 
 import { VerifiableCredential, CredentialStatus } from './types';
 import { configData } from './config';
 
+/**
+ * Helper to check the status of a credential: verified, revoked, etc.
+ * @param credential
+ * @param authHeader
+ */
 export const checkCredentialStatus = async (credential: VerifiableCredential, authHeader: string): Promise<boolean> => {
   const options = {
     baseUrl: configData.SaaSUrl,
@@ -11,7 +16,7 @@ export const checkCredentialStatus = async (credential: VerifiableCredential, au
     header: { Authorization: authHeader }
   };
 
-  const credentialStatusResponse = await makeRESTCall<CredentialStatus>(options);
+  const credentialStatusResponse = await makeNetworkRequest<CredentialStatus>(options);
   const credentialStatus = credentialStatusResponse.body;
 
   return credentialStatus.status === 'valid';

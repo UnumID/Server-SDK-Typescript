@@ -1,6 +1,6 @@
 import {
   getUUID,
-  createToken,
+  createKeyPairSet,
   createProof,
   UnsignedCredential,
   Credential,
@@ -70,7 +70,7 @@ export const makeDummyCredential = async (options: DummyCredentialOptions): Prom
   const { unsignedCredential, encoding } = options;
   let { privateKey } = options;
   if (!privateKey) {
-    const keys = await createToken(encoding);
+    const keys = await createKeyPairSet(encoding);
     privateKey = keys.signing.privateKey;
   }
 
@@ -132,7 +132,7 @@ export const makeDummyDidDocument = async (options: Partial<DidDocument> = {}): 
   let { publicKey } = options;
 
   if (!publicKey) {
-    const keypairs = await createToken();
+    const keypairs = await createKeyPairSet();
 
     publicKey = [
       {
@@ -237,7 +237,7 @@ export const makeDummyPresentationRequestResponse = async (options: MakeDummyPre
   let { privateKey } = options;
 
   if (!privateKey) {
-    const keypairs = await createToken();
+    const keypairs = await createKeyPairSet();
     privateKey = keypairs.signing.privateKey;
   }
 
