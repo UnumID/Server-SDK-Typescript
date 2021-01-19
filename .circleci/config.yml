@@ -1,14 +1,34 @@
 version: 2.1
 
-orbs:
-  aws-cli: circleci/aws-cli@0.1.22
-  aws-eks: circleci/aws-eks@0.2.3
-  kubernetes: circleci/kubernetes@0.4.0
-
 jobs:
-  lint-and-test-job:
+  lint:
     docker:
-      - image: circleci/node:14.15.0
+      - image: circleci/node:12.7.0
+    steps:
+    - checkout
+    - restore_cache:
+        key: yarn-v1-{{ checksum "yarn.lock" }}--{{ arch }}
+
+    - restore_cache:
+        key: node-v1-{{ checksum "package.json" }}--{{ arch }}
+
+    - run: yarn install
+
+    - save_cache:
+        key: yarn-v1-{{ checksum "yarn.lock" }}--{{ arch }}
+        paths:
+          - .cache/yarn
+
+    - save_cache:
+        key: node-v1-{{ checksum "package.json" }}--{{ arch }}
+        paths:
+          - node_modules
+
+    - run: yarn lint
+
+  test:
+    docker:
+      - image: circleci/node:12.7.0
     steps:
       - checkout
       - restore_cache:
@@ -29,179 +49,14 @@ jobs:
           paths:
             - node_modules
 
-      - run: yarn lint
-      
       - run:
           name: Jest Tests
           command: yarn test
 
-  build-and-push-image:
-    executor: aws-cli/default
-    parameters:
-      reg:
-        type: string
-        default: "248606629437.dkr.ecr.us-west-2.amazonaws.com"
-      repo:
-        type: string
-    steps:
-      - checkout
-      - aws-cli/setup
-      - setup_remote_docker:
-          version: 19.03.13
-      - run:
-          command: |
-            echo Logging in to Amazon ECR...
-            $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
-            echo Building the Docker image...
-            docker build -t ${CIRCLE_SHA1} .
-            docker tag ${CIRCLE_SHA1} << parameters.reg >>/<< parameters.repo >>:dev-latest
-            docker tag ${CIRCLE_SHA1} << parameters.reg >>/<< parameters.repo >>:"${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}"
-            echo Pushing the Docker image...
-            docker push << parameters.reg >>/<< parameters.repo >>:"${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}"
-            docker push << parameters.reg >>/<< parameters.repo >>:dev-latest
-          name: Update container image
-
-  build-and-push-image-release:
-    executor: aws-cli/default
-    parameters:
-      reg:
-        type: string
-        default: "248606629437.dkr.ecr.us-west-2.amazonaws.com"
-      repo:
-        type: string
-    steps:
-      - checkout
-      - aws-cli/setup
-      - setup_remote_docker:
-          version: 19.03.13
-      - run:
-          command: |
-            echo Logging in to Amazon ECR...
-            $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
-            echo Building the Docker image...
-            docker build -t ${CIRCLE_SHA1} .
-            docker tag ${CIRCLE_SHA1} << parameters.reg >>/<< parameters.repo >>:sandbox-latest
-            docker tag ${CIRCLE_SHA1} << parameters.reg >>/<< parameters.repo >>:"${CIRCLE_TAG}"
-            echo Pushing the Docker image...
-            docker push << parameters.reg >>/<< parameters.repo >>:"${CIRCLE_TAG}"
-            docker push << parameters.reg >>/<< parameters.repo >>:sandbox-latest
-          name: Update container image
-
-  deploy-image:
-    parameters:
-      cluster-name:
-        type: string
-        default: "dev-customer-cluster"
-      repo:
-        type: string
-      deployment:
-        type: string
-
-    executor: aws-eks/python3
-    steps:
-      - kubernetes/install
-      - aws-eks/update-kubeconfig-with-authenticator:
-          install-kubectl: true
-          aws-region: ${AWS_REGION}
-          cluster-name: << parameters.cluster-name >>
-      - run:
-          command: |
-            kubectl set image deployment/<< parameters.deployment >> << parameters.deployment >>=${AWS_ECR_URL}/<< parameters.repo >>:"${CIRCLE_BRANCH}-${CIRCLE_PREVIOUS_BUILD_NUM}"
-          name: Update container image
-
-  deploy-image-release:
-    parameters:
-      cluster-name:
-        type: string
-        default: "sandbox-customer-cluster"
-      repo:
-        type: string
-      deployment:
-        type: string
-
-    executor: aws-eks/python3
-    steps:
-      - kubernetes/install
-      - aws-eks/update-kubeconfig-with-authenticator:
-          install-kubectl: true
-          aws-region: ${AWS_REGION}
-          cluster-name: << parameters.cluster-name >>
-      - run:
-          command: |
-            kubectl set image deployment/<< parameters.deployment >> << parameters.deployment >>=${AWS_ECR_URL}/<< parameters.repo >>:"${CIRCLE_TAG}"
-          name: Update container image
-
 workflows:
-  build-and-deploy-release:
-    jobs:
-      - lint-and-test-job:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
-
-      - build-and-push-image-release:
-          requires:
-            - lint-and-test-job
-          context: AWS-Dev
-          repo: verifier-server-app
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
-
-      - deploy-image-release:
-          requires:
-            - build-and-push-image-release
-          repo: verifier-server-app
-          deployment: verifier-server-app
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
-
   lint-and-test:
     jobs:
-      - lint-and-test-job:
-          filters:
-            branches:
-              ignore:
-                - development
-                - master
-                - test-circleci
-
-  build-and-deploy:
-    jobs:
-      - lint-and-test-job:
-          filters:
-            branches:
-              only:
-                - development
-                - master
-                - test-circleci
-
-      - build-and-push-image:
+      - lint
+      - test:
           requires:
-            - lint-and-test-job
-          context: AWS-Dev
-          repo: verifier-server-app
-          filters:
-            branches:
-              only:
-                - development
-                - master
-                - test-circleci
-      - deploy-image:
-          requires:
-            - build-and-push-image
-          repo: verifier-server-app
-          deployment: dev-verifier-server-app
-          filters:
-            branches:
-              only:
-                - development
-                - master
-                - test-circleci
+            - lint
