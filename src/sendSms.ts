@@ -3,7 +3,9 @@ import { ParamsDictionary } from 'express-serve-static-core';
 import { CustError, makeNetworkRequest } from 'library-issuer-verifier-utility';
 
 import { configData } from './config';
+import logger from './logger';
 import { requireAuth } from './requireAuth';
+import { AuthDto } from './types';
 
 interface SmsRequestBody {
   to: string;
@@ -50,7 +52,7 @@ const validateSmsRequestBody = (body: SmsRequestBody): void => {
  * @param res
  * @param next
  */
-export const sendSms = async (req: SendSmsRequest, res: SendSmsResponse, next: NextFunction): Promise<void> => {
+export const sendSmsRequest = async (req: SendSmsRequest, res: SendSmsResponse, next: NextFunction): Promise<void> => {
   try {
     const { body, headers: { authorization } } = req;
 
@@ -75,5 +77,44 @@ export const sendSms = async (req: SendSmsRequest, res: SendSmsResponse, next: N
     res.json(apiResponse.body);
   } catch (e) {
     next(e);
+  }
+};
+
+/**
+ * Handler to send a SMS using UnumID's SaaS.
+ * Designed to be used to present a deeplink.
+ *
+ * @param authorization
+ * @param to
+ * @param msg
+ */
+export const sendSms = async (authorization: string, to: string, msg: string): Promise<AuthDto> => {
+  try {
+    const body = { authorization, to, msg };
+
+    requireAuth(authorization);
+    validateSmsRequestBody(body);
+
+    const data = {
+      method: 'POST',
+      baseUrl: configData.SaaSUrl,
+      endPoint: 'sms',
+      header: { Authorization: authorization },
+      data: body
+    };
+
+    const apiResponse = await makeNetworkRequest<SmsResponseBody>(data);
+
+    if (!apiResponse.success) {
+      throw new CustError(500, 'Unknown error during sendSms');
+    }
+
+    const authToken = apiResponse.headers['x-auth-token'];
+
+    const result: AuthDto = { authToken };
+    return result;
+  } catch (e) {
+    logger.error(`Error during sendSms to UnumID Saas. Error: ${e}`);
+    throw e;
   }
 };
