@@ -2,13 +2,13 @@ import * as express from 'express';
 import { omit } from 'lodash';
 
 import { configData } from './config';
-import { Presentation, ReceiptDto } from './types';
+import { Presentation, Receipt, UnumDto } from './types';
 import { validateProof } from './validateProof';
 import { requireAuth } from './requireAuth';
 import { verifyCredential } from './verifyCredential';
 import { isCredentialExpired } from './isCredentialExpired';
 import { checkCredentialStatus } from './checkCredentialStatus';
-import { JSONObj, CustError, Proof, getDIDDoc, PublicKeyInfo, getKeyFromDIDDoc, doVerify, RESTData, makeNetworkRequest, isArrayEmpty } from 'library-issuer-verifier-utility';
+import { JSONObj, CustError, Proof, getDIDDoc, PublicKeyInfo, getKeyFromDIDDoc, doVerify, RESTData, makeNetworkRequest, isArrayEmpty, isArrayNotEmpty } from 'library-issuer-verifier-utility';
 import logger from './logger';
 
 /**
@@ -286,7 +286,7 @@ export const verifyPresentationRequest = async (req: VerifyPresentationRequestTy
  * @param presentation
  * @param verifier
  */
-export const verifyPresentation = async (authorization: string, presentation: Presentation, verifier: string): Promise<ReceiptDto> => {
+export const verifyPresentation = async (authorization: string, presentation: Presentation, verifier: string): Promise<UnumDto<Receipt>> => {
   try {
     requireAuth(authorization);
 
@@ -371,17 +371,22 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     };
 
     const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
-    const authToken = didDocumentResponse.headers['x-auth-token'];
+    const authTokenResp = resp && resp.headers && resp.headers['x-auth-token'] ? resp.headers['x-auth-token'] : '';
 
-    const result: ReceiptDto = {
+    // Ensuring that the authToken attribute is presented as a string or undefined. The header values can be a string | string[] so hence the complex ternary.
+    const authToken: string = <string>(isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
+
+    const result: UnumDto<Receipt> = {
       authToken,
-      uuid: resp.uuid,
-      createdAt: resp.createdAt,
-      updatedAt: resp.updatedAt,
-      type: resp.type,
-      subject: resp.subject,
-      issuer: resp.issuer,
-      isVerified
+      body: {
+        uuid: resp.uuid,
+        createdAt: resp.createdAt,
+        updatedAt: resp.updatedAt,
+        type: resp.type,
+        subject: resp.subject,
+        issuer: resp.issuer,
+        isVerified
+      }
     };
 
     return result;

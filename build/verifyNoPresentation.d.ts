@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { NoPresentation, ReceiptDto } from './types';
+import { NoPresentation, Receipt, UnumDto } from './types';
 /**
  * Validates the NoPresentation type to ensure the necessary attributes.
  * @param noPresentation NoPresentation
@@ -20,5 +20,5 @@ export declare const verifyNoPresentationRequest: (req: Request, res: Response, 
  * @param noPresentation
  * @param verifier
  */
-export declare const verifyNoPresentation: (authorization: string, noPresentation: NoPresentation, verifier: string) => Promise<ReceiptDto>;
+export declare const verifyNoPresentation: (authorization: string, noPresentation: NoPresentation, verifier: string) => Promise<UnumDto<Receipt>>;
 //# sourceMappingURL=verifyNoPresentation.d.ts.map

@@ -1,5 +1,5 @@
 import * as express from 'express';
-import { Presentation, ReceiptDto } from './types';
+import { Presentation, Receipt, UnumDto } from './types';
 /**
  * Type to encapsulate the verify presentation request type attributes.
  */
@@ -24,6 +24,6 @@ export declare const verifyPresentationRequest: (req: VerifyPresentationRequestT
  * @param presentation
  * @param verifier
  */
-export declare const verifyPresentation: (authorization: string, presentation: Presentation, verifier: string) => Promise<ReceiptDto>;
+export declare const verifyPresentation: (authorization: string, presentation: Presentation, verifier: string) => Promise<UnumDto<Receipt>>;
 export {};
 //# sourceMappingURL=verifyPresentation.d.ts.map

@@ -143,7 +143,7 @@ exports.verifyNoPresentationRequest = function (req, res, next) { return __await
  * @param verifier
  */
 exports.verifyNoPresentation = function (authorization, noPresentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, verificationMethod, signatureValue, didDocumentResponse, publicKeyInfos, _b, publicKey, encoding, unsignedNoPresentation, isVerified, receiptOptions, receiptCallOptions, resp, authToken, result, e_2;
+    var _a, verificationMethod, signatureValue, didDocumentResponse, publicKeyInfos, _b, publicKey, encoding, unsignedNoPresentation, isVerified, receiptOptions, receiptCallOptions, resp, authTokenResp, authToken, result, e_2;
     return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
@@ -179,16 +179,19 @@ exports.verifyNoPresentation = function (authorization, noPresentation, verifier
                 return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(receiptCallOptions)];
             case 2:
                 resp = _c.sent();
-                authToken = resp.headers['x-auth-token'];
+                authTokenResp = resp && resp.headers && resp.headers['x-auth-token'] ? resp.headers['x-auth-token'] : '';
+                authToken = (library_issuer_verifier_utility_1.isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (library_issuer_verifier_utility_1.isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
                 result = {
                     authToken: authToken,
-                    uuid: resp.uuid,
-                    createdAt: resp.createdAt,
-                    updatedAt: resp.updatedAt,
-                    type: resp.type,
-                    subject: resp.subject,
-                    issuer: resp.issuer,
-                    isVerified: isVerified
+                    body: {
+                        uuid: resp.uuid,
+                        createdAt: resp.createdAt,
+                        updatedAt: resp.updatedAt,
+                        type: resp.type,
+                        subject: resp.subject,
+                        issuer: resp.issuer,
+                        isVerified: isVerified
+                    }
                 };
                 return [2 /*return*/, result];
             case 3:
