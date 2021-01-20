@@ -1,13 +1,6 @@
 import { createLogger, format, transports } from 'winston';
-import { Syslog } from 'winston-syslog';
-import { configData } from './config';
-import dotenv from 'dotenv';
-import os from 'os';
 import winston from 'winston/lib/winston/config';
-
-dotenv.config();
-
-const logLevel = process.env.LOG_LEVEL || 'info'; // Turns out Winston defaults to info if the LOG_LEVEL is not present but just setting explicitly anyway.
+import { configData } from './config';
 
 // Configure the Winston logger. For the complete documentation see https://github.com/winstonjs/winston
 const logger = createLogger({
@@ -20,9 +13,13 @@ const logger = createLogger({
     format.simple()
   ),
   transports: [
-    new transports.Console({ level: logLevel })
+    new transports.Console({ level: configData.logLevel })
   ],
   silent: process.env.NODE_ENV === 'test'
 });
+
+// Printing this info here instead of in ./config to prevent a circular dependency.
+logger.debug(`Verifier SDK SaaS URL: ${configData.SaaSUrl}`);
+logger.debug(`Verifier SDK Log Level: ${configData.logLevel}`);
 
 export default logger;
