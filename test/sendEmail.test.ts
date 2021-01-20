@@ -1,95 +1,92 @@
 import request from 'supertest';
 import fetch from 'node-fetch';
-import * as helper from 'library-issuer-verifier-utility';
 
-import { EmailResponseBody } from '../src/sendEmail';
-import { app } from '../src';
+import { EmailResponseBody, sendEmail } from '../src/sendEmail';
 import { configData } from '../src/config';
-import { ErrorResponseBody } from '../src/types';
+import { ErrorResponseBody, UnumDto } from '../src/types';
+import * as utilLib from 'library-issuer-verifier-utility';
 
 jest.mock('node-fetch');
 const mockFetch = fetch as unknown as jest.Mock;
-const makeApiCall = async <T = EmailResponseBody>(
+const mockMakeNetworkRequest = utilLib.makeNetworkRequest as jest.Mock;
+const makeApiCall = async <T = undefined>(
   to: string,
   subject: string,
   textBody: string | undefined,
   htmlBody: string | undefined,
   auth: string
-): Promise<helper.RESTResponse<T>> => {
-  return request(app)
-    .post('/api/sendEmail')
-    .set('Authorization', auth)
-    .send({ to, subject, textBody, htmlBody });
+): Promise<UnumDto<undefined>> => {
+  return sendEmail(auth, to, subject, textBody, htmlBody);
 };
 
-describe('fakeTest', () => {
-  it('passes a trivial test', () => {
-    expect(true).toEqual(true);
+describe('sendEmail', () => {
+  const auth = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
+  const to = 'test+to@unumid.org';
+  const subject = 'subject';
+  const textBody = 'message';
+  const htmlBody = '<div>message</div>';
+
+  afterEach(() => {
+    mockFetch.mockClear();
   });
-});
 
-// describe('POST /api/sendEmail', () => {
-//   const auth = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
-//   const to = 'test+to@unumid.org';
-//   const subject = 'subject';
-//   const textBody = 'message';
-//   const htmlBody = '<div>message</div>';
+  describe('success', () => {
+    const mockSaasResponseBody = { success: true };
+    const mockSaasResponseHeaders = { 'x-auth-token': auth };
+    const mockSaasApiResponse = {
+      json: () => (mockSaasResponseBody),
+      headers: { raw: () => mockSaasResponseHeaders },
+      ok: true
+    };
+    let apiResponse: UnumDto<undefined>, apiResponseAuthToken: string;
 
-//   afterEach(() => {
-//     mockFetch.mockClear();
-//   });
+    beforeEach(async () => {
+      mockFetch.mockResolvedValueOnce(mockSaasApiResponse);
+      apiResponse = await makeApiCall(to, subject, textBody, undefined, auth);
+      apiResponseAuthToken = apiResponse.authToken;
+    });
 
-//   describe('success', () => {
-//     const mockSaasResponseBody = { success: true };
-//     const mockSaasResponseHeaders = { 'x-auth-token': auth };
-//     const mockSaasApiResponse = {
-//       json: () => (mockSaasResponseBody),
-//       headers: { raw: () => mockSaasResponseHeaders },
-//       ok: true
-//     };
-//     let apiResponse: helper.RESTResponse<EmailResponseBody>;
+    it('calls the SaaS api to send an email', () => {
+      const expectedUrl = `${configData.SaaSUrl}email`;
+      const expectedOptions = {
+        method: 'POST',
+        body: JSON.stringify({ to, subject, textBody }),
+        headers: { Authorization: auth, 'Content-Type': 'application/json' }
+      };
 
-//     beforeEach(async () => {
-//       mockFetch.mockResolvedValueOnce(mockSaasApiResponse);
-//       apiResponse = await makeApiCall(to, subject, textBody, undefined, auth);
-//     });
+      expect(fetch).toBeCalledWith(expectedUrl, expectedOptions);
+    });
 
-//     it('calls the SaaS api to send an email', () => {
-//       const expectedUrl = `${configData.SaaSUrl}email`;
-//       const expectedOptions = {
-//         method: 'POST',
-//         body: JSON.stringify({ to, subject, textBody }),
-//         headers: { Authorization: auth, 'Content-Type': 'application/json' }
-//       };
+    it('returns the auth token', () => {
+      expect(apiResponseAuthToken).toEqual(auth);
+    });
 
-//       expect(fetch).toBeCalledWith(expectedUrl, expectedOptions);
-//     });
+    it('returns the auth token with an array x-auth-token header', async () => {
+      const mockSaasApiResponse = {
+        json: () => (mockSaasResponseBody),
+        headers: { raw: () => ({ 'x-auth-token': [auth] }) },
+        ok: true
+      };
+      mockFetch.mockResolvedValueOnce(mockSaasApiResponse);
+      apiResponse = await makeApiCall(to, subject, textBody, undefined, auth);
+      apiResponseAuthToken = apiResponse.authToken;
+      expect(apiResponseAuthToken).toEqual(auth);
+    });
 
-//     it('returns a 200 status code', () => {
-//       expect(apiResponse.status).toEqual(200);
-//     });
+    it('does not return an auth token if the SaaS does not return an auth token', async () => {
+      const mockSaasApiResponse = {
+        json: () => (mockSaasResponseBody),
+        headers: { raw: () => ({}) },
+        ok: true
+      };
+      mockFetch.mockResolvedValueOnce(mockSaasApiResponse);
+      apiResponse = await makeApiCall(to, subject, textBody, undefined, auth);
+      apiResponseAuthToken = apiResponse.authToken;
+      expect(apiResponseAuthToken).toBe('');
+    });
+  });
 
-//     it('returns the response from the SaaS api', () => {
-//       expect(apiResponse.body).toEqual(mockSaasResponseBody);
-//     });
-
-//     it('returns the x-auth-token header returned from the SaaS api in the x-auth-token header', () => {
-//       expect(apiResponse.headers['x-auth-token']).toEqual(mockSaasResponseHeaders['x-auth-token']);
-//     });
-
-//     it('does not return an x-auth-token header if the SaaS does not return an x-auth-token header', async () => {
-//       const mockSaasApiResponse = {
-//         json: () => (mockSaasResponseBody),
-//         headers: { raw: () => ({}) },
-//         ok: true
-//       };
-//       mockFetch.mockResolvedValueOnce(mockSaasApiResponse);
-//       apiResponse = await makeApiCall(to, subject, textBody, undefined, auth);
-//       expect(apiResponse.headers['x-auth-token']).toBeUndefined();
-//     });
-//   });
-
-//   describe('failure', () => {
+//   describe('sendEmail failure', () => {
 //     let apiResponse: helper.RESTResponse<ErrorResponseBody>;
 
 //     // Missing request params
