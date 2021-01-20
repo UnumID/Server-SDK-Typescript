@@ -152,10 +152,9 @@ export const sendEmail = async (authorization: string, to: string, subject: stri
 
     // const apiResponse = await makeNetworkRequest<EmailResponseBody>(data);
     const apiResponse = await makeNetworkRequest<EmailResponseBody>(data);
+    const authTokenResp = apiResponse && apiResponse.headers && apiResponse.headers['x-auth-token'] ? apiResponse.headers['x-auth-token'] : '';
 
-    const authTokenResp = apiResponse.headers['x-auth-token'];
-
-    // Ensuring that the authToken attribute is presented as a string or undefined. The headers can be handled as string | string[] so hence the complex ternary.
+    // Ensuring that the authToken attribute is presented as a string or undefined. The header values can be a string | string[] so hence the complex ternary.
     const authToken: string = <string>(isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
 
     const result: UnumDto<undefined> = {

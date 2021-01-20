@@ -93,7 +93,7 @@ exports.sendSms = function (authorization, to, msg) { return __awaiter(void 0, v
                 if (!apiResponse.body.success) {
                     throw new library_issuer_verifier_utility_1.CustError(500, 'Unknown error during sendSms');
                 }
-                authTokenResp = apiResponse.headers['x-auth-token'];
+                authTokenResp = apiResponse.headers && apiResponse.headers['x-auth-token'] ? apiResponse.headers['x-auth-token'] : '';
                 authToken = (library_issuer_verifier_utility_1.isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (library_issuer_verifier_utility_1.isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
                 result = {
                     authToken: authToken,

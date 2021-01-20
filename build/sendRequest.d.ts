@@ -1,5 +1,5 @@
 import * as express from 'express';
-import { CredentialRequest, PresentationRequestResponse, PresentationRequestResponseDto, SendRequestReqBody, SignedPresentationRequest, UnsignedPresentationRequest } from './types';
+import { CredentialRequest, PresentationRequestResponse, SendRequestReqBody, SignedPresentationRequest, UnsignedPresentationRequest, UnumDto } from './types';
 declare type SendRequestReqType = express.Request<Record<string, unknown>, PresentationRequestResponse, SendRequestReqBody>;
 /**
  * Constructs an unsigned PresentationRequest from the incoming request body.
@@ -29,6 +29,6 @@ export declare const sendRequestRequest: (req: SendRequestReqType, res: express.
  * @param eccPrivateKey
  * @param holderAppUuid
  */
-export declare const sendRequest: (authorization: string, verifier: string, credentialRequests: CredentialRequest[], eccPrivateKey: string, holderAppUuid: string) => Promise<PresentationRequestResponseDto>;
+export declare const sendRequest: (authorization: string, verifier: string, credentialRequests: CredentialRequest[], eccPrivateKey: string, holderAppUuid: string, expirationDate?: Date | undefined, metadata?: Record<string, unknown> | undefined) => Promise<UnumDto<PresentationRequestResponse>>;
 export {};
 //# sourceMappingURL=sendRequest.d.ts.map

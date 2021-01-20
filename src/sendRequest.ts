@@ -1,15 +1,15 @@
 import * as express from 'express';
 import { configData } from './config';
 import { requireAuth } from './requireAuth';
-import { getUUID, createProof, CustError, RESTData, makeNetworkRequest, isArrayEmpty } from 'library-issuer-verifier-utility';
+import { getUUID, createProof, CustError, RESTData, makeNetworkRequest, isArrayEmpty, isArrayNotEmpty } from 'library-issuer-verifier-utility';
 
 import {
   CredentialRequest,
   PresentationRequestResponse,
-  PresentationRequestResponseDto,
   SendRequestReqBody,
   SignedPresentationRequest,
-  UnsignedPresentationRequest
+  UnsignedPresentationRequest,
+  UnumDto
 } from './types';
 import logger from './logger';
 
@@ -138,7 +138,7 @@ const validateSendRequestBodyRequest = (sendRequestBody: SendRequestReqBody): vo
 
     for (const issuer of credentialRequest.issuers) {
       if (typeof issuer !== 'string') {
-        throw new CustError(400, 'Invalid issuer: must be a string.');
+        throw new CustError(400, 'Invalid credentialRequest: issuers array element must be a string.');
       }
     }
   }
@@ -198,70 +198,6 @@ export const sendRequestRequest = async (req: SendRequestReqType, res: express.R
   }
 };
 
-// validates incoming request body
-const validateSendRequestBody = (verifier: string, credentialRequests: CredentialRequest[], eccPrivateKey: string, holderAppUuid: string): void => {
-  if (!verifier) {
-    throw new CustError(400, 'Invalid PresentationRequest options: verifier is required.');
-  }
-
-  if (typeof verifier !== 'string') {
-    throw new CustError(400, 'Invalid PresentationRequest options: verifier must be a string.');
-  }
-
-  if (!holderAppUuid) {
-    throw new CustError(400, 'Invalid PresentationRequest options: holderAppUuid is required.');
-  }
-
-  if (typeof holderAppUuid !== 'string') {
-    throw new CustError(400, 'Invalid PresentationRequest options: holderAppUuid must be a string.');
-  }
-
-  if (!credentialRequests) {
-    throw new CustError(400, 'Invalid PresentationRequest options: credentialRequests is required.');
-  }
-
-  // credentialRequests input element must be an array
-  if (!Array.isArray(credentialRequests)) {
-    throw new CustError(400, 'Invalid PresentationRequest options: credentialRequests must be an array.');
-  }
-
-  if (isArrayEmpty(credentialRequests)) {
-    throw new CustError(400, 'Invalid PresentationRequest options: credentialRequests array must not be empty.');
-  }
-
-  // credentialRequests input element should have type and issuer elements
-  for (const credentialRequest of credentialRequests) {
-    if (!credentialRequest.type) {
-      throw new CustError(400, 'Invalid credentialRequest: type is required.');
-    }
-
-    if (!credentialRequest.issuers) {
-      throw new CustError(400, 'Invalid credentialRequest: issuers is required.');
-    }
-
-    // credentialRequests.issuers input element must be an array
-    if (!Array.isArray(credentialRequest.issuers)) {
-      throw new CustError(400, 'Invalid credentialRequest: issuers must be an array.');
-    }
-
-    const totIssuers = credentialRequest.issuers.length;
-    if (totIssuers === 0) {
-      throw new CustError(400, 'Invalid credentialRequest: issuers array must not be empty.');
-    }
-
-    for (const issuer of credentialRequest.issuers) {
-      if (typeof issuer !== 'string') {
-        throw new CustError(400, 'Invalid issuer: must be a string.');
-      }
-    }
-  }
-
-  // ECC Private Key is mandatory input parameter
-  if (!eccPrivateKey) {
-    throw new CustError(400, 'Invalid PresentationRequest options: eccPrivateKey is required.');
-  }
-};
-
 /**
  * Handler for sending a PresentationRequest to UnumID's SaaS.
  * @param authorization
@@ -270,14 +206,14 @@ const validateSendRequestBody = (verifier: string, credentialRequests: Credentia
  * @param eccPrivateKey
  * @param holderAppUuid
  */
-export const sendRequest = async (authorization:string, verifier: string, credentialRequests: CredentialRequest[], eccPrivateKey: string, holderAppUuid: string): Promise<PresentationRequestResponseDto> => {
+export const sendRequest = async (authorization:string, verifier: string, credentialRequests: CredentialRequest[], eccPrivateKey: string, holderAppUuid: string, expirationDate?: Date, metadata?: Record<string, unknown>): Promise<UnumDto<PresentationRequestResponse>> => {
   try {
     requireAuth(authorization);
 
-    const body = { verifier, credentialRequests, eccPrivateKey, holderAppUuid };
+    const body: SendRequestReqBody = { verifier, credentialRequests, eccPrivateKey, holderAppUuid, expiresAt: expirationDate, metadata };
 
     // Validate inputs
-    validateSendRequestBody(verifier, credentialRequests, eccPrivateKey, holderAppUuid);
+    validateSendRequestBodyRequest(body);
 
     const unsignedPresentationRequest = constructUnsignedPresentationRequest(body);
 
@@ -293,9 +229,12 @@ export const sendRequest = async (authorization:string, verifier: string, creden
     };
 
     const restResp = await makeNetworkRequest<PresentationRequestResponse>(restData);
+    const authTokenResp = restResp && restResp.headers && restResp.headers['x-auth-token'] ? restResp.headers['x-auth-token'] : '';
 
-    const authToken = restResp.headers['x-auth-token'];
-    const presentationRequestResponse: PresentationRequestResponseDto = { ...restResp.body, authToken };
+    // Ensuring that the authToken attribute is presented as a string or undefined. The header values can be a string | string[] so hence the complex ternary.
+    const authToken: string = <string>(isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
+
+    const presentationRequestResponse: UnumDto<PresentationRequestResponse> = { body: { ...restResp.body }, authToken };
 
     return presentationRequestResponse;
   } catch (error) {

@@ -201,12 +201,12 @@ export interface UnumDto<T = Record<string, unknown>> {
   body: T;
 }
 
-/**
- * Encapsulates a Data Transfer Object for a PresentationRequestResponseDto entity.
- */
-export interface PresentationRequestResponseDto extends PresentationRequestResponse {
-  authToken: string | string[];
-}
+// /**
+//  * Encapsulates a Data Transfer Object for a PresentationRequestResponseDto entity.
+//  */
+// export interface PresentationRequestResponseDto extends PresentationRequestResponse {
+//   authToken: string | string[];
+// }
 
 /**
  * Encapsulates a Reciept entity.
