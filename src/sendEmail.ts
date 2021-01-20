@@ -168,7 +168,7 @@ export const sendEmail = async (authorization: string, to: string, subject: stri
     // }
 
     // ensuring that the authToken attribute is presented as a string or undefined. the headers can be handled as string | string[] so can be little tricky.
-    const authToken: string = <string>(isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : ''));
+    const authToken: string = <string>(isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
 
     const result: UnumDto<undefined> = {
       // authToken: isArrayEmpty(authToken) ? undefined : authToken[0],

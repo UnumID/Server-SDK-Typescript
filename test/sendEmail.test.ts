@@ -1,15 +1,13 @@
-import request from 'supertest';
 import fetch from 'node-fetch';
 
-import { EmailResponseBody, sendEmail } from '../src/sendEmail';
+import { sendEmail } from '../src/sendEmail';
 import { configData } from '../src/config';
 import { ErrorResponseBody, UnumDto } from '../src/types';
 import * as utilLib from 'library-issuer-verifier-utility';
 
 jest.mock('node-fetch');
 const mockFetch = fetch as unknown as jest.Mock;
-const mockMakeNetworkRequest = utilLib.makeNetworkRequest as jest.Mock;
-const makeApiCall = async <T = undefined>(
+const makeApiCall = async (
   to: string,
   subject: string,
   textBody: string | undefined,
@@ -82,61 +80,102 @@ describe('sendEmail', () => {
       mockFetch.mockResolvedValueOnce(mockSaasApiResponse);
       apiResponse = await makeApiCall(to, subject, textBody, undefined, auth);
       apiResponseAuthToken = apiResponse.authToken;
-      expect(apiResponseAuthToken).toBe('');
+      expect(apiResponseAuthToken).toBe(undefined);
     });
   });
 
-//   describe('sendEmail failure', () => {
-//     let apiResponse: helper.RESTResponse<ErrorResponseBody>;
+  describe('sendEmail failure', () => {
+    let apiResponse: UnumDto<undefined>;
 
-//     // Missing request params
-//     it('returns a 400 status code with a descriptive error message if to is missing', async () => {
-//       apiResponse = await makeApiCall<ErrorResponseBody>(undefined as string, subject, textBody, undefined, auth);
-//       expect(apiResponse.status).toEqual(400);
-//       expect(apiResponse.body.message).toEqual('to is required.');
-//     });
+    // Missing request params
+    it('returns a CustError with a descriptive error message if to is missing', async () => {
+      try {
+        await makeApiCall<ErrorResponseBody>('', subject, textBody, undefined, auth);
+        fail();
+      } catch (e) {
+        expect(e).toEqual(new utilLib.CustError(400, 'to is required.'));
+        expect(e.code).toEqual(400);
+        expect(e.message).toEqual('to is required.');
+      }
+    });
 
-//     it('returns a 400 status code with a descriptive error message if subject is missing', async () => {
-//       apiResponse = await makeApiCall<ErrorResponseBody>(to, undefined as string, textBody, undefined, auth);
-//       expect(apiResponse.status).toEqual(400);
-//       expect(apiResponse.body.message).toEqual('subject is required.');
-//     });
+    it('returns a CustError with a descriptive error message if subject is missing', async () => {
+      try {
+        await makeApiCall<ErrorResponseBody>(to, '', textBody, undefined, auth);
+        fail();
+      } catch (e) {
+        expect(e).toEqual(new utilLib.CustError(400, 'subject is required.'));
+        expect(e.code).toEqual(400);
+        expect(e.message).toEqual('subject is required.');
+      }
+    });
 
-//     it('returns a 400 status code with a descriptive error message if both textBody and htmlBody are missing', async () => {
-//       apiResponse = await makeApiCall<ErrorResponseBody>(to, subject, undefined, undefined, auth);
-//       expect(apiResponse.status).toEqual(400);
-//       expect(apiResponse.body.message).toEqual('Either textBody or htmlBody is required.');
-//     });
+    it('returns a CustError with a descriptive error message if both textBody and htmlBody are missing', async () => {
+      try {
+        await makeApiCall<ErrorResponseBody>(to, subject, undefined, undefined, auth);
+        fail();
+      } catch (e) {
+        expect(e).toEqual(new utilLib.CustError(400, 'Either textBody or htmlBody is required.'));
+        expect(e.code).toEqual(400);
+        expect(e.message).toEqual('Either textBody or htmlBody is required.');
+      }
+    });
 
-//     // Wrong type request params
-//     it('returns a 400 status code with a descriptive error message if to is not a string', async () => {
-//       apiResponse = await makeApiCall<ErrorResponseBody>({} as string, subject, textBody, undefined, auth);
-//       expect(apiResponse.status).toEqual(400);
-//       expect(apiResponse.body.message).toEqual('Invalid to: expected string.');
-//     });
+    // Wrong type request params
+    it('returns a CustError with a descriptive error message if to is not a string', async () => {
+      try {
+        await makeApiCall<ErrorResponseBody>({} as string, subject, textBody, undefined, auth);
+        fail();
+      } catch (e) {
+        expect(e).toEqual(new utilLib.CustError(400, 'Invalid to: expected string.'));
+        expect(e.code).toEqual(400);
+        expect(e.message).toEqual('Invalid to: expected string.');
+      }
+    });
 
-//     it('returns a 400 status code with a descriptive error message if subject is not a string', async () => {
-//       apiResponse = await makeApiCall<ErrorResponseBody>(to, {} as string, textBody, undefined, auth);
-//       expect(apiResponse.status).toEqual(400);
-//       expect(apiResponse.body.message).toEqual('Invalid subject: expected string.');
-//     });
+    it('returns a CustError with a descriptive error message if subject is not a string', async () => {
+      try {
+        await makeApiCall<ErrorResponseBody>(to, {} as string, textBody, undefined, auth);
+        fail();
+      } catch (e) {
+        expect(e).toEqual(new utilLib.CustError(400, 'Invalid subject: expected string.'));
+        expect(e.code).toEqual(400);
+        expect(e.message).toEqual('Invalid subject: expected string.');
+      }
+    });
 
-//     it('returns a 400 status code with a descriptive error message if textBody is present and not a string', async () => {
-//       apiResponse = await makeApiCall<ErrorResponseBody>(to, subject, {} as string, undefined, auth);
-//       expect(apiResponse.status).toEqual(400);
-//       expect(apiResponse.body.message).toEqual('Invalid textBody: expected string.');
-//     });
+    it('returns a CustError with a descriptive error message if textBody is present and not a string', async () => {
+      try {
+        await makeApiCall<ErrorResponseBody>(to, subject, {} as string, undefined, auth);
+        fail();
+      } catch (e) {
+        expect(e).toEqual(new utilLib.CustError(400, 'Invalid textBody: expected string.'));
+        expect(e.code).toEqual(400);
+        expect(e.message).toEqual('Invalid textBody: expected string.');
+      }
+    });
 
-//     it('returns a 400 status code with a descriptive error message if htmlBody is present and not a string', async () => {
-//       apiResponse = await makeApiCall<ErrorResponseBody>(to, subject, undefined, {} as string, auth);
-//       expect(apiResponse.status).toEqual(400);
-//       expect(apiResponse.body.message).toEqual('Invalid htmlBody: expected string.');
-//     });
+    it('returns a CustError with a descriptive error message if htmlBody is present and not a string', async () => {
+      try {
+        await makeApiCall<ErrorResponseBody>(to, subject, undefined, {} as string, auth);
+        fail();
+      } catch (e) {
+        expect(e).toEqual(new utilLib.CustError(400, 'Invalid htmlBody: expected string.'));
+        expect(e.code).toEqual(400);
+        expect(e.message).toEqual('Invalid htmlBody: expected string.');
+      }
+    });
 
-//     // Missing auth header
-//     it('returns a 401 status code if authorization is missing', async () => {
-//       apiResponse = await makeApiCall<ErrorResponseBody>(to, subject, textBody, undefined, null as string);
-//       expect(apiResponse.status).toEqual(401);
-//     });
-//   });
-// });
+    // Missing auth header
+    it('returns a CustError with a descriptive error message if authorization is missing', async () => {
+      try {
+        await makeApiCall<ErrorResponseBody>(to, subject, textBody, undefined, null as string);
+        fail();
+      } catch (e) {
+        expect(e).toEqual(new utilLib.CustError(401, 'No authentication string. Not authenticated.'));
+        expect(e.code).toEqual(401);
+        expect(e.message).toEqual('No authentication string. Not authenticated.');
+      }
+    });
+  });
+});

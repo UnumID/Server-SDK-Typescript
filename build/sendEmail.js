@@ -169,7 +169,7 @@ exports.sendEmail = function (authorization, to, subject, textBody, htmlBody) { 
             case 1:
                 apiResponse = _a.sent();
                 authTokenResp = apiResponse.headers['x-auth-token'];
-                authToken = (library_issuer_verifier_utility_1.isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (library_issuer_verifier_utility_1.isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : ''));
+                authToken = (library_issuer_verifier_utility_1.isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (library_issuer_verifier_utility_1.isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
                 result = {
                     // authToken: isArrayEmpty(authToken) ? undefined : authToken[0],
                     // authToken: isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined),

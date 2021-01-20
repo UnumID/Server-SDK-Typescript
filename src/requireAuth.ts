@@ -6,7 +6,7 @@ import { CustError } from 'library-issuer-verifier-utility';
  */
 export const requireAuth = (auth: string | undefined): void => {
   if (!auth) {
-    throw new CustError(401, 'Not authenticated.');
+    throw new CustError(401, 'No authentication string. Not authenticated.');
   }
 
   // We assume that the header is a well-formed Bearer token with a single space
@@ -15,6 +15,6 @@ export const requireAuth = (auth: string | undefined): void => {
   const token = auth.slice(7);
 
   if (!token) {
-    throw new CustError(401, 'Not authenticated.');
+    throw new CustError(401, 'No authentication token. Not authenticated.');
   }
 };
