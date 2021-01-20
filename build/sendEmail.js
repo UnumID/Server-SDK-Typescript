@@ -149,8 +149,9 @@ var validateEmailRequestBody = function (to, subject, textBody, htmlBody) {
  * @param textBody
  * @param htmlBody
  */
+// export const sendEmail = async (authorization: string, to: string, subject: string, textBody: string, htmlBody: string): Promise<AuthDto> => {
 exports.sendEmail = function (authorization, to, subject, textBody, htmlBody) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, apiResponse, authToken, result, e_2;
+    var data, apiResponse, authTokenResp, authToken, result, e_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -167,9 +168,13 @@ exports.sendEmail = function (authorization, to, subject, textBody, htmlBody) { 
                 return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(data)];
             case 1:
                 apiResponse = _a.sent();
-                authToken = apiResponse.headers['x-auth-token'];
+                authTokenResp = apiResponse.headers['x-auth-token'];
+                authToken = (library_issuer_verifier_utility_1.isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (library_issuer_verifier_utility_1.isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : ''));
                 result = {
-                    authToken: authToken
+                    // authToken: isArrayEmpty(authToken) ? undefined : authToken[0],
+                    // authToken: isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined),
+                    authToken: authToken,
+                    body: undefined
                 };
                 return [2 /*return*/, result];
             case 2:

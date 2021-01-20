@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
-import { CustError, makeNetworkRequest } from 'library-issuer-verifier-utility';
+import { CustError, isArrayEmpty, isArrayNotEmpty, JSONObj, makeNetworkRequest } from 'library-issuer-verifier-utility';
 
 import { configData } from './config';
 import logger from './logger';
 import { requireAuth } from './requireAuth';
-import { AuthDto } from './types';
+import { UnumDto } from './types';
 
 interface EmailRequestBody {
   to: string;
@@ -137,7 +137,8 @@ const validateEmailRequestBody = (to: string, subject: string, textBody: string,
  * @param textBody
  * @param htmlBody
  */
-export const sendEmail = async (authorization: string, to: string, subject: string, textBody: string, htmlBody: string): Promise<AuthDto> => {
+// export const sendEmail = async (authorization: string, to: string, subject: string, textBody: string, htmlBody: string): Promise<AuthDto> => {
+export const sendEmail = async (authorization: string, to: string, subject: string, textBody: string, htmlBody: string): Promise<UnumDto<undefined>> => {
   try {
     requireAuth(authorization);
     validateEmailRequestBody(to, subject, textBody, htmlBody);
@@ -150,11 +151,30 @@ export const sendEmail = async (authorization: string, to: string, subject: stri
       data: { to, subject, textBody, htmlBody }
     };
 
+    // const apiResponse = await makeNetworkRequest<EmailResponseBody>(data);
     const apiResponse = await makeNetworkRequest<EmailResponseBody>(data);
 
-    const authToken = apiResponse.headers['x-auth-token'];
-    const result: AuthDto = {
-      authToken: authToken
+    const authTokenResp = apiResponse.headers['x-auth-token'];
+    // let authToken: string;
+
+    // if (isArrayEmpty(authTokenResp) && authTokenResp) {
+    //   // either undefined or a single string
+    //   authToken = authTokenResp;
+    //   // if (authTokenResp) {
+    //   //   authToken = authTokenResp;
+    //   // }
+    // } else {
+    //   authToken = authTokenResp[0];
+    // }
+
+    // ensuring that the authToken attribute is presented as a string or undefined. the headers can be handled as string | string[] so can be little tricky.
+    const authToken: string = <string>(isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : ''));
+
+    const result: UnumDto<undefined> = {
+      // authToken: isArrayEmpty(authToken) ? undefined : authToken[0],
+      // authToken: isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined),
+      authToken,
+      body: undefined
     };
 
     return result;

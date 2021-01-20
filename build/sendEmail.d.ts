@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
-import { AuthDto } from './types';
+import { UnumDto } from './types';
 interface EmailRequestBody {
     to: string;
     subject: string;
@@ -30,6 +30,6 @@ export declare const sendEmailRequest: (req: SendEmailRequest, res: SendEmailRes
  * @param textBody
  * @param htmlBody
  */
-export declare const sendEmail: (authorization: string, to: string, subject: string, textBody: string, htmlBody: string) => Promise<AuthDto>;
+export declare const sendEmail: (authorization: string, to: string, subject: string, textBody: string, htmlBody: string) => Promise<UnumDto<undefined>>;
 export {};
 //# sourceMappingURL=sendEmail.d.ts.map

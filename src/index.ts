@@ -2,7 +2,7 @@ import { registerVerifier } from './registerVerifier';
 import { sendEmail } from './sendEmail';
 import { sendRequest } from './sendRequest';
 import { sendSms } from './sendSms';
-import { AuthDto, NoPresentation, Presentation, PresentationRequestResponseDto, Receipt, ReceiptDto, RegisteredVerifierDto } from './types';
+import { NoPresentation, Presentation, PresentationRequestResponseDto, Receipt, ReceiptDto, RegisteredVerifierDto, UnumDto } from './types';
 import { verifyNoPresentation } from './verifyNoPresentation';
 import { verifyPresentation } from './verifyPresentation';
 
@@ -14,7 +14,7 @@ export {
   verifyNoPresentation,
   verifyPresentation,
   RegisteredVerifierDto,
-  AuthDto,
+  UnumDto,
   PresentationRequestResponseDto,
   Receipt,
   ReceiptDto,

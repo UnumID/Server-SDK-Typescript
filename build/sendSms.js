@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendSms = exports.sendSmsRequest = void 0;
+exports.sendSms = void 0;
 var library_issuer_verifier_utility_1 = require("library-issuer-verifier-utility");
 var config_1 = require("./config");
 var logger_1 = __importDefault(require("./logger"));
@@ -64,48 +64,6 @@ var validateSmsRequestBody = function (body) {
     }
 };
 /**
- * Request middleware to send a SMS using UnumID's SaaS.
- * Designed to be used to present a deeplink.
- *
- * Note: This message will be delivered from an UnumID associated phone number.
- * @param req
- * @param res
- * @param next
- */
-exports.sendSmsRequest = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var body, authorization, data, apiResponse, authToken, e_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 2, , 3]);
-                body = req.body, authorization = req.headers.authorization;
-                requireAuth_1.requireAuth(authorization);
-                validateSmsRequestBody(body);
-                data = {
-                    method: 'POST',
-                    baseUrl: config_1.configData.SaaSUrl,
-                    endPoint: 'sms',
-                    header: { Authorization: authorization },
-                    data: body
-                };
-                return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(data)];
-            case 1:
-                apiResponse = _a.sent();
-                authToken = apiResponse.headers['x-auth-token'];
-                if (authToken) {
-                    res.setHeader('x-auth-token', apiResponse.headers['x-auth-token']);
-                }
-                res.json(apiResponse.body);
-                return [3 /*break*/, 3];
-            case 2:
-                e_1 = _a.sent();
-                next(e_1);
-                return [3 /*break*/, 3];
-            case 3: return [2 /*return*/];
-        }
-    });
-}); };
-/**
  * Handler to send a SMS using UnumID's SaaS.
  * Designed to be used to present a deeplink.
  *
@@ -114,7 +72,7 @@ exports.sendSmsRequest = function (req, res, next) { return __awaiter(void 0, vo
  * @param msg
  */
 exports.sendSms = function (authorization, to, msg) { return __awaiter(void 0, void 0, void 0, function () {
-    var body, data, apiResponse, authToken, result, e_2;
+    var body, data, apiResponse, authTokenResp, authToken, result, e_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -135,13 +93,17 @@ exports.sendSms = function (authorization, to, msg) { return __awaiter(void 0, v
                 if (!apiResponse.success) {
                     throw new library_issuer_verifier_utility_1.CustError(500, 'Unknown error during sendSms');
                 }
-                authToken = apiResponse.headers['x-auth-token'];
-                result = { authToken: authToken };
+                authTokenResp = apiResponse.headers['x-auth-token'];
+                authToken = (library_issuer_verifier_utility_1.isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (library_issuer_verifier_utility_1.isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : ''));
+                result = {
+                    authToken: authToken,
+                    body: undefined
+                };
                 return [2 /*return*/, result];
             case 2:
-                e_2 = _a.sent();
-                logger_1.default.error("Error during sendSms to UnumID Saas. Error: " + e_2);
-                throw e_2;
+                e_1 = _a.sent();
+                logger_1.default.error("Error during sendSms to UnumID Saas. Error: " + e_1);
+                throw e_1;
             case 3: return [2 /*return*/];
         }
     });
