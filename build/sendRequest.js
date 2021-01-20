@@ -50,7 +50,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendRequest = exports.sendRequestRequest = exports.constructSignedPresentationRequest = exports.constructUnsignedPresentationRequest = void 0;
+exports.sendRequest = exports.constructSignedPresentationRequest = exports.constructUnsignedPresentationRequest = void 0;
 var config_1 = require("./config");
 var requireAuth_1 = require("./requireAuth");
 var library_issuer_verifier_utility_1 = require("library-issuer-verifier-utility");
@@ -93,7 +93,7 @@ exports.constructSignedPresentationRequest = function (unsignedPresentationReque
     return signedPresentationRequest;
 };
 // validates incoming request body
-var validateSendRequestBodyRequest = function (sendRequestBody) {
+var validateSendRequestBody = function (sendRequestBody) {
     var verifier = sendRequestBody.verifier, credentialRequests = sendRequestBody.credentialRequests, eccPrivateKey = sendRequestBody.eccPrivateKey, holderAppUuid = sendRequestBody.holderAppUuid;
     if (!verifier) {
         throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid PresentationRequest options: verifier is required.');
@@ -148,53 +148,6 @@ var validateSendRequestBodyRequest = function (sendRequestBody) {
     }
 };
 /**
- * Request middleware for sending a PresentationRequest to UnumID's SaaS.
- *
- * Note: handler for /api/sendRequest route
- * @param req Request
- * @param res Response
- * @param next NextFunction
- */
-exports.sendRequestRequest = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var body, authorization, unsignedPresentationRequest, signedPR, restData, restResp, presentationRequestResponse, authToken, error_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 2, , 3]);
-                body = req.body, authorization = req.headers.authorization;
-                requireAuth_1.requireAuth(authorization);
-                // Validate inputs
-                validateSendRequestBodyRequest(body);
-                unsignedPresentationRequest = exports.constructUnsignedPresentationRequest(body);
-                signedPR = exports.constructSignedPresentationRequest(unsignedPresentationRequest, req.body.eccPrivateKey);
-                restData = {
-                    method: 'POST',
-                    baseUrl: config_1.configData.SaaSUrl,
-                    endPoint: 'presentationRequest',
-                    header: { Authorization: authorization },
-                    data: signedPR
-                };
-                return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(restData)];
-            case 1:
-                restResp = _a.sent();
-                presentationRequestResponse = restResp.body;
-                // Set the X-Auth-Token header alone
-                res.setHeader('Content-Type', 'application/json');
-                authToken = restResp.headers['x-auth-token'];
-                if (authToken) {
-                    res.setHeader('x-auth-token', restResp.headers['x-auth-token']);
-                }
-                res.send(presentationRequestResponse);
-                return [3 /*break*/, 3];
-            case 2:
-                error_1 = _a.sent();
-                next(error_1);
-                return [3 /*break*/, 3];
-            case 3: return [2 /*return*/];
-        }
-    });
-}); };
-/**
  * Handler for sending a PresentationRequest to UnumID's SaaS.
  * @param authorization
  * @param verifier
@@ -203,7 +156,7 @@ exports.sendRequestRequest = function (req, res, next) { return __awaiter(void 0
  * @param holderAppUuid
  */
 exports.sendRequest = function (authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata) { return __awaiter(void 0, void 0, void 0, function () {
-    var body, unsignedPresentationRequest, signedPR, restData, restResp, authTokenResp, authToken, presentationRequestResponse, error_2;
+    var body, unsignedPresentationRequest, signedPR, restData, restResp, authTokenResp, authToken, presentationRequestResponse, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -211,7 +164,7 @@ exports.sendRequest = function (authorization, verifier, credentialRequests, ecc
                 requireAuth_1.requireAuth(authorization);
                 body = { verifier: verifier, credentialRequests: credentialRequests, eccPrivateKey: eccPrivateKey, holderAppUuid: holderAppUuid, expiresAt: expirationDate, metadata: metadata };
                 // Validate inputs
-                validateSendRequestBodyRequest(body);
+                validateSendRequestBody(body);
                 unsignedPresentationRequest = exports.constructUnsignedPresentationRequest(body);
                 signedPR = exports.constructSignedPresentationRequest(unsignedPresentationRequest, eccPrivateKey);
                 restData = {
@@ -229,9 +182,9 @@ exports.sendRequest = function (authorization, verifier, credentialRequests, ecc
                 presentationRequestResponse = { body: __assign({}, restResp.body), authToken: authToken };
                 return [2 /*return*/, presentationRequestResponse];
             case 2:
-                error_2 = _a.sent();
-                logger_1.default.error("Error sending request to use UnumID Saas. Error " + error_2);
-                throw error_2;
+                error_1 = _a.sent();
+                logger_1.default.error("Error sending request to use UnumID Saas. Error " + error_1);
+                throw error_1;
             case 3: return [2 /*return*/];
         }
     });

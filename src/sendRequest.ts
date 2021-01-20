@@ -76,7 +76,7 @@ export const constructSignedPresentationRequest = (unsignedPresentationRequest: 
 };
 
 // validates incoming request body
-const validateSendRequestBodyRequest = (sendRequestBody: SendRequestReqBody): void => {
+const validateSendRequestBody = (sendRequestBody: SendRequestReqBody): void => {
   const {
     verifier,
     credentialRequests,
@@ -150,55 +150,6 @@ const validateSendRequestBodyRequest = (sendRequestBody: SendRequestReqBody): vo
 };
 
 /**
- * Request middleware for sending a PresentationRequest to UnumID's SaaS.
- *
- * Note: handler for /api/sendRequest route
- * @param req Request
- * @param res Response
- * @param next NextFunction
- */
-export const sendRequestRequest = async (req: SendRequestReqType, res: express.Response<PresentationRequestResponse>, next: express.NextFunction): Promise<void> => {
-  try {
-    const { body, headers: { authorization } } = req;
-
-    requireAuth(authorization);
-
-    // Validate inputs
-    validateSendRequestBodyRequest(body);
-
-    const unsignedPresentationRequest = constructUnsignedPresentationRequest(body);
-
-    // Create the signed presentation object from the unsignedPresentation object
-    const signedPR = constructSignedPresentationRequest(unsignedPresentationRequest, req.body.eccPrivateKey);
-
-    const restData: RESTData = {
-      method: 'POST',
-      baseUrl: configData.SaaSUrl,
-      endPoint: 'presentationRequest',
-      header: { Authorization: authorization },
-      data: signedPR
-    };
-
-    const restResp = await makeNetworkRequest<PresentationRequestResponse>(restData);
-
-    // Copy only the required elemnts from the body of the response got from SaaS REST call
-    const presentationRequestResponse = restResp.body;
-
-    // Set the X-Auth-Token header alone
-    res.setHeader('Content-Type', 'application/json');
-    const authToken = restResp.headers['x-auth-token'];
-
-    if (authToken) {
-      res.setHeader('x-auth-token', restResp.headers['x-auth-token']);
-    }
-
-    res.send(presentationRequestResponse);
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
  * Handler for sending a PresentationRequest to UnumID's SaaS.
  * @param authorization
  * @param verifier
@@ -213,7 +164,7 @@ export const sendRequest = async (authorization:string, verifier: string, creden
     const body: SendRequestReqBody = { verifier, credentialRequests, eccPrivateKey, holderAppUuid, expiresAt: expirationDate, metadata };
 
     // Validate inputs
-    validateSendRequestBodyRequest(body);
+    validateSendRequestBody(body);
 
     const unsignedPresentationRequest = constructUnsignedPresentationRequest(body);
 

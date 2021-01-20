@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyPresentation = exports.verifyPresentationRequest = void 0;
+exports.verifyPresentation = void 0;
 var lodash_1 = require("lodash");
 var config_1 = require("./config");
 var validateProof_1 = require("./validateProof");
@@ -173,120 +173,13 @@ var validatePresentation = function (presentation) {
     validateProof_1.validateProof(proof);
 };
 /**
- * Request middleware for sending information regarding the user agreeing to share a credential Presentation.
- *
- * Note: The request body is exactly the information sent by the mobile SDK serving the prompt via the deeplink for credential sharing to your application.
- * @param req Request
- * @param res Response
- * @param next NextFunction
- */
-exports.verifyPresentationRequest = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var authorization, _a, presentation, verifier, data, proof, didDocumentResponse, pubKeyObj, isPresentationVerified, areCredentialsValid, _i, _b, credential, isExpired, isStatusValid, isVerified, verifiedStatus, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, authToken, error_1;
-    return __generator(this, function (_c) {
-        switch (_c.label) {
-            case 0:
-                _c.trys.push([0, 8, , 9]);
-                authorization = req.headers.authorization;
-                requireAuth_1.requireAuth(authorization);
-                _a = req.body, presentation = _a.presentation, verifier = _a.verifier;
-                if (!presentation) {
-                    throw new library_issuer_verifier_utility_1.CustError(400, 'presentation is required.');
-                }
-                if (!verifier) {
-                    throw new library_issuer_verifier_utility_1.CustError(400, 'verifier is required.');
-                }
-                validatePresentation(presentation);
-                data = lodash_1.omit(presentation, 'proof');
-                proof = presentation.proof;
-                return [4 /*yield*/, library_issuer_verifier_utility_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, proof.verificationMethod)];
-            case 1:
-                didDocumentResponse = _c.sent();
-                if (didDocumentResponse instanceof Error) {
-                    throw didDocumentResponse;
-                }
-                pubKeyObj = library_issuer_verifier_utility_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
-                if (pubKeyObj.length === 0) {
-                    throw new library_issuer_verifier_utility_1.CustError(404, 'Public key not found for the DID');
-                }
-                isPresentationVerified = library_issuer_verifier_utility_1.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
-                areCredentialsValid = true;
-                _i = 0, _b = presentation.verifiableCredential;
-                _c.label = 2;
-            case 2:
-                if (!(_i < _b.length)) return [3 /*break*/, 6];
-                credential = _b[_i];
-                isExpired = isCredentialExpired_1.isCredentialExpired(credential);
-                if (isExpired) {
-                    areCredentialsValid = false;
-                    return [3 /*break*/, 6];
-                }
-                return [4 /*yield*/, checkCredentialStatus_1.checkCredentialStatus(credential, authorization)];
-            case 3:
-                isStatusValid = _c.sent();
-                if (!isStatusValid) {
-                    areCredentialsValid = false;
-                    return [3 /*break*/, 6];
-                }
-                return [4 /*yield*/, verifyCredential_1.verifyCredential(credential, authorization)];
-            case 4:
-                isVerified = _c.sent();
-                if (!isVerified) {
-                    areCredentialsValid = false;
-                    return [3 /*break*/, 6];
-                }
-                _c.label = 5;
-            case 5:
-                _i++;
-                return [3 /*break*/, 2];
-            case 6:
-                verifiedStatus = isPresentationVerified && areCredentialsValid;
-                credentialTypes = presentation.verifiableCredential.flatMap(function (cred) { return cred.type.slice(1); });
-                issuers = presentation.verifiableCredential.map(function (cred) { return cred.issuer; });
-                subject = proof.verificationMethod;
-                receiptOptions = {
-                    type: ['PresentationVerified'],
-                    verifier: verifier,
-                    subject: subject,
-                    data: {
-                        credentialTypes: credentialTypes,
-                        issuers: issuers,
-                        isVerified: verifiedStatus
-                    }
-                };
-                receiptCallOptions = {
-                    method: 'POST',
-                    baseUrl: config_1.configData.SaaSUrl,
-                    endPoint: 'receipt',
-                    header: { Authorization: authorization },
-                    data: receiptOptions
-                };
-                return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(receiptCallOptions)];
-            case 7:
-                _c.sent();
-                // Set the X-Auth-Token header alone
-                res.setHeader('Content-Type', 'application/json');
-                authToken = didDocumentResponse.headers['x-auth-token'];
-                if (authToken) {
-                    res.setHeader('x-auth-token', didDocumentResponse.headers['x-auth-token']);
-                }
-                res.send({ verifiedStatus: verifiedStatus });
-                return [3 /*break*/, 9];
-            case 8:
-                error_1 = _c.sent();
-                next(error_1);
-                return [3 /*break*/, 9];
-            case 9: return [2 /*return*/];
-        }
-    });
-}); };
-/**
  * Handler to send information regarding the user agreeing to share a credential Presentation.
  * @param authorization
  * @param presentation
  * @param verifier
  */
 exports.verifyPresentation = function (authorization, presentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, proof, didDocumentResponse, pubKeyObj, isPresentationVerified, areCredentialsValid, _i, _a, credential, isExpired, isStatusValid, isVerified_1, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, authTokenResp, authToken, result, error_2;
+    var data, proof, didDocumentResponse, pubKeyObj, isPresentationVerified, areCredentialsValid, _i, _a, credential, isExpired, isStatusValid, isVerified_1, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, authTokenResp, authToken, result, error_1;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -382,9 +275,9 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                 };
                 return [2 /*return*/, result];
             case 8:
-                error_2 = _b.sent();
-                logger_1.default.error("Error sending a veryNoPresentation request to UnumID Saas. Error " + error_2);
-                throw error_2;
+                error_1 = _b.sent();
+                logger_1.default.error("Error sending a veryNoPresentation request to UnumID Saas. Error " + error_1);
+                throw error_1;
             case 9: return [2 /*return*/];
         }
     });

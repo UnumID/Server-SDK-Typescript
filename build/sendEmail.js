@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendEmail = exports.sendEmailRequest = void 0;
+exports.sendEmail = void 0;
 var library_issuer_verifier_utility_1 = require("library-issuer-verifier-utility");
 var config_1 = require("./config");
 var logger_1 = __importDefault(require("./logger"));
@@ -48,77 +48,8 @@ var requireAuth_1 = require("./requireAuth");
  * Validates the EmailRequestBody attributes.
  * @param body EmailRequestBody
  */
-var validateEmailRequestBodyRequest = function (body) {
+var validateEmailRequestBody = function (body) {
     var to = body.to, subject = body.subject, textBody = body.textBody, htmlBody = body.htmlBody;
-    if (!to) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'to is required.');
-    }
-    if (!subject) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'subject is required.');
-    }
-    if (!textBody && !htmlBody) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Either textBody or htmlBody is required.');
-    }
-    if (typeof to !== 'string') {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid to: expected string.');
-    }
-    if (typeof subject !== 'string') {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid subject: expected string.');
-    }
-    if (textBody && (typeof textBody !== 'string')) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid textBody: expected string.');
-    }
-    if (htmlBody && (typeof htmlBody !== 'string')) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid htmlBody: expected string.');
-    }
-};
-/**
- * Request middleware to send an email using UnumID's SaaS.
- *
- * Note: the email with have a from attribute: no-reply@unumid.org
- * If you would like to have your own domain you will need to handle this email functionality independently.
- * @param req SendEmailRequest
- * @param res SendEmailResponse
- * @param next NextFunction
- */
-exports.sendEmailRequest = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var body, authorization, data, apiResponse, authToken, e_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 2, , 3]);
-                body = req.body, authorization = req.headers.authorization;
-                requireAuth_1.requireAuth(authorization);
-                validateEmailRequestBodyRequest(body);
-                data = {
-                    method: 'POST',
-                    baseUrl: config_1.configData.SaaSUrl,
-                    endPoint: 'email',
-                    header: { Authorization: authorization },
-                    data: body
-                };
-                return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(data)];
-            case 1:
-                apiResponse = _a.sent();
-                authToken = apiResponse.headers['x-auth-token'];
-                if (authToken) {
-                    res.setHeader('x-auth-token', apiResponse.headers['x-auth-token']);
-                }
-                res.json(apiResponse.body);
-                return [3 /*break*/, 3];
-            case 2:
-                e_1 = _a.sent();
-                next(e_1);
-                return [3 /*break*/, 3];
-            case 3: return [2 /*return*/];
-        }
-    });
-}); };
-/**
- * Validates the EmailRequestBody attributes.
- * @param body EmailRequestBody
- */
-var validateEmailRequestBody = function (to, subject, textBody, htmlBody) {
     if (!to) {
         throw new library_issuer_verifier_utility_1.CustError(400, 'to is required.');
     }
@@ -150,19 +81,20 @@ var validateEmailRequestBody = function (to, subject, textBody, htmlBody) {
  * @param htmlBody
  */
 exports.sendEmail = function (authorization, to, subject, textBody, htmlBody) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, apiResponse, authTokenResp, authToken, result, e_2;
+    var body, data, apiResponse, authTokenResp, authToken, result, e_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 2, , 3]);
                 requireAuth_1.requireAuth(authorization);
-                validateEmailRequestBody(to, subject, textBody, htmlBody);
+                body = { to: to, subject: subject, textBody: textBody, htmlBody: htmlBody };
+                validateEmailRequestBody(body);
                 data = {
                     method: 'POST',
                     baseUrl: config_1.configData.SaaSUrl,
                     endPoint: 'email',
                     header: { Authorization: authorization },
-                    data: { to: to, subject: subject, textBody: textBody, htmlBody: htmlBody }
+                    data: body
                 };
                 return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(data)];
             case 1:
@@ -177,9 +109,9 @@ exports.sendEmail = function (authorization, to, subject, textBody, htmlBody) { 
                 };
                 return [2 /*return*/, result];
             case 2:
-                e_2 = _a.sent();
-                logger_1.default.error("Error sendingEmail through UnumID's saas. Error: " + e_2);
-                throw e_2;
+                e_1 = _a.sent();
+                logger_1.default.error("Error sendingEmail through UnumID's saas. Error: " + e_1);
+                throw e_1;
             case 3: return [2 /*return*/];
         }
     });

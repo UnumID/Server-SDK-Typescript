@@ -1,4 +1,3 @@
-import { Request, Response, NextFunction } from 'express';
 import {
   CustError,
   getKeyFromDIDDoc,
@@ -59,70 +58,6 @@ export const validateNoPresentationParams = (noPresentation: NoPresentation): vo
   }
 
   validateProof(proof);
-};
-
-/**
- * Request middleware to handle a user not agreeing to share the information in the credential request.
- *
- * Note: The request body is exaclty the information sent by the mobile SDK serving the prompt via the deeplink for credential sharing to your application.
- * @param req Request
- * @param res Response
- * @param next NextFunction
- */
-export const verifyNoPresentationRequest = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const { noPresentation, verifier } = req.body;
-
-    const { authorization } = req.headers;
-
-    requireAuth(authorization);
-
-    validateNoPresentationParams(noPresentation);
-
-    const { proof: { verificationMethod, signatureValue } } = noPresentation;
-
-    const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, verificationMethod);
-
-    if (didDocumentResponse instanceof Error) {
-      throw didDocumentResponse;
-    }
-
-    const publicKeyInfos = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
-
-    const { publicKey, encoding } = publicKeyInfos[0];
-
-    const unsignedNoPresentation = omit(noPresentation, 'proof');
-
-    const isVerified = doVerify(signatureValue, unsignedNoPresentation, publicKey, encoding);
-
-    const receiptOptions = {
-      type: noPresentation.type,
-      verifier,
-      subject: noPresentation.holder,
-      data: {
-        isVerified
-      }
-    };
-
-    const receiptCallOptions: RESTData = {
-      method: 'POST',
-      baseUrl: configData.SaaSUrl,
-      endPoint: 'receipt',
-      header: { Authorization: authorization },
-      data: receiptOptions
-    };
-
-    await makeNetworkRequest(receiptCallOptions);
-
-    const authToken = didDocumentResponse.headers['x-auth-token'];
-
-    if (authToken) {
-      res.setHeader('x-auth-token', didDocumentResponse.headers['x-auth-token']);
-    }
-    res.send({ isVerified });
-  } catch (e) {
-    next(e);
-  }
 };
 
 /**
