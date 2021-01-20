@@ -77,7 +77,7 @@ exports.sendSms = function (authorization, to, msg) { return __awaiter(void 0, v
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 2, , 3]);
-                body = { authorization: authorization, to: to, msg: msg };
+                body = { to: to, msg: msg };
                 requireAuth_1.requireAuth(authorization);
                 validateSmsRequestBody(body);
                 data = {
@@ -90,11 +90,11 @@ exports.sendSms = function (authorization, to, msg) { return __awaiter(void 0, v
                 return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(data)];
             case 1:
                 apiResponse = _a.sent();
-                if (!apiResponse.success) {
+                if (!apiResponse.body.success) {
                     throw new library_issuer_verifier_utility_1.CustError(500, 'Unknown error during sendSms');
                 }
                 authTokenResp = apiResponse.headers['x-auth-token'];
-                authToken = (library_issuer_verifier_utility_1.isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (library_issuer_verifier_utility_1.isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : ''));
+                authToken = (library_issuer_verifier_utility_1.isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (library_issuer_verifier_utility_1.isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
                 result = {
                     authToken: authToken,
                     body: undefined

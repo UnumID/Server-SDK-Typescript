@@ -7,13 +7,13 @@ import * as utilLib from 'library-issuer-verifier-utility';
 
 jest.mock('node-fetch');
 const mockFetch = fetch as unknown as jest.Mock;
-const makeApiCall = async (
+const makeApiCall = async <T = undefined>(
   to: string,
   subject: string,
   textBody: string | undefined,
   htmlBody: string | undefined,
   auth: string
-): Promise<UnumDto<undefined>> => {
+): Promise<UnumDto<T>> => {
   return sendEmail(auth, to, subject, textBody, htmlBody);
 };
 
@@ -36,7 +36,7 @@ describe('sendEmail', () => {
       headers: { raw: () => mockSaasResponseHeaders },
       ok: true
     };
-    let apiResponse: UnumDto<undefined>, apiResponseAuthToken: string;
+    let apiResponse: UnumDto, apiResponseAuthToken: string;
 
     beforeEach(async () => {
       mockFetch.mockResolvedValueOnce(mockSaasApiResponse);
@@ -85,8 +85,6 @@ describe('sendEmail', () => {
   });
 
   describe('sendEmail failure', () => {
-    let apiResponse: UnumDto<undefined>;
-
     // Missing request params
     it('returns a CustError with a descriptive error message if to is missing', async () => {
       try {

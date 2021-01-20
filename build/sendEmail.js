@@ -149,7 +149,6 @@ var validateEmailRequestBody = function (to, subject, textBody, htmlBody) {
  * @param textBody
  * @param htmlBody
  */
-// export const sendEmail = async (authorization: string, to: string, subject: string, textBody: string, htmlBody: string): Promise<AuthDto> => {
 exports.sendEmail = function (authorization, to, subject, textBody, htmlBody) { return __awaiter(void 0, void 0, void 0, function () {
     var data, apiResponse, authTokenResp, authToken, result, e_2;
     return __generator(this, function (_a) {

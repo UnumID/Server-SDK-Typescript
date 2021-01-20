@@ -53,7 +53,7 @@ const validateSmsRequestBody = (body: SmsRequestBody): void => {
  */
 export const sendSms = async (authorization: string, to: string, msg: string): Promise<UnumDto<undefined>> => {
   try {
-    const body = { authorization, to, msg };
+    const body = { to, msg };
 
     requireAuth(authorization);
     validateSmsRequestBody(body);
@@ -68,13 +68,14 @@ export const sendSms = async (authorization: string, to: string, msg: string): P
 
     const apiResponse = await makeNetworkRequest<SmsResponseBody>(data);
 
-    if (!apiResponse.success) {
+    if (!apiResponse.body.success) {
       throw new CustError(500, 'Unknown error during sendSms');
     }
 
     const authTokenResp = apiResponse.headers['x-auth-token'];
-    // ensuring that the authToken attribute is presented as a string or undefined. the headers can be handled as string | string[] so can be little tricky.
-    const authToken: string = <string>(isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : ''));
+
+    // Ensuring that the authToken attribute is presented as a string or undefined. The headers can be handled as string | string[] so hence the complex ternary.
+    const authToken: string = <string>(isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
 
     const result: UnumDto<undefined> = {
       authToken,
