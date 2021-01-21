@@ -1,7 +1,7 @@
 import * as express from 'express';
 import { configData } from './config';
-import { RegisteredVerifierDto, VerifierOptions } from './types';
-import { KeyPair, PublicKeyInfo, getUUID, KeyPairSet, CustError, createKeyPairSet, RESTData, JSONObj, makeNetworkRequest, DidKeyType } from 'library-issuer-verifier-utility';
+import { RegisteredVerifier, VerifierDto, VerifierOptions } from './types';
+import { KeyPair, PublicKeyInfo, getUUID, KeyPairSet, CustError, createKeyPairSet, RESTData, JSONObj, makeNetworkRequest, DidKeyType, isArrayEmpty, isArrayNotEmpty } from 'library-issuer-verifier-utility';
 import logger from './logger';
 
 /**
@@ -59,7 +59,7 @@ const validateInParams = (name: string, customerUuid: string, url: string, apiKe
  * @param url
  * @param apiKey
  */
-export const registerVerifier = async (name: string, customerUuid: string, url: string, apiKey: string): Promise<RegisteredVerifierDto> => {
+export const registerVerifier = async (name: string, customerUuid: string, url: string, apiKey: string): Promise<VerifierDto<RegisteredVerifier>> => {
   try {
     validateInParams(name, customerUuid, url, apiKey);
 
@@ -74,18 +74,24 @@ export const registerVerifier = async (name: string, customerUuid: string, url: 
     };
 
     const restResp: JSONObj = await makeNetworkRequest(restData);
+    const authTokenResp = restResp && restResp.headers && restResp.headers['x-auth-token'] ? restResp.headers['x-auth-token'] : '';
 
-    const verifierResp: RegisteredVerifierDto = {
-      uuid: restResp.body.uuid,
-      customerUuid: restResp.body.customerUuid,
-      did: restResp.body.did,
-      name: restResp.body.name,
-      createdAt: restResp.body.createdAt,
-      updatedAt: restResp.body.updatedAt,
-      isAuthorized: restResp.body.isAuthorized,
-      authToken: restResp.headers['x-auth-token'],
-      keys: kpSet,
-      url
+    // Ensuring that the authToken attribute is presented as a string or undefined. The header values can be a string | string[] so hence the complex ternary.
+    const authToken: string = <string>(isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
+
+    const verifierResp: VerifierDto<RegisteredVerifier> = {
+      authToken,
+      body: {
+        uuid: restResp.body.uuid,
+        customerUuid: restResp.body.customerUuid,
+        did: restResp.body.did,
+        name: restResp.body.name,
+        createdAt: restResp.body.createdAt,
+        updatedAt: restResp.body.updatedAt,
+        isAuthorized: restResp.body.isAuthorized,
+        keys: kpSet,
+        url
+      }
     };
 
     return verifierResp;

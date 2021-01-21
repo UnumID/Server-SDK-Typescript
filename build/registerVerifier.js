@@ -92,7 +92,7 @@ var validateInParams = function (name, customerUuid, url, apiKey) {
  * @param apiKey
  */
 exports.registerVerifier = function (name, customerUuid, url, apiKey) { return __awaiter(void 0, void 0, void 0, function () {
-    var kpSet, verifierOpt, restData, restResp, verifierResp, error_1;
+    var kpSet, verifierOpt, restData, restResp, authTokenResp, authToken, verifierResp, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -112,17 +112,21 @@ exports.registerVerifier = function (name, customerUuid, url, apiKey) { return _
                 return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(restData)];
             case 2:
                 restResp = _a.sent();
+                authTokenResp = restResp && restResp.headers && restResp.headers['x-auth-token'] ? restResp.headers['x-auth-token'] : '';
+                authToken = (library_issuer_verifier_utility_1.isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (library_issuer_verifier_utility_1.isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
                 verifierResp = {
-                    uuid: restResp.body.uuid,
-                    customerUuid: restResp.body.customerUuid,
-                    did: restResp.body.did,
-                    name: restResp.body.name,
-                    createdAt: restResp.body.createdAt,
-                    updatedAt: restResp.body.updatedAt,
-                    isAuthorized: restResp.body.isAuthorized,
-                    authToken: restResp.headers['x-auth-token'],
-                    keys: kpSet,
-                    url: url
+                    authToken: authToken,
+                    body: {
+                        uuid: restResp.body.uuid,
+                        customerUuid: restResp.body.customerUuid,
+                        did: restResp.body.did,
+                        name: restResp.body.name,
+                        createdAt: restResp.body.createdAt,
+                        updatedAt: restResp.body.updatedAt,
+                        isAuthorized: restResp.body.isAuthorized,
+                        keys: kpSet,
+                        url: url
+                    }
                 };
                 return [2 /*return*/, verifierResp];
             case 3:
