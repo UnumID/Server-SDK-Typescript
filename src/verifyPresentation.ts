@@ -7,7 +7,7 @@ import { requireAuth } from './requireAuth';
 import { verifyCredential } from './verifyCredential';
 import { isCredentialExpired } from './isCredentialExpired';
 import { checkCredentialStatus } from './checkCredentialStatus';
-import { JSONObj, CustError, Proof, getDIDDoc, PublicKeyInfo, getKeyFromDIDDoc, doVerify, RESTData, makeNetworkRequest, isArrayEmpty, isArrayNotEmpty } from 'library-issuer-verifier-utility';
+import { JSONObj, CustError, Proof, getDIDDoc, PublicKeyInfo, getKeyFromDIDDoc, doVerify, RESTData, makeNetworkRequest, isArrayEmpty, isArrayNotEmpty, handleAuthToken } from 'library-issuer-verifier-utility';
 import logger from './logger';
 
 /**
@@ -252,10 +252,8 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     };
 
     const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
-    const authTokenResp = resp && resp.headers && resp.headers['x-auth-token'] ? resp.headers['x-auth-token'] : '';
 
-    // Ensuring that the authToken attribute is presented as a string or undefined. The header values can be a string | string[] so hence the complex ternary.
-    const authToken: string = <string>(isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
+    const authToken: string = handleAuthToken(resp);
 
     const result: VerifierDto<Receipt> = {
       authToken,

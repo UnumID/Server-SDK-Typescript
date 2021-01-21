@@ -82,7 +82,7 @@ exports.validateNoPresentationParams = function (noPresentation) {
  * @param verifier
  */
 exports.verifyNoPresentation = function (authorization, noPresentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, verificationMethod, signatureValue, didDocumentResponse, publicKeyInfos, _b, publicKey, encoding, unsignedNoPresentation, isVerified, receiptOptions, receiptCallOptions, resp, authTokenResp, authToken, result, e_1;
+    var _a, verificationMethod, signatureValue, didDocumentResponse, publicKeyInfos, _b, publicKey, encoding, unsignedNoPresentation, isVerified, receiptOptions, receiptCallOptions, resp, authToken, result, e_1;
     return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
@@ -118,8 +118,7 @@ exports.verifyNoPresentation = function (authorization, noPresentation, verifier
                 return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(receiptCallOptions)];
             case 2:
                 resp = _c.sent();
-                authTokenResp = resp && resp.headers && resp.headers['x-auth-token'] ? resp.headers['x-auth-token'] : '';
-                authToken = (library_issuer_verifier_utility_1.isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (library_issuer_verifier_utility_1.isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
+                authToken = library_issuer_verifier_utility_1.handleAuthToken(resp);
                 result = {
                     authToken: authToken,
                     body: {

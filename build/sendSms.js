@@ -72,7 +72,7 @@ var validateSmsRequestBody = function (body) {
  * @param msg
  */
 exports.sendSms = function (authorization, to, msg) { return __awaiter(void 0, void 0, void 0, function () {
-    var body, data, apiResponse, authTokenResp, authToken, result, e_1;
+    var body, data, apiResponse, authToken, result, e_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -93,8 +93,7 @@ exports.sendSms = function (authorization, to, msg) { return __awaiter(void 0, v
                 if (!apiResponse.body.success) {
                     throw new library_issuer_verifier_utility_1.CustError(500, 'Unknown error during sendSms');
                 }
-                authTokenResp = apiResponse.headers && apiResponse.headers['x-auth-token'] ? apiResponse.headers['x-auth-token'] : '';
-                authToken = (library_issuer_verifier_utility_1.isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (library_issuer_verifier_utility_1.isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
+                authToken = library_issuer_verifier_utility_1.handleAuthToken(apiResponse);
                 result = {
                     authToken: authToken,
                     body: undefined

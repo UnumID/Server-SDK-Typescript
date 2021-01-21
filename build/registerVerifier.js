@@ -92,7 +92,7 @@ var validateInParams = function (name, customerUuid, url, apiKey) {
  * @param apiKey
  */
 exports.registerVerifier = function (name, customerUuid, url, apiKey) { return __awaiter(void 0, void 0, void 0, function () {
-    var kpSet, verifierOpt, restData, restResp, authTokenResp, authToken, verifierResp, error_1;
+    var kpSet, verifierOpt, restData, restResp, authToken, verifierResp, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -112,8 +112,7 @@ exports.registerVerifier = function (name, customerUuid, url, apiKey) { return _
                 return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(restData)];
             case 2:
                 restResp = _a.sent();
-                authTokenResp = restResp && restResp.headers && restResp.headers['x-auth-token'] ? restResp.headers['x-auth-token'] : '';
-                authToken = (library_issuer_verifier_utility_1.isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (library_issuer_verifier_utility_1.isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
+                authToken = library_issuer_verifier_utility_1.handleAuthToken(restResp);
                 verifierResp = {
                     authToken: authToken,
                     body: {

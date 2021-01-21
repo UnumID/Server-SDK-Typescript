@@ -1,7 +1,7 @@
 import * as express from 'express';
 import { configData } from './config';
 import { requireAuth } from './requireAuth';
-import { getUUID, createProof, CustError, RESTData, makeNetworkRequest, isArrayEmpty, isArrayNotEmpty } from 'library-issuer-verifier-utility';
+import { getUUID, createProof, CustError, RESTData, makeNetworkRequest, isArrayEmpty, isArrayNotEmpty, handleAuthToken } from 'library-issuer-verifier-utility';
 
 import {
   CredentialRequest,
@@ -180,10 +180,8 @@ export const sendRequest = async (authorization:string, verifier: string, creden
     };
 
     const restResp = await makeNetworkRequest<PresentationRequestResponse>(restData);
-    const authTokenResp = restResp && restResp.headers && restResp.headers['x-auth-token'] ? restResp.headers['x-auth-token'] : '';
 
-    // Ensuring that the authToken attribute is presented as a string or undefined. The header values can be a string | string[] so hence the complex ternary.
-    const authToken: string = <string>(isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
+    const authToken: string = handleAuthToken(restResp);
 
     const presentationRequestResponse: VerifierDto<PresentationRequestResponse> = { body: { ...restResp.body }, authToken };
 

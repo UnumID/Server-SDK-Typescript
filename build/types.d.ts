@@ -206,7 +206,7 @@ export interface Receipt {
 }
 
 /**
- * Encapsulates a Data Transfer Object for a response from UnumID's SaaS.
+ * Encapsulates a Verifier Data Transfer Object for a response from UnumID's SaaS.
  */
 export interface VerifierDto<T = Record<string, unknown>> {
   authToken: string;

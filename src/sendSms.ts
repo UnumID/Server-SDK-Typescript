@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
-import { CustError, isArrayEmpty, isArrayNotEmpty, makeNetworkRequest } from 'library-issuer-verifier-utility';
+import { CustError, handleAuthToken, isArrayEmpty, isArrayNotEmpty, makeNetworkRequest } from 'library-issuer-verifier-utility';
 
 import { configData } from './config';
 import logger from './logger';
@@ -72,10 +72,7 @@ export const sendSms = async (authorization: string, to: string, msg: string): P
       throw new CustError(500, 'Unknown error during sendSms');
     }
 
-    const authTokenResp = apiResponse.headers && apiResponse.headers['x-auth-token'] ? apiResponse.headers['x-auth-token'] : '';
-
-    // Ensuring that the authToken attribute is presented as a string or undefined. The header values can be a string | string[] so hence the complex ternary.
-    const authToken: string = <string>(isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
+    const authToken: string = handleAuthToken(apiResponse);
 
     const result: VerifierDto<undefined> = {
       authToken,

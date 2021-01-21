@@ -1,4 +1,4 @@
-import { CustError, isArrayEmpty, isArrayNotEmpty, makeNetworkRequest } from 'library-issuer-verifier-utility';
+import { CustError, handleAuthToken, isArrayEmpty, isArrayNotEmpty, makeNetworkRequest } from 'library-issuer-verifier-utility';
 
 import { configData } from './config';
 import logger from './logger';
@@ -77,10 +77,8 @@ export const sendEmail = async (authorization: string, to: string, subject: stri
 
     // const apiResponse = await makeNetworkRequest<EmailResponseBody>(data);
     const apiResponse = await makeNetworkRequest<EmailResponseBody>(data);
-    const authTokenResp = apiResponse && apiResponse.headers && apiResponse.headers['x-auth-token'] ? apiResponse.headers['x-auth-token'] : '';
 
-    // Ensuring that the authToken attribute is presented as a string or undefined. The header values can be a string | string[] so hence the complex ternary.
-    const authToken: string = <string>(isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
+    const authToken: string = handleAuthToken(apiResponse);
 
     const result: VerifierDto<undefined> = {
       // authToken: isArrayEmpty(authToken) ? undefined : authToken[0],

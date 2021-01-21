@@ -81,7 +81,7 @@ var validateEmailRequestBody = function (body) {
  * @param htmlBody
  */
 exports.sendEmail = function (authorization, to, subject, textBody, htmlBody) { return __awaiter(void 0, void 0, void 0, function () {
-    var body, data, apiResponse, authTokenResp, authToken, result, e_1;
+    var body, data, apiResponse, authToken, result, e_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -99,8 +99,7 @@ exports.sendEmail = function (authorization, to, subject, textBody, htmlBody) { 
                 return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(data)];
             case 1:
                 apiResponse = _a.sent();
-                authTokenResp = apiResponse && apiResponse.headers && apiResponse.headers['x-auth-token'] ? apiResponse.headers['x-auth-token'] : '';
-                authToken = (library_issuer_verifier_utility_1.isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (library_issuer_verifier_utility_1.isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
+                authToken = library_issuer_verifier_utility_1.handleAuthToken(apiResponse);
                 result = {
                     // authToken: isArrayEmpty(authToken) ? undefined : authToken[0],
                     // authToken: isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined),

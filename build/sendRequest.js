@@ -156,7 +156,7 @@ var validateSendRequestBody = function (sendRequestBody) {
  * @param holderAppUuid
  */
 exports.sendRequest = function (authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata) { return __awaiter(void 0, void 0, void 0, function () {
-    var body, unsignedPresentationRequest, signedPR, restData, restResp, authTokenResp, authToken, presentationRequestResponse, error_1;
+    var body, unsignedPresentationRequest, signedPR, restData, restResp, authToken, presentationRequestResponse, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -177,8 +177,7 @@ exports.sendRequest = function (authorization, verifier, credentialRequests, ecc
                 return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(restData)];
             case 1:
                 restResp = _a.sent();
-                authTokenResp = restResp && restResp.headers && restResp.headers['x-auth-token'] ? restResp.headers['x-auth-token'] : '';
-                authToken = (library_issuer_verifier_utility_1.isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (library_issuer_verifier_utility_1.isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
+                authToken = library_issuer_verifier_utility_1.handleAuthToken(restResp);
                 presentationRequestResponse = { body: __assign({}, restResp.body), authToken: authToken };
                 return [2 /*return*/, presentationRequestResponse];
             case 2:

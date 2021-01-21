@@ -179,7 +179,7 @@ var validatePresentation = function (presentation) {
  * @param verifier
  */
 exports.verifyPresentation = function (authorization, presentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, proof, didDocumentResponse, pubKeyObj, isPresentationVerified, areCredentialsValid, _i, _a, credential, isExpired, isStatusValid, isVerified_1, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, authTokenResp, authToken, result, error_1;
+    var data, proof, didDocumentResponse, pubKeyObj, isPresentationVerified, areCredentialsValid, _i, _a, credential, isExpired, isStatusValid, isVerified_1, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, authToken, result, error_1;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -259,8 +259,7 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                 return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(receiptCallOptions)];
             case 7:
                 resp = _b.sent();
-                authTokenResp = resp && resp.headers && resp.headers['x-auth-token'] ? resp.headers['x-auth-token'] : '';
-                authToken = (library_issuer_verifier_utility_1.isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (library_issuer_verifier_utility_1.isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
+                authToken = library_issuer_verifier_utility_1.handleAuthToken(resp);
                 result = {
                     authToken: authToken,
                     body: {
