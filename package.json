@@ -1,6 +1,6 @@
 {
   "name": "@UnumID/verifier-server-sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "build/index.js",
   "repository": "git@github.com:UnumID/Verifier-Server-SDK-TypeScript.git",
   "author": "UnumID <admin@unumid.org>",
