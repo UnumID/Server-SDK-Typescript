@@ -196,7 +196,7 @@ export interface RegisteredVerifierDto extends Verifier {
 /**
  * Encapsulates a Data Transfer Object for a response from UnumID's SaaS.
  */
-export interface UnumDto<T = Record<string, unknown>> {
+export interface VerifierDto<T = Record<string, unknown>> {
   authToken: string;
   body: T;
 }

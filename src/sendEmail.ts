@@ -3,7 +3,7 @@ import { CustError, isArrayEmpty, isArrayNotEmpty, makeNetworkRequest } from 'li
 import { configData } from './config';
 import logger from './logger';
 import { requireAuth } from './requireAuth';
-import { UnumDto } from './types';
+import { VerifierDto } from './types';
 
 interface EmailRequestBody {
   to: string;
@@ -60,7 +60,7 @@ const validateEmailRequestBody = (body: EmailRequestBody): void => {
  * @param textBody
  * @param htmlBody
  */
-export const sendEmail = async (authorization: string, to: string, subject: string, textBody: string, htmlBody: string): Promise<UnumDto<undefined>> => {
+export const sendEmail = async (authorization: string, to: string, subject: string, textBody: string, htmlBody: string): Promise<VerifierDto<undefined>> => {
   try {
     requireAuth(authorization);
 
@@ -82,7 +82,7 @@ export const sendEmail = async (authorization: string, to: string, subject: stri
     // Ensuring that the authToken attribute is presented as a string or undefined. The header values can be a string | string[] so hence the complex ternary.
     const authToken: string = <string>(isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
 
-    const result: UnumDto<undefined> = {
+    const result: VerifierDto<undefined> = {
       // authToken: isArrayEmpty(authToken) ? undefined : authToken[0],
       // authToken: isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined),
       authToken,

@@ -5,7 +5,7 @@ import { CustError, isArrayEmpty, isArrayNotEmpty, makeNetworkRequest } from 'li
 import { configData } from './config';
 import logger from './logger';
 import { requireAuth } from './requireAuth';
-import { UnumDto } from './types';
+import { VerifierDto } from './types';
 
 interface SmsRequestBody {
   to: string;
@@ -51,7 +51,7 @@ const validateSmsRequestBody = (body: SmsRequestBody): void => {
  * @param to
  * @param msg
  */
-export const sendSms = async (authorization: string, to: string, msg: string): Promise<UnumDto<undefined>> => {
+export const sendSms = async (authorization: string, to: string, msg: string): Promise<VerifierDto<undefined>> => {
   try {
     const body = { to, msg };
 
@@ -77,7 +77,7 @@ export const sendSms = async (authorization: string, to: string, msg: string): P
     // Ensuring that the authToken attribute is presented as a string or undefined. The header values can be a string | string[] so hence the complex ternary.
     const authToken: string = <string>(isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
 
-    const result: UnumDto<undefined> = {
+    const result: VerifierDto<undefined> = {
       authToken,
       body: undefined
     };

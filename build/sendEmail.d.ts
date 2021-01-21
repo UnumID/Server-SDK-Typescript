@@ -1,4 +1,4 @@
-import { UnumDto } from './types';
+import { VerifierDto } from './types';
 export interface EmailResponseBody {
     success: boolean;
 }
@@ -10,5 +10,5 @@ export interface EmailResponseBody {
  * @param textBody
  * @param htmlBody
  */
-export declare const sendEmail: (authorization: string, to: string, subject: string, textBody: string, htmlBody: string) => Promise<UnumDto<undefined>>;
+export declare const sendEmail: (authorization: string, to: string, subject: string, textBody: string, htmlBody: string) => Promise<VerifierDto<undefined>>;
 //# sourceMappingURL=sendEmail.d.ts.map

@@ -3,11 +3,11 @@ import * as utilLib from 'library-issuer-verifier-utility';
 
 import { sendSms } from '../src/sendSms';
 import { configData } from '../src/config';
-import { ErrorResponseBody, UnumDto } from '../src/types';
+import { ErrorResponseBody, VerifierDto } from '../src/types';
 
 jest.mock('node-fetch');
 const mockFetch = fetch as unknown as jest.Mock;
-const makeApiCall = async <T = undefined> (to: string, msg: string, auth: string): Promise<UnumDto<T>> => {
+const makeApiCall = async <T = undefined> (to: string, msg: string, auth: string): Promise<VerifierDto<T>> => {
   return sendSms(auth, to, msg);
 };
 
@@ -28,7 +28,7 @@ describe('sendSms', () => {
       headers: { raw: () => mockSaasResponseHeaders },
       ok: true
     };
-    let apiResponse: UnumDto<undefined>, apiResponseAuthToken: string;
+    let apiResponse: VerifierDto<undefined>, apiResponseAuthToken: string;
 
     beforeEach(async () => {
       mockFetch.mockResolvedValueOnce(mockSaasApiResponse);
@@ -48,8 +48,8 @@ describe('sendSms', () => {
     });
 
     it('returns the response from the SaaS api', () => {
-      const unumDtoResponse: UnumDto<undefined> = { authToken: auth, body: undefined };
-      expect(apiResponse).toEqual(unumDtoResponse);
+      const VerifierDtoResponse: VerifierDto<undefined> = { authToken: auth, body: undefined };
+      expect(apiResponse).toEqual(VerifierDtoResponse);
     });
 
     it('returns the x-auth-token header returned from the SaaS api in the x-auth-token header', () => {

@@ -9,7 +9,7 @@ import {
   SendRequestReqBody,
   SignedPresentationRequest,
   UnsignedPresentationRequest,
-  UnumDto
+  VerifierDto
 } from './types';
 import logger from './logger';
 
@@ -157,7 +157,7 @@ const validateSendRequestBody = (sendRequestBody: SendRequestReqBody): void => {
  * @param eccPrivateKey
  * @param holderAppUuid
  */
-export const sendRequest = async (authorization:string, verifier: string, credentialRequests: CredentialRequest[], eccPrivateKey: string, holderAppUuid: string, expirationDate?: Date, metadata?: Record<string, unknown>): Promise<UnumDto<PresentationRequestResponse>> => {
+export const sendRequest = async (authorization:string, verifier: string, credentialRequests: CredentialRequest[], eccPrivateKey: string, holderAppUuid: string, expirationDate?: Date, metadata?: Record<string, unknown>): Promise<VerifierDto<PresentationRequestResponse>> => {
   try {
     requireAuth(authorization);
 
@@ -185,7 +185,7 @@ export const sendRequest = async (authorization:string, verifier: string, creden
     // Ensuring that the authToken attribute is presented as a string or undefined. The header values can be a string | string[] so hence the complex ternary.
     const authToken: string = <string>(isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
 
-    const presentationRequestResponse: UnumDto<PresentationRequestResponse> = { body: { ...restResp.body }, authToken };
+    const presentationRequestResponse: VerifierDto<PresentationRequestResponse> = { body: { ...restResp.body }, authToken };
 
     return presentationRequestResponse;
   } catch (error) {

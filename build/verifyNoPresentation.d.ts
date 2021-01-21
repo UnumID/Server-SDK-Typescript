@@ -1,4 +1,4 @@
-import { NoPresentation, Receipt, UnumDto } from './types';
+import { NoPresentation, Receipt, VerifierDto } from './types';
 /**
  * Validates the NoPresentation type to ensure the necessary attributes.
  * @param noPresentation NoPresentation
@@ -10,5 +10,5 @@ export declare const validateNoPresentationParams: (noPresentation: NoPresentati
  * @param noPresentation
  * @param verifier
  */
-export declare const verifyNoPresentation: (authorization: string, noPresentation: NoPresentation, verifier: string) => Promise<UnumDto<Receipt>>;
+export declare const verifyNoPresentation: (authorization: string, noPresentation: NoPresentation, verifier: string) => Promise<VerifierDto<Receipt>>;
 //# sourceMappingURL=verifyNoPresentation.d.ts.map

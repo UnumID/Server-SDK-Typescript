@@ -1,7 +1,7 @@
 import { omit } from 'lodash';
 
 import { configData } from './config';
-import { Presentation, Receipt, UnumDto } from './types';
+import { Presentation, Receipt, VerifierDto } from './types';
 import { validateProof } from './validateProof';
 import { requireAuth } from './requireAuth';
 import { verifyCredential } from './verifyCredential';
@@ -167,7 +167,7 @@ const validatePresentation = (presentation: Presentation): void => {
  * @param presentation
  * @param verifier
  */
-export const verifyPresentation = async (authorization: string, presentation: Presentation, verifier: string): Promise<UnumDto<Receipt>> => {
+export const verifyPresentation = async (authorization: string, presentation: Presentation, verifier: string): Promise<VerifierDto<Receipt>> => {
   try {
     requireAuth(authorization);
 
@@ -257,7 +257,7 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     // Ensuring that the authToken attribute is presented as a string or undefined. The header values can be a string | string[] so hence the complex ternary.
     const authToken: string = <string>(isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
 
-    const result: UnumDto<Receipt> = {
+    const result: VerifierDto<Receipt> = {
       authToken,
       body: {
         uuid: resp.uuid,

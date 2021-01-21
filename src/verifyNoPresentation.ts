@@ -11,7 +11,7 @@ import {
 } from 'library-issuer-verifier-utility';
 import { omit } from 'lodash';
 
-import { NoPresentation, Receipt, UnumDto } from './types';
+import { NoPresentation, Receipt, VerifierDto } from './types';
 import { validateProof } from './validateProof';
 import { configData } from './config';
 import { requireAuth } from './requireAuth';
@@ -66,7 +66,7 @@ export const validateNoPresentationParams = (noPresentation: NoPresentation): vo
  * @param noPresentation
  * @param verifier
  */
-export const verifyNoPresentation = async (authorization: string, noPresentation: NoPresentation, verifier: string): Promise<UnumDto<Receipt>> => {
+export const verifyNoPresentation = async (authorization: string, noPresentation: NoPresentation, verifier: string): Promise<VerifierDto<Receipt>> => {
   try {
     requireAuth(authorization);
 
@@ -111,7 +111,7 @@ export const verifyNoPresentation = async (authorization: string, noPresentation
     // Ensuring that the authToken attribute is presented as a string or undefined. The header values can be a string | string[] so hence the complex ternary.
     const authToken: string = <string>(isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
 
-    const result: UnumDto<Receipt> = {
+    const result: VerifierDto<Receipt> = {
       authToken,
       body: {
         uuid: resp.uuid,

@@ -3,7 +3,7 @@ import supertest from 'supertest';
 import { omit } from 'lodash';
 
 import { verifyNoPresentation } from '../src';
-import { NoPresentation, Receipt, UnumDto } from '../src/types';
+import { NoPresentation, Receipt, VerifierDto } from '../src/types';
 import * as utilLib from 'library-issuer-verifier-utility';
 import { dummyAuthToken, makeDummyDidDocument } from './mocks';
 
@@ -25,7 +25,7 @@ const callVerifyNoPresentation = (
   noPresentation: NoPresentation,
   verifier: string,
   authHeader?: string
-): Promise<UnumDto<Receipt>> => {
+): Promise<VerifierDto<Receipt>> => {
   return verifyNoPresentation(authHeader, noPresentation, verifier);
 };
 
@@ -71,7 +71,7 @@ describe('verifyNoPresentation', () => {
   });
 
   describe('success', () => {
-    let response: UnumDto<Receipt>, responseAuthToken: string;
+    let response: VerifierDto<Receipt>, responseAuthToken: string;
 
     beforeEach(async () => {
       mockDoVerify.mockReturnValue(true);

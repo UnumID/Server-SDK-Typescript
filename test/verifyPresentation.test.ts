@@ -1,7 +1,7 @@
 import request from 'supertest';
 
 import * as utilLib from 'library-issuer-verifier-utility';
-import { Presentation, Receipt, UnumDto, verifyPresentation } from '../src/index';
+import { Presentation, Receipt, VerifierDto, verifyPresentation } from '../src/index';
 import { verifyCredential } from '../src/verifyCredential';
 import { isCredentialExpired } from '../src/isCredentialExpired';
 import { checkCredentialStatus } from '../src/checkCredentialStatus';
@@ -25,7 +25,7 @@ const mockGetDIDDoc = utilLib.getDIDDoc as jest.Mock;
 const mockDoVerify = utilLib.doVerify as jest.Mock;
 const mockMakeNetworkRequest = utilLib.makeNetworkRequest as jest.Mock;
 
-const callVerifyPresentation = (context, type, verifiableCredential, presentationRequestUuid, proof, verifier, auth = ''): Promise<UnumDto<Receipt>> => {
+const callVerifyPresentation = (context, type, verifiableCredential, presentationRequestUuid, proof, verifier, auth = ''): Promise<VerifierDto<Receipt>> => {
   const presentation: Presentation = {
     '@context': context,
     type,
@@ -109,7 +109,7 @@ const populateMockData = (): utilLib.JSONObj => {
 };
 
 describe('verifyPresentation - Success Scenario', () => {
-  let response: UnumDto<Receipt>;
+  let response: VerifierDto<Receipt>;
   let verStatus: boolean;
 
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
@@ -178,7 +178,7 @@ describe('verifyPresentation - Success Scenario', () => {
 });
 
 describe('verifyPresentation - Failure Scenarios', () => {
-  let response: UnumDto<Receipt>;
+  let response: VerifierDto<Receipt>;
   let verStatus: boolean;
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
