@@ -186,25 +186,10 @@ export interface Verifier {
 }
 
 /**
- * Encapsulates a Data Transfer Object for a successfully registered Verifier entity.
+ * Encapsulates a registered Verifier entity.
  */
-export interface RegisteredVerifierDto extends Verifier {
+export interface RegisteredVerifier extends Verifier {
   keys: KeyPairSet;
-  authToken: string;
-}
-
-/**
- * Encapsulates a Data Transfer Object for a simple response from UnumID's SaaS.
- */
-export interface AuthDto {
-  authToken: string | string[];
-}
-
-/**
- * Encapsulates a Data Transfer Object for a PresentationRequestResponseDto entity.
- */
-export interface PresentationRequestResponseDto extends PresentationRequestResponse {
-  authToken: string | string[];
 }
 
 /**
@@ -221,8 +206,9 @@ export interface Receipt {
 }
 
 /**
- * Encapsulates a Reciept entity.
+ * Encapsulates a Verifier Data Transfer Object for a response from UnumID's SaaS.
  */
-export interface ReceiptDto extends Receipt {
-  authToken: string | string[];
+export interface VerifierDto<T = Record<string, unknown>> {
+  authToken: string;
+  body: T;
 }

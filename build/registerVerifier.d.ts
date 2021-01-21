@@ -1,12 +1,4 @@
-import * as express from 'express';
-import { RegisteredVerifierDto } from './types';
-/**
- * Request middleware for registering a Verifier with UnumID's SaaS.
- * @param req Request
- * @param res Response
- * @param next NextFunction
- */
-export declare const registerVerifierRequest: (req: express.Request, res: express.Response, next: express.NextFunction) => Promise<void>;
+import { RegisteredVerifier, VerifierDto } from './types';
 /**
  * Handler for registering a Verifier with UnumID's SaaS.
  * @param name
@@ -14,5 +6,5 @@ export declare const registerVerifierRequest: (req: express.Request, res: expres
  * @param url
  * @param apiKey
  */
-export declare const registerVerifier: (name: string, customerUuid: string, url: string, apiKey: string) => Promise<RegisteredVerifierDto>;
+export declare const registerVerifier: (name: string, customerUuid: string, url: string, apiKey: string) => Promise<VerifierDto<RegisteredVerifier>>;
 //# sourceMappingURL=registerVerifier.d.ts.map

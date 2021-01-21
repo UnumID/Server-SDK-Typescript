@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
-import { CustError, makeNetworkRequest } from 'library-issuer-verifier-utility';
+import { CustError, handleAuthToken, isArrayEmpty, isArrayNotEmpty, makeNetworkRequest } from 'library-issuer-verifier-utility';
 
 import { configData } from './config';
 import logger from './logger';
 import { requireAuth } from './requireAuth';
-import { AuthDto } from './types';
+import { VerifierDto } from './types';
 
 interface SmsRequestBody {
   to: string;
@@ -44,43 +44,6 @@ const validateSmsRequestBody = (body: SmsRequestBody): void => {
 };
 
 /**
- * Request middleware to send a SMS using UnumID's SaaS.
- * Designed to be used to present a deeplink.
- *
- * Note: This message will be delivered from an UnumID associated phone number.
- * @param req
- * @param res
- * @param next
- */
-export const sendSmsRequest = async (req: SendSmsRequest, res: SendSmsResponse, next: NextFunction): Promise<void> => {
-  try {
-    const { body, headers: { authorization } } = req;
-
-    requireAuth(authorization);
-    validateSmsRequestBody(body);
-
-    const data = {
-      method: 'POST',
-      baseUrl: configData.SaaSUrl,
-      endPoint: 'sms',
-      header: { Authorization: authorization },
-      data: body
-    };
-
-    const apiResponse = await makeNetworkRequest<SmsResponseBody>(data);
-
-    const authToken = apiResponse.headers['x-auth-token'];
-
-    if (authToken) {
-      res.setHeader('x-auth-token', apiResponse.headers['x-auth-token']);
-    }
-    res.json(apiResponse.body);
-  } catch (e) {
-    next(e);
-  }
-};
-
-/**
  * Handler to send a SMS using UnumID's SaaS.
  * Designed to be used to present a deeplink.
  *
@@ -88,9 +51,9 @@ export const sendSmsRequest = async (req: SendSmsRequest, res: SendSmsResponse, 
  * @param to
  * @param msg
  */
-export const sendSms = async (authorization: string, to: string, msg: string): Promise<AuthDto> => {
+export const sendSms = async (authorization: string, to: string, msg: string): Promise<VerifierDto<undefined>> => {
   try {
-    const body = { authorization, to, msg };
+    const body = { to, msg };
 
     requireAuth(authorization);
     validateSmsRequestBody(body);
@@ -105,13 +68,17 @@ export const sendSms = async (authorization: string, to: string, msg: string): P
 
     const apiResponse = await makeNetworkRequest<SmsResponseBody>(data);
 
-    if (!apiResponse.success) {
+    if (!apiResponse.body.success) {
       throw new CustError(500, 'Unknown error during sendSms');
     }
 
-    const authToken = apiResponse.headers['x-auth-token'];
+    const authToken: string = handleAuthToken(apiResponse);
 
-    const result: AuthDto = { authToken };
+    const result: VerifierDto<undefined> = {
+      authToken,
+      body: undefined
+    };
+
     return result;
   } catch (e) {
     logger.error(`Error during sendSms to UnumID Saas. Error: ${e}`);

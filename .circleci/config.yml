@@ -1,34 +1,9 @@
 version: 2.1
 
 jobs:
-  lint:
+  lint-and-test-job:
     docker:
-      - image: circleci/node:12.7.0
-    steps:
-    - checkout
-    - restore_cache:
-        key: yarn-v1-{{ checksum "yarn.lock" }}--{{ arch }}
-
-    - restore_cache:
-        key: node-v1-{{ checksum "package.json" }}--{{ arch }}
-
-    - run: yarn install
-
-    - save_cache:
-        key: yarn-v1-{{ checksum "yarn.lock" }}--{{ arch }}
-        paths:
-          - .cache/yarn
-
-    - save_cache:
-        key: node-v1-{{ checksum "package.json" }}--{{ arch }}
-        paths:
-          - node_modules
-
-    - run: yarn lint
-
-  test:
-    docker:
-      - image: circleci/node:12.7.0
+      - image: circleci/node:14.15.0
     steps:
       - checkout
       - restore_cache:
@@ -49,14 +24,22 @@ jobs:
           paths:
             - node_modules
 
+      - run: yarn lint
+      
       - run:
           name: Jest Tests
           command: yarn test
 
 workflows:
+  # build-and-deploy-release: TODO to automate creation of npm modules
+  #   jobs:
+  #     - lint-and-test-job:
+  #         filters:
+  #           tags:
+  #             only: /^v.*/
+  #           branches:
+  #             ignore: /.*/
+              
   lint-and-test:
     jobs:
-      - lint
-      - test:
-          requires:
-            - lint
+      - lint-and-test-job

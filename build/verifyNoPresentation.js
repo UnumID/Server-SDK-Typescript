@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyNoPresentation = exports.verifyNoPresentationRequest = exports.validateNoPresentationParams = void 0;
+exports.verifyNoPresentation = exports.validateNoPresentationParams = void 0;
 var library_issuer_verifier_utility_1 = require("library-issuer-verifier-utility");
 var lodash_1 = require("lodash");
 var validateProof_1 = require("./validateProof");
@@ -76,74 +76,13 @@ exports.validateNoPresentationParams = function (noPresentation) {
     validateProof_1.validateProof(proof);
 };
 /**
- * Request middleware to handle a user not agreeing to share the information in the credential request.
- *
- * Note: The request body is exaclty the information sent by the mobile SDK serving the prompt via the deeplink for credential sharing to your application.
- * @param req Request
- * @param res Response
- * @param next NextFunction
- */
-exports.verifyNoPresentationRequest = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, noPresentation, verifier, authorization, _b, verificationMethod, signatureValue, didDocumentResponse, publicKeyInfos, _c, publicKey, encoding, unsignedNoPresentation, isVerified, receiptOptions, receiptCallOptions, authToken, e_1;
-    return __generator(this, function (_d) {
-        switch (_d.label) {
-            case 0:
-                _d.trys.push([0, 3, , 4]);
-                _a = req.body, noPresentation = _a.noPresentation, verifier = _a.verifier;
-                authorization = req.headers.authorization;
-                requireAuth_1.requireAuth(authorization);
-                exports.validateNoPresentationParams(noPresentation);
-                _b = noPresentation.proof, verificationMethod = _b.verificationMethod, signatureValue = _b.signatureValue;
-                return [4 /*yield*/, library_issuer_verifier_utility_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, verificationMethod)];
-            case 1:
-                didDocumentResponse = _d.sent();
-                if (didDocumentResponse instanceof Error) {
-                    throw didDocumentResponse;
-                }
-                publicKeyInfos = library_issuer_verifier_utility_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
-                _c = publicKeyInfos[0], publicKey = _c.publicKey, encoding = _c.encoding;
-                unsignedNoPresentation = lodash_1.omit(noPresentation, 'proof');
-                isVerified = library_issuer_verifier_utility_1.doVerify(signatureValue, unsignedNoPresentation, publicKey, encoding);
-                receiptOptions = {
-                    type: noPresentation.type,
-                    verifier: verifier,
-                    subject: noPresentation.holder,
-                    data: {
-                        isVerified: isVerified
-                    }
-                };
-                receiptCallOptions = {
-                    method: 'POST',
-                    baseUrl: config_1.configData.SaaSUrl,
-                    endPoint: 'receipt',
-                    header: { Authorization: authorization },
-                    data: receiptOptions
-                };
-                return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(receiptCallOptions)];
-            case 2:
-                _d.sent();
-                authToken = didDocumentResponse.headers['x-auth-token'];
-                if (authToken) {
-                    res.setHeader('x-auth-token', didDocumentResponse.headers['x-auth-token']);
-                }
-                res.send({ isVerified: isVerified });
-                return [3 /*break*/, 4];
-            case 3:
-                e_1 = _d.sent();
-                next(e_1);
-                return [3 /*break*/, 4];
-            case 4: return [2 /*return*/];
-        }
-    });
-}); };
-/**
  * Handler for when a user does not agree to share the information in the credential request.
  * @param authorization
  * @param noPresentation
  * @param verifier
  */
 exports.verifyNoPresentation = function (authorization, noPresentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, verificationMethod, signatureValue, didDocumentResponse, publicKeyInfos, _b, publicKey, encoding, unsignedNoPresentation, isVerified, receiptOptions, receiptCallOptions, resp, authToken, result, e_2;
+    var _a, verificationMethod, signatureValue, didDocumentResponse, publicKeyInfos, _b, publicKey, encoding, unsignedNoPresentation, isVerified, receiptOptions, receiptCallOptions, resp, authToken, result, e_1;
     return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
@@ -179,22 +118,24 @@ exports.verifyNoPresentation = function (authorization, noPresentation, verifier
                 return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(receiptCallOptions)];
             case 2:
                 resp = _c.sent();
-                authToken = resp.headers['x-auth-token'];
+                authToken = library_issuer_verifier_utility_1.handleAuthToken(resp);
                 result = {
                     authToken: authToken,
-                    uuid: resp.uuid,
-                    createdAt: resp.createdAt,
-                    updatedAt: resp.updatedAt,
-                    type: resp.type,
-                    subject: resp.subject,
-                    issuer: resp.issuer,
-                    isVerified: isVerified
+                    body: {
+                        uuid: resp.uuid,
+                        createdAt: resp.createdAt,
+                        updatedAt: resp.updatedAt,
+                        type: resp.type,
+                        subject: resp.subject,
+                        issuer: resp.issuer,
+                        isVerified: isVerified
+                    }
                 };
                 return [2 /*return*/, result];
             case 3:
-                e_2 = _c.sent();
-                logger_1.default.error("Error sending a veryNoPresentation request to UnumID Saas. Error " + e_2);
-                throw e_2;
+                e_1 = _c.sent();
+                logger_1.default.error("Error sending a veryNoPresentation request to UnumID Saas. Error " + e_1);
+                throw e_1;
             case 4: return [2 /*return*/];
         }
     });

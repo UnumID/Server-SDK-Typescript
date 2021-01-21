@@ -1,6 +1,4 @@
-import * as express from 'express';
-import { CredentialRequest, PresentationRequestResponse, PresentationRequestResponseDto, SendRequestReqBody, SignedPresentationRequest, UnsignedPresentationRequest } from './types';
-declare type SendRequestReqType = express.Request<Record<string, unknown>, PresentationRequestResponse, SendRequestReqBody>;
+import { CredentialRequest, PresentationRequestResponse, SendRequestReqBody, SignedPresentationRequest, UnsignedPresentationRequest, VerifierDto } from './types';
 /**
  * Constructs an unsigned PresentationRequest from the incoming request body.
  * @param reqBody SendRequestReqBody
@@ -13,15 +11,6 @@ export declare const constructUnsignedPresentationRequest: (reqBody: SendRequest
  */
 export declare const constructSignedPresentationRequest: (unsignedPresentationRequest: UnsignedPresentationRequest, privateKey: string) => SignedPresentationRequest;
 /**
- * Request middleware for sending a PresentationRequest to UnumID's SaaS.
- *
- * Note: handler for /api/sendRequest route
- * @param req Request
- * @param res Response
- * @param next NextFunction
- */
-export declare const sendRequestRequest: (req: SendRequestReqType, res: express.Response<PresentationRequestResponse>, next: express.NextFunction) => Promise<void>;
-/**
  * Handler for sending a PresentationRequest to UnumID's SaaS.
  * @param authorization
  * @param verifier
@@ -29,6 +18,5 @@ export declare const sendRequestRequest: (req: SendRequestReqType, res: express.
  * @param eccPrivateKey
  * @param holderAppUuid
  */
-export declare const sendRequest: (authorization: string, verifier: string, credentialRequests: CredentialRequest[], eccPrivateKey: string, holderAppUuid: string) => Promise<PresentationRequestResponseDto>;
-export {};
+export declare const sendRequest: (authorization: string, verifier: string, credentialRequests: CredentialRequest[], eccPrivateKey: string, holderAppUuid: string, expirationDate?: Date | undefined, metadata?: Record<string, unknown> | undefined) => Promise<VerifierDto<PresentationRequestResponse>>;
 //# sourceMappingURL=sendRequest.d.ts.map

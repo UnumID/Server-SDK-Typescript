@@ -1,15 +1,15 @@
 import * as express from 'express';
 import { configData } from './config';
 import { requireAuth } from './requireAuth';
-import { getUUID, createProof, CustError, RESTData, makeNetworkRequest, isArrayEmpty } from 'library-issuer-verifier-utility';
+import { getUUID, createProof, CustError, RESTData, makeNetworkRequest, isArrayEmpty, isArrayNotEmpty, handleAuthToken } from 'library-issuer-verifier-utility';
 
 import {
   CredentialRequest,
   PresentationRequestResponse,
-  PresentationRequestResponseDto,
   SendRequestReqBody,
   SignedPresentationRequest,
-  UnsignedPresentationRequest
+  UnsignedPresentationRequest,
+  VerifierDto
 } from './types';
 import logger from './logger';
 
@@ -76,7 +76,7 @@ export const constructSignedPresentationRequest = (unsignedPresentationRequest: 
 };
 
 // validates incoming request body
-const validateSendRequestBodyRequest = (sendRequestBody: SendRequestReqBody): void => {
+const validateSendRequestBody = (sendRequestBody: SendRequestReqBody): void => {
   const {
     verifier,
     credentialRequests,
@@ -138,120 +138,7 @@ const validateSendRequestBodyRequest = (sendRequestBody: SendRequestReqBody): vo
 
     for (const issuer of credentialRequest.issuers) {
       if (typeof issuer !== 'string') {
-        throw new CustError(400, 'Invalid issuer: must be a string.');
-      }
-    }
-  }
-
-  // ECC Private Key is mandatory input parameter
-  if (!eccPrivateKey) {
-    throw new CustError(400, 'Invalid PresentationRequest options: eccPrivateKey is required.');
-  }
-};
-
-/**
- * Request middleware for sending a PresentationRequest to UnumID's SaaS.
- *
- * Note: handler for /api/sendRequest route
- * @param req Request
- * @param res Response
- * @param next NextFunction
- */
-export const sendRequestRequest = async (req: SendRequestReqType, res: express.Response<PresentationRequestResponse>, next: express.NextFunction): Promise<void> => {
-  try {
-    const { body, headers: { authorization } } = req;
-
-    requireAuth(authorization);
-
-    // Validate inputs
-    validateSendRequestBodyRequest(body);
-
-    const unsignedPresentationRequest = constructUnsignedPresentationRequest(body);
-
-    // Create the signed presentation object from the unsignedPresentation object
-    const signedPR = constructSignedPresentationRequest(unsignedPresentationRequest, req.body.eccPrivateKey);
-
-    const restData: RESTData = {
-      method: 'POST',
-      baseUrl: configData.SaaSUrl,
-      endPoint: 'presentationRequest',
-      header: { Authorization: authorization },
-      data: signedPR
-    };
-
-    const restResp = await makeNetworkRequest<PresentationRequestResponse>(restData);
-
-    // Copy only the required elemnts from the body of the response got from SaaS REST call
-    const presentationRequestResponse = restResp.body;
-
-    // Set the X-Auth-Token header alone
-    res.setHeader('Content-Type', 'application/json');
-    const authToken = restResp.headers['x-auth-token'];
-
-    if (authToken) {
-      res.setHeader('x-auth-token', restResp.headers['x-auth-token']);
-    }
-
-    res.send(presentationRequestResponse);
-  } catch (error) {
-    next(error);
-  }
-};
-
-// validates incoming request body
-const validateSendRequestBody = (verifier: string, credentialRequests: CredentialRequest[], eccPrivateKey: string, holderAppUuid: string): void => {
-  if (!verifier) {
-    throw new CustError(400, 'Invalid PresentationRequest options: verifier is required.');
-  }
-
-  if (typeof verifier !== 'string') {
-    throw new CustError(400, 'Invalid PresentationRequest options: verifier must be a string.');
-  }
-
-  if (!holderAppUuid) {
-    throw new CustError(400, 'Invalid PresentationRequest options: holderAppUuid is required.');
-  }
-
-  if (typeof holderAppUuid !== 'string') {
-    throw new CustError(400, 'Invalid PresentationRequest options: holderAppUuid must be a string.');
-  }
-
-  if (!credentialRequests) {
-    throw new CustError(400, 'Invalid PresentationRequest options: credentialRequests is required.');
-  }
-
-  // credentialRequests input element must be an array
-  if (!Array.isArray(credentialRequests)) {
-    throw new CustError(400, 'Invalid PresentationRequest options: credentialRequests must be an array.');
-  }
-
-  if (isArrayEmpty(credentialRequests)) {
-    throw new CustError(400, 'Invalid PresentationRequest options: credentialRequests array must not be empty.');
-  }
-
-  // credentialRequests input element should have type and issuer elements
-  for (const credentialRequest of credentialRequests) {
-    if (!credentialRequest.type) {
-      throw new CustError(400, 'Invalid credentialRequest: type is required.');
-    }
-
-    if (!credentialRequest.issuers) {
-      throw new CustError(400, 'Invalid credentialRequest: issuers is required.');
-    }
-
-    // credentialRequests.issuers input element must be an array
-    if (!Array.isArray(credentialRequest.issuers)) {
-      throw new CustError(400, 'Invalid credentialRequest: issuers must be an array.');
-    }
-
-    const totIssuers = credentialRequest.issuers.length;
-    if (totIssuers === 0) {
-      throw new CustError(400, 'Invalid credentialRequest: issuers array must not be empty.');
-    }
-
-    for (const issuer of credentialRequest.issuers) {
-      if (typeof issuer !== 'string') {
-        throw new CustError(400, 'Invalid issuer: must be a string.');
+        throw new CustError(400, 'Invalid credentialRequest: issuers array element must be a string.');
       }
     }
   }
@@ -270,14 +157,14 @@ const validateSendRequestBody = (verifier: string, credentialRequests: Credentia
  * @param eccPrivateKey
  * @param holderAppUuid
  */
-export const sendRequest = async (authorization:string, verifier: string, credentialRequests: CredentialRequest[], eccPrivateKey: string, holderAppUuid: string): Promise<PresentationRequestResponseDto> => {
+export const sendRequest = async (authorization:string, verifier: string, credentialRequests: CredentialRequest[], eccPrivateKey: string, holderAppUuid: string, expirationDate?: Date, metadata?: Record<string, unknown>): Promise<VerifierDto<PresentationRequestResponse>> => {
   try {
     requireAuth(authorization);
 
-    const body = { verifier, credentialRequests, eccPrivateKey, holderAppUuid };
+    const body: SendRequestReqBody = { verifier, credentialRequests, eccPrivateKey, holderAppUuid, expiresAt: expirationDate, metadata };
 
     // Validate inputs
-    validateSendRequestBody(verifier, credentialRequests, eccPrivateKey, holderAppUuid);
+    validateSendRequestBody(body);
 
     const unsignedPresentationRequest = constructUnsignedPresentationRequest(body);
 
@@ -294,8 +181,9 @@ export const sendRequest = async (authorization:string, verifier: string, creden
 
     const restResp = await makeNetworkRequest<PresentationRequestResponse>(restData);
 
-    const authToken = restResp.headers['x-auth-token'];
-    const presentationRequestResponse: PresentationRequestResponseDto = { ...restResp.body, authToken };
+    const authToken: string = handleAuthToken(restResp);
+
+    const presentationRequestResponse: VerifierDto<PresentationRequestResponse> = { body: { ...restResp.body }, authToken };
 
     return presentationRequestResponse;
   } catch (error) {

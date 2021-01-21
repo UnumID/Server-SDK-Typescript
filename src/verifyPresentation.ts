@@ -1,14 +1,13 @@
-import * as express from 'express';
 import { omit } from 'lodash';
 
 import { configData } from './config';
-import { Presentation, ReceiptDto } from './types';
+import { Presentation, Receipt, VerifierDto } from './types';
 import { validateProof } from './validateProof';
 import { requireAuth } from './requireAuth';
 import { verifyCredential } from './verifyCredential';
 import { isCredentialExpired } from './isCredentialExpired';
 import { checkCredentialStatus } from './checkCredentialStatus';
-import { JSONObj, CustError, Proof, getDIDDoc, PublicKeyInfo, getKeyFromDIDDoc, doVerify, RESTData, makeNetworkRequest, isArrayEmpty } from 'library-issuer-verifier-utility';
+import { JSONObj, CustError, Proof, getDIDDoc, PublicKeyInfo, getKeyFromDIDDoc, doVerify, RESTData, makeNetworkRequest, isArrayEmpty, isArrayNotEmpty, handleAuthToken } from 'library-issuer-verifier-utility';
 import logger from './logger';
 
 /**
@@ -163,130 +162,12 @@ const validatePresentation = (presentation: Presentation): void => {
 };
 
 /**
- * Type to encapsulate the verify presentation request type attributes.
- */
-type VerifyPresentationRequestType = express.Request<unknown, { verifiedStatus: boolean }, { presentation: Presentation, verifier: string }>;
-
-/**
- * Request middleware for sending information regarding the user agreeing to share a credential Presentation.
- *
- * Note: The request body is exactly the information sent by the mobile SDK serving the prompt via the deeplink for credential sharing to your application.
- * @param req Request
- * @param res Response
- * @param next NextFunction
- */
-export const verifyPresentationRequest = async (req: VerifyPresentationRequestType, res: express.Response, next: express.NextFunction): Promise<void> => {
-  try {
-    const { authorization } = req.headers;
-
-    requireAuth(authorization);
-
-    // Validate input Object
-    const { presentation, verifier } = req.body;
-
-    if (!presentation) {
-      throw new CustError(400, 'presentation is required.');
-    }
-
-    if (!verifier) {
-      throw new CustError(400, 'verifier is required.');
-    }
-
-    validatePresentation(presentation);
-    const data = omit(presentation, 'proof');
-
-    const proof: Proof = presentation.proof;
-
-    const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, proof.verificationMethod);
-
-    if (didDocumentResponse instanceof Error) {
-      throw didDocumentResponse;
-    }
-
-    const pubKeyObj: PublicKeyInfo[] = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
-
-    if (pubKeyObj.length === 0) {
-      throw new CustError(404, 'Public key not found for the DID');
-    }
-
-    // Verify the data given.  As of now only one secp256r1 public key is expected.
-    // In future, there is a possibility that, more than one secp256r1 public key can be there for a given DID.
-    // The same scenario would be handled later.
-    // verifiableCredential is an array.  As of now we are verifying the entire credential object together.  We will have to modify
-    // this logic to verify each credential present separately.  We can take this up later.
-    const isPresentationVerified: boolean = doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
-
-    let areCredentialsValid = true;
-
-    for (const credential of presentation.verifiableCredential) {
-      const isExpired = isCredentialExpired(credential);
-
-      if (isExpired) {
-        areCredentialsValid = false;
-        break;
-      }
-
-      const isStatusValid = await checkCredentialStatus(credential, authorization as string);
-
-      if (!isStatusValid) {
-        areCredentialsValid = false;
-        break;
-      }
-
-      const isVerified = await verifyCredential(credential, authorization as string);
-      if (!isVerified) {
-        areCredentialsValid = false;
-        break;
-      }
-    }
-
-    const verifiedStatus = isPresentationVerified && areCredentialsValid;
-
-    const credentialTypes = presentation.verifiableCredential.flatMap(cred => cred.type.slice(1));
-    const issuers = presentation.verifiableCredential.map(cred => cred.issuer);
-    const subject = proof.verificationMethod;
-    const receiptOptions = {
-      type: ['PresentationVerified'],
-      verifier,
-      subject,
-      data: {
-        credentialTypes,
-        issuers,
-        isVerified: verifiedStatus
-      }
-    };
-
-    const receiptCallOptions: RESTData = {
-      method: 'POST',
-      baseUrl: configData.SaaSUrl,
-      endPoint: 'receipt',
-      header: { Authorization: authorization },
-      data: receiptOptions
-    };
-
-    await makeNetworkRequest(receiptCallOptions);
-
-    // Set the X-Auth-Token header alone
-    res.setHeader('Content-Type', 'application/json');
-    const authToken = didDocumentResponse.headers['x-auth-token'];
-
-    if (authToken) {
-      res.setHeader('x-auth-token', didDocumentResponse.headers['x-auth-token']);
-    }
-
-    res.send({ verifiedStatus: verifiedStatus });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
  * Handler to send information regarding the user agreeing to share a credential Presentation.
  * @param authorization
  * @param presentation
  * @param verifier
  */
-export const verifyPresentation = async (authorization: string, presentation: Presentation, verifier: string): Promise<ReceiptDto> => {
+export const verifyPresentation = async (authorization: string, presentation: Presentation, verifier: string): Promise<VerifierDto<Receipt>> => {
   try {
     requireAuth(authorization);
 
@@ -371,17 +252,20 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     };
 
     const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
-    const authToken = didDocumentResponse.headers['x-auth-token'];
 
-    const result: ReceiptDto = {
+    const authToken: string = handleAuthToken(resp);
+
+    const result: VerifierDto<Receipt> = {
       authToken,
-      uuid: resp.uuid,
-      createdAt: resp.createdAt,
-      updatedAt: resp.updatedAt,
-      type: resp.type,
-      subject: resp.subject,
-      issuer: resp.issuer,
-      isVerified
+      body: {
+        uuid: resp.uuid,
+        createdAt: resp.createdAt,
+        updatedAt: resp.updatedAt,
+        type: resp.type,
+        subject: resp.subject,
+        issuer: resp.issuer,
+        isVerified
+      }
     };
 
     return result;
