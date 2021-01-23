@@ -58,13 +58,14 @@ var constructKeyObj = function (kp, type) {
     };
 };
 /**
- * Currently creates a key pair set of one key entity for signing purposes.
+ * Currently creates a key pair set. One for signing and the other for encryption.
  * Flexible in supporting future keys for other purposes.
  * @param kpSet KeyPairSet
  */
 var constructKeyObjs = function (kpSet) {
     var signKey = constructKeyObj(kpSet.signing, 'secp256r1');
-    return ([signKey]);
+    var encKey = constructKeyObj(kpSet.encryption, 'RSA');
+    return [signKey, encKey];
 };
 /**
  * Validates request input parameters.

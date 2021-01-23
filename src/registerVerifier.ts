@@ -20,14 +20,15 @@ const constructKeyObj = (kp: KeyPair, type: DidKeyType): PublicKeyInfo => {
 };
 
 /**
- * Currently creates a key pair set of one key entity for signing purposes.
+ * Currently creates a key pair set. One for signing and the other for encryption.
  * Flexible in supporting future keys for other purposes.
  * @param kpSet KeyPairSet
  */
 const constructKeyObjs = (kpSet: KeyPairSet): Array<PublicKeyInfo> => {
   const signKey = constructKeyObj(kpSet.signing, 'secp256r1');
+  const encKey = constructKeyObj(kpSet.encryption, 'RSA');
 
-  return ([signKey]);
+  return [signKey, encKey];
 };
 
 /**
