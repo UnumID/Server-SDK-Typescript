@@ -4,6 +4,7 @@ import { VerifiableCredential } from '../src/types';
 import { verifyCredential } from '../src/verifyCredential';
 import { makeDummyDidDocument } from './mocks';
 
+// Selective "spyon" mocking example of package.
 jest.mock('library-issuer-verifier-utility', () => {
   const actual = jest.requireActual('library-issuer-verifier-utility');
   return {

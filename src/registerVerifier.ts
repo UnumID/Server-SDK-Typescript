@@ -1,4 +1,3 @@
-import * as express from 'express';
 import { configData } from './config';
 import { RegisteredVerifier, VerifierDto, VerifierOptions } from './types';
 import { KeyPair, PublicKeyInfo, getUUID, KeyPairSet, CustError, createKeyPairSet, RESTData, JSONObj, makeNetworkRequest, DidKeyType, isArrayEmpty, isArrayNotEmpty, handleAuthToken } from 'library-issuer-verifier-utility';

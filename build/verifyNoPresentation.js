@@ -53,16 +53,19 @@ var logger_1 = __importDefault(require("./logger"));
 exports.validateNoPresentationParams = function (noPresentation) {
     var type = noPresentation.type, holder = noPresentation.holder, proof = noPresentation.proof, presentationRequestUuid = noPresentation.presentationRequestUuid;
     if (!type) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'type is required.');
+        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: type is required.');
+    }
+    if (library_issuer_verifier_utility_1.isArrayEmpty(type)) {
+        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: type must be a non-empty array.');
     }
     if (!proof) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'proof is required.');
+        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: proof is required.');
     }
     if (!holder) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'holder is required.');
+        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: holder is required.');
     }
     if (!presentationRequestUuid) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'presentationRequestUuid is required.');
+        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
     }
     if (type[0] !== 'NoPresentation') {
         throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid type: first element must be \'NoPresentation\'.');
@@ -122,12 +125,12 @@ exports.verifyNoPresentation = function (authorization, noPresentation, verifier
                 result = {
                     authToken: authToken,
                     body: {
-                        uuid: resp.uuid,
-                        createdAt: resp.createdAt,
-                        updatedAt: resp.updatedAt,
-                        type: resp.type,
-                        subject: resp.subject,
-                        issuer: resp.issuer,
+                        uuid: resp.body.uuid,
+                        createdAt: resp.body.createdAt,
+                        updatedAt: resp.body.updatedAt,
+                        type: resp.body.type,
+                        subject: resp.body.subject,
+                        issuer: resp.body.issuer,
                         isVerified: isVerified
                     }
                 };

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyPresentation = exports.verifyNoPresentation = exports.sendSms = exports.sendRequest = exports.sendEmail = exports.registerVerifier = void 0;
+exports.verifyEncryptedPresentation = exports.verifyPresentation = exports.verifyNoPresentation = exports.sendSms = exports.sendRequest = exports.sendEmail = exports.registerVerifier = void 0;
 var registerVerifier_1 = require("./registerVerifier");
 Object.defineProperty(exports, "registerVerifier", { enumerable: true, get: function () { return registerVerifier_1.registerVerifier; } });
 var sendEmail_1 = require("./sendEmail");
@@ -13,4 +13,6 @@ var verifyNoPresentation_1 = require("./verifyNoPresentation");
 Object.defineProperty(exports, "verifyNoPresentation", { enumerable: true, get: function () { return verifyNoPresentation_1.verifyNoPresentation; } });
 var verifyPresentation_1 = require("./verifyPresentation");
 Object.defineProperty(exports, "verifyPresentation", { enumerable: true, get: function () { return verifyPresentation_1.verifyPresentation; } });
+var verifyEncryptedPresentation_1 = require("./verifyEncryptedPresentation");
+Object.defineProperty(exports, "verifyEncryptedPresentation", { enumerable: true, get: function () { return verifyEncryptedPresentation_1.verifyEncryptedPresentation; } });
 //# sourceMappingURL=index.js.map

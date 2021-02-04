@@ -105,6 +105,8 @@ export interface NoPresentation {
   presentationRequestUuid: string;
 }
 
+export type PresentationOrNoPresentation = Presentation | NoPresentation;
+
 /**
  * Encapsulates API Key attributes for Verifier registration.
  */
@@ -203,6 +205,8 @@ export interface Receipt {
   subject: string;
   issuer: string;
   isVerified: boolean;
+  credentialTypes?: string[]; // This could be derived from credentials however, leaving as a first class attribute so it is easier for the customer to pass back to us if they want more detailed analytics.
+  credentials?: VerifiableCredential[];
 }
 
 /**

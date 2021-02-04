@@ -1,14 +1,11 @@
-import { omit } from 'lodash';
 
-import { configData } from './config';
-import { Presentation, Receipt, VerifierDto } from './types';
+import { Presentation, PresentationOrNoPresentation, Receipt, VerifierDto } from './types';
 import { validateProof } from './validateProof';
 import { requireAuth } from './requireAuth';
-import { verifyCredential } from './verifyCredential';
-import { isCredentialExpired } from './isCredentialExpired';
-import { checkCredentialStatus } from './checkCredentialStatus';
-import { JSONObj, CustError, Proof, getDIDDoc, PublicKeyInfo, getKeyFromDIDDoc, doVerify, RESTData, makeNetworkRequest, isArrayEmpty, handleAuthToken } from 'library-issuer-verifier-utility';
+import { decrypt } from 'library-crypto-typescript';
+import { JSONObj, CustError, isArrayEmpty, EncryptedData } from 'library-issuer-verifier-utility';
 import logger from './logger';
+import { NoPresentation, verifyNoPresentation, verifyPresentation } from '.';
 
 /**
  * Validates the attributes for a credential request to UnumID's SaaS.
@@ -161,118 +158,45 @@ const validatePresentation = (presentation: Presentation): void => {
   validateProof(proof);
 };
 
+function isPresentation (presentation: PresentationOrNoPresentation): presentation is Presentation {
+  return presentation.type[0] === 'VerifiablePresentation';
+}
+
 /**
  * Handler to send information regarding the user agreeing to share a credential Presentation.
- * @param authorization
- * @param presentation
- * @param verifier
+ * @param authorization: string
+ * @param encryptedPresentation: EncryptedData
+ * @param verifierDid: string
  */
-export const verifyPresentation = async (authorization: string, presentation: Presentation, verifier: string): Promise<VerifierDto<Receipt>> => {
+export const verifyEncryptedPresentation = async (authorization: string, encryptedPresentation: EncryptedData, verifierDid: string, encryptionPrivateKey: string): Promise<VerifierDto<Receipt>> => {
   try {
     requireAuth(authorization);
 
-    if (!presentation) {
-      throw new CustError(400, 'presentation is required.');
+    if (!encryptedPresentation) {
+      throw new CustError(400, 'encryptedPresentation is required.');
     }
 
-    if (!verifier) {
+    if (!verifierDid) { // verifier did
       throw new CustError(400, 'verifier is required.');
     }
 
-    validatePresentation(presentation);
-    const data = omit(presentation, 'proof');
-
-    const proof: Proof = presentation.proof;
-
-    // proof.verificationMethod is the subject's did
-    const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, proof.verificationMethod);
-
-    if (didDocumentResponse instanceof Error) {
-      throw didDocumentResponse;
+    if (!encryptionPrivateKey) {
+      throw new CustError(400, 'verifier encryptionPrivateKey is required.');
     }
 
-    const pubKeyObj: PublicKeyInfo[] = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
+    // decrypt the presentation
+    const presentation = <Presentation|NoPresentation> decrypt(encryptionPrivateKey, encryptedPresentation);
 
-    if (pubKeyObj.length === 0) {
-      throw new CustError(404, 'Public key not found for the DID');
+    if (!isPresentation(presentation)) {
+      return verifyNoPresentation(authorization, presentation, verifierDid);
     }
 
-    // Verify the data given.  As of now only one secp256r1 public key is expected.
-    // In future, there is a possibility that, more than one secp256r1 public key can be there for a given DID.
-    // The same scenario would be handled later.
-    // verifiableCredential is an array.  As of now we are verifying the entire credential object together.  We will have to modify
-    // this logic to verify each credential present separately.  We can take this up later.
-    const isPresentationVerified: boolean = doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
+    const verificationResult = await verifyPresentation(authorization, presentation, verifierDid);
+    verificationResult.body.credentials = presentation.verifiableCredential;
 
-    let areCredentialsValid = true;
-
-    for (const credential of presentation.verifiableCredential) {
-      const isExpired = isCredentialExpired(credential);
-
-      if (isExpired) {
-        areCredentialsValid = false;
-        break;
-      }
-
-      const isStatusValid = await checkCredentialStatus(credential, authorization as string);
-
-      if (!isStatusValid) {
-        areCredentialsValid = false;
-        break;
-      }
-
-      const isVerified = await verifyCredential(credential, authorization as string);
-      if (!isVerified) {
-        areCredentialsValid = false;
-        break;
-      }
-    }
-
-    const isVerified = isPresentationVerified && areCredentialsValid;
-
-    const credentialTypes = presentation.verifiableCredential.flatMap(cred => cred.type.slice(1));
-    const issuers = presentation.verifiableCredential.map(cred => cred.issuer);
-    const subject = proof.verificationMethod;
-    const receiptOptions = {
-      type: ['PresentationVerified'],
-      verifier,
-      subject,
-      data: {
-        credentialTypes,
-        issuers,
-        isVerified
-      }
-    };
-
-    const receiptCallOptions: RESTData = {
-      method: 'POST',
-      baseUrl: configData.SaaSUrl,
-      endPoint: 'receipt',
-      header: { Authorization: authorization },
-      data: receiptOptions
-    };
-
-    const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
-
-    const authToken: string = handleAuthToken(resp);
-
-    const result: VerifierDto<Receipt> = {
-      authToken,
-      body: {
-        uuid: resp.body.uuid,
-        createdAt: resp.body.createdAt,
-        updatedAt: resp.body.updatedAt,
-        type: resp.body.type,
-        credentialTypes: presentation.verifiableCredential.map(vc => vc.type).flat(),
-        subject,
-        issuer: resp.body.issuer,
-        isVerified
-      }
-    };
-
-    return result;
+    return verificationResult;
   } catch (error) {
-    logger.error(`Error sending a veryNoPresentation request to UnumID Saas. Error ${error}`);
+    logger.error(`Error handling encrypted presentation request to UnumID Saas. Error ${error}`);
     throw error;
   }
 };

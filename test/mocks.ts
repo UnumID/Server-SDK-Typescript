@@ -5,7 +5,8 @@ import {
   UnsignedCredential,
   Credential,
   RESTResponse,
-  DidDocument
+  DidDocument,
+  PublicKeyInfo
 } from 'library-issuer-verifier-utility';
 
 import { configData } from '../src/config';
@@ -25,6 +26,12 @@ export const dummyVerifierDid = `did:unum:${getUUID()}`;
 
 export const dummyAuthToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
 export const dummyVerifierApiKey = 'x7DQsIj/vpsBc7vu9uIz39KbUK2KpV4VSZu0JXv/zWw=';
+
+export const dummyRsaPublicKey = '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA62ykSiBsmldkj7yQ0ky4\n66hc0WooxmfgxODAZByyEsWykn1PNTMizN3hsEmyWK4khN3sJpmgzH88UW4b2oR5\ndsWo739RiLRdmtdhUZp+JBRz3YrK2Qt4LcmNHFVJxgGttqr+toaiNg8V7ZnsVE2/\nlC9zJqY1diuUGRVoCpkIpZElHMqI4uO4zAK4jrpY53YC4bTPxICdlhKSiN9bEYMW\nO5/LvHGwBgEJ4/pCaUYSBJcHFMzS9u3COecAlgco69tOlEBIqShYoJV2BM72anvT\na2copxu9QCoIaZPzphEenT0M4n/cu/jSdciMYLtC/ZhrCWGfGUYYu9yRACFOqnoD\naQIDAQAB\n-----END PUBLIC KEY-----\n';
+export const dummyRsaPrivateKey = '-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDrbKRKIGyaV2SP\nvJDSTLjrqFzRaijGZ+DE4MBkHLISxbKSfU81MyLM3eGwSbJYriSE3ewmmaDMfzxR\nbhvahHl2xajvf1GItF2a12FRmn4kFHPdisrZC3gtyY0cVUnGAa22qv62hqI2DxXt\nmexUTb+UL3MmpjV2K5QZFWgKmQilkSUcyoji47jMAriOuljndgLhtM/EgJ2WEpKI\n31sRgxY7n8u8cbAGAQnj+kJpRhIElwcUzNL27cI55wCWByjr206UQEipKFiglXYE\nzvZqe9NrZyinG71AKghpk/OmER6dPQzif9y7+NJ1yIxgu0L9mGsJYZ8ZRhi73JEA\nIU6qegNpAgMBAAECggEBAORfcUePCIr3988PJpU6Y7AGlHN4vbEpl3qkYz06MOvQ\n55b/A9Uhk8KUApiWBPHNjBNvi+Mt6DQ3wPVlEJP7KjCzMVuScC9id+L6x6b3bSHm\nzTa9qmS9oYkZGU/A1F3FxxOJ8KhzFevG2oiwZfaprQw8s0FsvjOxtmpWv6R4K1Ef\nDUtP5BqPeckkTAiAc1H8sXA04wCrlbQMiK6SlyGXA+eHG9roxVIL0hFFSodhl69U\nTeUTfim0Q9jXRxhQhcZwneYAVBa4WnBO0Y29p+9Q+lJaXE0mnt3AHC94Ni4+J+Uf\n9lcnhO8gWkN/Qij3v7tF6mfiSIq6BGKDRffJ1mCG+AECgYEA9lDZRU4GUa5RTyRY\nL5T1E08fga3ssaGPxUkqALtaJMQUcBqSGISk2QEQoSNnP07J32xJ8sPLFBl2Nvjt\nHUMzJJX2jasT0IGAzKTDotumLOp6rSQ35CrwtRYyBNXWIl4WI4b9HzlsaRDwDNs3\nRNvxqVGH+YY3feioSv/gWHBUkIECgYEA9K4r6acyUZHyTZIusxf0MXzcgImrZ44o\nHX2UQwVI92Z5hY0f8n/uFvMJ3H8XPgt/9tb7ppZk+rIqgxTy8eZGAVxBrzzx43Rn\nUwva4qBY9TbV/HGF0nH7P6DXLb4Rc8wdZwNt0Q+/R94L3YvnCHv5WQWnPt7rdmFc\nGsoDdKzjfukCgYBPlanN2bry80a0MoMHxLI2re75IHAEqLXiQZR/rgkfLfeIjR09\nLMZykwSDfAPlEZjqRnvSI27fLKbkdiNuvAKvRIDoHymEygMKnAXV/fBAPPasMLKa\nV0F00RoSM+E/M3Ulv3zTdONRQza8gKvn5MS9N2metr4BQYX2zZv4FztLgQKBgHo1\nJ++qt6IwMAJ4eeSvmSLCh2uX10mAoh6go1WaJSiUQSvoIcXACc3ik9FSlOxDWCWU\nmNpKkaL5K+yOoQ0bA2oYhyIcYYBGmnjLGgdJKUVInzZYCQvkLCZKkk7heNwKXcEe\n4FGj+NjPWcPM5ZbCPPcusKrhMl/NHvCuZ212EKZJAoGBALjGFVLtxLjf4Y5OwJ2b\nZX6CP3viNs5dQJPOyWHdGmQhNVEh0jEZV9WJcz+D4djJTFeUz0+xuBVxXJLW8qW/\nvnOIVpfZBrDCcKve4kOVbInXR6yI+OhmgyAQJMKGE7romWf1Iq8mh41GJFnBWGnc\nqR92ms3JlTIu94gnfPXLoS/r\n-----END PRIVATE KEY-----\n';
+
+export const dummyEccPublicKey = 'aSq9DsNNvGhYxYyqA9wd2eduEAZ5AXWgJTbTKcK5rUyWBBvenyGeVgJFo2UQRRwcNhVQTAMYkzoWRNSaqxsvp6MTXLNiopgnmAMNCNV9AmnwGPHUpTpmzT5YTAVq';
+export const dummyEccPrivateKey = '2EPbyvKQKUaUPMF7Mm94FjEzvs5tsLWfesyc97W1dqYeeZFEG3RbKtndUZSYBdcp4xQtukTc6yUB4vyfWrxWqm1wPsY1g7uPaRftRJ57WaJ5zMWHpVagZdK7FVz2qUXHc7Fs5JwoxixcYwxDu4iL29y9KWyexi3CQKT2Ze3SSRqz9ZzTzhusitc7TjLBm';
 
 export interface DummyCredentialOptions {
   unsignedCredential: UnsignedCredential;
@@ -144,7 +151,7 @@ export const makeDummyDidDocument = async (options: Partial<DidDocument> = {}): 
       },
       {
         id: getUUID(),
-        publicKey: keypairs.encryption.publicKey,
+        publicKey: dummyRsaPublicKey, // Need the key to be static encryption / decryption purposes
         encoding: 'pem',
         type: 'RSA',
         status: 'valid'

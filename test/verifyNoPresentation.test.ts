@@ -38,6 +38,7 @@ const dummyNoPresentation: NoPresentation = {
   ],
   proof: {
     signatureValue: 'AN1rKvtGeqaB4L16dr2gwF9jZF77hdhrb8iBsTgUTt2XqUyoJYnfQQmczxMuKLM2zWU6E6DSSaqzWVsisbD3VhG8taLWGx6BY',
+    unsignedValue: 'unsigned sig value',
     created: '2020-09-29T00:05:57.107Z',
     type: 'secp256r1signature2020',
     verificationMethod: 'did:unum:50fb0b5b-79ff-4db9-9f33-d93feab702db',
@@ -51,6 +52,7 @@ const dummyNoPresentationWithoutHolder = omit(dummyNoPresentation, 'holder') as 
 const dummyNoPresentationWithoutProof = omit(dummyNoPresentation, 'proof') as NoPresentation;
 
 const dummyNoPresentationBadType = { ...dummyNoPresentation, type: {} } as NoPresentation;
+const dummyNoPresentationBadTypeKeywordMissing = { ...dummyNoPresentation, type: ['No No Presenation'] } as NoPresentation;
 const dummyNoPresentationBadRequestUuid = { ...dummyNoPresentation, presentationRequestUuid: {} } as NoPresentation;
 const dummyNoPresentationBadHolder = { ...dummyNoPresentation, holder: {} } as NoPresentation;
 const dummyNoPresentationBadProof = { ...dummyNoPresentation, proof: {} } as NoPresentation;
@@ -121,7 +123,7 @@ describe('verifyNoPresentation', () => {
         fail();
       } catch (e) {
         expect(e.code).toEqual(400);
-        expect(e.message).toEqual('type is required.');
+        expect(e.message).toEqual('Invalid Presentation: type is required.');
       }
     });
 
@@ -131,7 +133,7 @@ describe('verifyNoPresentation', () => {
         fail();
       } catch (e) {
         expect(e.code).toEqual(400);
-        expect(e.message).toEqual('proof is required.');
+        expect(e.message).toEqual('Invalid Presentation: proof is required.');
       }
     });
 
@@ -141,7 +143,7 @@ describe('verifyNoPresentation', () => {
         fail();
       } catch (e) {
         expect(e.code).toEqual(400);
-        expect(e.message).toEqual('holder is required.');
+        expect(e.message).toEqual('Invalid Presentation: holder is required.');
       }
     });
 
@@ -151,16 +153,25 @@ describe('verifyNoPresentation', () => {
         fail();
       } catch (e) {
         expect(e.code).toEqual(400);
-        expect(e.message).toEqual('presentationRequestUuid is required.');
+        expect(e.message).toEqual('Invalid Presentation: presentationRequestUuid is required.');
       }
     });
 
     it('returns a 400 status code with a descriptive error message if type is invalid', async () => {
       try {
-        await callVerifyNoPresentation(dummyNoPresentationBadType, verifier, authHeader);
+        await callVerifyNoPresentation(dummyNoPresentationBadTypeKeywordMissing, verifier, authHeader);
       } catch (e) {
         expect(e.code).toEqual(400);
         expect(e.message).toEqual('Invalid type: first element must be \'NoPresentation\'.');
+      }
+    });
+
+    it('returns a 400 status code with a descriptive error message if type is not an array', async () => {
+      try {
+        await callVerifyNoPresentation(dummyNoPresentationBadType, verifier, authHeader);
+      } catch (e) {
+        expect(e.code).toEqual(400);
+        expect(e.message).toEqual('Invalid Presentation: type must be a non-empty array.');
       }
     });
 

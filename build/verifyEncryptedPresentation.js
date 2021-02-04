@@ -39,16 +39,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyPresentation = void 0;
-var lodash_1 = require("lodash");
-var config_1 = require("./config");
+exports.verifyEncryptedPresentation = void 0;
 var validateProof_1 = require("./validateProof");
 var requireAuth_1 = require("./requireAuth");
-var verifyCredential_1 = require("./verifyCredential");
-var isCredentialExpired_1 = require("./isCredentialExpired");
-var checkCredentialStatus_1 = require("./checkCredentialStatus");
+var library_crypto_typescript_1 = require("library-crypto-typescript");
 var library_issuer_verifier_utility_1 = require("library-issuer-verifier-utility");
 var logger_1 = __importDefault(require("./logger"));
+var _1 = require(".");
 /**
  * Validates the attributes for a credential request to UnumID's SaaS.
  * @param credentials JSONObj
@@ -172,114 +169,46 @@ var validatePresentation = function (presentation) {
     // Check proof object is formatted correctly
     validateProof_1.validateProof(proof);
 };
+function isPresentation(presentation) {
+    return presentation.type[0] === 'VerifiablePresentation';
+}
 /**
  * Handler to send information regarding the user agreeing to share a credential Presentation.
- * @param authorization
- * @param presentation
- * @param verifier
+ * @param authorization: string
+ * @param encryptedPresentation: EncryptedData
+ * @param verifierDid: string
  */
-exports.verifyPresentation = function (authorization, presentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, proof, didDocumentResponse, pubKeyObj, isPresentationVerified, areCredentialsValid, _i, _a, credential, isExpired, isStatusValid, isVerified_1, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, authToken, result, error_1;
-    return __generator(this, function (_b) {
-        switch (_b.label) {
+exports.verifyEncryptedPresentation = function (authorization, encryptedPresentation, verifierDid, encryptionPrivateKey) { return __awaiter(void 0, void 0, void 0, function () {
+    var presentation, verificationResult, error_1;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
             case 0:
-                _b.trys.push([0, 8, , 9]);
+                _a.trys.push([0, 2, , 3]);
                 requireAuth_1.requireAuth(authorization);
-                if (!presentation) {
-                    throw new library_issuer_verifier_utility_1.CustError(400, 'presentation is required.');
+                if (!encryptedPresentation) {
+                    throw new library_issuer_verifier_utility_1.CustError(400, 'encryptedPresentation is required.');
                 }
-                if (!verifier) {
+                if (!verifierDid) { // verifier did
                     throw new library_issuer_verifier_utility_1.CustError(400, 'verifier is required.');
                 }
-                validatePresentation(presentation);
-                data = lodash_1.omit(presentation, 'proof');
-                proof = presentation.proof;
-                return [4 /*yield*/, library_issuer_verifier_utility_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, proof.verificationMethod)];
+                if (!encryptionPrivateKey) {
+                    throw new library_issuer_verifier_utility_1.CustError(400, 'verifier encryptionPrivateKey is required.');
+                }
+                presentation = library_crypto_typescript_1.decrypt(encryptionPrivateKey, encryptedPresentation);
+                if (!isPresentation(presentation)) {
+                    return [2 /*return*/, _1.verifyNoPresentation(authorization, presentation, verifierDid)];
+                }
+                return [4 /*yield*/, _1.verifyPresentation(authorization, presentation, verifierDid)];
             case 1:
-                didDocumentResponse = _b.sent();
-                if (didDocumentResponse instanceof Error) {
-                    throw didDocumentResponse;
-                }
-                pubKeyObj = library_issuer_verifier_utility_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
-                if (pubKeyObj.length === 0) {
-                    throw new library_issuer_verifier_utility_1.CustError(404, 'Public key not found for the DID');
-                }
-                isPresentationVerified = library_issuer_verifier_utility_1.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
-                areCredentialsValid = true;
-                _i = 0, _a = presentation.verifiableCredential;
-                _b.label = 2;
+                verificationResult = _a.sent();
+                verificationResult.body.credentials = presentation.verifiableCredential;
+                return [2 /*return*/, verificationResult];
             case 2:
-                if (!(_i < _a.length)) return [3 /*break*/, 6];
-                credential = _a[_i];
-                isExpired = isCredentialExpired_1.isCredentialExpired(credential);
-                if (isExpired) {
-                    areCredentialsValid = false;
-                    return [3 /*break*/, 6];
-                }
-                return [4 /*yield*/, checkCredentialStatus_1.checkCredentialStatus(credential, authorization)];
-            case 3:
-                isStatusValid = _b.sent();
-                if (!isStatusValid) {
-                    areCredentialsValid = false;
-                    return [3 /*break*/, 6];
-                }
-                return [4 /*yield*/, verifyCredential_1.verifyCredential(credential, authorization)];
-            case 4:
-                isVerified_1 = _b.sent();
-                if (!isVerified_1) {
-                    areCredentialsValid = false;
-                    return [3 /*break*/, 6];
-                }
-                _b.label = 5;
-            case 5:
-                _i++;
-                return [3 /*break*/, 2];
-            case 6:
-                isVerified = isPresentationVerified && areCredentialsValid;
-                credentialTypes = presentation.verifiableCredential.flatMap(function (cred) { return cred.type.slice(1); });
-                issuers = presentation.verifiableCredential.map(function (cred) { return cred.issuer; });
-                subject = proof.verificationMethod;
-                receiptOptions = {
-                    type: ['PresentationVerified'],
-                    verifier: verifier,
-                    subject: subject,
-                    data: {
-                        credentialTypes: credentialTypes,
-                        issuers: issuers,
-                        isVerified: isVerified
-                    }
-                };
-                receiptCallOptions = {
-                    method: 'POST',
-                    baseUrl: config_1.configData.SaaSUrl,
-                    endPoint: 'receipt',
-                    header: { Authorization: authorization },
-                    data: receiptOptions
-                };
-                return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(receiptCallOptions)];
-            case 7:
-                resp = _b.sent();
-                authToken = library_issuer_verifier_utility_1.handleAuthToken(resp);
-                result = {
-                    authToken: authToken,
-                    body: {
-                        uuid: resp.body.uuid,
-                        createdAt: resp.body.createdAt,
-                        updatedAt: resp.body.updatedAt,
-                        type: resp.body.type,
-                        credentialTypes: presentation.verifiableCredential.map(function (vc) { return vc.type; }).flat(),
-                        subject: subject,
-                        issuer: resp.body.issuer,
-                        isVerified: isVerified
-                    }
-                };
-                return [2 /*return*/, result];
-            case 8:
-                error_1 = _b.sent();
-                logger_1.default.error("Error sending a veryNoPresentation request to UnumID Saas. Error " + error_1);
+                error_1 = _a.sent();
+                logger_1.default.error("Error handling encrypted presentation request to UnumID Saas. Error " + error_1);
                 throw error_1;
-            case 9: return [2 /*return*/];
+            case 3: return [2 /*return*/];
         }
     });
 }); };
-//# sourceMappingURL=verifyPresentation.js.map
+//# sourceMappingURL=verifyEncryptedPresentation.js.map

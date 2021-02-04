@@ -31,19 +31,23 @@ export const validateNoPresentationParams = (noPresentation: NoPresentation): vo
   } = noPresentation;
 
   if (!type) {
-    throw new CustError(400, 'type is required.');
+    throw new CustError(400, 'Invalid Presentation: type is required.');
+  }
+
+  if (isArrayEmpty(type)) {
+    throw new CustError(400, 'Invalid Presentation: type must be a non-empty array.');
   }
 
   if (!proof) {
-    throw new CustError(400, 'proof is required.');
+    throw new CustError(400, 'Invalid Presentation: proof is required.');
   }
 
   if (!holder) {
-    throw new CustError(400, 'holder is required.');
+    throw new CustError(400, 'Invalid Presentation: holder is required.');
   }
 
   if (!presentationRequestUuid) {
-    throw new CustError(400, 'presentationRequestUuid is required.');
+    throw new CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
   }
 
   if (type[0] !== 'NoPresentation') {
@@ -113,12 +117,12 @@ export const verifyNoPresentation = async (authorization: string, noPresentation
     const result: VerifierDto<Receipt> = {
       authToken,
       body: {
-        uuid: resp.uuid,
-        createdAt: resp.createdAt,
-        updatedAt: resp.updatedAt,
-        type: resp.type,
-        subject: resp.subject,
-        issuer: resp.issuer,
+        uuid: resp.body.uuid,
+        createdAt: resp.body.createdAt,
+        updatedAt: resp.body.updatedAt,
+        type: resp.body.type,
+        subject: resp.body.subject,
+        issuer: resp.body.issuer,
         isVerified
       }
     };
