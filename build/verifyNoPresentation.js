@@ -137,7 +137,7 @@ exports.verifyNoPresentation = function (authorization, noPresentation, verifier
                 return [2 /*return*/, result];
             case 3:
                 e_1 = _c.sent();
-                logger_1.default.error("Error sending a veryNoPresentation request to UnumID Saas. Error " + e_1);
+                logger_1.default.error("Error sending a verifyNoPresentation request to UnumID Saas. Error " + e_1);
                 throw e_1;
             case 4: return [2 /*return*/];
         }

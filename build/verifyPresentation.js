@@ -276,7 +276,7 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                 return [2 /*return*/, result];
             case 8:
                 error_1 = _b.sent();
-                logger_1.default.error("Error sending a veryNoPresentation request to UnumID Saas. Error " + error_1);
+                logger_1.default.error("Error sending a verifyPresentation request to UnumID Saas. Error " + error_1);
                 throw error_1;
             case 9: return [2 /*return*/];
         }

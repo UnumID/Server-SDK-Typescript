@@ -272,7 +272,7 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
 
     return result;
   } catch (error) {
-    logger.error(`Error sending a veryNoPresentation request to UnumID Saas. Error ${error}`);
+    logger.error(`Error sending a verifyPresentation request to UnumID Saas. Error ${error}`);
     throw error;
   }
 };
