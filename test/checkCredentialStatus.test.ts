@@ -1,6 +1,6 @@
 import { makeNetworkRequest } from 'library-issuer-verifier-utility';
 
-import { checkCredentialStatus } from '../src/checkCredentialStatus';
+import { checkCredentialStatus } from '../src/verifier/checkCredentialStatus';
 import { configData } from '../src/config';
 import { makeDummyUnsignedCredential, makeDummyCredential, dummyAuthToken } from './mocks';
 

@@ -1,10 +1,10 @@
 import request from 'supertest';
 
 import * as utilLib from 'library-issuer-verifier-utility';
-import { NoPresentation, Presentation, Receipt, VerifierDto, verifyEncryptedPresentation, verifyNoPresentation, verifyPresentation } from '../src/index';
-import { verifyCredential } from '../src/verifyCredential';
-import { isCredentialExpired } from '../src/isCredentialExpired';
-import { checkCredentialStatus } from '../src/checkCredentialStatus';
+import { NoPresentation, Presentation, Receipt, VerifierDto, verifyEncryptedPresentation, verifyNoPresentation } from '../src/index';
+import { verifyCredential } from '../src/verifier/verifyCredential';
+import { isCredentialExpired } from '../src/verifier/isCredentialExpired';
+import { checkCredentialStatus } from '../src/verifier/checkCredentialStatus';
 import { dummyAuthToken, dummyRsaPrivateKey, dummyRsaPublicKey, makeDummyDidDocument } from './mocks';
 import { encrypt } from 'library-crypto-typescript';
 import { omit } from 'lodash';
@@ -16,9 +16,9 @@ jest.mock('library-issuer-verifier-utility', () => ({
   makeNetworkRequest: jest.fn()
 }));
 
-jest.mock('../src/verifyCredential');
-jest.mock('../src/isCredentialExpired');
-jest.mock('../src/checkCredentialStatus');
+jest.mock('../src/verifier/verifyCredential');
+jest.mock('../src/verifier/isCredentialExpired');
+jest.mock('../src/verifier/checkCredentialStatus');
 
 const mockVerifyCredential = verifyCredential as jest.Mock;
 const mockIsCredentialExpired = isCredentialExpired as jest.Mock;

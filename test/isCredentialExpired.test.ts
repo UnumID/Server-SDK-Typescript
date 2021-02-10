@@ -1,4 +1,4 @@
-import { isCredentialExpired } from '../src/isCredentialExpired';
+import { isCredentialExpired } from '../src/verifier/isCredentialExpired';
 import { makeDummyCredential, makeDummyUnsignedCredential } from './mocks';
 
 describe('isCredentialExpired', () => {

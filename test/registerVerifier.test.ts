@@ -7,7 +7,7 @@ import {
   makeDummyVerifier,
   makeDummyVerifierResponse
 } from './mocks';
-import { registerVerifier } from '../src/registerVerifier';
+import { registerVerifier } from '../src/verifier/registerVerifier';
 import { VerifierDto, RegisteredVerifier } from '../src/types';
 
 jest.mock('library-issuer-verifier-utility', () => ({

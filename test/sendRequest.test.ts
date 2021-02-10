@@ -1,5 +1,3 @@
-import request from 'supertest';
-
 import * as utilLib from 'library-issuer-verifier-utility';
 import { sendRequest } from '../src/index';
 import { PresentationRequestResponse, PresentationRequest, VerifierDto, CredentialRequest } from '../src/types';

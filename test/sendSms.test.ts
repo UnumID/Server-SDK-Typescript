@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 import * as utilLib from 'library-issuer-verifier-utility';
 
-import { sendSms } from '../src/sendSms';
+import { sendSms } from '../src/verifier/sendSms';
 import { configData } from '../src/config';
 import { ErrorResponseBody, VerifierDto } from '../src/types';
 

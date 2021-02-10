@@ -1,7 +1,7 @@
 import * as utility from 'library-issuer-verifier-utility';
 
 import { VerifiableCredential } from '../src/types';
-import { verifyCredential } from '../src/verifyCredential';
+import { verifyCredential } from '../src/verifier/verifyCredential';
 import { makeDummyDidDocument } from './mocks';
 
 // Selective "spyon" mocking example of package.
