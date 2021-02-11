@@ -2,8 +2,8 @@ import supertest from 'supertest';
 
 import { omit } from 'lodash';
 
-import { verifyNoPresentation } from '../src';
-import { NoPresentation, Receipt, VerifierDto } from '../src/types';
+import { verifyNoPresentation } from '../../src';
+import { NoPresentation, Receipt, VerifierDto } from '../../src/types';
 import * as utilLib from 'library-issuer-verifier-utility';
 import { dummyAuthToken, makeDummyDidDocument } from './mocks';
 

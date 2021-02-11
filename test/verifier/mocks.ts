@@ -5,11 +5,10 @@ import {
   UnsignedCredential,
   Credential,
   RESTResponse,
-  DidDocument,
-  PublicKeyInfo
+  DidDocument
 } from 'library-issuer-verifier-utility';
 
-import { configData } from '../src/config';
+import { configData } from '../../src/config';
 import {
   UnsignedPresentationRequest,
   Verifier,
@@ -18,7 +17,7 @@ import {
   IssuerInfoMap,
   IssuerInfo,
   VerifierApiKey
-} from '../src/types';
+} from '../../src/types';
 
 export const dummyIssuerDid = `did:unum:${getUUID()}`;
 export const dummySubjectDid = `did:unum:${getUUID()}`;

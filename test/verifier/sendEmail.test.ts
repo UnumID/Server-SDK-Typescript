@@ -1,8 +1,8 @@
 import fetch from 'node-fetch';
 
-import { sendEmail } from '../src/verifier/sendEmail';
-import { configData } from '../src/config';
-import { ErrorResponseBody, VerifierDto } from '../src/types';
+import { sendEmail } from '../../src/verifier/sendEmail';
+import { configData } from '../../src/config';
+import { ErrorResponseBody, VerifierDto } from '../../src/types';
 import * as utilLib from 'library-issuer-verifier-utility';
 
 jest.mock('node-fetch');

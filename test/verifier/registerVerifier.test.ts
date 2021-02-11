@@ -7,8 +7,8 @@ import {
   makeDummyVerifier,
   makeDummyVerifierResponse
 } from './mocks';
-import { registerVerifier } from '../src/verifier/registerVerifier';
-import { VerifierDto, RegisteredVerifier } from '../src/types';
+import { registerVerifier } from '../../src/verifier/registerVerifier';
+import { VerifierDto, RegisteredVerifier } from '../../src/types';
 
 jest.mock('library-issuer-verifier-utility', () => ({
   ...jest.requireActual('library-issuer-verifier-utility'),
