@@ -167,7 +167,7 @@ const validatePresentation = (presentation: Presentation): void => {
  * @param presentation
  * @param verifier
  */
-export const verifyPresentation = async (authorization: string, presentation: Presentation, verifier: string): Promise<VerifierDto<Receipt | VerifiedStatus>> => {
+export const verifyPresentation = async (authorization: string, presentation: Presentation, verifier: string): Promise<VerifierDto<Receipt>> => {
   try {
     requireAuth(authorization);
 
@@ -205,18 +205,6 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     // this logic to verify each credential present separately.  We can take this up later.
     const isPresentationVerified: boolean = doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
 
-    if (!isPresentationVerified) {
-      // throw new CustError(406, 'Presentation signature can no be verified');
-      const result: VerifierDto<VerifiedStatus> = {
-        authToken,
-        body: {
-          isVerified: false,
-          message: 'Presentation signature can no be verified'
-        }
-      };
-      return result;
-    }
-
     let areCredentialsValid = true;
 
     for (const credential of presentation.verifiableCredential) {
@@ -241,15 +229,28 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
       }
     }
 
+    if (!isPresentationVerified) {
+      throw new CustError(406, `${authToken}#Presentation signature can no be verified.`, -1);
+      // const result: VerifierDto<VerifiedStatus> = {
+      //   authToken,
+      //   body: {
+      //     isVerified: false,
+      //     message: 'Presentation signature can no be verified'
+      //   }
+      // };
+      // return result;
+    }
+
     if (!areCredentialsValid) {
-      const result: VerifierDto<VerifiedStatus> = {
-        authToken,
-        body: {
-          isVerified: false,
-          message: 'Credential signature can not be verified.'
-        }
-      };
-      return result;
+      throw new CustError(406, `${authToken}#Credential signature can not be verified.`, -1);
+      // const result: VerifierDto<VerifiedStatus> = {
+      //   authToken,
+      //   body: {
+      //     isVerified: false,
+      //     message: 'Credential signature can not be verified.'
+      //   }
+      // };
+      // return result;
     }
 
     const isVerified = isPresentationVerified && areCredentialsValid; // always true if here

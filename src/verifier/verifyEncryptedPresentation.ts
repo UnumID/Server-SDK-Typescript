@@ -5,7 +5,7 @@ import { requireAuth } from '../requireAuth';
 import { decrypt } from 'library-crypto-typescript';
 import { JSONObj, CustError, isArrayEmpty, EncryptedData } from 'library-issuer-verifier-utility';
 import logger from '../logger';
-import { NoPresentation, verifyNoPresentation, verifyPresentation } from '..';
+import { NoPresentation, VerifiedStatus, verifyNoPresentation, verifyPresentation } from '..';
 
 /**
  * Validates the attributes for a credential request to UnumID's SaaS.
@@ -168,7 +168,7 @@ function isPresentation (presentation: PresentationOrNoPresentation): presentati
  * @param encryptedPresentation: EncryptedData
  * @param verifierDid: string
  */
-export const verifyEncryptedPresentation = async (authorization: string, encryptedPresentation: EncryptedData, verifierDid: string, encryptionPrivateKey: string): Promise<VerifierDto<Receipt>> => {
+export const verifyEncryptedPresentation = async (authorization: string, encryptedPresentation: EncryptedData, verifierDid: string, encryptionPrivateKey: string): Promise<VerifierDto<Receipt | VerifiedStatus>> => {
   try {
     requireAuth(authorization);
 
@@ -197,6 +197,19 @@ export const verifyEncryptedPresentation = async (authorization: string, encrypt
     return verificationResult;
   } catch (error) {
     logger.error(`Error handling encrypted presentation request to UnumID Saas. Error ${error}`);
+
+    if (error instanceof CustError && error.statusCode === -1) {
+      const messages = error.message.split('#');
+      const result: VerifierDto<VerifiedStatus> = {
+        authToken: messages[0],
+        body: {
+          isVerified: false,
+          message: messages[1]
+        }
+      };
+      return result;
+    }
+
     throw error;
   }
 };

@@ -264,16 +264,25 @@ export interface RegisteredVerifier extends Verifier {
 }
 
 /**
+ * A type came about need to convey that a credential presentation can not be verified.
+ * While this would normally be served by throwing an exception we want to pass back the auth token returned
+ * by calls to the SaaS via the UnumDto type.
+ */
+export interface VerifiedStatus {
+  isVerified: boolean;
+  message?: string;
+}
+
+/**
  * Encapsulates a Reciept entity.
  */
-export interface Receipt {
+export interface Receipt extends VerifiedStatus{
   uuid: string;
   createdAt: Date;
   updatedAt: Date;
   type: string[];
   subject: string;
   issuer: string;
-  isVerified: boolean;
   credentialTypes?: string[]; // This could be derived from credentials however, leaving as a first class attribute so it is easier for the customer to pass back to us if they want more detailed analytics.
   credentials?: VerifiableCredential[];
 }
