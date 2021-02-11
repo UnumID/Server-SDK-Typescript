@@ -19,7 +19,7 @@ const logger = createLogger({
 });
 
 // Printing this info here instead of in ./config to prevent a circular dependency.
-logger.debug(`Verifier SDK SaaS URL: ${configData.SaaSUrl}`);
-logger.debug(`Verifier SDK Log Level: ${configData.logLevel}`);
+logger.debug(`Server SDK SaaS URL: ${configData.SaaSUrl}`);
+logger.debug(`Server SDK Log Level: ${configData.logLevel}`);
 
 export default logger;
