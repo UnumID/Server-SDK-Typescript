@@ -1,73 +1,22 @@
-# Verifier Server App
+# UnumID Server SDK
 
-The Verifier Server App is used by a customer acting as a verifier and is run on their servers. It allows them to register verifiers and perform various actions as them, most importantly sending PresentationRequests and verifying Presentations.
+This SDK combines the functionality of an **Issuer** and **Verifier** entity to work with UnumID's SaaS.
 
-## Docker For External Deployment / Packaging
-### Build
-`docker build -t verifier-app:latest .`
+## Issuer
+The Issuer Server App is used by a customer acting as an Issuer and is run on their servers. It allows them to register Issuers and perform actions as them, including issuing and revoking Credentials.
+## Verifier
+The Verifier functionality is used by a customer acting as a verifier. It allows one to register verifiers. Most importantly, it allows one to send PresentationRequests and verify Presentations.
 
 ### Distribution
 
-Currently this project is still closed source, so standard distribution options via public source code repository or a docker registry are not viable. However, in order to distribute access to the app it is advised to leverage Github repository deployment keys. 
+Currently this project is still closed source, so standard distribution options via public source code or NPM repository are not viable. In downstream projects are leveraging this project via it's git url using Docker Buildkit to provide SSH credentials for access to this Github source code repo. An example of such a buildkit configuration can be found in the [hooli-demo-server](https://github.com/UnumID/hooli-demo-server) `Dockerfile` and `.circleci/config.yaml`.
 
-#### Source code 
+We considered opting to build and push as a private module through a private Github NPM repo. However due to the complexities of configuring a downstream project to have rights to pull from the private NPM repo we have opted to not add pushing a private package to our CI job. 
 
-Github deployment keys allows fine grained, read-only access that is easy to manage with basic usage information. The interested party just needs to provide us with a RSA public key and we will give them read-only access to pull the source using that corresponding private key.
-
-When open sourced this application can be distributed more naturally via a public a public git repository or package manager, i.e. npm.
-
-#### Docker registry
-
-##### Private Docker registry
-This distribution option makes less sense than at first glance. While it is possible to host the images in a private registry, the need to provide access to the registry remains. Opting to simply give ready only access to the source code repo from which the image can be built and deploy. 
-
-##### Public Docker registry
-When open sourced this application can be distributed more naturally via a public Docker registry, DockerHub.
-
-#### TAR file
-##### Create a TAR file
-Run `docker save verifier-app -o verifier-app.tar` to create a .tar file of the image
-
-To create a gun zipped the tar file of the image:
-`docker save verifier-app:latest | gzip > verifier-app_latest.tar.gz`
-
-##### Unpacking the image TAR file
-`docker load -i verifier.tar` which then adds the image to the local docker image list
-## Installing and running the app
-### Installation
-- If distributed via a docker image tar file see the "Unpacking the image TAR file" section"
-- Clone this repo, if open sourced.
-- In the future, the app may also be hosted in a private docker registry and a public registry once open sourced.
-
-## Running the app
+Soon, we hope to open source this project and uploaded the package as public NPM module.  
 ### Global Dependencies
 - NodeJS v14.0.0 or higher, preferably v14.15.0 or higher
 - yarn
-
-### Running the app directly
-- In the Verifier-Server-App directory (or whatever directory it was cloned into)
-- run `yarn` to install dependencies
-- (optional) modify `config/config.json` to set the port the application will run on. (default is `8080`)
-- (optional) run `yarn build` to transpile TypeScript. This is optional as this repository does include a pretranspiled `build` directory. If you changed the default port, you will need to do this step as well.
-- run `node build/server.js` to start the application.
-
-### Running the app with pm2
-- install pm2 `yarn add pm2` or `yarn global add pm2`
-- In the Verifier-Server-App directory (or whatever directory it was cloned into)
-- run `yarn` to install dependencies
-- (optional) modify `config/config.json` to set the port the application will run on. (default is `8080`)
-- (optional) run `yarn build` to transpile TypeScript. This is optional as this repository does include a pretranspiled `build` directory. If you changed the default port, you will need to do this step as well.
-- run `yarn pm2 start .` or yarn pm2 start build/server.js` to start the server with pm2
-
-### Running with Docker
-Default port 8080:
-  `docker run --rm --name verifier -p 8080:8080 verifier-app:latest`
-
-Specifying none default PORT env var 
-  `docker run --rm --name verifier -e PORT=9090 -p 9090:9090 verifier-app:latest`
-
-Specifying none default PORT env var and more verbose logging
-  `docker run --rm --name verifier -e LOG_LEVEL=debug -e PORT=9090 -p 9090:9090 verifier-app:latest`
 
 ## Logging
 One can set the log level via the env var LOG_LEVEL. It defaults to info. Set to debug for more information, i.e. LOG_LEVEL=debug.
@@ -76,21 +25,123 @@ More details on the various log levels [here](https://github.com/winstonjs/winst
 
 The logs default to stdout so can be aggregated and using any log provider you would like from disk.
 
-## API functionality
+## SDK functionality
+The Server SDK uses the UnumDto type to facilitate handling many response body types while providing a reliable structure to access the result.
 
-### Register a Verifier
-Verifiers are registered by sending a POST request to the `/api/register` API endpoint. Each verifier must be registered using a unique Verifier API Key.
+**UnumDto**
 
-Request body (JSON)
+```
+authToken: string; // The JWT auth token which is used by the SDK to authenticate with UnumID's SaaS. This is periodically refreshed thus its value should be read and stored in every resultant function call. 
+body: T; // The placeholder for the function's response type is function specific. 
+```
+
+**Authentication**
+Every request detailed below requires a preceding `auth` token as a first parameter which is used to authenticate request to UnumID's SaaS on your behalf. As mention above this auth token updated upon every subsequent successful function call and should be read via the `body` and persisted accordingly for later requests. 
+### Issuer
+#### registerIssuer
+Register an issuer corresponding to your customer UUID and issuer API key provided by UnumID's SaaS. As a customer, you can register as many issuers as you like (or none at all), depending on your use case. Note, however, that you'll need a unique issuer API key for each one.
+
+You should store the DID (`did`) and encryption and signing key pairs (`keys`) that this returns. You'll need these to issue credentials to users.
+
+Parameters:
+```typescript
+"name": string, // a human-readable name for the Issuer. It will be displayed to users in the Holder when Credentials from the Issuer are created.
+"customerUuid": string, // your Unum ID customer uuid
+"apiKey": string // a unique Issuer API key obtained from Unum ID
+```
+
+Response Body: **RegisteredIssuer**
 ```typescript
 {
-  "name": string, // a human-readable name for the verifier. It will be displayed to users in the Holder when receiving a PresentationRequest.
-  "customerUuid": string, // your Unum ID customer uuid
-  "apiKey": string // a unique Verifier API key obtained from Unum ID
+  "uuid": string, // identifies the new Issuer in the Unum ID database
+  "customerUuid": string, // identifies the customer which Created the Issuer
+  "did": string, // identifies the Issuer in the Unum ID decentralized ecosystem
+  "name": string, // a human-readable name for the Issuer
+  "createdAt": string, // the date and time the Issuer was registered
+  "updatedAt": string, // the date and time the Issuer was last updated
+  "keys": {
+    "signing": {
+      "privateKey": string, // your Issuer Signing Private Key. You will need to provide it in order to issue Credentials
+      "publicKey": string, // your Issuer Signing Public Key. It is also stored in the Issuer's DID Document, and can be used by other entities in the Unum ID ecosystem to verify the Issuer's signature on Credentials it issues.
+    }
+  }
 }
 ```
 
-Response body (JSON)
+#### issueCredential
+Issue a credential to a subject (user).
+
+You need to provide your issuer DID (created when you registered), as well as your signing and encryption private keys, which the Issuer uses to sign and encrypt the credential. You need to specify a credentialType, which verifiers will use to later request the credential from the user.
+
+This returns a credential `id` that you should store so you can later revoke the credential if need be. We would recommend storing the entire credential indexed on the resultant credential `id`. Note that there are also id fields within credentialSubject and credentialStatus, but these are different. They refer to the subject DID and credential status identifier, respectively.
+
+**Important**: The private keys never leave your app. This function, like all the others in this SDK, needs them in order to handle to cryptographic functionality on your behalf.
+
+Parameters
+```typescript
+"credentialSubject": {
+  "id": string, // a DID identifying the Subject of the Credential
+  [key: string]: any, // any number of claims about the subject, expressed as key-value pairs
+},
+"type": string || string[], // The Credential type(s)
+"issuer": string, // DID identifying the Issuer issuing the Credential
+"expirationDate": string, // date and time after which the Credential will no longer be valid
+"eccPrivateKey": string // your Issuer's Private Key
+```
+
+Response Body: **Credential**
+```typescript
+{
+    "@context": ["https://www.w3.org/2018/credentials/v1"], // this field is specified in the W3C Verifiable Credential spec
+    "credentialStatus": {
+        "id": string, // a url from which the Credential's status can be checked or updated
+        "type": "CredentialStatus"
+    },
+    "credentialSubject": {
+        "id": string, // a DID identifying the Subject of the Credential
+        [key: string]: any, // any number of claims about the subject, expressed as key-value pairs
+    },
+    "issuer": string, // DID identifying the Issuer that issued the Credential
+    "type": string[], // the Credential type(s)
+    "id": string, // a version 4 UUID uniquely identifying the Credential
+    "issuanceDate": string, // the date and time at which the credential was issued
+    "expirationDate": string, // date and time after which the Credential will no longer be valid
+    "proof": Proof // a cryptographic proof created by signing the Credential with the Issuer's Private Key. It can be used to verify the authenticity of the Credential.
+}
+```
+
+#### revokeCredential
+Revoke a credential, i.e. make it invalid.
+
+You need to provide the credential `id` (created when you issued the credential).
+
+Parameters
+```typescript
+{
+  "credentialId": string // id of the Credential to revoke
+}
+```
+
+Response Body: Empty 
+If unsuccessful and exception will be thrown.
+```typescript
+{}
+```
+
+### Verifier
+#### registerVerifier
+Register a verifier corresponding to your customer UUID and verifier API key that UnumID's SaaS provides. As a customer, you can register as many verifiers as you like (or none at all), depending on your use case. Note, however, that you'll need a unique verifier API key for each one.
+
+You should store the DID (`did`) and signing key pair (`keys`) that this returns. You'll need these to create requests for (presentations of) credentials from users.
+
+Parameters
+```typescript
+"name": string, // a human-readable name for the verifier. It will be displayed to users in the Holder when receiving a PresentationRequest.
+"customerUuid": string, // your Unum ID customer uuid
+"apiKey": string // a unique Verifier API key obtained from Unum ID
+```
+
+Response body: **RegisteredVerifier**
 ```typescript
 {
   "uuid": string, // identifies the new Verifier in the Unum ID database
@@ -103,94 +154,101 @@ Response body (JSON)
     "signing": {
       "privateKey": string, // your Verifier Signing Private Key. You will need to provide it in order to send PresentationRequests
       "publicKey": string, // your Verifier Signing Public Key. It is also stored in the Verifiers DID Document, and can be used by other entities in the Unum ID ecosystem to verify the Verifier's signature on PresentationRequests it creates
+    }, "encryption": {
+      "privateKey": string, // your Verifier Encryption Private Key. You will need to provide it in order to send PresentationRequests
+      "publicKey": string, // your Verifier Encryption Public Key. It is also stored in the Verifiers DID Document, and can be used by other entities in the Unum ID ecosystem to encrypt presentations for the Verifier to verifier.
     }
   }
 }
 ```
 
-Response headers (success)
-```
-"x-auth-token": jwt // your Verifier Auth Token. It must be provided to authenticate future calls to act as the Verifier.
-```
 
-### Send a PresentationRequest
-Send a PresentationRequest by sending a POST request to the `/api/sendRequest` API endpoint
+#### sendRequest
+Create a request for (a presentation of) credentials from a user.
 
-Request Headers
-```
-"Authorization": Verifier Auth Token // the Verifier Auth Token recieved when you registered your Verifier
-"Content-Type": "application/json"
-```
-Request Body (JSON)
+You need to provide your verifier DID (created when you registered) and the UUID of the holder app from which the user can share the data. You also need to provide your signing private key, which the Verifier App uses to sign the request.
+
+To request credentials, you need to specify the credentialType and one or more acceptable issuers (entities that issue those credentials). If you list more than one issuer, the user can share a credential issued by any of the ones you list.
+
+**Important**: The private keys never leave your app. This function, like all the others in this SDK, needs them in order to handle to cryptographic functionality on your behalf.
+
+Parameters
 ```typescript
-{
-  "verifier": string, // your Verifier DID
-  "credentialRequests": CredentialRequest[], // a list of one or more CredentialRequest objects. Describes the Credentials which should be shared to fulfill the PresentationRequest
-  "eccPrivateKey": string, // your Verifier's Private Key
-  "holderAppUuid": string, // identifies which Holder App the PresentationRequest should be sent to
-  "expiresAt": string, // Optional. The date and time the PresentationRequest should expire. Default is 10 minutes after creation
-  "metadata": object // any additional data to include in the PresentationRequest
-}
+"verifier": string, // your Verifier DID
+"credentialRequests": CredentialRequest[], // a list of one or more CredentialRequest objects. Describes the Credentials which should be shared to fulfill the PresentationRequest
+"eccPrivateKey": string, // your Verifier's Private Key
+"holderAppUuid": string, // identifies which Holder App the PresentationRequest should be sent to
+"expiresAt": string, // Optional. The date and time the PresentationRequest should expire. Default is 10 minutes after creation
+"metadata": object // any additional data to include in the PresentationRequest
 ```
 
-Response Body (JSON)
+Response Body: **PresentationRequestResponse**
 ```typescript
 {
   "presentationRequest": {
-  "uuid": string, // identifies the PresentationRequest in the Unum ID database
-  "createdAt": string, // the date and time the PresentationRequest was created
-  "updatedAt": string, // the date and time the PresentationRequest was last updated. This should always be the same as createdAt
-  "expiresAt": string, // the date and time the PresentationRequest expires
-  "verifier": string, // DID identifying the Verifier which created the PresentationRequest
-  "credentialRequests": CredentialRequest[], // a list of one or more CredentialRequest objects. Describes the Credentials which should be shared to fulfill the PresentationRequest
-  "proof": Proof, // a cryptographic proof signed by your Verifier Private Key that can be used to verify the authenticity of the PresentationRequest
-  "metadata": object // any additional data provided when the PresentationRequest was created
+    "uuid": string, // identifies the PresentationRequest in the Unum ID database
+    "createdAt": string, // the date and time the PresentationRequest was created
+    "updatedAt": string, // the date and time the PresentationRequest was last updated. This should always be the same as createdAt
+    "expiresAt": string, // the date and time the PresentationRequest expires
+    "verifier": string, // DID identifying the Verifier which created the PresentationRequest
+    "credentialRequests": CredentialRequest[], // a list of one or more CredentialRequest objects. Describes the Credentials which should be shared to fulfill the PresentationRequest
+    "proof": Proof, // a cryptographic proof signed by your Verifier Private Key that can be used to verify the authenticity of the PresentationRequest
+    "metadata": object // any additional data provided when the PresentationRequest was created
+  },
+  "verifier": {
+      "name": string, // verifier name
+      "did": string, // verifier did
+      "url": string // the url of a customer applications that received presentations
+  },
+  "issuers": {
+      "IssuerDid:string": { // a map keyed on the issuer did that issued the requested credential(s)
+        "name": string, // name of the issuer that issued the credential(s)
+        "did": string // issuer did that issued the credential(s) 
+      }
   },
   "deeplink": string, // a deeplink that can be used to trigger the intended HolderApp to load the PresentationRequest
   "qrCode": string // a QR code containing the deeplink, encoded as a data URL
 }
 ```
 
-Response Headers
+#### verifyEncryptedPresentation 
+Verify a encrypted Presentation. 
+
+This is used in service behind the `/presentation` endpoint that needs to be defined according to [this](unum.id) spec which UnumID's SaaS forwards encrypted Presentations to. It handles decrypting the encrypted presentation and verifies the signature is valid. 
+
+**Important** Although this request is coming from UnumID's SaaS, UnumID never has access to the credentials within the presentation due to the encryption that only you can decrypt using the associated Verifier's `encryptionPrivateKey`.
+
+
+Parameters
+```typescript
+"encryptedPresentation": EncryptedData, // the encrypted presentation with sensitive credential information.
+"verifierDid": string, // the did associated with the verifier's public that was used to encrypt the presentation by the Holder SDK.
+"encryptionPrivateKey": string // associated Verifier's (based on did) `encryptionPrivateKey` attribute that should persisted in your db.
 ```
-"x-auth-token": Verifier Auth Token // if this is different from the token you provided, it means your previous token expired and you were automatically issued a new one. You should replace it with this one for the next call.
-```
-
-### Verify a Presentation
-Verify a Presentation by sending a POST request to the `/api/verifyPresentation` API endpoint
-
-Request Headers
-```
-"Authorization": Verifier Auth Token // the Verifier Auth Token recieved when you registered your Verifier
-"Content-Type": "application/json"
-```
-
-Request Body (JSON)
-- The Presentation shared by a Holder
 
 
-Response Body (JSON)
+Response Body: **Receipt**
 ```typescript
 {
-  "verifiedStatus": boolean // true if the Presentation was successfully verified. false indicates that either 1. the Presentation proof is invalid, 2. One or more Credential proofs are invalid, 3. One or more Credentials are expired, or 4. One or more Credentials have been revoked.
+  uuid: string; // uuid of the UnumID SaaS generated Receipt
+  createdAt: Date; // createdAt ISO date of the UnumID SaaS generated Receipt
+  updatedAt: Date; // updatedAt ISO date of the UnumID SaaS generated Receipt
+  type: string[]; // types of the Receipt, wether a VerifiablePresentation & the type of credential shared or a NoPresentation (user declined to share)
+  subject: string; // subject's did that shared the Credential(s) via the Presentation
+  issuer: string; // issuer did of the credential(s)
+  isVerified: boolean; // boolean indicating wether the signatures signed by the subject (user) is valid 
+  credentialTypes?: string[]; // This could be derived from credentials however, leaving as a first class attribute so it is easier for your to pass back to UnumID for more detailed analytics via the dashboard.
+  credentials?: VerifiableCredential[]; // This is the plaintext credentials that the user agreed to securely share with you. They should do use or store securely.
 }
 ```
 
-Response Headers
-```
-"x-auth-token": Verifier Auth Token // if this is different from the token you provided, it means your previous token expired and you were automatically issued a new one. You should replace it with this one for the next call.
-```
+#### sendSms
+Use to send a deep link to a user by SMS. The message will be delivered from an Unum ID associated phone number. You can of course use your own SMS sending service if you prefer.
 
-### Send an SMS
-Send an SMS by sending a POST request to the `/api/sendSms` API endpoint
+To request (a presentation of) credentials from a user, you first create the request object and receive a deep link that references it. The user need to receive this deep link, which will open the correct app on their phone and prompt them to share the credentials. SMS is one convenient channel.
 
-Request Headers
-```
-"Authorization": Verifier Auth Token // the Verifier Auth Token recieved when you registered your Verifier
-"Content-Type": "application/json"
-```
 
-Request Body (JSON)
+Parameters
 ```typescript
 {
   "to": string, // phone number to send the SMS to
@@ -198,20 +256,20 @@ Request Body (JSON)
 }
 ```
 
-Response Headers
-```
-"x-auth-token": Verifier Auth Token // if this is different from the token you provided, it means your previous token expired and you were automatically issued a new one. You should replace it with this one for the next call.
-```
-### Send an Email
-Send an email by sending a POST request to the `/api/sendEmail` API endpoint
-
-Request Headers
-```
-"Authorization": Verifier Auth Token // the Verifier Auth Token recieved when you registered your Verifier
-"Content-Type": "application/json"
+Response Body: Empty 
+If unsuccessful and exception will be thrown.
+```typescript
+{}
 ```
 
-Request Body (JSON)
+#### sendEmail
+Use to send a deep link to a user by email. The message will be delivered from DoNotReply@UnumID.org. You can of course use your own email sending service if you prefer.
+
+To request (a presentation of) credentials from a user, you first create the request object and receive a deep link that references it. The user need to receive this deep link, which will open the correct app on their phone and prompt them to share the credentials. Email is one convenient channel, though keep in mind that the user will need to click the link from their phone for the deep link to work.
+
+Note: JSON special characters such a double quote or backslash in the `subject` or `htmlBody` fields will need to be escaped with a backslash, i.e. "the best org in the country" must be \"the best org in the country\".
+
+Parameters
 ```typescript
 {
   "to": string, // target email
@@ -222,10 +280,8 @@ Request Body (JSON)
 }
 ```
 
-Response Headers
+Response Body: Empty 
+If unsuccessful and exception will be thrown.
+```typescript
+{}
 ```
-"x-auth-token": Verifier Auth Token // if this is different from the token you provided, it means your previous token expired and you were automatically issued a new one. You should replace it with this one for the next call.
-```
-
-### Health
-One can confirm that the app is running by using the `/health/alive` API endpoint. No auth necessary.
