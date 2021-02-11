@@ -205,6 +205,9 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                     throw new library_issuer_verifier_utility_1.CustError(404, 'Public key not found for the DID');
                 }
                 isPresentationVerified = library_issuer_verifier_utility_1.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
+                if (!isPresentationVerified) {
+                    throw new library_issuer_verifier_utility_1.CustError(406, 'Presentation signature can no be verified');
+                }
                 areCredentialsValid = true;
                 _i = 0, _a = presentation.verifiableCredential;
                 _b.label = 2;
@@ -235,6 +238,9 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                 _i++;
                 return [3 /*break*/, 2];
             case 6:
+                if (!areCredentialsValid) {
+                    throw new library_issuer_verifier_utility_1.CustError(406, 'Credential signature can not be verified.');
+                }
                 isVerified = isPresentationVerified && areCredentialsValid;
                 credentialTypes = presentation.verifiableCredential.flatMap(function (cred) { return cred.type.slice(1); });
                 issuers = presentation.verifiableCredential.map(function (cred) { return cred.issuer; });
@@ -276,7 +282,7 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                 return [2 /*return*/, result];
             case 8:
                 error_1 = _b.sent();
-                logger_1.default.error("Error sending a verifyPresentation request to UnumID Saas. Error " + error_1);
+                logger_1.default.error('Error sending a verifyPresentation request to UnumID Saas.', error_1);
                 throw error_1;
             case 9: return [2 /*return*/];
         }
