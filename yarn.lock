@@ -3344,7 +3344,7 @@ levn@~0.3.0:
 
 "library-issuer-verifier-utility@https://github.com/UnumID/library-issuer-verifier-utility.git#logging":
   version "1.0.0"
-  resolved "https://github.com/UnumID/library-issuer-verifier-utility.git#59fb473a286e1765eb5df54fd988b24a9595b063"
+  resolved "https://github.com/UnumID/library-issuer-verifier-utility.git#6797b5608f25c947b761c0e49dd40d7e5a525317"
   dependencies:
     dotenv "^8.2.0"
     express "^4.17.1"
