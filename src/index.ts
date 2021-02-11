@@ -1,11 +1,14 @@
-import { registerVerifier } from './registerVerifier';
-import { sendEmail } from './sendEmail';
-import { sendRequest } from './sendRequest';
-import { sendSms } from './sendSms';
-import { NoPresentation, Presentation, Receipt, VerifierDto, RegisteredVerifier, PresentationRequestResponse } from './types';
-import { verifyNoPresentation } from './verifyNoPresentation';
-import { verifyPresentation } from './verifyPresentation';
-import { verifyEncryptedPresentation } from './verifyEncryptedPresentation';
+import { registerVerifier } from './verifier/registerVerifier';
+import { sendEmail } from './verifier/sendEmail';
+import { sendRequest } from './verifier/sendRequest';
+import { sendSms } from './verifier/sendSms';
+import { NoPresentation, Presentation, Receipt, VerifierDto, RegisteredVerifier, PresentationRequestResponse, IssuerDto, RegisteredIssuer } from './types';
+import { verifyNoPresentation } from './verifier/verifyNoPresentation';
+import { verifyPresentation } from './verifier/verifyPresentation';
+import { verifyEncryptedPresentation } from './verifier/verifyEncryptedPresentation';
+import { registerIssuer } from './issuer/registerIssuer';
+import { issueCredential } from './issuer/issueCredentials';
+import { revokeCredential } from './issuer/revokeCredentials';
 
 export {
   registerVerifier,
@@ -20,6 +23,11 @@ export {
   PresentationRequestResponse,
   Receipt,
   NoPresentation,
-  Presentation
+  Presentation,
+  IssuerDto,
+  RegisteredIssuer,
+  registerIssuer,
+  issueCredential,
+  revokeCredential
 }
 ;

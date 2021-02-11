@@ -1,4 +1,73 @@
-import { KeyPairSet, Proof, PublicKeyInfo } from 'library-issuer-verifier-utility';
+import { KeyPairSet, Proof, PublicKeyInfo, KeyPair, KeyPairSet, PublicKeyInfo, EncryptedData, CredentialSubject } from 'library-issuer-verifier-utility';
+
+/**
+ * Encapsulates necessary Issuer entity attributes during creation.
+ */
+export interface IssuerOptions {
+  name: string;
+  customerUuid: string;
+  publicKeyInfo: Array<PublicKeyInfo>;
+}
+
+/**
+ * Encapsulates necessary Credential entity attributes during creation.
+ */
+export interface CredentialOptions {
+  credentialSubject: CredentialSubject;
+  issuer: string;
+  type: string[];
+  expirationDate?: Date;
+}
+
+/**
+ * Encapsulates necessary information relating to the encrypted credential data during creation.
+ */
+export interface EncryptedCredentialOptions {
+  credentialId: string;
+  subject: string;
+  issuer: string;
+  type: string[];
+  data: EncryptedData;
+}
+
+/**
+ * Encapsulates API Key attributes for Issuer registration.
+ */
+export interface IssuerApiKey {
+  uuid: string;
+  customerUuid: string;
+  key: string;
+  type: 'Issuer';
+}
+
+/**
+ * Encapsulates Issuer entity attributes.
+ */
+export interface Issuer {
+  uuid: string;
+  customerUuid: string;
+  name: string;
+  did: string;
+  createdAt: Date;
+  updatedAt: Date;
+  isAuthorized: boolean;
+}
+
+/**
+ * Encapsulates a successfully registered Issuer entity.
+ */
+export interface RegisteredIssuer extends Issuer {
+  keys: KeyPairSet;
+}
+
+/**
+ * Encapsulates a Issuer Data Transfer Object for a response from UnumID's SaaS.
+ * TODO create and use UnumDto
+ */
+export interface IssuerDto<T = Record<string, unknown>> {
+  authToken: string;
+  body: T;
+}
 
 /**
  * Encapsulates necessary Verifier entity attributes during creation.
@@ -211,6 +280,7 @@ export interface Receipt {
 
 /**
  * Encapsulates a Verifier Data Transfer Object for a response from UnumID's SaaS.
+ * TODO create and use UnumDto
  */
 export interface VerifierDto<T = Record<string, unknown>> {
   authToken: string;

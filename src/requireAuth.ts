@@ -1,4 +1,5 @@
 import { CustError } from 'library-issuer-verifier-utility';
+import logger from './logger';
 
 /**
  * Helper to enforce proper authorization token format.
@@ -6,6 +7,7 @@ import { CustError } from 'library-issuer-verifier-utility';
  */
 export const requireAuth = (auth: string | undefined): void => {
   if (!auth) {
+    logger.error('No authentication string. Not authenticated.');
     throw new CustError(401, 'No authentication string. Not authenticated.');
   }
 
@@ -15,6 +17,7 @@ export const requireAuth = (auth: string | undefined): void => {
   const token = auth.slice(7);
 
   if (!token) {
+    logger.error('No authentication token. Not authenticated.');
     throw new CustError(401, 'No authentication token. Not authenticated.');
   }
 };
