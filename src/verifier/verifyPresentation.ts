@@ -1,7 +1,7 @@
 import { omit } from 'lodash';
 
 import { configData } from '../config';
-import { Presentation, Receipt, VerifierDto } from '../types';
+import { Presentation, Receipt, VerifiedStatus, VerifierDto } from '../types';
 import { validateProof } from './validateProof';
 import { requireAuth } from '../requireAuth';
 import { verifyCredential } from './verifyCredential';
@@ -167,7 +167,7 @@ const validatePresentation = (presentation: Presentation): void => {
  * @param presentation
  * @param verifier
  */
-export const verifyPresentation = async (authorization: string, presentation: Presentation, verifier: string): Promise<VerifierDto<Receipt>> => {
+export const verifyPresentation = async (authorization: string, presentation: Presentation, verifier: string): Promise<VerifierDto<Receipt | VerifiedStatus>> => {
   try {
     requireAuth(authorization);
 
@@ -191,6 +191,7 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
       throw didDocumentResponse;
     }
 
+    let authToken: string = handleAuthToken(didDocumentResponse);
     const pubKeyObj: PublicKeyInfo[] = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
     if (pubKeyObj.length === 0) {
@@ -205,7 +206,15 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     const isPresentationVerified: boolean = doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
 
     if (!isPresentationVerified) {
-      throw new CustError(406, 'Presentation signature can no be verified');
+      // throw new CustError(406, 'Presentation signature can no be verified');
+      const result: VerifierDto<VerifiedStatus> = {
+        authToken,
+        body: {
+          isVerified: false,
+          message: 'Presentation signature can no be verified'
+        }
+      };
+      return result;
     }
 
     let areCredentialsValid = true;
@@ -233,7 +242,14 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     }
 
     if (!areCredentialsValid) {
-      throw new CustError(406, 'Credential signature can not be verified.');
+      const result: VerifierDto<VerifiedStatus> = {
+        authToken,
+        body: {
+          isVerified: false,
+          message: 'Credential signature can not be verified.'
+        }
+      };
+      return result;
     }
 
     const isVerified = isPresentationVerified && areCredentialsValid; // always true if here
@@ -260,8 +276,7 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     };
 
     const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
-
-    const authToken: string = handleAuthToken(resp);
+    authToken = handleAuthToken(resp);
 
     const result: VerifierDto<Receipt> = {
       authToken,

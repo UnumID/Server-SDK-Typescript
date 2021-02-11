@@ -2,7 +2,7 @@ import { registerVerifier } from './verifier/registerVerifier';
 import { sendEmail } from './verifier/sendEmail';
 import { sendRequest } from './verifier/sendRequest';
 import { sendSms } from './verifier/sendSms';
-import { NoPresentation, Presentation, Receipt, VerifierDto, RegisteredVerifier, PresentationRequestResponse, IssuerDto, RegisteredIssuer } from './types';
+import { NoPresentation, Presentation, Receipt, VerifierDto, RegisteredVerifier, PresentationRequestResponse, IssuerDto, RegisteredIssuer, VerifiedStatus } from './types';
 import { verifyNoPresentation } from './verifier/verifyNoPresentation';
 import { verifyPresentation } from './verifier/verifyPresentation';
 import { verifyEncryptedPresentation } from './verifier/verifyEncryptedPresentation';
@@ -22,6 +22,7 @@ export {
   RegisteredVerifier,
   PresentationRequestResponse,
   Receipt,
+  VerifiedStatus,
   NoPresentation,
   Presentation,
   IssuerDto,
