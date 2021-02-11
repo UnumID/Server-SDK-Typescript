@@ -204,6 +204,10 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     // this logic to verify each credential present separately.  We can take this up later.
     const isPresentationVerified: boolean = doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
 
+    if (!isPresentationVerified) {
+      throw new CustError(406, 'Presentation signature can no be verified');
+    }
+
     let areCredentialsValid = true;
 
     for (const credential of presentation.verifiableCredential) {
@@ -228,8 +232,11 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
       }
     }
 
-    const isVerified = isPresentationVerified && areCredentialsValid;
+    if (!areCredentialsValid) {
+      throw new CustError(406, 'Credential signature can not be verified.');
+    }
 
+    const isVerified = isPresentationVerified && areCredentialsValid; // always true if here
     const credentialTypes = presentation.verifiableCredential.flatMap(cred => cred.type.slice(1));
     const issuers = presentation.verifiableCredential.map(cred => cred.issuer);
     const subject = proof.verificationMethod;
@@ -272,7 +279,7 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
 
     return result;
   } catch (error) {
-    logger.error(`Error sending a verifyPresentation request to UnumID Saas. Error ${error}`);
+    logger.error('Error sending a verifyPresentation request to UnumID Saas.', error);
     throw error;
   }
 };
