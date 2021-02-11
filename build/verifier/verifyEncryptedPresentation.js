@@ -206,7 +206,7 @@ exports.verifyEncryptedPresentation = function (authorization, encryptedPresenta
             case 2:
                 error_1 = _a.sent();
                 logger_1.default.error("Error handling encrypted presentation request to UnumID Saas. Error " + error_1);
-                if (error_1 instanceof library_issuer_verifier_utility_1.CustError && error_1.statusCode === -1) {
+                if (error_1.statusCode === -1) {
                     messages = error_1.message.split('#');
                     result = {
                         authToken: messages[0],

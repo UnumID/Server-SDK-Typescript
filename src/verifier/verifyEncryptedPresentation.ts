@@ -198,7 +198,7 @@ export const verifyEncryptedPresentation = async (authorization: string, encrypt
   } catch (error) {
     logger.error(`Error handling encrypted presentation request to UnumID Saas. Error ${error}`);
 
-    if (error instanceof CustError && error.statusCode === -1) {
+    if (error.statusCode === -1) {
       const messages = error.message.split('#');
       const result: VerifierDto<VerifiedStatus> = {
         authToken: messages[0],
