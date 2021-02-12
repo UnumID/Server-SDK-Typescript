@@ -3342,7 +3342,7 @@ levn@~0.3.0:
     bs58 "^4.0.1"
     fast-json-stable-stringify "^2.1.0"
 
-"library-issuer-verifier-utility@https://github.com/UnumID/library-issuer-verifier-utility.git":
+"library-issuer-verifier-utility@https://github.com/UnumID/library-issuer-verifier-utility.git#v0.4.2":
   version "1.0.0"
   resolved "https://github.com/UnumID/library-issuer-verifier-utility.git#29f288e87738e33d9e8a5a5dce2a0dab48e95766"
   dependencies:
