@@ -200,8 +200,9 @@ export const verifyEncryptedPresentation = async (authorization: string, encrypt
 
     if (error.statusCode === -1) {
       const messages = error.message.split('#');
+      const authToken = messages[0] === 'undefined' ? undefined : messages[0];
       const result: VerifierDto<VerifiedStatus> = {
-        authToken: messages[0],
+        authToken,
         body: {
           isVerified: false,
           message: messages[1]

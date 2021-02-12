@@ -179,7 +179,7 @@ function isPresentation(presentation) {
  * @param verifierDid: string
  */
 exports.verifyEncryptedPresentation = function (authorization, encryptedPresentation, verifierDid, encryptionPrivateKey) { return __awaiter(void 0, void 0, void 0, function () {
-    var presentation, verificationResult, error_1, messages, result;
+    var presentation, verificationResult, error_1, messages, authToken, result;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -208,8 +208,9 @@ exports.verifyEncryptedPresentation = function (authorization, encryptedPresenta
                 logger_1.default.error("Error handling encrypted presentation request to UnumID Saas. Error " + error_1);
                 if (error_1.statusCode === -1) {
                     messages = error_1.message.split('#');
+                    authToken = messages[0] === 'undefined' ? undefined : messages[0];
                     result = {
-                        authToken: messages[0],
+                        authToken: authToken,
                         body: {
                             isVerified: false,
                             message: messages[1]
