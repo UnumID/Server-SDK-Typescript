@@ -1,7 +1,7 @@
 import { omit } from 'lodash';
 
 import { configData } from '../config';
-import { Presentation, Receipt, VerifierDto } from '../types';
+import { Presentation, Receipt, VerifiedStatus, VerifierDto } from '../types';
 import { validateProof } from './validateProof';
 import { requireAuth } from '../requireAuth';
 import { verifyCredential } from './verifyCredential';
@@ -191,6 +191,7 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
       throw didDocumentResponse;
     }
 
+    let authToken: string = handleAuthToken(didDocumentResponse);
     const pubKeyObj: PublicKeyInfo[] = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
     if (pubKeyObj.length === 0) {
@@ -228,8 +229,31 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
       }
     }
 
-    const isVerified = isPresentationVerified && areCredentialsValid;
+    if (!isPresentationVerified) {
+      throw new CustError(406, `${authToken}#Presentation signature can no be verified.`, -1);
+      // const result: VerifierDto<VerifiedStatus> = {
+      //   authToken,
+      //   body: {
+      //     isVerified: false,
+      //     message: 'Presentation signature can no be verified'
+      //   }
+      // };
+      // return result;
+    }
 
+    if (!areCredentialsValid) {
+      throw new CustError(406, `${authToken}#Credential signature can not be verified.`, -1);
+      // const result: VerifierDto<VerifiedStatus> = {
+      //   authToken,
+      //   body: {
+      //     isVerified: false,
+      //     message: 'Credential signature can not be verified.'
+      //   }
+      // };
+      // return result;
+    }
+
+    const isVerified = isPresentationVerified && areCredentialsValid; // always true if here
     const credentialTypes = presentation.verifiableCredential.flatMap(cred => cred.type.slice(1));
     const issuers = presentation.verifiableCredential.map(cred => cred.issuer);
     const subject = proof.verificationMethod;
@@ -253,8 +277,7 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     };
 
     const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
-
-    const authToken: string = handleAuthToken(resp);
+    authToken = handleAuthToken(resp);
 
     const result: VerifierDto<Receipt> = {
       authToken,
@@ -272,7 +295,7 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
 
     return result;
   } catch (error) {
-    logger.error(`Error sending a verifyPresentation request to UnumID Saas. Error ${error}`);
+    logger.error('Error sending a verifyPresentation request to UnumID Saas.', error);
     throw error;
   }
 };

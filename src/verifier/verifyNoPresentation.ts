@@ -16,6 +16,7 @@ import { validateProof } from './validateProof';
 import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
 import logger from '../logger';
+import { VerifiedStatus } from '..';
 
 /**
  * Validates the NoPresentation type to ensure the necessary attributes.
@@ -84,6 +85,7 @@ export const verifyNoPresentation = async (authorization: string, noPresentation
       throw didDocumentResponse;
     }
 
+    let authToken: string = handleAuthToken(didDocumentResponse);
     const publicKeyInfos = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
     const { publicKey, encoding } = publicKeyInfos[0];
@@ -91,6 +93,18 @@ export const verifyNoPresentation = async (authorization: string, noPresentation
     const unsignedNoPresentation = omit(noPresentation, 'proof');
 
     const isVerified = doVerify(signatureValue, unsignedNoPresentation, publicKey, encoding);
+
+    if (!isVerified) {
+      throw new CustError(406, `${authToken}#Credential signature can not be verified.`, -1);
+      // const result: VerifierDto<VerifiedStatus> = {
+      //   authToken,
+      //   body: {
+      //     isVerified: false,
+      //     message: 'Credential signature can not be verified.'
+      //   }
+      // };
+      // return result;
+    }
 
     const receiptOptions = {
       type: noPresentation.type,
@@ -111,7 +125,7 @@ export const verifyNoPresentation = async (authorization: string, noPresentation
 
     const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
 
-    const authToken: string = handleAuthToken(resp);
+    authToken = handleAuthToken(resp);
 
     const result: VerifierDto<Receipt> = {
       authToken,

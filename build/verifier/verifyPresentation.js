@@ -179,7 +179,7 @@ var validatePresentation = function (presentation) {
  * @param verifier
  */
 exports.verifyPresentation = function (authorization, presentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, proof, didDocumentResponse, pubKeyObj, isPresentationVerified, areCredentialsValid, _i, _a, credential, isExpired, isStatusValid, isVerified_1, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, authToken, result, error_1;
+    var data, proof, didDocumentResponse, authToken, pubKeyObj, isPresentationVerified, areCredentialsValid, _i, _a, credential, isExpired, isStatusValid, isVerified_1, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, result, error_1;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -200,6 +200,7 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                 if (didDocumentResponse instanceof Error) {
                     throw didDocumentResponse;
                 }
+                authToken = library_issuer_verifier_utility_1.handleAuthToken(didDocumentResponse);
                 pubKeyObj = library_issuer_verifier_utility_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 if (pubKeyObj.length === 0) {
                     throw new library_issuer_verifier_utility_1.CustError(404, 'Public key not found for the DID');
@@ -235,6 +236,28 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                 _i++;
                 return [3 /*break*/, 2];
             case 6:
+                if (!isPresentationVerified) {
+                    throw new library_issuer_verifier_utility_1.CustError(406, authToken + "#Presentation signature can no be verified.", -1);
+                    // const result: VerifierDto<VerifiedStatus> = {
+                    //   authToken,
+                    //   body: {
+                    //     isVerified: false,
+                    //     message: 'Presentation signature can no be verified'
+                    //   }
+                    // };
+                    // return result;
+                }
+                if (!areCredentialsValid) {
+                    throw new library_issuer_verifier_utility_1.CustError(406, authToken + "#Credential signature can not be verified.", -1);
+                    // const result: VerifierDto<VerifiedStatus> = {
+                    //   authToken,
+                    //   body: {
+                    //     isVerified: false,
+                    //     message: 'Credential signature can not be verified.'
+                    //   }
+                    // };
+                    // return result;
+                }
                 isVerified = isPresentationVerified && areCredentialsValid;
                 credentialTypes = presentation.verifiableCredential.flatMap(function (cred) { return cred.type.slice(1); });
                 issuers = presentation.verifiableCredential.map(function (cred) { return cred.issuer; });
@@ -276,7 +299,7 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                 return [2 /*return*/, result];
             case 8:
                 error_1 = _b.sent();
-                logger_1.default.error("Error sending a verifyPresentation request to UnumID Saas. Error " + error_1);
+                logger_1.default.error('Error sending a verifyPresentation request to UnumID Saas.', error_1);
                 throw error_1;
             case 9: return [2 /*return*/];
         }

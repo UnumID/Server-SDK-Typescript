@@ -85,7 +85,7 @@ exports.validateNoPresentationParams = function (noPresentation) {
  * @param verifier
  */
 exports.verifyNoPresentation = function (authorization, noPresentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, verificationMethod, signatureValue, didDocumentResponse, publicKeyInfos, _b, publicKey, encoding, unsignedNoPresentation, isVerified, receiptOptions, receiptCallOptions, resp, authToken, result, e_1;
+    var _a, verificationMethod, signatureValue, didDocumentResponse, authToken, publicKeyInfos, _b, publicKey, encoding, unsignedNoPresentation, isVerified, receiptOptions, receiptCallOptions, resp, result, e_1;
     return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
@@ -99,10 +99,22 @@ exports.verifyNoPresentation = function (authorization, noPresentation, verifier
                 if (didDocumentResponse instanceof Error) {
                     throw didDocumentResponse;
                 }
+                authToken = library_issuer_verifier_utility_1.handleAuthToken(didDocumentResponse);
                 publicKeyInfos = library_issuer_verifier_utility_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 _b = publicKeyInfos[0], publicKey = _b.publicKey, encoding = _b.encoding;
                 unsignedNoPresentation = lodash_1.omit(noPresentation, 'proof');
                 isVerified = library_issuer_verifier_utility_1.doVerify(signatureValue, unsignedNoPresentation, publicKey, encoding);
+                if (!isVerified) {
+                    throw new library_issuer_verifier_utility_1.CustError(406, authToken + "#Credential signature can not be verified.", -1);
+                    // const result: VerifierDto<VerifiedStatus> = {
+                    //   authToken,
+                    //   body: {
+                    //     isVerified: false,
+                    //     message: 'Credential signature can not be verified.'
+                    //   }
+                    // };
+                    // return result;
+                }
                 receiptOptions = {
                     type: noPresentation.type,
                     verifier: verifier,
