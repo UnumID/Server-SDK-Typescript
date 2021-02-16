@@ -167,7 +167,7 @@ const validatePresentation = (presentation: Presentation): void => {
  * @param presentation
  * @param verifier
  */
-export const verifyPresentation = async (authorization: string, presentation: Presentation, verifier: string): Promise<VerifierDto<Receipt>> => {
+export const verifyPresentation = async (authorization: string, presentation: Presentation, verifier: string): Promise<VerifierDto<VerifiedStatus>> => {
   try {
     requireAuth(authorization);
 
@@ -230,27 +230,27 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     }
 
     if (!isPresentationVerified) {
-      throw new CustError(406, `${authToken}#Presentation signature can no be verified.`, -1);
-      // const result: VerifierDto<VerifiedStatus> = {
-      //   authToken,
-      //   body: {
-      //     isVerified: false,
-      //     message: 'Presentation signature can no be verified'
-      //   }
-      // };
-      // return result;
+      // throw new CustError(406, `${authToken}#Presentation signature can no be verified.`, -1);
+      const result: VerifierDto<VerifiedStatus> = {
+        authToken,
+        body: {
+          isVerified: false,
+          message: 'Presentation signature can no be verified'
+        }
+      };
+      return result;
     }
 
     if (!areCredentialsValid) {
-      throw new CustError(406, `${authToken}#Credential signature can not be verified.`, -1);
-      // const result: VerifierDto<VerifiedStatus> = {
-      //   authToken,
-      //   body: {
-      //     isVerified: false,
-      //     message: 'Credential signature can not be verified.'
-      //   }
-      // };
-      // return result;
+      // throw new CustError(406, `${authToken}#Credential signature can not be verified.`, -1);
+      const result: VerifierDto<VerifiedStatus> = {
+        authToken,
+        body: {
+          isVerified: false,
+          message: 'Credential signature can not be verified.'
+        }
+      };
+      return result;
     }
 
     const isVerified = isPresentationVerified && areCredentialsValid; // always true if here
@@ -258,7 +258,7 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     const issuers = presentation.verifiableCredential.map(cred => cred.issuer);
     const subject = proof.verificationMethod;
     const receiptOptions = {
-      type: ['PresentationVerified'],
+      type: ['PresentationVerified'], // VerifiablePresentation
       verifier,
       subject,
       data: {
@@ -279,16 +279,16 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
     authToken = handleAuthToken(resp);
 
-    const result: VerifierDto<Receipt> = {
+    const result: VerifierDto<VerifiedStatus> = {
       authToken,
       body: {
-        uuid: resp.body.uuid,
-        createdAt: resp.body.createdAt,
-        updatedAt: resp.body.updatedAt,
-        type: resp.body.type,
-        credentialTypes: presentation.verifiableCredential.map(vc => vc.type).flat(),
-        subject,
-        issuer: resp.body.issuer,
+        // uuid: resp.body.uuid,
+        // createdAt: resp.body.createdAt,
+        // updatedAt: resp.body.updatedAt,
+        // type: resp.body.type,
+        // credentialTypes: presentation.verifiableCredential.map(vc => vc.type).flat(),
+        // subject,
+        // issuer: resp.body.issuer,
         isVerified
       }
     };

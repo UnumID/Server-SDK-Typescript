@@ -11,6 +11,11 @@ import { issueCredential } from './issuer/issueCredentials';
 import { revokeCredential } from './issuer/revokeCredentials';
 
 export {
+  // Issuer Functions
+  registerIssuer,
+  issueCredential,
+  revokeCredential,
+  // Verifier Functions
   registerVerifier,
   sendEmail,
   sendRequest,
@@ -18,6 +23,7 @@ export {
   verifyNoPresentation, // Deprecated as an exposed function in favor of verifyEncryptedPresentation. Ought to be removed after holder stops sending presentations to the test customer app
   verifyPresentation, // Deprecated as an exposed function in favor of verifyEncryptedPresentation. Ought to be removed after holder stops sending presentations to the test customer app
   verifyEncryptedPresentation,
+  // Types
   VerifierDto,
   RegisteredVerifier,
   PresentationRequestResponse,
@@ -26,9 +32,6 @@ export {
   NoPresentation,
   Presentation,
   IssuerDto,
-  RegisteredIssuer,
-  registerIssuer,
-  issueCredential,
-  revokeCredential
+  RegisteredIssuer
 }
 ;

@@ -1,7 +1,7 @@
 import request from 'supertest';
 
 import * as utilLib from 'library-issuer-verifier-utility';
-import { NoPresentation, Presentation, Receipt, VerifierDto, verifyEncryptedPresentation, verifyNoPresentation } from '../../src/index';
+import { NoPresentation, Presentation, Receipt, VerifiedStatus, VerifierDto, verifyEncryptedPresentation, verifyNoPresentation } from '../../src/index';
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { isCredentialExpired } from '../../src/verifier/isCredentialExpired';
 import { checkCredentialStatus } from '../../src/verifier/checkCredentialStatus';
@@ -27,7 +27,7 @@ const mockGetDIDDoc = utilLib.getDIDDoc as jest.Mock;
 const mockDoVerify = utilLib.doVerify as jest.Mock;
 const mockMakeNetworkRequest = utilLib.makeNetworkRequest as jest.Mock;
 
-const callVerifyEncryptedPresentation = (context, type, verifiableCredential, presentationRequestUuid, proof, verifier, auth = ''): Promise<VerifierDto<Receipt>> => {
+const callVerifyEncryptedPresentation = (context, type, verifiableCredential, presentationRequestUuid, proof, verifier, auth = ''): Promise<VerifierDto<VerifiedStatus>> => {
   const presentation: Presentation = {
     '@context': context,
     type,
@@ -113,7 +113,7 @@ const populateMockData = (): utilLib.JSONObj => {
 };
 
 describe('verifyPresentation - Success Scenario', () => {
-  let response: VerifierDto<Receipt>;
+  let response: VerifierDto<VerifiedStatus>;
   let verStatus: boolean;
 
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
@@ -182,7 +182,7 @@ describe('verifyPresentation - Success Scenario', () => {
 });
 
 describe('verifyPresentation - Failure Scenarios', () => {
-  let response: VerifierDto<Receipt>;
+  let response: VerifierDto<VerifiedStatus>;
   let verStatus: boolean;
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
@@ -544,7 +544,7 @@ const dummyNoPresentationWithoutHolder = omit(dummyNoPresentation, 'holder') as 
 const dummyNoPresentationWithoutProof = omit(dummyNoPresentation, 'proof') as NoPresentation;
 
 const dummyNoPresentationBadType = { ...dummyNoPresentation, type: {} } as NoPresentation;
-const dummyNoPresentationBadTypeKeywordMissing = { ...dummyNoPresentation, type: ['No No Presenation'] } as NoPresentation;
+const dummyNoPresentationBadTypeKeywordMissing = { ...dummyNoPresentation, type: ['No Presenation'] } as NoPresentation;
 const dummyNoPresentationBadRequestUuid = { ...dummyNoPresentation, presentationRequestUuid: {} } as NoPresentation;
 const dummyNoPresentationBadHolder = { ...dummyNoPresentation, holder: {} } as NoPresentation;
 const dummyNoPresentationBadProof = { ...dummyNoPresentation, proof: {} } as NoPresentation;
@@ -556,7 +556,7 @@ const callVerifyNoPresentation = (
   noPresentation: NoPresentation,
   verifier: string,
   authHeader?: string
-): Promise<VerifierDto<Receipt>> => {
+): Promise<VerifierDto<VerifiedStatus>> => {
   return verifyNoPresentation(authHeader, noPresentation, verifier);
 };
 
@@ -573,7 +573,7 @@ describe('verifyNoPresentation', () => {
   });
 
   describe('success', () => {
-    let response: VerifierDto<Receipt>, responseAuthToken: string;
+    let response: VerifierDto<VerifiedStatus>, responseAuthToken: string;
 
     beforeEach(async () => {
       mockDoVerify.mockReturnValue(true);

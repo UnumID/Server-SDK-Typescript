@@ -193,7 +193,7 @@ describe('verifyPresentation - Failure Scenarios', () => {
     const dummySubjectDidDoc = await makeDummyDidDocument();
 
     const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
-    mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
+    // mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
     mockDoVerify.mockReturnValueOnce(false);
     mockVerifyCredential.mockResolvedValue(false);
     mockIsCredentialExpired.mockReturnValue(true);
@@ -207,26 +207,16 @@ describe('verifyPresentation - Failure Scenarios', () => {
     jest.clearAllMocks();
   });
 
-  // TODO circle back and figure out why these were failing with the addition of the CustError
-  // it('gets the subject did document', async () => {
-  //   await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
-  //   expect(mockGetDIDDoc).toBeCalled();
-  // });
+  it('gets the subject did document', async () => {
+    const dummySubjectDidDoc = await makeDummyDidDocument();
+    const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
+    mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
+    await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+    expect(mockGetDIDDoc).toBeCalled();
+  });
 
-  // it('verifies the presentation', async () => {
-  //   expect(mockDoVerify).toBeCalled();
-  // });
-
-  it('Result should throw exception', async () => {
-    try {
-      mockGetDIDDoc.mockResolvedValueOnce({ body: await makeDummyDidDocument(), headers: { 'x-auth-token': dummyAuthToken } });
-      mockDoVerify.mockReturnValueOnce(false);
-      await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, invalidProof, verifier, authHeader);
-      fail();
-    } catch (e) {
-      expect(e.code).toBe(406);
-      expect(e.message).toBe(`${dummyAuthToken}#Presentation signature can no be verified.`);
-    }
+  it('verifies the presentation', async () => {
+    expect(mockDoVerify).toBeCalled();
   });
 
   it('returns a 404 status code if the did document has no public keys', async () => {
@@ -241,7 +231,7 @@ describe('verifyPresentation - Failure Scenarios', () => {
       await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
-      expect(e.code).toEqual(406);
+      expect(e.code).toEqual(404);
     }
   });
 

@@ -71,7 +71,7 @@ export const validateNoPresentationParams = (noPresentation: NoPresentation): vo
  * @param noPresentation
  * @param verifier
  */
-export const verifyNoPresentation = async (authorization: string, noPresentation: NoPresentation, verifier: string): Promise<VerifierDto<Receipt>> => {
+export const verifyNoPresentation = async (authorization: string, noPresentation: NoPresentation, verifier: string): Promise<VerifierDto<VerifiedStatus>> => {
   try {
     requireAuth(authorization);
 
@@ -95,15 +95,15 @@ export const verifyNoPresentation = async (authorization: string, noPresentation
     const isVerified = doVerify(signatureValue, unsignedNoPresentation, publicKey, encoding);
 
     if (!isVerified) {
-      throw new CustError(406, `${authToken}#Credential signature can not be verified.`, -1);
-      // const result: VerifierDto<VerifiedStatus> = {
-      //   authToken,
-      //   body: {
-      //     isVerified: false,
-      //     message: 'Credential signature can not be verified.'
-      //   }
-      // };
-      // return result;
+      // throw new CustError(406, `${authToken}#Credential signature can not be verified.`, -1);
+      const result: VerifierDto<VerifiedStatus> = {
+        authToken,
+        body: {
+          isVerified: false,
+          message: 'Credential signature can not be verified.'
+        }
+      };
+      return result;
     }
 
     const receiptOptions = {
@@ -127,15 +127,15 @@ export const verifyNoPresentation = async (authorization: string, noPresentation
 
     authToken = handleAuthToken(resp);
 
-    const result: VerifierDto<Receipt> = {
+    const result: VerifierDto<VerifiedStatus> = {
       authToken,
       body: {
-        uuid: resp.body.uuid,
-        createdAt: resp.body.createdAt,
-        updatedAt: resp.body.updatedAt,
-        type: resp.body.type,
-        subject: resp.body.subject,
-        issuer: resp.body.issuer,
+        // uuid: resp.body.uuid,
+        // createdAt: resp.body.createdAt,
+        // updatedAt: resp.body.updatedAt,
+        // type: resp.body.type,
+        // subject: resp.body.subject,
+        // issuer: resp.body.issuer,
         isVerified
       }
     };

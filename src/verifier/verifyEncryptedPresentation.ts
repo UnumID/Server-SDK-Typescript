@@ -1,5 +1,5 @@
 
-import { Presentation, PresentationOrNoPresentation, Receipt, VerifierDto } from '../types';
+import { DecryptedPresentation, Presentation, PresentationOrNoPresentation, Receipt, UnumDto, VerifierDto } from '../types';
 import { validateProof } from './validateProof';
 import { requireAuth } from '../requireAuth';
 import { decrypt } from 'library-crypto-typescript';
@@ -168,7 +168,7 @@ function isPresentation (presentation: PresentationOrNoPresentation): presentati
  * @param encryptedPresentation: EncryptedData
  * @param verifierDid: string
  */
-export const verifyEncryptedPresentation = async (authorization: string, encryptedPresentation: EncryptedData, verifierDid: string, encryptionPrivateKey: string): Promise<VerifierDto<Receipt | VerifiedStatus>> => {
+export const verifyEncryptedPresentation = async (authorization: string, encryptedPresentation: EncryptedData, verifierDid: string, encryptionPrivateKey: string): Promise<VerifierDto<DecryptedPresentation>> => {
   try {
     requireAuth(authorization);
 
@@ -188,28 +188,47 @@ export const verifyEncryptedPresentation = async (authorization: string, encrypt
     const presentation = <Presentation|NoPresentation> decrypt(encryptionPrivateKey, encryptedPresentation);
 
     if (!isPresentation(presentation)) {
-      return verifyNoPresentation(authorization, presentation, verifierDid);
+      const verificationResult: VerifierDto<VerifiedStatus> = await verifyNoPresentation(authorization, presentation, verifierDid);
+      // const result: DecryptedPresentation = { ...verificationResult.body, type: 'NoPresentation' };
+      const result: UnumDto<DecryptedPresentation> = {
+        authToken: verificationResult.authToken,
+        body: {
+          ...verificationResult.body,
+          type: 'NoPresentation'
+        }
+      };
+
+      return result;
     }
 
-    const verificationResult = await verifyPresentation(authorization, presentation, verifierDid);
-    verificationResult.body.credentials = presentation.verifiableCredential;
+    const verificationResult: VerifierDto<VerifiedStatus> = await verifyPresentation(authorization, presentation, verifierDid);
+    // verificationResult.body.credentials = presentation.verifiableCredential;
+    const result: UnumDto<DecryptedPresentation> = {
+      authToken: verificationResult.authToken,
+      body: {
+        ...verificationResult.body,
+        type: 'VerifiablePresentation',
+        credentials: verificationResult.body.isVerified ? presentation.verifiableCredential : undefined
+      }
+    };
 
-    return verificationResult;
+    return result;
   } catch (error) {
     logger.error(`Error handling encrypted presentation request to UnumID Saas. Error ${error}`);
 
-    if (error.statusCode === -1) {
-      const messages = error.message.split('#');
-      const authToken = messages[0] === 'undefined' ? undefined : messages[0];
-      const result: VerifierDto<VerifiedStatus> = {
-        authToken,
-        body: {
-          isVerified: false,
-          message: messages[1]
-        }
-      };
-      return result;
-    }
+    // if (error.statusCode === -1) {
+    //   const messages = error.message.split('#');
+    //   const authToken = messages[0] === 'undefined' ? undefined : messages[0];
+    //   const result: VerifierDto<DecryptedPresentation> = {
+    //     authToken,
+    //     body: {
+    //       isVerified: false,
+    //       type: 'Error',
+    //       message: messages[1]
+    //     }
+    //   };
+    //   return result;
+    // }
 
     throw error;
   }

@@ -179,7 +179,7 @@ var validatePresentation = function (presentation) {
  * @param verifier
  */
 exports.verifyPresentation = function (authorization, presentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, proof, didDocumentResponse, authToken, pubKeyObj, isPresentationVerified, areCredentialsValid, _i, _a, credential, isExpired, isStatusValid, isVerified_1, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, result, error_1;
+    var data, proof, didDocumentResponse, authToken, pubKeyObj, isPresentationVerified, areCredentialsValid, _i, _a, credential, isExpired, isStatusValid, isVerified_1, result_1, result_2, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, result, error_1;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -237,26 +237,24 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                 return [3 /*break*/, 2];
             case 6:
                 if (!isPresentationVerified) {
-                    throw new library_issuer_verifier_utility_1.CustError(406, authToken + "#Presentation signature can no be verified.", -1);
-                    // const result: VerifierDto<VerifiedStatus> = {
-                    //   authToken,
-                    //   body: {
-                    //     isVerified: false,
-                    //     message: 'Presentation signature can no be verified'
-                    //   }
-                    // };
-                    // return result;
+                    result_1 = {
+                        authToken: authToken,
+                        body: {
+                            isVerified: false,
+                            message: 'Presentation signature can no be verified'
+                        }
+                    };
+                    return [2 /*return*/, result_1];
                 }
                 if (!areCredentialsValid) {
-                    throw new library_issuer_verifier_utility_1.CustError(406, authToken + "#Credential signature can not be verified.", -1);
-                    // const result: VerifierDto<VerifiedStatus> = {
-                    //   authToken,
-                    //   body: {
-                    //     isVerified: false,
-                    //     message: 'Credential signature can not be verified.'
-                    //   }
-                    // };
-                    // return result;
+                    result_2 = {
+                        authToken: authToken,
+                        body: {
+                            isVerified: false,
+                            message: 'Credential signature can not be verified.'
+                        }
+                    };
+                    return [2 /*return*/, result_2];
                 }
                 isVerified = isPresentationVerified && areCredentialsValid;
                 credentialTypes = presentation.verifiableCredential.flatMap(function (cred) { return cred.type.slice(1); });
@@ -286,13 +284,13 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                 result = {
                     authToken: authToken,
                     body: {
-                        uuid: resp.body.uuid,
-                        createdAt: resp.body.createdAt,
-                        updatedAt: resp.body.updatedAt,
-                        type: resp.body.type,
-                        credentialTypes: presentation.verifiableCredential.map(function (vc) { return vc.type; }).flat(),
-                        subject: subject,
-                        issuer: resp.body.issuer,
+                        // uuid: resp.body.uuid,
+                        // createdAt: resp.body.createdAt,
+                        // updatedAt: resp.body.updatedAt,
+                        // type: resp.body.type,
+                        // credentialTypes: presentation.verifiableCredential.map(vc => vc.type).flat(),
+                        // subject,
+                        // issuer: resp.body.issuer,
                         isVerified: isVerified
                     }
                 };

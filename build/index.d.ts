@@ -9,7 +9,7 @@ import { verifyEncryptedPresentation } from './verifier/verifyEncryptedPresentat
 import { registerIssuer } from './issuer/registerIssuer';
 import { issueCredential } from './issuer/issueCredentials';
 import { revokeCredential } from './issuer/revokeCredentials';
-export { registerVerifier, sendEmail, sendRequest, sendSms, verifyNoPresentation, // Deprecated as an exposed function in favor of verifyEncryptedPresentation. Ought to be removed after holder stops sending presentations to the test customer app
+export { registerIssuer, issueCredential, revokeCredential, registerVerifier, sendEmail, sendRequest, sendSms, verifyNoPresentation, // Deprecated as an exposed function in favor of verifyEncryptedPresentation. Ought to be removed after holder stops sending presentations to the test customer app
 verifyPresentation, // Deprecated as an exposed function in favor of verifyEncryptedPresentation. Ought to be removed after holder stops sending presentations to the test customer app
-verifyEncryptedPresentation, VerifierDto, RegisteredVerifier, PresentationRequestResponse, Receipt, VerifiedStatus, NoPresentation, Presentation, IssuerDto, RegisteredIssuer, registerIssuer, issueCredential, revokeCredential };
+verifyEncryptedPresentation, VerifierDto, RegisteredVerifier, PresentationRequestResponse, Receipt, VerifiedStatus, NoPresentation, Presentation, IssuerDto, RegisteredIssuer };
 //# sourceMappingURL=index.d.ts.map

@@ -274,6 +274,17 @@ export interface VerifiedStatus {
 }
 
 /**
+ * A type came about need to convey that a credential presentation can not be verified.
+ * While this would normally be served by throwing an exception we want to pass back the auth token returned
+ * by calls to the SaaS via the UnumDto type.
+ */
+export interface DecryptedPresentation extends VerifiedStatus {
+  // type: 'VerifiablePresentation' | 'NoPresentation' | 'Error'
+  type: 'VerifiablePresentation' | 'NoPresentation'
+  credentials?: VerifiableCredential[]
+}
+
+/**
  * Encapsulates a Reciept entity.
  */
 export interface Receipt extends VerifiedStatus{
@@ -292,6 +303,15 @@ export interface Receipt extends VerifiedStatus{
  * TODO create and use UnumDto
  */
 export interface VerifierDto<T = Record<string, unknown>> {
+  authToken: string;
+  body: T;
+}
+
+/**
+ * Encapsulates a Verifier Data Transfer Object for a response from UnumID's SaaS.
+ * TODO create and use UnumDto
+ */
+export interface UnumDto<T = Record<string, unknown>> {
   authToken: string;
   body: T;
 }

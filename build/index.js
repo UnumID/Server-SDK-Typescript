@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.revokeCredential = exports.issueCredential = exports.registerIssuer = exports.verifyEncryptedPresentation = exports.verifyPresentation = exports.verifyNoPresentation = exports.sendSms = exports.sendRequest = exports.sendEmail = exports.registerVerifier = void 0;
+exports.verifyEncryptedPresentation = exports.verifyPresentation = exports.verifyNoPresentation = exports.sendSms = exports.sendRequest = exports.sendEmail = exports.registerVerifier = exports.revokeCredential = exports.issueCredential = exports.registerIssuer = void 0;
 var registerVerifier_1 = require("./verifier/registerVerifier");
 Object.defineProperty(exports, "registerVerifier", { enumerable: true, get: function () { return registerVerifier_1.registerVerifier; } });
 var sendEmail_1 = require("./verifier/sendEmail");
