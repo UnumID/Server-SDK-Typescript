@@ -195,7 +195,6 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     const pubKeyObj: PublicKeyInfo[] = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
     if (pubKeyObj.length === 0) {
-      // throw new CustError(404, 'Public key not found for the DID');
       const result: UnumDto<VerifiedStatus> = {
         authToken,
         body: {
@@ -269,7 +268,7 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     const issuers = presentation.verifiableCredential.map(cred => cred.issuer);
     const subject = proof.verificationMethod;
     const receiptOptions = {
-      type: ['PresentationVerified'], // VerifiablePresentation
+      type: ['PresentationVerified'],
       verifier,
       subject,
       data: {
