@@ -47,7 +47,7 @@ export const revokeCredential = async (authorization: string, credentialId: stri
 
     return revokedCredential;
   } catch (error) {
-    logger.error(`Error revoking a credential with UnumID SaaS. Error: ${error}`);
+    logger.error('Error revoking a credential with UnumID SaaS', error);
     throw error;
   }
 };
