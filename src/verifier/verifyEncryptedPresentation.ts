@@ -215,21 +215,6 @@ export const verifyEncryptedPresentation = async (authorization: string, encrypt
     return result;
   } catch (error) {
     logger.error(`Error handling encrypted presentation request to UnumID Saas. Error ${error}`);
-
-    // if (error.statusCode === -1) {
-    //   const messages = error.message.split('#');
-    //   const authToken = messages[0] === 'undefined' ? undefined : messages[0];
-    //   const result: UnumDto<DecryptedPresentation> = {
-    //     authToken,
-    //     body: {
-    //       isVerified: false,
-    //       type: 'Error',
-    //       message: messages[1]
-    //     }
-    //   };
-    //   return result;
-    // }
-
     throw error;
   }
 };

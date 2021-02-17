@@ -226,19 +226,6 @@ exports.verifyEncryptedPresentation = function (authorization, encryptedPresenta
             case 4:
                 error_1 = _a.sent();
                 logger_1.default.error("Error handling encrypted presentation request to UnumID Saas. Error " + error_1);
-                // if (error.statusCode === -1) {
-                //   const messages = error.message.split('#');
-                //   const authToken = messages[0] === 'undefined' ? undefined : messages[0];
-                //   const result: UnumDto<DecryptedPresentation> = {
-                //     authToken,
-                //     body: {
-                //       isVerified: false,
-                //       type: 'Error',
-                //       message: messages[1]
-                //     }
-                //   };
-                //   return result;
-                // }
                 throw error_1;
             case 5: return [2 /*return*/];
         }
