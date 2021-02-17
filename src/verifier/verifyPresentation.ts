@@ -9,11 +9,6 @@ import { isCredentialExpired } from './isCredentialExpired';
 import { checkCredentialStatus } from './checkCredentialStatus';
 import { JSONObj, CustError, Proof, getDIDDoc, PublicKeyInfo, getKeyFromDIDDoc, doVerify, RESTData, makeNetworkRequest, isArrayEmpty, handleAuthToken } from 'library-issuer-verifier-utility';
 import logger from '../logger';
-// import {
-//   publicKeyNotFoundInDidDocViaProofVerification,
-//   InvalidPresentationContextRequired,
-//   InvalidPresentationContextRequiredArray
-// } from '@unumid/errors';
 
 /**
  * Validates the attributes for a credential request to UnumID's SaaS.
@@ -205,7 +200,6 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
         authToken,
         body: {
           isVerified: false,
-          // message: publicKeyNotFoundInDidDocViaProofVerification.message
           message: 'Public key not found for the DID associated with the proof.verificationMethod'
         }
       };
@@ -301,13 +295,6 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     const result: UnumDto<VerifiedStatus> = {
       authToken,
       body: {
-        // uuid: resp.body.uuid,
-        // createdAt: resp.body.createdAt,
-        // updatedAt: resp.body.updatedAt,
-        // type: resp.body.type,
-        // credentialTypes: presentation.verifiableCredential.map(vc => vc.type).flat(),
-        // subject,
-        // issuer: resp.body.issuer,
         isVerified
       }
     };

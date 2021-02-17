@@ -49,11 +49,6 @@ var isCredentialExpired_1 = require("./isCredentialExpired");
 var checkCredentialStatus_1 = require("./checkCredentialStatus");
 var library_issuer_verifier_utility_1 = require("library-issuer-verifier-utility");
 var logger_1 = __importDefault(require("../logger"));
-// import {
-//   publicKeyNotFoundInDidDocViaProofVerification,
-//   InvalidPresentationContextRequired,
-//   InvalidPresentationContextRequiredArray
-// } from '@unumid/errors';
 /**
  * Validates the attributes for a credential request to UnumID's SaaS.
  * @param credentials JSONObj
@@ -212,7 +207,6 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                         authToken: authToken,
                         body: {
                             isVerified: false,
-                            // message: publicKeyNotFoundInDidDocViaProofVerification.message
                             message: 'Public key not found for the DID associated with the proof.verificationMethod'
                         }
                     };
@@ -301,13 +295,6 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                 result = {
                     authToken: authToken,
                     body: {
-                        // uuid: resp.body.uuid,
-                        // createdAt: resp.body.createdAt,
-                        // updatedAt: resp.body.updatedAt,
-                        // type: resp.body.type,
-                        // credentialTypes: presentation.verifiableCredential.map(vc => vc.type).flat(),
-                        // subject,
-                        // issuer: resp.body.issuer,
                         isVerified: isVerified
                     }
                 };

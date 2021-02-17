@@ -11,12 +11,11 @@ import {
 } from 'library-issuer-verifier-utility';
 import { omit } from 'lodash';
 
-import { NoPresentation, UnumDto } from '../types';
+import { NoPresentation, UnumDto, VerifiedStatus } from '../types';
 import { validateProof } from './validateProof';
 import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
 import logger from '../logger';
-import { VerifiedStatus } from '..';
 
 /**
  * Validates the NoPresentation type to ensure the necessary attributes.
