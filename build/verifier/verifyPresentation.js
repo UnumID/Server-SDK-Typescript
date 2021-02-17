@@ -49,6 +49,11 @@ var isCredentialExpired_1 = require("./isCredentialExpired");
 var checkCredentialStatus_1 = require("./checkCredentialStatus");
 var library_issuer_verifier_utility_1 = require("library-issuer-verifier-utility");
 var logger_1 = __importDefault(require("../logger"));
+// import {
+//   publicKeyNotFoundInDidDocViaProofVerification,
+//   InvalidPresentationContextRequired,
+//   InvalidPresentationContextRequiredArray
+// } from '@unumid/errors';
 /**
  * Validates the attributes for a credential request to UnumID's SaaS.
  * @param credentials JSONObj
@@ -179,7 +184,7 @@ var validatePresentation = function (presentation) {
  * @param verifier
  */
 exports.verifyPresentation = function (authorization, presentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, proof, didDocumentResponse, authToken, pubKeyObj, isPresentationVerified, areCredentialsValid, _i, _a, credential, isExpired, isStatusValid, isVerified_1, result_1, result_2, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, result, error_1;
+    var data, proof, didDocumentResponse, authToken, pubKeyObj, result_1, isPresentationVerified, areCredentialsValid, _i, _a, credential, isExpired, isStatusValid, isVerified_1, result_2, result_3, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, result, error_1;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -203,7 +208,15 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                 authToken = library_issuer_verifier_utility_1.handleAuthToken(didDocumentResponse);
                 pubKeyObj = library_issuer_verifier_utility_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 if (pubKeyObj.length === 0) {
-                    throw new library_issuer_verifier_utility_1.CustError(404, 'Public key not found for the DID');
+                    result_1 = {
+                        authToken: authToken,
+                        body: {
+                            isVerified: false,
+                            // message: publicKeyNotFoundInDidDocViaProofVerification.message
+                            message: 'Public key not found for the DID associated with the proof.verificationMethod'
+                        }
+                    };
+                    return [2 /*return*/, result_1];
                 }
                 isPresentationVerified = library_issuer_verifier_utility_1.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
                 areCredentialsValid = true;
@@ -237,24 +250,24 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                 return [3 /*break*/, 2];
             case 6:
                 if (!isPresentationVerified) {
-                    result_1 = {
+                    result_2 = {
                         authToken: authToken,
                         body: {
                             isVerified: false,
                             message: 'Presentation signature can no be verified'
                         }
                     };
-                    return [2 /*return*/, result_1];
+                    return [2 /*return*/, result_2];
                 }
                 if (!areCredentialsValid) {
-                    result_2 = {
+                    result_3 = {
                         authToken: authToken,
                         body: {
                             isVerified: false,
                             message: 'Credential signature can not be verified.'
                         }
                     };
-                    return [2 /*return*/, result_2];
+                    return [2 /*return*/, result_3];
                 }
                 isVerified = isPresentationVerified && areCredentialsValid;
                 credentialTypes = presentation.verifiableCredential.flatMap(function (cred) { return cred.type.slice(1); });

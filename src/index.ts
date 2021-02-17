@@ -33,5 +33,4 @@ export {
   Presentation,
   IssuerDto,
   RegisteredIssuer
-}
-;
+};

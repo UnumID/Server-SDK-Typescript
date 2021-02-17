@@ -1,13 +1,13 @@
-import request from 'supertest';
-
 import * as utilLib from 'library-issuer-verifier-utility';
-import { NoPresentation, Presentation, Receipt, VerifiedStatus, VerifierDto, verifyEncryptedPresentation, verifyNoPresentation } from '../../src/index';
+import { NoPresentation, Presentation, VerifiedStatus, VerifierDto, verifyEncryptedPresentation, verifyNoPresentation } from '../../src/index';
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { isCredentialExpired } from '../../src/verifier/isCredentialExpired';
 import { checkCredentialStatus } from '../../src/verifier/checkCredentialStatus';
 import { dummyAuthToken, dummyRsaPrivateKey, dummyRsaPublicKey, makeDummyDidDocument } from './mocks';
 import { encrypt } from 'library-crypto-typescript';
 import { omit } from 'lodash';
+import { DecryptedPresentation } from '../../src/types';
+// import { publicKeyNotFoundInDidDocViaProofVerification } from '@unumid/errors';
 
 jest.mock('library-issuer-verifier-utility', () => ({
   ...jest.requireActual('library-issuer-verifier-utility'),
@@ -27,7 +27,7 @@ const mockGetDIDDoc = utilLib.getDIDDoc as jest.Mock;
 const mockDoVerify = utilLib.doVerify as jest.Mock;
 const mockMakeNetworkRequest = utilLib.makeNetworkRequest as jest.Mock;
 
-const callVerifyEncryptedPresentation = (context, type, verifiableCredential, presentationRequestUuid, proof, verifier, auth = ''): Promise<VerifierDto<VerifiedStatus>> => {
+const callVerifyEncryptedPresentation = (context, type, verifiableCredential, presentationRequestUuid, proof, verifier, auth = ''): Promise<VerifierDto<DecryptedPresentation>> => {
   const presentation: Presentation = {
     '@context': context,
     type,
@@ -113,7 +113,7 @@ const populateMockData = (): utilLib.JSONObj => {
 };
 
 describe('verifyPresentation - Success Scenario', () => {
-  let response: VerifierDto<VerifiedStatus>;
+  let response: VerifierDto<DecryptedPresentation>;
   let verStatus: boolean;
 
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
@@ -182,7 +182,7 @@ describe('verifyPresentation - Success Scenario', () => {
 });
 
 describe('verifyPresentation - Failure Scenarios', () => {
-  let response: VerifierDto<VerifiedStatus>;
+  let response: VerifierDto<DecryptedPresentation>;
   let verStatus: boolean;
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
@@ -224,13 +224,9 @@ describe('verifyPresentation - Failure Scenarios', () => {
     };
     const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
     mockGetDIDDoc.mockResolvedValueOnce({ body: dummyDidDocWithoutKeys, headers: dummyResponseHeaders });
-
-    try {
-      await callVerifyEncryptedPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
-      fail();
-    } catch (e) {
-      expect(e.code).toEqual(404);
-    }
+    const response = await callVerifyEncryptedPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+    expect(response.body.isVerified).toBe(false);
+    expect(response.body.message).toBe('Public key not found for the DID associated with the proof.verificationMethod');
   });
 
   it('returns a 404 status code if the did document is not found', async () => {

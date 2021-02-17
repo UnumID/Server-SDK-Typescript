@@ -9,6 +9,11 @@ import { isCredentialExpired } from './isCredentialExpired';
 import { checkCredentialStatus } from './checkCredentialStatus';
 import { JSONObj, CustError, Proof, getDIDDoc, PublicKeyInfo, getKeyFromDIDDoc, doVerify, RESTData, makeNetworkRequest, isArrayEmpty, handleAuthToken } from 'library-issuer-verifier-utility';
 import logger from '../logger';
+// import {
+//   publicKeyNotFoundInDidDocViaProofVerification,
+//   InvalidPresentationContextRequired,
+//   InvalidPresentationContextRequiredArray
+// } from '@unumid/errors';
 
 /**
  * Validates the attributes for a credential request to UnumID's SaaS.
@@ -195,7 +200,16 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     const pubKeyObj: PublicKeyInfo[] = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
     if (pubKeyObj.length === 0) {
-      throw new CustError(404, 'Public key not found for the DID');
+      // throw new CustError(404, 'Public key not found for the DID');
+      const result: VerifierDto<VerifiedStatus> = {
+        authToken,
+        body: {
+          isVerified: false,
+          // message: publicKeyNotFoundInDidDocViaProofVerification.message
+          message: 'Public key not found for the DID associated with the proof.verificationMethod'
+        }
+      };
+      return result;
     }
 
     // Verify the data given.  As of now only one secp256r1 public key is expected.
