@@ -1,7 +1,7 @@
 import { omit } from 'lodash';
 
 import { configData } from '../config';
-import { Presentation, Receipt, VerifiedStatus, VerifierDto } from '../types';
+import { Presentation, UnumDto, VerifiedStatus } from '../types';
 import { validateProof } from './validateProof';
 import { requireAuth } from '../requireAuth';
 import { verifyCredential } from './verifyCredential';
@@ -167,7 +167,7 @@ const validatePresentation = (presentation: Presentation): void => {
  * @param presentation
  * @param verifier
  */
-export const verifyPresentation = async (authorization: string, presentation: Presentation, verifier: string): Promise<VerifierDto<Receipt>> => {
+export const verifyPresentation = async (authorization: string, presentation: Presentation, verifier: string): Promise<UnumDto<VerifiedStatus>> => {
   try {
     requireAuth(authorization);
 
@@ -191,11 +191,18 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
       throw didDocumentResponse;
     }
 
-    let authToken: string = handleAuthToken(didDocumentResponse);
+    let authToken: string = handleAuthToken(didDocumentResponse); // Note: going to use authToken instead of authorization for subsequent requests in case saas rolls to token.
     const pubKeyObj: PublicKeyInfo[] = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
     if (pubKeyObj.length === 0) {
-      throw new CustError(404, 'Public key not found for the DID');
+      const result: UnumDto<VerifiedStatus> = {
+        authToken,
+        body: {
+          isVerified: false,
+          message: 'Public key not found for the DID associated with the proof.verificationMethod'
+        }
+      };
+      return result;
     }
 
     // Verify the data given.  As of now only one secp256r1 public key is expected.
@@ -215,14 +222,19 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
         break;
       }
 
-      const isStatusValid = await checkCredentialStatus(credential, authorization as string);
+      const isStatusValidResponse: UnumDto<boolean> = await checkCredentialStatus(credential, authToken);
+      const isStatusValid = isStatusValidResponse.body;
+      authToken = isStatusValidResponse.authToken;
 
       if (!isStatusValid) {
         areCredentialsValid = false;
         break;
       }
 
-      const isVerified = await verifyCredential(credential, authorization as string);
+      const isVerifiedResponse: UnumDto<boolean> = await verifyCredential(credential, authToken);
+      const isVerified = isVerifiedResponse.body;
+      authToken = isVerifiedResponse.authToken;
+
       if (!isVerified) {
         areCredentialsValid = false;
         break;
@@ -230,27 +242,25 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     }
 
     if (!isPresentationVerified) {
-      throw new CustError(406, `${authToken}#Presentation signature can no be verified.`, -1);
-      // const result: VerifierDto<VerifiedStatus> = {
-      //   authToken,
-      //   body: {
-      //     isVerified: false,
-      //     message: 'Presentation signature can no be verified'
-      //   }
-      // };
-      // return result;
+      const result: UnumDto<VerifiedStatus> = {
+        authToken,
+        body: {
+          isVerified: false,
+          message: 'Presentation signature can no be verified'
+        }
+      };
+      return result;
     }
 
     if (!areCredentialsValid) {
-      throw new CustError(406, `${authToken}#Credential signature can not be verified.`, -1);
-      // const result: VerifierDto<VerifiedStatus> = {
-      //   authToken,
-      //   body: {
-      //     isVerified: false,
-      //     message: 'Credential signature can not be verified.'
-      //   }
-      // };
-      // return result;
+      const result: UnumDto<VerifiedStatus> = {
+        authToken,
+        body: {
+          isVerified: false,
+          message: 'Credential signature can not be verified.'
+        }
+      };
+      return result;
     }
 
     const isVerified = isPresentationVerified && areCredentialsValid; // always true if here
@@ -272,23 +282,16 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
       method: 'POST',
       baseUrl: configData.SaaSUrl,
       endPoint: 'receipt',
-      header: { Authorization: authorization },
+      header: { Authorization: authToken },
       data: receiptOptions
     };
 
     const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
     authToken = handleAuthToken(resp);
 
-    const result: VerifierDto<Receipt> = {
+    const result: UnumDto<VerifiedStatus> = {
       authToken,
       body: {
-        uuid: resp.body.uuid,
-        createdAt: resp.body.createdAt,
-        updatedAt: resp.body.updatedAt,
-        type: resp.body.type,
-        credentialTypes: presentation.verifiableCredential.map(vc => vc.type).flat(),
-        subject,
-        issuer: resp.body.issuer,
         isVerified
       }
     };

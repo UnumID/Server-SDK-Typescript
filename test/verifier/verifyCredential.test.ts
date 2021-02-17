@@ -1,6 +1,6 @@
 import * as utility from 'library-issuer-verifier-utility';
 
-import { VerifiableCredential } from '../../src/types';
+import { UnumDto, VerifiableCredential } from '../../src/types';
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { makeDummyDidDocument } from './mocks';
 
@@ -48,7 +48,7 @@ describe('verifyCredential', () => {
 
   const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
 
-  let isVerified: boolean;
+  let isVerified: UnumDto<boolean>;
 
   beforeAll(async () => {
     const dummyDidDoc = await makeDummyDidDocument({ id: credential.issuer });
@@ -70,7 +70,7 @@ describe('verifyCredential', () => {
   });
 
   it('returns true for a valid credential', () => {
-    expect(isVerified).toBe(true);
+    expect(isVerified.body).toBe(true);
   });
 
   it('returns false for an invalid credential', async () => {
@@ -104,6 +104,6 @@ describe('verifyCredential', () => {
 
     mockDoVerify.mockReturnValueOnce(false);
     const isInvalidVerified = await verifyCredential(invalidCredential, authHeader);
-    expect(isInvalidVerified).toBe(false);
+    expect(isInvalidVerified.body).toBe(false);
   });
 });

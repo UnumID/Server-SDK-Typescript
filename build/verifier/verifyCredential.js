@@ -46,7 +46,7 @@ var config_1 = require("../config");
  * @param authorization
  */
 exports.verifyCredential = function (credential, authorization) { return __awaiter(void 0, void 0, void 0, function () {
-    var proof, didDocumentResponse, publicKeyObject, data, isVerified;
+    var proof, didDocumentResponse, authToken, publicKeyObject, data, isVerified, result;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -57,10 +57,15 @@ exports.verifyCredential = function (credential, authorization) { return __await
                 if (didDocumentResponse instanceof Error) {
                     throw didDocumentResponse;
                 }
+                authToken = library_issuer_verifier_utility_1.handleAuthToken(didDocumentResponse);
                 publicKeyObject = library_issuer_verifier_utility_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 data = lodash_1.omit(credential, 'proof');
                 isVerified = library_issuer_verifier_utility_1.doVerify(proof.signatureValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
-                return [2 /*return*/, isVerified];
+                result = {
+                    authToken: authToken,
+                    body: isVerified
+                };
+                return [2 /*return*/, result];
         }
     });
 }); };

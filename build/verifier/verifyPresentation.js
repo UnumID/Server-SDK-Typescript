@@ -179,7 +179,7 @@ var validatePresentation = function (presentation) {
  * @param verifier
  */
 exports.verifyPresentation = function (authorization, presentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, proof, didDocumentResponse, authToken, pubKeyObj, isPresentationVerified, areCredentialsValid, _i, _a, credential, isExpired, isStatusValid, isVerified_1, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, result, error_1;
+    var data, proof, didDocumentResponse, authToken, pubKeyObj, result_1, isPresentationVerified, areCredentialsValid, _i, _a, credential, isExpired, isStatusValidResponse, isStatusValid, isVerifiedResponse, isVerified_1, result_2, result_3, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, result, error_1;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -203,7 +203,14 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                 authToken = library_issuer_verifier_utility_1.handleAuthToken(didDocumentResponse);
                 pubKeyObj = library_issuer_verifier_utility_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 if (pubKeyObj.length === 0) {
-                    throw new library_issuer_verifier_utility_1.CustError(404, 'Public key not found for the DID');
+                    result_1 = {
+                        authToken: authToken,
+                        body: {
+                            isVerified: false,
+                            message: 'Public key not found for the DID associated with the proof.verificationMethod'
+                        }
+                    };
+                    return [2 /*return*/, result_1];
                 }
                 isPresentationVerified = library_issuer_verifier_utility_1.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
                 areCredentialsValid = true;
@@ -217,16 +224,20 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                     areCredentialsValid = false;
                     return [3 /*break*/, 6];
                 }
-                return [4 /*yield*/, checkCredentialStatus_1.checkCredentialStatus(credential, authorization)];
+                return [4 /*yield*/, checkCredentialStatus_1.checkCredentialStatus(credential, authToken)];
             case 3:
-                isStatusValid = _b.sent();
+                isStatusValidResponse = _b.sent();
+                isStatusValid = isStatusValidResponse.body;
+                authToken = isStatusValidResponse.authToken;
                 if (!isStatusValid) {
                     areCredentialsValid = false;
                     return [3 /*break*/, 6];
                 }
-                return [4 /*yield*/, verifyCredential_1.verifyCredential(credential, authorization)];
+                return [4 /*yield*/, verifyCredential_1.verifyCredential(credential, authToken)];
             case 4:
-                isVerified_1 = _b.sent();
+                isVerifiedResponse = _b.sent();
+                isVerified_1 = isVerifiedResponse.body;
+                authToken = isVerifiedResponse.authToken;
                 if (!isVerified_1) {
                     areCredentialsValid = false;
                     return [3 /*break*/, 6];
@@ -237,26 +248,24 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                 return [3 /*break*/, 2];
             case 6:
                 if (!isPresentationVerified) {
-                    throw new library_issuer_verifier_utility_1.CustError(406, authToken + "#Presentation signature can no be verified.", -1);
-                    // const result: VerifierDto<VerifiedStatus> = {
-                    //   authToken,
-                    //   body: {
-                    //     isVerified: false,
-                    //     message: 'Presentation signature can no be verified'
-                    //   }
-                    // };
-                    // return result;
+                    result_2 = {
+                        authToken: authToken,
+                        body: {
+                            isVerified: false,
+                            message: 'Presentation signature can no be verified'
+                        }
+                    };
+                    return [2 /*return*/, result_2];
                 }
                 if (!areCredentialsValid) {
-                    throw new library_issuer_verifier_utility_1.CustError(406, authToken + "#Credential signature can not be verified.", -1);
-                    // const result: VerifierDto<VerifiedStatus> = {
-                    //   authToken,
-                    //   body: {
-                    //     isVerified: false,
-                    //     message: 'Credential signature can not be verified.'
-                    //   }
-                    // };
-                    // return result;
+                    result_3 = {
+                        authToken: authToken,
+                        body: {
+                            isVerified: false,
+                            message: 'Credential signature can not be verified.'
+                        }
+                    };
+                    return [2 /*return*/, result_3];
                 }
                 isVerified = isPresentationVerified && areCredentialsValid;
                 credentialTypes = presentation.verifiableCredential.flatMap(function (cred) { return cred.type.slice(1); });
@@ -276,7 +285,7 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                     method: 'POST',
                     baseUrl: config_1.configData.SaaSUrl,
                     endPoint: 'receipt',
-                    header: { Authorization: authorization },
+                    header: { Authorization: authToken },
                     data: receiptOptions
                 };
                 return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(receiptCallOptions)];
@@ -286,13 +295,6 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                 result = {
                     authToken: authToken,
                     body: {
-                        uuid: resp.body.uuid,
-                        createdAt: resp.body.createdAt,
-                        updatedAt: resp.body.updatedAt,
-                        type: resp.body.type,
-                        credentialTypes: presentation.verifiableCredential.map(function (vc) { return vc.type; }).flat(),
-                        subject: subject,
-                        issuer: resp.body.issuer,
                         isVerified: isVerified
                     }
                 };

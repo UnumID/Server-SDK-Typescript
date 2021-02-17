@@ -2,7 +2,7 @@ import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
 
 import { CustError, RESTData, makeNetworkRequest, JSONObj, handleAuthToken } from 'library-issuer-verifier-utility';
-import { IssuerDto } from '../types';
+import { UnumDto } from '../types';
 import logger from '../logger';
 
 /**
@@ -21,7 +21,7 @@ const validateInputs = (credentialId: string): void => {
  * @param authorization
  * @param credentialId
  */
-export const revokeCredential = async (authorization: string, credentialId: string): Promise<IssuerDto<undefined>> => {
+export const revokeCredential = async (authorization: string, credentialId: string): Promise<UnumDto<undefined>> => {
   try {
     requireAuth(authorization);
 
@@ -40,14 +40,14 @@ export const revokeCredential = async (authorization: string, credentialId: stri
 
     const authToken: string = handleAuthToken(response);
 
-    const revokedCredential: IssuerDto<undefined> = {
+    const revokedCredential: UnumDto<undefined> = {
       authToken,
       body: undefined
     };
 
     return revokedCredential;
   } catch (error) {
-    logger.error(`Error revoking a credential with UnumID SaaS. Error: ${error}`);
+    logger.error(`Error revoking a credential with UnumID SaaS. ${error}`);
     throw error;
   }
 };

@@ -45,7 +45,7 @@ var config_1 = require("../config");
  * @param authHeader
  */
 exports.checkCredentialStatus = function (credential, authHeader) { return __awaiter(void 0, void 0, void 0, function () {
-    var options, credentialStatusResponse, credentialStatus;
+    var options, credentialStatusResponse, credentialStatus, authToken, valid, result;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -59,7 +59,13 @@ exports.checkCredentialStatus = function (credential, authHeader) { return __awa
             case 1:
                 credentialStatusResponse = _a.sent();
                 credentialStatus = credentialStatusResponse.body;
-                return [2 /*return*/, credentialStatus.status === 'valid'];
+                authToken = library_issuer_verifier_utility_1.handleAuthToken(credentialStatusResponse);
+                valid = credentialStatus.status === 'valid';
+                result = {
+                    authToken: authToken,
+                    body: valid
+                };
+                return [2 /*return*/, result];
         }
     });
 }); };

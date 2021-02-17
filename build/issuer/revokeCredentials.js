@@ -85,7 +85,7 @@ exports.revokeCredential = function (authorization, credentialId) { return __awa
                 return [2 /*return*/, revokedCredential];
             case 2:
                 error_1 = _a.sent();
-                logger_1.default.error("Error revoking a credential with UnumID SaaS. Error: " + error_1);
+                logger_1.default.error("Error revoking a credential with UnumID SaaS. " + error_1);
                 throw error_1;
             case 3: return [2 /*return*/];
         }

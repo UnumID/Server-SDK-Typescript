@@ -182,7 +182,7 @@ exports.sendRequest = function (authorization, verifier, credentialRequests, ecc
                 return [2 /*return*/, presentationRequestResponse];
             case 2:
                 error_1 = _a.sent();
-                logger_1.default.error("Error sending request to use UnumID Saas. Error " + error_1);
+                logger_1.default.error("Error sending request to use UnumID Saas. " + error_1);
                 throw error_1;
             case 3: return [2 /*return*/];
         }

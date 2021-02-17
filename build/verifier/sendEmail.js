@@ -101,15 +101,13 @@ exports.sendEmail = function (authorization, to, subject, textBody, htmlBody) { 
                 apiResponse = _a.sent();
                 authToken = library_issuer_verifier_utility_1.handleAuthToken(apiResponse);
                 result = {
-                    // authToken: isArrayEmpty(authToken) ? undefined : authToken[0],
-                    // authToken: isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined),
                     authToken: authToken,
                     body: undefined
                 };
                 return [2 /*return*/, result];
             case 2:
                 e_1 = _a.sent();
-                logger_1.default.error("Error sendingEmail through UnumID's saas. Error: " + e_1);
+                logger_1.default.error("Error sendingEmail through UnumID's saas. " + e_1);
                 throw e_1;
             case 3: return [2 /*return*/];
         }

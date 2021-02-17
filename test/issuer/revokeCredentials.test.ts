@@ -1,7 +1,7 @@
 import * as utilLib from 'library-issuer-verifier-utility';
 import { dummyAuthToken, dummyAdminKey } from './mocks';
 import { revokeCredential } from '../../src/issuer/revokeCredentials';
-import { IssuerDto } from '../../src/types';
+import { UnumDto } from '../../src/types';
 
 jest.mock('library-issuer-verifier-utility', () => {
   const actual = jest.requireActual('library-issuer-verifier-utility');
@@ -14,7 +14,7 @@ jest.mock('library-issuer-verifier-utility', () => {
 const mockMakeNetworkRequest = utilLib.makeNetworkRequest as jest.Mock;
 
 describe('revokeCredential', () => {
-  let response: IssuerDto, responseAuthToken: string;
+  let response: UnumDto, responseAuthToken: string;
   const credentialId = '0eeb8ea2-e02c-492f-8846-aaea12fb0187';
   const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiaXNzdWVyIiwidXVpZCI6IjU5MDMyMmRiLTJlMDgtNGZjNi1iZTY2LTQ3NGRmMWY3Nzk4YSIsImRpZCI6ImRpZDp1bnVtOmRhOGYyNDJkLTZjZDYtNGUzMC1iNTU3LTNhMzkzZWFkZmMyYyIsImV4cCI6MTU5Njc2NzAzNi45NjQsImlhdCI6MTU5NzE0MzAxNn0.9AwobcQ3a9u4gMCc9b1BtN8VRoiglCJKGtkqB425Zyo';
 

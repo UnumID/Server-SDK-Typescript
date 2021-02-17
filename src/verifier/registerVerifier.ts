@@ -1,5 +1,5 @@
 import { configData } from '../config';
-import { RegisteredVerifier, VerifierDto, VerifierOptions } from '../types';
+import { RegisteredVerifier, UnumDto, VerifierOptions } from '../types';
 import { KeyPair, PublicKeyInfo, getUUID, KeyPairSet, CustError, createKeyPairSet, RESTData, JSONObj, makeNetworkRequest, DidKeyType, isArrayEmpty, isArrayNotEmpty, handleAuthToken } from 'library-issuer-verifier-utility';
 import logger from '../logger';
 
@@ -59,7 +59,7 @@ const validateInParams = (name: string, customerUuid: string, url: string, apiKe
  * @param url
  * @param apiKey
  */
-export const registerVerifier = async (name: string, customerUuid: string, url: string, apiKey: string): Promise<VerifierDto<RegisteredVerifier>> => {
+export const registerVerifier = async (name: string, customerUuid: string, url: string, apiKey: string): Promise<UnumDto<RegisteredVerifier>> => {
   try {
     validateInParams(name, customerUuid, url, apiKey);
 
@@ -77,7 +77,7 @@ export const registerVerifier = async (name: string, customerUuid: string, url: 
 
     const authToken: string = handleAuthToken(restResp);
 
-    const verifierResp: VerifierDto<RegisteredVerifier> = {
+    const verifierResp: UnumDto<RegisteredVerifier> = {
       authToken,
       body: {
         uuid: restResp.body.uuid,
@@ -94,7 +94,7 @@ export const registerVerifier = async (name: string, customerUuid: string, url: 
 
     return verifierResp;
   } catch (error) {
-    logger.info(`Error registering verifier ${name}. Error: ${error}`);
+    logger.error(`Error registering verifier ${name}. ${error}`);
     throw error;
   }
 };

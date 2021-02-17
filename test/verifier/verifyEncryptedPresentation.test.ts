@@ -1,13 +1,13 @@
-import request from 'supertest';
-
 import * as utilLib from 'library-issuer-verifier-utility';
-import { NoPresentation, Presentation, Receipt, VerifierDto, verifyEncryptedPresentation, verifyNoPresentation } from '../../src/index';
+import { NoPresentation, Presentation, VerifiedStatus, UnumDto, verifyEncryptedPresentation, verifyNoPresentation } from '../../src/index';
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { isCredentialExpired } from '../../src/verifier/isCredentialExpired';
 import { checkCredentialStatus } from '../../src/verifier/checkCredentialStatus';
 import { dummyAuthToken, dummyRsaPrivateKey, dummyRsaPublicKey, makeDummyDidDocument } from './mocks';
 import { encrypt } from 'library-crypto-typescript';
 import { omit } from 'lodash';
+import { DecryptedPresentation } from '../../src/types';
+// import { publicKeyNotFoundInDidDocViaProofVerification } from '@unumid/errors';
 
 jest.mock('library-issuer-verifier-utility', () => ({
   ...jest.requireActual('library-issuer-verifier-utility'),
@@ -27,7 +27,7 @@ const mockGetDIDDoc = utilLib.getDIDDoc as jest.Mock;
 const mockDoVerify = utilLib.doVerify as jest.Mock;
 const mockMakeNetworkRequest = utilLib.makeNetworkRequest as jest.Mock;
 
-const callVerifyEncryptedPresentation = (context, type, verifiableCredential, presentationRequestUuid, proof, verifier, auth = ''): Promise<VerifierDto<Receipt>> => {
+const callVerifyEncryptedPresentation = (context, type, verifiableCredential, presentationRequestUuid, proof, verifier, auth = ''): Promise<UnumDto<DecryptedPresentation>> => {
   const presentation: Presentation = {
     '@context': context,
     type,
@@ -113,7 +113,7 @@ const populateMockData = (): utilLib.JSONObj => {
 };
 
 describe('verifyPresentation - Success Scenario', () => {
-  let response: VerifierDto<Receipt>;
+  let response: UnumDto<DecryptedPresentation>;
   let verStatus: boolean;
 
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
@@ -124,9 +124,9 @@ describe('verifyPresentation - Success Scenario', () => {
     const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
     mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
     mockDoVerify.mockReturnValueOnce(true);
-    mockVerifyCredential.mockResolvedValue(true);
+    mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: true });
     mockIsCredentialExpired.mockReturnValue(false);
-    mockCheckCredentialStatus.mockReturnValue(true);
+    mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: true });
     mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers: dummyResponseHeaders });
     response = await callVerifyEncryptedPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
     verStatus = response.body.isVerified;
@@ -175,14 +175,16 @@ describe('verifyPresentation - Success Scenario', () => {
     const dummySubjectDidDoc = await makeDummyDidDocument();
     const dummyApiResponse = { body: dummySubjectDidDoc };
     mockMakeNetworkRequest.mockResolvedValueOnce(dummyApiResponse);
-    mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc });
+    mockGetDIDDoc.mockResolvedValue({ body: dummySubjectDidDoc, authToken: undefined });
+    mockCheckCredentialStatus.mockReturnValue({ authToken: undefined, body: true });
+    mockVerifyCredential.mockResolvedValue({ authToken: undefined, body: true });
     response = await callVerifyEncryptedPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
     expect(response.authToken).toBeUndefined();
   });
 });
 
 describe('verifyPresentation - Failure Scenarios', () => {
-  let response: VerifierDto<Receipt>;
+  let response: UnumDto<DecryptedPresentation>;
   let verStatus: boolean;
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
@@ -192,9 +194,9 @@ describe('verifyPresentation - Failure Scenarios', () => {
     const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
     mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
     mockDoVerify.mockReturnValueOnce(false);
-    mockVerifyCredential.mockResolvedValue(false);
+    mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: false });
     mockIsCredentialExpired.mockReturnValue(true);
-    mockCheckCredentialStatus.mockReturnValue(false);
+    mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: false });
     verifiableCredential[0].proof.verificationMethod = proof.verificationMethod;
     response = await callVerifyEncryptedPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
     verStatus = response.body.isVerified;
@@ -224,13 +226,9 @@ describe('verifyPresentation - Failure Scenarios', () => {
     };
     const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
     mockGetDIDDoc.mockResolvedValueOnce({ body: dummyDidDocWithoutKeys, headers: dummyResponseHeaders });
-
-    try {
-      await callVerifyEncryptedPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
-      fail();
-    } catch (e) {
-      expect(e.code).toEqual(404);
-    }
+    const response = await callVerifyEncryptedPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+    expect(response.body.isVerified).toBe(false);
+    expect(response.body.message).toBe('Public key not found for the DID associated with the proof.verificationMethod');
   });
 
   it('returns a 404 status code if the did document is not found', async () => {
@@ -544,7 +542,7 @@ const dummyNoPresentationWithoutHolder = omit(dummyNoPresentation, 'holder') as 
 const dummyNoPresentationWithoutProof = omit(dummyNoPresentation, 'proof') as NoPresentation;
 
 const dummyNoPresentationBadType = { ...dummyNoPresentation, type: {} } as NoPresentation;
-const dummyNoPresentationBadTypeKeywordMissing = { ...dummyNoPresentation, type: ['No No Presenation'] } as NoPresentation;
+const dummyNoPresentationBadTypeKeywordMissing = { ...dummyNoPresentation, type: ['No Presenation'] } as NoPresentation;
 const dummyNoPresentationBadRequestUuid = { ...dummyNoPresentation, presentationRequestUuid: {} } as NoPresentation;
 const dummyNoPresentationBadHolder = { ...dummyNoPresentation, holder: {} } as NoPresentation;
 const dummyNoPresentationBadProof = { ...dummyNoPresentation, proof: {} } as NoPresentation;
@@ -556,7 +554,7 @@ const callVerifyNoPresentation = (
   noPresentation: NoPresentation,
   verifier: string,
   authHeader?: string
-): Promise<VerifierDto<Receipt>> => {
+): Promise<UnumDto<VerifiedStatus>> => {
   return verifyNoPresentation(authHeader, noPresentation, verifier);
 };
 
@@ -573,7 +571,7 @@ describe('verifyNoPresentation', () => {
   });
 
   describe('success', () => {
-    let response: VerifierDto<Receipt>, responseAuthToken: string;
+    let response: UnumDto<VerifiedStatus>, responseAuthToken: string;
 
     beforeEach(async () => {
       mockDoVerify.mockReturnValue(true);

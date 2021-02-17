@@ -5,7 +5,7 @@ import { CustError, handleAuthToken, makeNetworkRequest } from 'library-issuer-v
 import { configData } from '../config';
 import logger from '../logger';
 import { requireAuth } from '../requireAuth';
-import { VerifierDto } from '../types';
+import { UnumDto } from '../types';
 
 interface SmsRequestBody {
   to: string;
@@ -51,7 +51,7 @@ const validateSmsRequestBody = (body: SmsRequestBody): void => {
  * @param to
  * @param msg
  */
-export const sendSms = async (authorization: string, to: string, msg: string): Promise<VerifierDto<undefined>> => {
+export const sendSms = async (authorization: string, to: string, msg: string): Promise<UnumDto<undefined>> => {
   try {
     const body = { to, msg };
 
@@ -74,14 +74,14 @@ export const sendSms = async (authorization: string, to: string, msg: string): P
 
     const authToken: string = handleAuthToken(apiResponse);
 
-    const result: VerifierDto<undefined> = {
+    const result: UnumDto<undefined> = {
       authToken,
       body: undefined
     };
 
     return result;
   } catch (e) {
-    logger.error(`Error during sendSms to UnumID Saas. Error: ${e}`);
+    logger.error(`Error during sendSms to UnumID Saas. ${e}`);
     throw e;
   }
 };

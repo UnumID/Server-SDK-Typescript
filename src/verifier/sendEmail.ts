@@ -3,7 +3,7 @@ import { CustError, handleAuthToken, isArrayEmpty, isArrayNotEmpty, makeNetworkR
 import { configData } from '../config';
 import logger from '../logger';
 import { requireAuth } from '../requireAuth';
-import { VerifierDto } from '../types';
+import { UnumDto } from '../types';
 
 interface EmailRequestBody {
   to: string;
@@ -60,7 +60,7 @@ const validateEmailRequestBody = (body: EmailRequestBody): void => {
  * @param textBody
  * @param htmlBody
  */
-export const sendEmail = async (authorization: string, to: string, subject: string, textBody: string, htmlBody: string): Promise<VerifierDto<undefined>> => {
+export const sendEmail = async (authorization: string, to: string, subject: string, textBody: string, htmlBody: string): Promise<UnumDto<undefined>> => {
   try {
     requireAuth(authorization);
 
@@ -80,16 +80,14 @@ export const sendEmail = async (authorization: string, to: string, subject: stri
 
     const authToken: string = handleAuthToken(apiResponse);
 
-    const result: VerifierDto<undefined> = {
-      // authToken: isArrayEmpty(authToken) ? undefined : authToken[0],
-      // authToken: isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined),
+    const result: UnumDto<undefined> = {
       authToken,
       body: undefined
     };
 
     return result;
   } catch (e) {
-    logger.error(`Error sendingEmail through UnumID's saas. Error: ${e}`);
+    logger.error(`Error sendingEmail through UnumID's saas. ${e}`);
     throw e;
   }
 };

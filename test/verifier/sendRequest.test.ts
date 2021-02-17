@@ -1,6 +1,6 @@
 import * as utilLib from 'library-issuer-verifier-utility';
 import { sendRequest } from '../../src/index';
-import { PresentationRequestResponse, PresentationRequest, VerifierDto, CredentialRequest } from '../../src/types';
+import { PresentationRequestResponse, PresentationRequest, UnumDto, CredentialRequest } from '../../src/types';
 import { dummyAuthToken, makeDummyPresentationRequestResponse } from './mocks';
 
 jest.mock('library-issuer-verifier-utility', () => {
@@ -23,7 +23,7 @@ const callSendRequests = (
   eccPrivateKey: string,
   holderAppUuid: string,
   authToken: string
-): Promise<VerifierDto<PresentationRequestResponse>> => {
+): Promise<UnumDto<PresentationRequestResponse>> => {
   return sendRequest(authToken, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expiresAt, metadata);
 };
 
@@ -47,7 +47,7 @@ const populateMockData = (): utilLib.JSONObj => {
 };
 
 describe('sendRequest', () => {
-  let apiResponse: VerifierDto<PresentationRequestResponse>, apiResponseAuthToken: string;
+  let apiResponse: UnumDto<PresentationRequestResponse>, apiResponseAuthToken: string;
   let metadata: Record<string, unknown>, expiresAt: Date;
   let presentationRequestResponse: PresentationRequestResponse;
   let presentationRequest: PresentationRequest;
@@ -165,7 +165,7 @@ describe('sendRequest', () => {
 });
 
 describe('sendRequest - Failure cases', () => {
-  let response: VerifierDto<PresentationRequestResponse>;
+  let response: UnumDto<PresentationRequestResponse>;
   const {
     verifier,
     credentialRequests,

@@ -1,5 +1,5 @@
 import { configData } from '../config';
-import { IssuerOptions, RegisteredIssuer, IssuerDto } from '../types';
+import { IssuerOptions, RegisteredIssuer, UnumDto } from '../types';
 
 import { KeyPair, PublicKeyInfo, getUUID, KeyPairSet, CustError, createKeyPairSet, RESTData, JSONObj, makeNetworkRequest, DidKeyType, handleAuthToken } from 'library-issuer-verifier-utility';
 import logger from '../logger';
@@ -56,7 +56,7 @@ const validateInParams = (name: string, customerUuid: string, apiKey: string) =>
  * @param customerUuid string
  * @param apiKey string
  */
-export const registerIssuer = async (name: string, customerUuid: string, apiKey: string): Promise<IssuerDto<RegisteredIssuer>> => {
+export const registerIssuer = async (name: string, customerUuid: string, apiKey: string): Promise<UnumDto<RegisteredIssuer>> => {
   try {
     validateInParams(name, customerUuid, apiKey);
 
@@ -78,7 +78,7 @@ export const registerIssuer = async (name: string, customerUuid: string, apiKey:
 
     const authToken: string = handleAuthToken(restResp);
 
-    const issuerResp: IssuerDto<RegisteredIssuer> = {
+    const issuerResp: UnumDto<RegisteredIssuer> = {
       authToken,
       body: {
         uuid: restResp.body.uuid,
@@ -94,7 +94,7 @@ export const registerIssuer = async (name: string, customerUuid: string, apiKey:
 
     return issuerResp;
   } catch (error) {
-    logger.error(`Error registering an Issuer with UnumID SaaS. Error: ${error}`);
+    logger.error(`Error registering an Issuer with UnumID SaaS. ${error}`);
     throw error;
   }
 };
