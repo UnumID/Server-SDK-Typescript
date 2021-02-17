@@ -3,7 +3,7 @@
 This SDK combines the functionality of an **Issuer** and **Verifier** entity to work with UnumID's SaaS.
 
 ## Issuer
-The Issuer Server App is used by a customer acting as an Issuer and is run on their servers. It allows them to register Issuers and perform actions as them, including issuing and revoking Credentials.
+The Issuer functionality is used by a customer acting as an Issuer. It allows one to register Issuers and perform actions such as issuing and revoking Credentials.
 ## Verifier
 The Verifier functionality is used by a customer acting as a verifier. It allows one to register verifiers. Most importantly, it allows one to send PresentationRequests and verify Presentations.
 
@@ -234,9 +234,9 @@ Response Body: **DecryptedPresentation**
 ```typescript
 {
   isVerified: boolean; // boolean indicating wether the signatures signed by the subject (user) is valid 
-  message?: string; // (optional) message detailing why the verification did not succeed.
   type: 'VerifiablePresentation' | 'NoPresentation' // type of the presentation. NoPresentation means the presentation request was declined by the user.
   credentials?: VerifiableCredential[] // (optional) a list of VerifiableCredential objects. This is the decrypted credential information. Only populated if the presentation signatures are verified and of type `VerifiablePresentation`.
+  message?: string; // (optional) message detailing why the verification did not succeed if isVerified is false.
 }
 ```
 
