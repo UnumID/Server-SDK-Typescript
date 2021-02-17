@@ -1,7 +1,7 @@
 import { omit } from 'lodash';
 
 import { configData } from '../config';
-import { Presentation, Receipt, VerifiedStatus, VerifierDto } from '../types';
+import { Presentation, Receipt, UnumDto, VerifiedStatus, VerifierDto } from '../types';
 import { validateProof } from './validateProof';
 import { requireAuth } from '../requireAuth';
 import { verifyCredential } from './verifyCredential';
@@ -196,7 +196,7 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
       throw didDocumentResponse;
     }
 
-    let authToken: string = handleAuthToken(didDocumentResponse);
+    let authToken: string = handleAuthToken(didDocumentResponse); // Note: going to use authToken instead of authorization for subsequent requests in case saas rolls to token.
     const pubKeyObj: PublicKeyInfo[] = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
     if (pubKeyObj.length === 0) {
@@ -229,14 +229,19 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
         break;
       }
 
-      const isStatusValid = await checkCredentialStatus(credential, authorization as string);
+      const isStatusValidResponse: UnumDto<boolean> = await checkCredentialStatus(credential, authToken);
+      const isStatusValid = isStatusValidResponse.body;
+      authToken = isStatusValidResponse.authToken;
 
       if (!isStatusValid) {
         areCredentialsValid = false;
         break;
       }
 
-      const isVerified = await verifyCredential(credential, authorization as string);
+      const isVerifiedResponse: UnumDto<boolean> = await verifyCredential(credential, authToken);
+      const isVerified = isVerifiedResponse.body;
+      authToken = isVerifiedResponse.authToken;
+
       if (!isVerified) {
         areCredentialsValid = false;
         break;
@@ -286,7 +291,7 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
       method: 'POST',
       baseUrl: configData.SaaSUrl,
       endPoint: 'receipt',
-      header: { Authorization: authorization },
+      header: { Authorization: authToken },
       data: receiptOptions
     };
 

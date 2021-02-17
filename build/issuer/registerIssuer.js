@@ -131,7 +131,7 @@ exports.registerIssuer = function (name, customerUuid, apiKey) { return __awaite
                 return [2 /*return*/, issuerResp];
             case 3:
                 error_1 = _a.sent();
-                logger_1.default.error('Error registering an Issuer with UnumID SaaS.', error_1);
+                logger_1.default.error("Error registering an Issuer with UnumID SaaS. " + error_1);
                 throw error_1;
             case 4: return [2 /*return*/];
         }

@@ -207,7 +207,7 @@ export const issueCredential = async (authorization: string | undefined, type: s
 
     return issuedCredential;
   } catch (error) {
-    logger.error('Error issuing a credential with UnumID SaaS', error);
+    logger.error(`Error issuing a credential with UnumID SaaS. ${error}`);
     throw error;
   }
 };

@@ -41,13 +41,13 @@ describe('checkCredentialStatus', () => {
   it('returns true if the credential status is valid', async () => {
     mockMakeNetworkRequest.mockResolvedValueOnce({ body: { status: 'valid' } });
     const isValid = await checkCredentialStatus(credential1, authHeader);
-    expect(isValid).toBe(true);
+    expect(isValid.body).toBe(true);
   });
 
   it('returns false if the credential status is revoked', async () => {
     mockMakeNetworkRequest.mockResolvedValueOnce({ body: { status: 'revoked' } });
 
     const isValid = await checkCredentialStatus(credential2, authHeader);
-    expect(isValid).toBe(false);
+    expect(isValid.body).toBe(false);
   });
 });

@@ -1,7 +1,7 @@
-import { getDIDDoc, getKeyFromDIDDoc, doVerify } from 'library-issuer-verifier-utility';
+import { getDIDDoc, getKeyFromDIDDoc, doVerify, handleAuthToken } from 'library-issuer-verifier-utility';
 import { omit } from 'lodash';
 
-import { VerifiableCredential } from '../types';
+import { UnumDto, VerifiableCredential } from '../types';
 import { configData } from '../config';
 
 /**
@@ -9,7 +9,7 @@ import { configData } from '../config';
  * @param credential
  * @param authorization
  */
-export const verifyCredential = async (credential: VerifiableCredential, authorization: string): Promise<boolean> => {
+export const verifyCredential = async (credential: VerifiableCredential, authorization: string): Promise<UnumDto<boolean>> => {
   const { proof } = credential;
   const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization, proof.verificationMethod);
 
@@ -17,9 +17,15 @@ export const verifyCredential = async (credential: VerifiableCredential, authori
     throw didDocumentResponse;
   }
 
+  const authToken: string = handleAuthToken(didDocumentResponse);
   const publicKeyObject = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
   const data = omit(credential, 'proof');
 
   const isVerified = doVerify(proof.signatureValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
-  return isVerified;
+  const result: UnumDto<boolean> = {
+    authToken,
+    body: isVerified
+  };
+
+  return result;
 };

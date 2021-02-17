@@ -23,7 +23,7 @@ export const dummyIssuerDid = `did:unum:${getUUID()}`;
 export const dummySubjectDid = `did:unum:${getUUID()}`;
 export const dummyVerifierDid = `did:unum:${getUUID()}`;
 
-export const dummyAuthToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
+export const dummyAuthToken = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
 export const dummyVerifierApiKey = 'x7DQsIj/vpsBc7vu9uIz39KbUK2KpV4VSZu0JXv/zWw=';
 
 export const dummyRsaPublicKey = '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA62ykSiBsmldkj7yQ0ky4\n66hc0WooxmfgxODAZByyEsWykn1PNTMizN3hsEmyWK4khN3sJpmgzH88UW4b2oR5\ndsWo739RiLRdmtdhUZp+JBRz3YrK2Qt4LcmNHFVJxgGttqr+toaiNg8V7ZnsVE2/\nlC9zJqY1diuUGRVoCpkIpZElHMqI4uO4zAK4jrpY53YC4bTPxICdlhKSiN9bEYMW\nO5/LvHGwBgEJ4/pCaUYSBJcHFMzS9u3COecAlgco69tOlEBIqShYoJV2BM72anvT\na2copxu9QCoIaZPzphEenT0M4n/cu/jSdciMYLtC/ZhrCWGfGUYYu9yRACFOqnoD\naQIDAQAB\n-----END PUBLIC KEY-----\n';

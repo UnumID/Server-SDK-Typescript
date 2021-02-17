@@ -109,7 +109,7 @@ exports.sendEmail = function (authorization, to, subject, textBody, htmlBody) { 
                 return [2 /*return*/, result];
             case 2:
                 e_1 = _a.sent();
-                logger_1.default.error("Error sendingEmail through UnumID's saas. Error: " + e_1);
+                logger_1.default.error("Error sendingEmail through UnumID's saas. " + e_1);
                 throw e_1;
             case 3: return [2 /*return*/];
         }

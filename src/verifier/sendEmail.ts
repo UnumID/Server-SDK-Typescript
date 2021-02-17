@@ -89,7 +89,7 @@ export const sendEmail = async (authorization: string, to: string, subject: stri
 
     return result;
   } catch (e) {
-    logger.error(`Error sendingEmail through UnumID's saas. Error: ${e}`);
+    logger.error(`Error sendingEmail through UnumID's saas. ${e}`);
     throw e;
   }
 };

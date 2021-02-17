@@ -94,7 +94,7 @@ export const registerVerifier = async (name: string, customerUuid: string, url: 
 
     return verifierResp;
   } catch (error) {
-    logger.info(`Error registering verifier ${name}. Error: ${error}`);
+    logger.error(`Error registering verifier ${name}. ${error}`);
     throw error;
   }
 };

@@ -131,7 +131,7 @@ exports.registerVerifier = function (name, customerUuid, url, apiKey) { return _
                 return [2 /*return*/, verifierResp];
             case 3:
                 error_1 = _a.sent();
-                logger_1.default.info("Error registering verifier " + name + ". Error: " + error_1);
+                logger_1.default.error("Error registering verifier " + name + ". " + error_1);
                 throw error_1;
             case 4: return [2 /*return*/];
         }

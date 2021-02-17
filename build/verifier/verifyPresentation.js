@@ -184,7 +184,7 @@ var validatePresentation = function (presentation) {
  * @param verifier
  */
 exports.verifyPresentation = function (authorization, presentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, proof, didDocumentResponse, authToken, pubKeyObj, result_1, isPresentationVerified, areCredentialsValid, _i, _a, credential, isExpired, isStatusValid, isVerified_1, result_2, result_3, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, result, error_1;
+    var data, proof, didDocumentResponse, authToken, pubKeyObj, result_1, isPresentationVerified, areCredentialsValid, _i, _a, credential, isExpired, isStatusValidResponse, isStatusValid, isVerifiedResponse, isVerified_1, result_2, result_3, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, result, error_1;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -230,16 +230,20 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                     areCredentialsValid = false;
                     return [3 /*break*/, 6];
                 }
-                return [4 /*yield*/, checkCredentialStatus_1.checkCredentialStatus(credential, authorization)];
+                return [4 /*yield*/, checkCredentialStatus_1.checkCredentialStatus(credential, authToken)];
             case 3:
-                isStatusValid = _b.sent();
+                isStatusValidResponse = _b.sent();
+                isStatusValid = isStatusValidResponse.body;
+                authToken = isStatusValidResponse.authToken;
                 if (!isStatusValid) {
                     areCredentialsValid = false;
                     return [3 /*break*/, 6];
                 }
-                return [4 /*yield*/, verifyCredential_1.verifyCredential(credential, authorization)];
+                return [4 /*yield*/, verifyCredential_1.verifyCredential(credential, authToken)];
             case 4:
-                isVerified_1 = _b.sent();
+                isVerifiedResponse = _b.sent();
+                isVerified_1 = isVerifiedResponse.body;
+                authToken = isVerifiedResponse.authToken;
                 if (!isVerified_1) {
                     areCredentialsValid = false;
                     return [3 /*break*/, 6];
@@ -287,7 +291,7 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                     method: 'POST',
                     baseUrl: config_1.configData.SaaSUrl,
                     endPoint: 'receipt',
-                    header: { Authorization: authorization },
+                    header: { Authorization: authToken },
                     data: receiptOptions
                 };
                 return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(receiptCallOptions)];

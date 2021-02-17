@@ -187,7 +187,7 @@ export const sendRequest = async (authorization:string, verifier: string, creden
 
     return presentationRequestResponse;
   } catch (error) {
-    logger.error(`Error sending request to use UnumID Saas. Error ${error}`);
+    logger.error(`Error sending request to use UnumID Saas. ${error}`);
     throw error;
   }
 };

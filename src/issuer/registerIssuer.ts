@@ -94,7 +94,7 @@ export const registerIssuer = async (name: string, customerUuid: string, apiKey:
 
     return issuerResp;
   } catch (error) {
-    logger.error('Error registering an Issuer with UnumID SaaS.', error);
+    logger.error(`Error registering an Issuer with UnumID SaaS. ${error}`);
     throw error;
   }
 };

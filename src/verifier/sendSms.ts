@@ -81,7 +81,7 @@ export const sendSms = async (authorization: string, to: string, msg: string): P
 
     return result;
   } catch (e) {
-    logger.error(`Error during sendSms to UnumID Saas. Error: ${e}`);
+    logger.error(`Error during sendSms to UnumID Saas. ${e}`);
     throw e;
   }
 };

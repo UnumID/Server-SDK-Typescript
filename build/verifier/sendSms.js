@@ -101,7 +101,7 @@ exports.sendSms = function (authorization, to, msg) { return __awaiter(void 0, v
                 return [2 /*return*/, result];
             case 2:
                 e_1 = _a.sent();
-                logger_1.default.error("Error during sendSms to UnumID Saas. Error: " + e_1);
+                logger_1.default.error("Error during sendSms to UnumID Saas. " + e_1);
                 throw e_1;
             case 3: return [2 /*return*/];
         }

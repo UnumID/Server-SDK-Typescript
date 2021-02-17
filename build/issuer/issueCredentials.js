@@ -222,7 +222,7 @@ exports.issueCredential = function (authorization, type, issuer, credentialSubje
                 return [2 /*return*/, issuedCredential];
             case 3:
                 error_1 = _a.sent();
-                logger_1.default.error('Error issuing a credential with UnumID SaaS', error_1);
+                logger_1.default.error("Error issuing a credential with UnumID SaaS. " + error_1);
                 throw error_1;
             case 4: return [2 /*return*/];
         }
