@@ -61,15 +61,6 @@ export interface RegisteredIssuer extends Issuer {
 }
 
 /**
- * Encapsulates a Issuer Data Transfer Object for a response from UnumID's SaaS.
- * TODO create and use UnumDto
- */
-export interface IssuerDto<T = Record<string, unknown>> {
-  authToken: string;
-  body: T;
-}
-
-/**
  * Encapsulates necessary Verifier entity attributes during creation.
  */
 export interface VerifierOptions {
@@ -285,31 +276,7 @@ export interface DecryptedPresentation extends VerifiedStatus {
 }
 
 /**
- * Encapsulates a Reciept entity.
- */
-export interface Receipt extends VerifiedStatus{
-  uuid: string;
-  createdAt: Date;
-  updatedAt: Date;
-  type: string[];
-  subject: string;
-  issuer: string;
-  credentialTypes?: string[]; // This could be derived from credentials however, leaving as a first class attribute so it is easier for the customer to pass back to us if they want more detailed analytics.
-  credentials?: VerifiableCredential[];
-}
-
-/**
- * Encapsulates a Verifier Data Transfer Object for a response from UnumID's SaaS.
- * TODO create and use UnumDto
- */
-export interface VerifierDto<T = Record<string, unknown>> {
-  authToken: string;
-  body: T;
-}
-
-/**
- * Encapsulates a Verifier Data Transfer Object for a response from UnumID's SaaS.
- * TODO create and use UnumDto
+ * Encapsulates a UnumID Data Transfer Object for a response from UnumID's SaaS.
  */
 export interface UnumDto<T = Record<string, unknown>> {
   authToken: string;

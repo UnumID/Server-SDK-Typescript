@@ -1,4 +1,4 @@
-import { IssuerDto } from '../types';
+import { UnumDto } from '../types';
 import { Credential } from 'library-issuer-verifier-utility';
 import { CredentialSubject } from 'library-issuer-verifier-utility/build/types';
 /**
@@ -11,5 +11,5 @@ import { CredentialSubject } from 'library-issuer-verifier-utility/build/types';
  * @param eccPrivateKey
  * @param expirationDate
  */
-export declare const issueCredential: (authorization: string | undefined, type: string | string[], issuer: string, credentialSubject: CredentialSubject, eccPrivateKey: string, expirationDate?: Date | undefined) => Promise<IssuerDto<Credential>>;
+export declare const issueCredential: (authorization: string | undefined, type: string | string[], issuer: string, credentialSubject: CredentialSubject, eccPrivateKey: string, expirationDate?: Date | undefined) => Promise<UnumDto<Credential>>;
 //# sourceMappingURL=issueCredentials.d.ts.map

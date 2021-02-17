@@ -9,7 +9,7 @@ import {
   SendRequestReqBody,
   SignedPresentationRequest,
   UnsignedPresentationRequest,
-  VerifierDto
+  UnumDto
 } from '../types';
 import logger from '../logger';
 
@@ -157,7 +157,7 @@ const validateSendRequestBody = (sendRequestBody: SendRequestReqBody): void => {
  * @param eccPrivateKey
  * @param holderAppUuid
  */
-export const sendRequest = async (authorization:string, verifier: string, credentialRequests: CredentialRequest[], eccPrivateKey: string, holderAppUuid: string, expirationDate?: Date, metadata?: Record<string, unknown>): Promise<VerifierDto<PresentationRequestResponse>> => {
+export const sendRequest = async (authorization:string, verifier: string, credentialRequests: CredentialRequest[], eccPrivateKey: string, holderAppUuid: string, expirationDate?: Date, metadata?: Record<string, unknown>): Promise<UnumDto<PresentationRequestResponse>> => {
   try {
     requireAuth(authorization);
 
@@ -183,7 +183,7 @@ export const sendRequest = async (authorization:string, verifier: string, creden
 
     const authToken: string = handleAuthToken(restResp);
 
-    const presentationRequestResponse: VerifierDto<PresentationRequestResponse> = { body: { ...restResp.body }, authToken };
+    const presentationRequestResponse: UnumDto<PresentationRequestResponse> = { body: { ...restResp.body }, authToken };
 
     return presentationRequestResponse;
   } catch (error) {

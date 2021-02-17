@@ -1,5 +1,5 @@
 import { configData } from '../config';
-import { CredentialOptions, EncryptedCredentialOptions, IssuerDto } from '../types';
+import { CredentialOptions, EncryptedCredentialOptions, UnumDto } from '../types';
 import { requireAuth } from '../requireAuth';
 
 import { Credential, getDIDDoc, getKeyFromDIDDoc, CustError, EncryptedData, doEncrypt, UnsignedCredential, Proof, createProof, getUUID, RESTData, makeNetworkRequest, handleAuthToken } from 'library-issuer-verifier-utility';
@@ -163,7 +163,7 @@ const constructCredentialOptions = (type: string|string[], issuer: string, crede
  * @param eccPrivateKey
  * @param expirationDate
  */
-export const issueCredential = async (authorization: string | undefined, type: string | string[], issuer: string, credentialSubject: CredentialSubject, eccPrivateKey: string, expirationDate?: Date): Promise<IssuerDto<Credential>> => {
+export const issueCredential = async (authorization: string | undefined, type: string | string[], issuer: string, credentialSubject: CredentialSubject, eccPrivateKey: string, expirationDate?: Date): Promise<UnumDto<Credential>> => {
   try {
     // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
     requireAuth(authorization);
@@ -203,7 +203,7 @@ export const issueCredential = async (authorization: string | undefined, type: s
 
     const authToken: string = handleAuthToken(restResp);
 
-    const issuedCredential: IssuerDto<Credential> = { body: credential, authToken };
+    const issuedCredential: UnumDto<Credential> = { body: credential, authToken };
 
     return issuedCredential;
   } catch (error) {

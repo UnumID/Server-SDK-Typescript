@@ -1,4 +1,4 @@
-import { VerifierDto } from '../types';
+import { UnumDto } from '../types';
 export interface SmsResponseBody {
     success: boolean;
 }
@@ -10,5 +10,5 @@ export interface SmsResponseBody {
  * @param to
  * @param msg
  */
-export declare const sendSms: (authorization: string, to: string, msg: string) => Promise<VerifierDto<undefined>>;
+export declare const sendSms: (authorization: string, to: string, msg: string) => Promise<UnumDto<undefined>>;
 //# sourceMappingURL=sendSms.d.ts.map

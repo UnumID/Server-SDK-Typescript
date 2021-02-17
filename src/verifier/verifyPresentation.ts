@@ -1,7 +1,7 @@
 import { omit } from 'lodash';
 
 import { configData } from '../config';
-import { Presentation, Receipt, UnumDto, VerifiedStatus, VerifierDto } from '../types';
+import { Presentation, UnumDto, VerifiedStatus } from '../types';
 import { validateProof } from './validateProof';
 import { requireAuth } from '../requireAuth';
 import { verifyCredential } from './verifyCredential';
@@ -172,7 +172,7 @@ const validatePresentation = (presentation: Presentation): void => {
  * @param presentation
  * @param verifier
  */
-export const verifyPresentation = async (authorization: string, presentation: Presentation, verifier: string): Promise<VerifierDto<VerifiedStatus>> => {
+export const verifyPresentation = async (authorization: string, presentation: Presentation, verifier: string): Promise<UnumDto<VerifiedStatus>> => {
   try {
     requireAuth(authorization);
 
@@ -201,7 +201,7 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
 
     if (pubKeyObj.length === 0) {
       // throw new CustError(404, 'Public key not found for the DID');
-      const result: VerifierDto<VerifiedStatus> = {
+      const result: UnumDto<VerifiedStatus> = {
         authToken,
         body: {
           isVerified: false,
@@ -250,7 +250,7 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
 
     if (!isPresentationVerified) {
       // throw new CustError(406, `${authToken}#Presentation signature can no be verified.`, -1);
-      const result: VerifierDto<VerifiedStatus> = {
+      const result: UnumDto<VerifiedStatus> = {
         authToken,
         body: {
           isVerified: false,
@@ -262,7 +262,7 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
 
     if (!areCredentialsValid) {
       // throw new CustError(406, `${authToken}#Credential signature can not be verified.`, -1);
-      const result: VerifierDto<VerifiedStatus> = {
+      const result: UnumDto<VerifiedStatus> = {
         authToken,
         body: {
           isVerified: false,
@@ -298,7 +298,7 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
     authToken = handleAuthToken(resp);
 
-    const result: VerifierDto<VerifiedStatus> = {
+    const result: UnumDto<VerifiedStatus> = {
       authToken,
       body: {
         // uuid: resp.body.uuid,

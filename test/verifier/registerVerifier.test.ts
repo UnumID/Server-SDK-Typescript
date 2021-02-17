@@ -8,7 +8,7 @@ import {
   makeDummyVerifierResponse
 } from './mocks';
 import { registerVerifier } from '../../src/verifier/registerVerifier';
-import { VerifierDto, RegisteredVerifier } from '../../src/types';
+import { UnumDto, RegisteredVerifier } from '../../src/types';
 
 jest.mock('library-issuer-verifier-utility', () => ({
   ...jest.requireActual('library-issuer-verifier-utility'),
@@ -21,7 +21,7 @@ describe('registerVerifier', () => {
   const name = 'First Unumid Verifier';
   const customerUuid = '5e46f1ba-4c82-471d-bbc7-251924a90532';
   const url = 'https://customer-api.dev-unumid.org/presentation';
-  let responseDto: VerifierDto<RegisteredVerifier>, responseAuthToken: string, response: RegisteredVerifier;
+  let responseDto: UnumDto<RegisteredVerifier>, responseAuthToken: string, response: RegisteredVerifier;
 
   beforeEach(async () => {
     const dummyVerifier = makeDummyVerifier({ name, customerUuid, url });

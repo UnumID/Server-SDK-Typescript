@@ -1,5 +1,5 @@
 import * as utilLib from 'library-issuer-verifier-utility';
-import { NoPresentation, Presentation, VerifiedStatus, VerifierDto, verifyEncryptedPresentation, verifyNoPresentation } from '../../src/index';
+import { NoPresentation, Presentation, VerifiedStatus, UnumDto, verifyEncryptedPresentation, verifyNoPresentation } from '../../src/index';
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { isCredentialExpired } from '../../src/verifier/isCredentialExpired';
 import { checkCredentialStatus } from '../../src/verifier/checkCredentialStatus';
@@ -27,7 +27,7 @@ const mockGetDIDDoc = utilLib.getDIDDoc as jest.Mock;
 const mockDoVerify = utilLib.doVerify as jest.Mock;
 const mockMakeNetworkRequest = utilLib.makeNetworkRequest as jest.Mock;
 
-const callVerifyEncryptedPresentation = (context, type, verifiableCredential, presentationRequestUuid, proof, verifier, auth = ''): Promise<VerifierDto<DecryptedPresentation>> => {
+const callVerifyEncryptedPresentation = (context, type, verifiableCredential, presentationRequestUuid, proof, verifier, auth = ''): Promise<UnumDto<DecryptedPresentation>> => {
   const presentation: Presentation = {
     '@context': context,
     type,
@@ -113,7 +113,7 @@ const populateMockData = (): utilLib.JSONObj => {
 };
 
 describe('verifyPresentation - Success Scenario', () => {
-  let response: VerifierDto<DecryptedPresentation>;
+  let response: UnumDto<DecryptedPresentation>;
   let verStatus: boolean;
 
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
@@ -184,7 +184,7 @@ describe('verifyPresentation - Success Scenario', () => {
 });
 
 describe('verifyPresentation - Failure Scenarios', () => {
-  let response: VerifierDto<DecryptedPresentation>;
+  let response: UnumDto<DecryptedPresentation>;
   let verStatus: boolean;
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
@@ -554,7 +554,7 @@ const callVerifyNoPresentation = (
   noPresentation: NoPresentation,
   verifier: string,
   authHeader?: string
-): Promise<VerifierDto<VerifiedStatus>> => {
+): Promise<UnumDto<VerifiedStatus>> => {
   return verifyNoPresentation(authHeader, noPresentation, verifier);
 };
 
@@ -571,7 +571,7 @@ describe('verifyNoPresentation', () => {
   });
 
   describe('success', () => {
-    let response: VerifierDto<VerifiedStatus>, responseAuthToken: string;
+    let response: UnumDto<VerifiedStatus>, responseAuthToken: string;
 
     beforeEach(async () => {
       mockDoVerify.mockReturnValue(true);

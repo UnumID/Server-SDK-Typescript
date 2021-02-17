@@ -229,7 +229,7 @@ exports.verifyEncryptedPresentation = function (authorization, encryptedPresenta
                 // if (error.statusCode === -1) {
                 //   const messages = error.message.split('#');
                 //   const authToken = messages[0] === 'undefined' ? undefined : messages[0];
-                //   const result: VerifierDto<DecryptedPresentation> = {
+                //   const result: UnumDto<DecryptedPresentation> = {
                 //     authToken,
                 //     body: {
                 //       isVerified: false,

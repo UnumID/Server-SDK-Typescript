@@ -11,7 +11,7 @@ import {
 } from 'library-issuer-verifier-utility';
 import { omit } from 'lodash';
 
-import { NoPresentation, Receipt, VerifierDto } from '../types';
+import { NoPresentation, UnumDto } from '../types';
 import { validateProof } from './validateProof';
 import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
@@ -71,7 +71,7 @@ export const validateNoPresentationParams = (noPresentation: NoPresentation): vo
  * @param noPresentation
  * @param verifier
  */
-export const verifyNoPresentation = async (authorization: string, noPresentation: NoPresentation, verifier: string): Promise<VerifierDto<VerifiedStatus>> => {
+export const verifyNoPresentation = async (authorization: string, noPresentation: NoPresentation, verifier: string): Promise<UnumDto<VerifiedStatus>> => {
   try {
     requireAuth(authorization);
 
@@ -96,7 +96,7 @@ export const verifyNoPresentation = async (authorization: string, noPresentation
 
     if (!isVerified) {
       // throw new CustError(406, `${authToken}#Credential signature can not be verified.`, -1);
-      const result: VerifierDto<VerifiedStatus> = {
+      const result: UnumDto<VerifiedStatus> = {
         authToken,
         body: {
           isVerified: false,
@@ -127,7 +127,7 @@ export const verifyNoPresentation = async (authorization: string, noPresentation
 
     authToken = handleAuthToken(resp);
 
-    const result: VerifierDto<VerifiedStatus> = {
+    const result: UnumDto<VerifiedStatus> = {
       authToken,
       body: {
         // uuid: resp.body.uuid,

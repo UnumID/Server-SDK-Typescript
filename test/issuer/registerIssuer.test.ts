@@ -1,5 +1,5 @@
 import * as utilLib from 'library-issuer-verifier-utility';
-import { RegisteredIssuer, IssuerDto } from '../../src/types';
+import { RegisteredIssuer, UnumDto } from '../../src/types';
 import { makeDummyIssuerResponse, dummyIssuerApiKey, makeDummyIssuer, dummyAuthToken } from './mocks';
 import { registerIssuer } from '../../src/issuer/registerIssuer';
 
@@ -17,7 +17,7 @@ const mockMakeNetworkRequest = utilLib.makeNetworkRequest as jest.Mock;
 const mockCreateKeyPairSet = utilLib.createKeyPairSet as jest.Mock;
 
 describe('registerIssuer', () => {
-  let response: RegisteredIssuer, responseAuthToken: string, responseDto: IssuerDto<RegisteredIssuer>;
+  let response: RegisteredIssuer, responseAuthToken: string, responseDto: UnumDto<RegisteredIssuer>;
   const name = 'First Unumid Issuer';
   const customerUuid = '5e46f1ba-4c82-471d-bbc7-251924a90532';
 

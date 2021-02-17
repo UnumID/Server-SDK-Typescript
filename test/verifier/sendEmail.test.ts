@@ -2,7 +2,7 @@ import fetch from 'node-fetch';
 
 import { sendEmail } from '../../src/verifier/sendEmail';
 import { configData } from '../../src/config';
-import { ErrorResponseBody, VerifierDto } from '../../src/types';
+import { ErrorResponseBody, UnumDto } from '../../src/types';
 import * as utilLib from 'library-issuer-verifier-utility';
 
 jest.mock('node-fetch');
@@ -13,7 +13,7 @@ const makeApiCall = async <T = undefined>(
   textBody: string | undefined,
   htmlBody: string | undefined,
   auth: string
-): Promise<VerifierDto<T>> => {
+): Promise<UnumDto<T>> => {
   return sendEmail(auth, to, subject, textBody, htmlBody);
 };
 
@@ -36,7 +36,7 @@ describe('sendEmail', () => {
       headers: { raw: () => mockSaasResponseHeaders },
       ok: true
     };
-    let apiResponse: VerifierDto, apiResponseAuthToken: string;
+    let apiResponse: UnumDto, apiResponseAuthToken: string;
 
     beforeEach(async () => {
       mockFetch.mockResolvedValueOnce(mockSaasApiResponse);
