@@ -36,7 +36,10 @@ body: T; // The placeholder for the function's response type is function specifi
 ```
 
 **Authentication**
-Every request detailed below requires a preceding `auth` token as a first parameter which is used to authenticate request to UnumID's SaaS on your behalf. As mention above this auth token updated upon every subsequent successful function call and should be read via the `body` and persisted accordingly for later requests. 
+Every request detailed below requires a preceding Bearer `authToken` as a first parameter which is used to authenticate request to UnumID's SaaS on your behalf. As mention above this auth token updated upon every subsequent function call and should be read via the `authToken` attribute and persisted accordingly for later requests. 
+
+**Errors** 
+Errors returned by UnumID's SaaS will also be wrapped in the UnumDto object so that the (potentially) updated `authToken` can be retrieved. Validation errors which are created prior to any internal calls to UnumID's SaaS will however simply by of type Error and are thrown. This is due to never making a network call with the provided authToken so no (potential) new token to pass back.
 ### Issuer
 #### registerIssuer
 Register an issuer corresponding to your customer UUID and issuer API key provided by UnumID's SaaS. As a customer, you can register as many issuers as you like (or none at all), depending on your use case. Note, however, that you'll need a unique issuer API key for each one.
@@ -227,18 +230,13 @@ Parameters
 ```
 
 
-Response Body: **Receipt**
+Response Body: **DecryptedPresentation**
 ```typescript
 {
-  uuid: string; // uuid of the UnumID SaaS generated Receipt
-  createdAt: Date; // createdAt ISO date of the UnumID SaaS generated Receipt
-  updatedAt: Date; // updatedAt ISO date of the UnumID SaaS generated Receipt
-  type: string[]; // types of the Receipt, wether a VerifiablePresentation & the type of credential shared or a NoPresentation (user declined to share)
-  subject: string; // subject's did that shared the Credential(s) via the Presentation
-  issuer: string; // issuer did of the credential(s)
   isVerified: boolean; // boolean indicating wether the signatures signed by the subject (user) is valid 
-  credentialTypes?: string[]; // This could be derived from credentials however, leaving as a first class attribute so it is easier for your to pass back to UnumID for more detailed analytics via the dashboard.
-  credentials?: VerifiableCredential[]; // This is the plaintext credentials that the user agreed to securely share with you. They should do use or store securely.
+  message?: string; // (optional) message detailing why the verification did not succeed.
+  type: 'VerifiablePresentation' | 'NoPresentation' // type of the presentation. NoPresentation means the presentation request was declined by the user.
+  credentials?: VerifiableCredential[] // (optional) a list of VerifiableCredential objects. This is the decrypted credential information. Only populated if the presentation signatures are verified and of type `VerifiablePresentation`.
 }
 ```
 

@@ -121,5 +121,6 @@ ecosystem.config.js
 # github personal access token
 github_token.txt
 
-# tar docker images
-verifier-app*
+# files meant to stay local
+*.local
+
