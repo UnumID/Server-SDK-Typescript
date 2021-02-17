@@ -81,8 +81,6 @@ export const sendEmail = async (authorization: string, to: string, subject: stri
     const authToken: string = handleAuthToken(apiResponse);
 
     const result: UnumDto<undefined> = {
-      // authToken: isArrayEmpty(authToken) ? undefined : authToken[0],
-      // authToken: isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined),
       authToken,
       body: undefined
     };

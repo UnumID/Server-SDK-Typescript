@@ -101,8 +101,6 @@ exports.sendEmail = function (authorization, to, subject, textBody, htmlBody) { 
                 apiResponse = _a.sent();
                 authToken = library_issuer_verifier_utility_1.handleAuthToken(apiResponse);
                 result = {
-                    // authToken: isArrayEmpty(authToken) ? undefined : authToken[0],
-                    // authToken: isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined),
                     authToken: authToken,
                     body: undefined
                 };
