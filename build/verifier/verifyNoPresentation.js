@@ -136,12 +136,6 @@ exports.verifyNoPresentation = function (authorization, noPresentation, verifier
                 result = {
                     authToken: authToken,
                     body: {
-                        // uuid: resp.body.uuid,
-                        // createdAt: resp.body.createdAt,
-                        // updatedAt: resp.body.updatedAt,
-                        // type: resp.body.type,
-                        // subject: resp.body.subject,
-                        // issuer: resp.body.issuer,
                         isVerified: isVerified
                     }
                 };

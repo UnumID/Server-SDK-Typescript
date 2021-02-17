@@ -94,7 +94,6 @@ export const verifyNoPresentation = async (authorization: string, noPresentation
     const isVerified = doVerify(signatureValue, unsignedNoPresentation, publicKey, encoding);
 
     if (!isVerified) {
-      // throw new CustError(406, `${authToken}#Credential signature can not be verified.`, -1);
       const result: UnumDto<VerifiedStatus> = {
         authToken,
         body: {
@@ -129,12 +128,6 @@ export const verifyNoPresentation = async (authorization: string, noPresentation
     const result: UnumDto<VerifiedStatus> = {
       authToken,
       body: {
-        // uuid: resp.body.uuid,
-        // createdAt: resp.body.createdAt,
-        // updatedAt: resp.body.updatedAt,
-        // type: resp.body.type,
-        // subject: resp.body.subject,
-        // issuer: resp.body.issuer,
         isVerified
       }
     };

@@ -243,7 +243,6 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     }
 
     if (!isPresentationVerified) {
-      // throw new CustError(406, `${authToken}#Presentation signature can no be verified.`, -1);
       const result: UnumDto<VerifiedStatus> = {
         authToken,
         body: {
@@ -255,7 +254,6 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     }
 
     if (!areCredentialsValid) {
-      // throw new CustError(406, `${authToken}#Credential signature can not be verified.`, -1);
       const result: UnumDto<VerifiedStatus> = {
         authToken,
         body: {

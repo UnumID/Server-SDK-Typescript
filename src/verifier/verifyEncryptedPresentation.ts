@@ -189,7 +189,6 @@ export const verifyEncryptedPresentation = async (authorization: string, encrypt
 
     if (!isPresentation(presentation)) {
       const verificationResult: UnumDto<VerifiedStatus> = await verifyNoPresentation(authorization, presentation, verifierDid);
-      // const result: DecryptedPresentation = { ...verificationResult.body, type: 'NoPresentation' };
       const result: UnumDto<DecryptedPresentation> = {
         authToken: verificationResult.authToken,
         body: {
@@ -202,7 +201,6 @@ export const verifyEncryptedPresentation = async (authorization: string, encrypt
     }
 
     const verificationResult: UnumDto<VerifiedStatus> = await verifyPresentation(authorization, presentation, verifierDid);
-    // verificationResult.body.credentials = presentation.verifiableCredential;
     const result: UnumDto<DecryptedPresentation> = {
       authToken: verificationResult.authToken,
       body: {
