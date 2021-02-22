@@ -60,7 +60,7 @@ const validateEmailRequestBody = (body: EmailRequestBody): void => {
  * @param textBody
  * @param htmlBody
  */
-export const sendEmail = async (authorization: string, to: string, subject: string, textBody: string, htmlBody: string): Promise<UnumDto<undefined>> => {
+export const sendEmail = async (authorization: string, to: string, subject: string, textBody?: string, htmlBody?: string): Promise<UnumDto<undefined>> => {
   try {
     requireAuth(authorization);
 
