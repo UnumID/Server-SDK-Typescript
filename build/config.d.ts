@@ -1,4 +1,5 @@
 declare const configData: {
+    nodeEnv: string;
     SaaSUrl: string;
     logLevel: string;
 };
