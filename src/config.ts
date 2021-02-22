@@ -7,8 +7,9 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const configData = {
+  nodeEnv: process.env.NODE_ENV || 'sandbox',
   SaaSUrl: process.env.SAAS_URL || 'https://api.sandbox-unumid.org/',
-  logLevel: process.env.LOG_LEVEL || 'info' // Turns out Winston defaults to info if the LOG_LEVEL is not present but just setting explicitly anyway.
+  logLevel: process.env.LOG_LEVEL || 'debug' // Winston defaults to info if not set
 };
 
 export { configData };
