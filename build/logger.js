@@ -17,7 +17,7 @@ var logger = winston_1.createLogger({
     format: winston_1.format.combine(winston_1.format.splat(), winston_1.format.errors({ stack: true })),
     transports: [
         new winston_1.transports.Console({
-            level: config_1.configData.logLevel || 'debug',
+            level: config_1.configData.logLevel || 'info',
             format: consoleFormat
         })
     ],

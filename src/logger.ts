@@ -26,7 +26,7 @@ const logger = createLogger({
   ),
   transports: [
     new transports.Console({
-      level: configData.logLevel || 'debug',
+      level: configData.logLevel || 'info',
       format: consoleFormat
     })
   ],
