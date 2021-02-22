@@ -9,7 +9,7 @@ import { verifyEncryptedPresentation } from './verifier/verifyEncryptedPresentat
 import { registerIssuer } from './issuer/registerIssuer';
 import { issueCredential } from './issuer/issueCredentials';
 import { revokeCredential } from './issuer/revokeCredentials';
-import { CustError, Proof } from 'library-issuer-verifier-utility';
+import { CustError, Proof, Credential } from 'library-issuer-verifier-utility';
 
 export {
   // Issuer Functions
@@ -35,5 +35,6 @@ export {
   VerifiableCredential,
   // Util Types
   CustError,
-  Proof
+  Proof,
+  Credential
 };

@@ -9,8 +9,8 @@ import { verifyEncryptedPresentation } from './verifier/verifyEncryptedPresentat
 import { registerIssuer } from './issuer/registerIssuer';
 import { issueCredential } from './issuer/issueCredentials';
 import { revokeCredential } from './issuer/revokeCredentials';
-import { CustError, Proof } from 'library-issuer-verifier-utility';
+import { CustError, Proof, Credential } from 'library-issuer-verifier-utility';
 export { registerIssuer, issueCredential, revokeCredential, registerVerifier, sendEmail, sendRequest, sendSms, verifyNoPresentation, // Deprecated as an exposed function in favor of verifyEncryptedPresentation. Ought to be removed after holder stops sending presentations to the test customer app
 verifyPresentation, // Deprecated as an exposed function in favor of verifyEncryptedPresentation. Ought to be removed after holder stops sending presentations to the test customer app
-verifyEncryptedPresentation, UnumDto, RegisteredVerifier, PresentationRequestResponse, VerifiedStatus, NoPresentation, Presentation, RegisteredIssuer, VerifiableCredential, CustError, Proof };
+verifyEncryptedPresentation, UnumDto, RegisteredVerifier, PresentationRequestResponse, VerifiedStatus, NoPresentation, Presentation, RegisteredIssuer, VerifiableCredential, CustError, Proof, Credential };
 //# sourceMappingURL=index.d.ts.map
