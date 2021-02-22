@@ -35,6 +35,10 @@ const validateEmailRequestBody = (body: EmailRequestBody): void => {
     throw new CustError(400, 'Either textBody or htmlBody is required.');
   }
 
+  if (textBody && htmlBody) {
+    throw new CustError(400, 'Either textBody or htmlBody is required, not both.');
+  }
+
   if (typeof to !== 'string') {
     throw new CustError(400, 'Invalid to: expected string.');
   }
