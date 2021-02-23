@@ -5,7 +5,7 @@ var config_1 = require("./config");
 // Only adding the timestamp if running locally. Otherwise the timestamp is little redundant when can be added in supplementary fashion outside of the message itself.
 var consoleFormat = config_1.configData.nodeEnv === 'local'
     ? winston_1.format.combine(winston_1.format.colorize(), winston_1.format.timestamp({
-        format: 'HH:mm.ss.SSSz'
+        format: 'HH:mm.ss.SSS'
     }), winston_1.format.printf(function (info) {
         return info.timestamp + " " + info.level + ": " + info.message;
     }))
@@ -17,7 +17,7 @@ var logger = winston_1.createLogger({
     format: winston_1.format.combine(winston_1.format.splat(), winston_1.format.errors({ stack: true })),
     transports: [
         new winston_1.transports.Console({
-            level: config_1.configData.logLevel || 'debug',
+            level: config_1.configData.logLevel || 'info',
             format: consoleFormat
         })
     ],

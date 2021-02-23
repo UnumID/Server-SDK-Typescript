@@ -59,6 +59,9 @@ var validateEmailRequestBody = function (body) {
     if (!textBody && !htmlBody) {
         throw new library_issuer_verifier_utility_1.CustError(400, 'Either textBody or htmlBody is required.');
     }
+    if (textBody && htmlBody) {
+        throw new library_issuer_verifier_utility_1.CustError(400, 'Either textBody or htmlBody is required, not both.');
+    }
     if (typeof to !== 'string') {
         throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid to: expected string.');
     }

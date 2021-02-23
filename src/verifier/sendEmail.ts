@@ -35,6 +35,10 @@ const validateEmailRequestBody = (body: EmailRequestBody): void => {
     throw new CustError(400, 'Either textBody or htmlBody is required.');
   }
 
+  if (textBody && htmlBody) {
+    throw new CustError(400, 'Either textBody or htmlBody is required, not both.');
+  }
+
   if (typeof to !== 'string') {
     throw new CustError(400, 'Invalid to: expected string.');
   }
@@ -60,7 +64,7 @@ const validateEmailRequestBody = (body: EmailRequestBody): void => {
  * @param textBody
  * @param htmlBody
  */
-export const sendEmail = async (authorization: string, to: string, subject: string, textBody: string, htmlBody: string): Promise<UnumDto<undefined>> => {
+export const sendEmail = async (authorization: string, to: string, subject: string, textBody?: string, htmlBody?: string): Promise<UnumDto<undefined>> => {
   try {
     requireAuth(authorization);
 

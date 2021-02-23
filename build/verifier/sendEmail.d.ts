@@ -10,5 +10,5 @@ export interface EmailResponseBody {
  * @param textBody
  * @param htmlBody
  */
-export declare const sendEmail: (authorization: string, to: string, subject: string, textBody: string, htmlBody: string) => Promise<UnumDto<undefined>>;
+export declare const sendEmail: (authorization: string, to: string, subject: string, textBody?: string | undefined, htmlBody?: string | undefined) => Promise<UnumDto<undefined>>;
 //# sourceMappingURL=sendEmail.d.ts.map

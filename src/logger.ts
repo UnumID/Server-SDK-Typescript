@@ -6,7 +6,7 @@ const consoleFormat = configData.nodeEnv === 'local'
   ? format.combine(
     format.colorize(),
     format.timestamp({
-      format: 'HH:mm.ss.SSSz'
+      format: 'HH:mm.ss.SSS'
     }),
     format.printf(info => {
       return `${info.timestamp} ${info.level}: ${info.message}`;
@@ -26,7 +26,7 @@ const logger = createLogger({
   ),
   transports: [
     new transports.Console({
-      level: configData.logLevel || 'debug',
+      level: configData.logLevel || 'info',
       format: consoleFormat
     })
   ],

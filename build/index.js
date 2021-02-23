@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyEncryptedPresentation = exports.verifyPresentation = exports.verifyNoPresentation = exports.sendSms = exports.sendRequest = exports.sendEmail = exports.registerVerifier = exports.revokeCredential = exports.issueCredential = exports.registerIssuer = void 0;
+exports.CustError = exports.verifyEncryptedPresentation = exports.verifyPresentation = exports.verifyNoPresentation = exports.sendSms = exports.sendRequest = exports.sendEmail = exports.registerVerifier = exports.revokeCredential = exports.issueCredential = exports.registerIssuer = void 0;
 var registerVerifier_1 = require("./verifier/registerVerifier");
 Object.defineProperty(exports, "registerVerifier", { enumerable: true, get: function () { return registerVerifier_1.registerVerifier; } });
 var sendEmail_1 = require("./verifier/sendEmail");
@@ -21,4 +21,6 @@ var issueCredentials_1 = require("./issuer/issueCredentials");
 Object.defineProperty(exports, "issueCredential", { enumerable: true, get: function () { return issueCredentials_1.issueCredential; } });
 var revokeCredentials_1 = require("./issuer/revokeCredentials");
 Object.defineProperty(exports, "revokeCredential", { enumerable: true, get: function () { return revokeCredentials_1.revokeCredential; } });
+var library_issuer_verifier_utility_1 = require("library-issuer-verifier-utility");
+Object.defineProperty(exports, "CustError", { enumerable: true, get: function () { return library_issuer_verifier_utility_1.CustError; } });
 //# sourceMappingURL=index.js.map
