@@ -35,10 +35,6 @@ export {
   RegisteredIssuer,
   VerifiableCredential,
   CredentialSubject,
-  ClaimValue,
-  ClaimList,
-  ClaimPrimitive,
-  Claim,
   // Util Types
   CustError,
   Proof,
