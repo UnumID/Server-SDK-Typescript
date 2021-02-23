@@ -2,7 +2,7 @@ import { registerVerifier } from './verifier/registerVerifier';
 import { sendEmail } from './verifier/sendEmail';
 import { sendRequest } from './verifier/sendRequest';
 import { sendSms } from './verifier/sendSms';
-import { NoPresentation, Presentation, UnumDto, RegisteredVerifier, PresentationRequestResponse, RegisteredIssuer, VerifiedStatus, VerifiableCredential } from './types';
+import { NoPresentation, Presentation, UnumDto, RegisteredVerifier, PresentationRequestResponse, RegisteredIssuer, VerifiedStatus, DecryptedPresentation } from './types';
 import { verifyNoPresentation } from './verifier/verifyNoPresentation';
 import { verifyPresentation } from './verifier/verifyPresentation';
 import { verifyEncryptedPresentation } from './verifier/verifyEncryptedPresentation';
@@ -10,7 +10,6 @@ import { registerIssuer } from './issuer/registerIssuer';
 import { issueCredential } from './issuer/issueCredentials';
 import { revokeCredential } from './issuer/revokeCredentials';
 import { CustError, Proof, Credential, CredentialSubject } from 'library-issuer-verifier-utility';
-import { Claim, ClaimList, ClaimPrimitive, ClaimValue } from 'library-issuer-verifier-utility/build/types';
 
 export {
   // Issuer Functions
@@ -33,8 +32,8 @@ export {
   NoPresentation,
   Presentation,
   RegisteredIssuer,
-  VerifiableCredential,
   CredentialSubject,
+  DecryptedPresentation,
   // Util Types
   CustError,
   Proof,
