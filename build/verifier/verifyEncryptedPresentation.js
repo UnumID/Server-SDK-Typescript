@@ -53,8 +53,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyEncryptedPresentation = void 0;
 var validateProof_1 = require("./validateProof");
 var requireAuth_1 = require("../requireAuth");
-var library_crypto_typescript_1 = require("library-crypto-typescript");
-var library_issuer_verifier_utility_1 = require("library-issuer-verifier-utility");
+var library_crypto_1 = require("@unumid/library-crypto");
+var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var logger_1 = __importDefault(require("../logger"));
 var __1 = require("..");
 /**
@@ -205,7 +205,7 @@ exports.verifyEncryptedPresentation = function (authorization, encryptedPresenta
                 if (!encryptionPrivateKey) {
                     throw new library_issuer_verifier_utility_1.CustError(400, 'verifier encryptionPrivateKey is required.');
                 }
-                presentation = library_crypto_typescript_1.decrypt(encryptionPrivateKey, encryptedPresentation);
+                presentation = library_crypto_1.decrypt(encryptionPrivateKey, encryptedPresentation);
                 if (!!isPresentation(presentation)) return [3 /*break*/, 2];
                 return [4 /*yield*/, __1.verifyNoPresentation(authorization, presentation, verifierDid)];
             case 1:

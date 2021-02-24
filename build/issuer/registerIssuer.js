@@ -41,7 +41,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerIssuer = void 0;
 var config_1 = require("../config");
-var library_issuer_verifier_utility_1 = require("library-issuer-verifier-utility");
+var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var logger_1 = __importDefault(require("../logger"));
 /**
  * Creates an object to encapsulate key information.

@@ -6,7 +6,7 @@ import {
   Credential,
   RESTResponse,
   DidDocument
-} from 'library-issuer-verifier-utility';
+} from '@unumid/library-issuer-verifier-utility';
 
 import { configData } from '../../src/config';
 import {

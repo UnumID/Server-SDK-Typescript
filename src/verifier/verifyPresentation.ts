@@ -7,7 +7,7 @@ import { requireAuth } from '../requireAuth';
 import { verifyCredential } from './verifyCredential';
 import { isCredentialExpired } from './isCredentialExpired';
 import { checkCredentialStatus } from './checkCredentialStatus';
-import { JSONObj, CustError, Proof, getDIDDoc, PublicKeyInfo, getKeyFromDIDDoc, doVerify, RESTData, makeNetworkRequest, isArrayEmpty, handleAuthToken } from 'library-issuer-verifier-utility';
+import { JSONObj, CustError, Proof, getDIDDoc, PublicKeyInfo, getKeyFromDIDDoc, doVerify, RESTData, makeNetworkRequest, isArrayEmpty, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
 import logger from '../logger';
 
 /**

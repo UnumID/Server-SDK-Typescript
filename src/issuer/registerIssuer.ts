@@ -1,7 +1,7 @@
 import { configData } from '../config';
 import { IssuerOptions, RegisteredIssuer, UnumDto } from '../types';
 
-import { KeyPair, PublicKeyInfo, getUUID, KeyPairSet, CustError, createKeyPairSet, RESTData, JSONObj, makeNetworkRequest, DidKeyType, handleAuthToken } from 'library-issuer-verifier-utility';
+import { KeyPair, PublicKeyInfo, getUUID, KeyPairSet, CustError, createKeyPairSet, RESTData, JSONObj, makeNetworkRequest, DidKeyType, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
 import logger from '../logger';
 
 /**

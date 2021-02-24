@@ -1,4 +1,4 @@
-import { CustError } from 'library-issuer-verifier-utility';
+import { CustError } from '@unumid/library-issuer-verifier-utility';
 import logger from './logger';
 
 /**

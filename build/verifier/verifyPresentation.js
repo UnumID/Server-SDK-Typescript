@@ -47,7 +47,7 @@ var requireAuth_1 = require("../requireAuth");
 var verifyCredential_1 = require("./verifyCredential");
 var isCredentialExpired_1 = require("./isCredentialExpired");
 var checkCredentialStatus_1 = require("./checkCredentialStatus");
-var library_issuer_verifier_utility_1 = require("library-issuer-verifier-utility");
+var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var logger_1 = __importDefault(require("../logger"));
 /**
  * Validates the attributes for a credential request to UnumID's SaaS.

@@ -1,4 +1,4 @@
-import { KeyPairSet, Proof, PublicKeyInfo, EncryptedData, CredentialSubject } from 'library-issuer-verifier-utility';
+import { KeyPairSet, Proof, PublicKeyInfo, EncryptedData, CredentialSubject } from '@unumid/library-issuer-verifier-utility';
 
 /**
  * Encapsulates necessary Issuer entity attributes during creation.

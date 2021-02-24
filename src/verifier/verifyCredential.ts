@@ -1,4 +1,4 @@
-import { getDIDDoc, getKeyFromDIDDoc, doVerify, handleAuthToken } from 'library-issuer-verifier-utility';
+import { getDIDDoc, getKeyFromDIDDoc, doVerify, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
 import { omit } from 'lodash';
 
 import { UnumDto, VerifiableCredential } from '../types';

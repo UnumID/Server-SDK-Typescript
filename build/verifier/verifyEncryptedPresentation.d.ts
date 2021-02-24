@@ -1,5 +1,5 @@
 import { DecryptedPresentation, UnumDto } from '../types';
-import { EncryptedData } from 'library-issuer-verifier-utility';
+import { EncryptedData } from '@unumid/library-issuer-verifier-utility';
 /**
  * Handler to send information regarding the user agreeing to share a credential Presentation.
  * @param authorization: string

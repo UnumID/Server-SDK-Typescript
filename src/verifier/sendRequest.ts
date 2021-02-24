@@ -1,7 +1,7 @@
 import * as express from 'express';
 import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
-import { getUUID, createProof, CustError, RESTData, makeNetworkRequest, handleAuthToken } from 'library-issuer-verifier-utility';
+import { getUUID, createProof, CustError, RESTData, makeNetworkRequest, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
 
 import {
   CredentialRequest,

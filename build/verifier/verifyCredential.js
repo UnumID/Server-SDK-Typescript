@@ -37,7 +37,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyCredential = void 0;
-var library_issuer_verifier_utility_1 = require("library-issuer-verifier-utility");
+var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var lodash_1 = require("lodash");
 var config_1 = require("../config");
 /**

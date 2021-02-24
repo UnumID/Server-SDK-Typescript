@@ -2,8 +2,8 @@
 import { DecryptedPresentation, Presentation, PresentationOrNoPresentation, UnumDto } from '../types';
 import { validateProof } from './validateProof';
 import { requireAuth } from '../requireAuth';
-import { decrypt } from 'library-crypto-typescript';
-import { JSONObj, CustError, isArrayEmpty, EncryptedData } from 'library-issuer-verifier-utility';
+import { decrypt } from '@unumid/library-crypto';
+import { JSONObj, CustError, isArrayEmpty, EncryptedData } from '@unumid/library-issuer-verifier-utility';
 import logger from '../logger';
 import { NoPresentation, VerifiedStatus, verifyNoPresentation, verifyPresentation } from '..';
 

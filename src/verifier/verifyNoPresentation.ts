@@ -8,7 +8,7 @@ import {
   JSONObj,
   isArrayEmpty,
   handleAuthToken
-} from 'library-issuer-verifier-utility';
+} from '@unumid/library-issuer-verifier-utility';
 import { omit } from 'lodash';
 
 import { NoPresentation, UnumDto, VerifiedStatus } from '../types';
