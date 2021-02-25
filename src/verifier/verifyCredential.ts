@@ -2,7 +2,7 @@ import { getDIDDoc, getKeyFromDIDDoc, doVerify, handleAuthToken } from '@unumid/
 import { CryptoError } from '@unumid/library-crypto';
 import { omit } from 'lodash';
 
-import { UnumDto, VerifiableCredential, VerifiedStatus } from '../types';
+import { UnumDto, VerifiableCredential } from '../types';
 import { configData } from '../config';
 import logger from '../logger';
 
