@@ -165,11 +165,14 @@ var validateInputs = function (type, issuer, credentialSubject, eccPrivateKey, e
     }
 };
 var constructCredentialOptions = function (type, issuer, credentialSubject, eccPrivateKey, expirationDate) {
-    var lType = ['VerifiableCredential'].concat(type);
+    // HACK ALERT: removing duplicate 'VerifiableCredential' if present in type string[]
+    var typeList = ['VerifiableCredential'].concat(type); // Need to have some value in the "base" array so just just the keyword we are going to filter over.
+    var rawTypes = typeList.filter(function (t) { return t !== 'VerifiableCredential'; });
+    var types = ['VerifiableCredential'].concat(rawTypes); // Adding back the filtered keyword, effectively ensuring there is only one at the start of the array
     var credOpt = {
         credentialSubject: credentialSubject,
         issuer: issuer,
-        type: lType,
+        type: types,
         expirationDate: expirationDate
     };
     return (credOpt);

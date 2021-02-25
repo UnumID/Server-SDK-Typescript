@@ -142,11 +142,15 @@ const validateInputs = (type: string|string[], issuer: string, credentialSubject
 };
 
 const constructCredentialOptions = (type: string|string[], issuer: string, credentialSubject: CredentialSubject, eccPrivateKey: string, expirationDate?: Date): CredentialOptions => {
-  const lType: string[] = ['VerifiableCredential'].concat(type);
+  // HACK ALERT: removing duplicate 'VerifiableCredential' if present in type string[]
+  const typeList: string[] = ['VerifiableCredential'].concat(type); // Need to have some value in the "base" array so just just the keyword we are going to filter over.
+  const rawTypes = typeList.filter(t => t !== 'VerifiableCredential');
+  const types = ['VerifiableCredential'].concat(rawTypes); // Adding back the filtered keyword, effectively ensuring there is only one at the start of the array
+
   const credOpt: CredentialOptions = {
     credentialSubject,
     issuer,
-    type: lType,
+    type: types,
     expirationDate: expirationDate
   };
 

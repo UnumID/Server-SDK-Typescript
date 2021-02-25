@@ -32,7 +32,7 @@ describe('issueCredential', () => {
     id: 'did:unum:a0cd2e20-5f3e-423c-8382-afc722eaca9e',
     value: 'dummy value'
   };
-  const type = 'DummyCredential';
+  const type = ['VerifiableCredential', 'DummyCredential'];
   const issuer = 'did:unum:0c1e4d6a-04b9-4518-9293-4de595bbdbd2';
   const expirationDate = new Date('2099-10-26T23:07:12.770Z');
   const eccPrivateKey = '-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIKgEnAHdkJOWCr2HxgThssEnn4+4dXh+AXCK2ORgiM69oAoGCCqGSM49\nAwEHoUQDQgAEl1ZqPBLIa8QxEEx7nNWsVPnUd59UtVmRLS7axzA5VPeVOs2FIGkT\nFx+RgfZSF6J4kXd7F+/pd03fPV/lu/lJpA==\n-----END EC PRIVATE KEY-----\n';
@@ -87,6 +87,14 @@ describe('issueCredential', () => {
     response = await callIssueCreds(credentialSubject, type, issuer, expirationDate, eccPrivateKey, dummyAdminKey);
     responseAuthToken = response.authToken;
     expect(responseAuthToken).toBeUndefined();
+  });
+
+  it('type array starts with and contains only one `VerifiableCredential` string despite type of the credential options including the preceeding string', async () => {
+    mockMakeNetworkRequest.mockResolvedValueOnce({ body: { success: true } });
+    response = await callIssueCreds(credentialSubject, type, issuer, expirationDate, eccPrivateKey, dummyAdminKey);
+    const types = response.body.type;
+    expect(types[0]).toEqual('VerifiableCredential');
+    expect(types[1]).toEqual('DummyCredential');
   });
 });
 
