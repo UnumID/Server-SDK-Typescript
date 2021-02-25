@@ -790,6 +790,14 @@
   dependencies:
     eslint-visitor-keys "^1.1.0"
 
+"@unumid/library-crypto@https://github.com/UnumID/Library-Crypto-TypeScript.git#sigTest":
+  version "0.0.1"
+  resolved "https://github.com/UnumID/Library-Crypto-TypeScript.git#9220fc3f2f2f11106c6708ff82317e86b953e337"
+  dependencies:
+    "@types/bs58" "^4.0.1"
+    bs58 "^4.0.1"
+    fast-json-stable-stringify "^2.1.0"
+
 "@unumid/library-crypto@https://github.com/UnumID/Library-Crypto-TypeScript.git#v1.1.1":
   version "0.0.1"
   resolved "https://github.com/UnumID/Library-Crypto-TypeScript.git#aee817869106d933ba2598d1f48e94c2c42233a6"
