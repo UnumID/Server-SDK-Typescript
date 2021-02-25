@@ -194,7 +194,7 @@ var doVerifyString = function (signature, data, publicKey, encoding) {
  * @param verifier
  */
 exports.verifyPresentation = function (authorization, presentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, proof, didDocumentResponse, authToken, pubKeyObj, result_1, isPresentationVerified, isPresentationStringVerified, areCredentialsValid, _i, _a, credential, isExpired, isStatusValidResponse, isStatusValid, isVerifiedResponse, isVerified_1, result_2, result_3, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, result, error_1;
+    var data, proof, didDocumentResponse, authToken, pubKeyObj, result_1, isPresentationDataVerified, isPresentationStringVerified, isPresentationVerified, areCredentialsValid, _i, _a, credential, isExpired, isStatusValidResponse, isStatusValid, isVerifiedResponse, isVerified_1, result_2, result_3, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, result, error_1;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -227,8 +227,9 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                     };
                     return [2 /*return*/, result_1];
                 }
-                isPresentationVerified = library_issuer_verifier_utility_1.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
+                isPresentationDataVerified = library_issuer_verifier_utility_1.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
                 isPresentationStringVerified = doVerifyString(proof.signatureValue, proof.unsignedValue, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
+                isPresentationVerified = isPresentationDataVerified || isPresentationStringVerified;
                 areCredentialsValid = true;
                 _i = 0, _a = presentation.verifiableCredential;
                 _b.label = 2;
