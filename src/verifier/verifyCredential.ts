@@ -1,10 +1,25 @@
 import { getDIDDoc, getKeyFromDIDDoc, doVerify, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
-import { CryptoError } from '@unumid/library-crypto';
+import { CryptoError, verifyString } from '@unumid/library-crypto';
 import { omit } from 'lodash';
 
 import { UnumDto, VerifiableCredential } from '../types';
 import { configData } from '../config';
 import logger from '../logger';
+
+/**
+ * Verify the signature on the provided data object.
+ * @param signature
+ * @param data
+ * @param publicKey
+ * @param encoding String ('base58' | 'pem'), defaults to 'pem'
+ */
+const doVerifyString = (signature: string, data: string, publicKey: string, encoding: 'base58' | 'pem' = 'pem'): boolean => {
+  logger.debug(`Signature verification using public key ${publicKey}`);
+  const result:boolean = verifyString(signature, data, publicKey, encoding);
+
+  logger.debug(`Signature is valid: ${result}.`);
+  return result;
+};
 
 /**
  * Used to verify the credential signature given the corresponding Did document's public key.
@@ -24,7 +39,10 @@ export const verifyCredential = async (credential: VerifiableCredential, authori
   const data = omit(credential, 'proof');
 
   try {
-    const isVerified = doVerify(proof.signatureValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
+    const isVerifiedData = doVerify(proof.signatureValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
+    const isVerifiedString = doVerifyString(proof.signatureValue, proof.unsignedValue, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
+
+    const isVerified = isVerifiedData || isVerifiedString;
     const result: UnumDto<boolean> = {
       authToken,
       body: isVerified
