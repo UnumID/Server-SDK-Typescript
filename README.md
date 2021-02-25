@@ -21,9 +21,9 @@ Soon, we hope to open source this project and uploaded the package as public NPM
 ## Logging
 One can set the log level via the env var LOG_LEVEL. It defaults to info. Set to debug for more information, i.e. LOG_LEVEL=debug.
 
-More details on the various log levels [here](https://github.com/winstonjs/winston#logging-levels).
+We are using standard NPM log levels. More details on the various log levels [here](https://github.com/winstonjs/winston#logging-levels).
 
-The logs default to stdout so can be aggregated and using any log provider you would like from disk.
+The logs default to stdout so can be aggregated using any log provider you would like from disk.
 
 ## SDK functionality
 The Server SDK uses the UnumDto type to facilitate handling many response body types while providing a reliable structure to access the result.
