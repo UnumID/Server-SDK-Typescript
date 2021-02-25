@@ -9,6 +9,7 @@ import { isCredentialExpired } from './isCredentialExpired';
 import { checkCredentialStatus } from './checkCredentialStatus';
 import { JSONObj, CustError, Proof, getDIDDoc, PublicKeyInfo, getKeyFromDIDDoc, doVerify, RESTData, makeNetworkRequest, isArrayEmpty, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
 import logger from '../logger';
+import { CryptoError } from '@unumid/library-crypto';
 
 /**
  * Validates the attributes for a credential request to UnumID's SaaS.
@@ -210,7 +211,37 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     // The same scenario would be handled later.
     // verifiableCredential is an array.  As of now we are verifying the entire credential object together.  We will have to modify
     // this logic to verify each credential present separately.  We can take this up later.
-    const isPresentationVerified: boolean = doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
+    let isPresentationVerified = false;
+    try {
+      isPresentationVerified = doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
+    } catch (e) {
+      if (e instanceof CryptoError) {
+        logger.error(`CryptoError verifying presentation ${presentation.uuid} signature`, e);
+      } else {
+        logger.error(`Error verifying presentation ${presentation.uuid} signature`, e);
+      }
+
+      // need to return the UnumDto with the (potentially) updated authToken
+      const result: UnumDto<VerifiedStatus> = {
+        authToken,
+        body: {
+          isVerified: false,
+          message: `Exception verifying presentation signature. ${e.message}`
+        }
+      };
+      return result;
+    }
+
+    if (!isPresentationVerified) {
+      const result: UnumDto<VerifiedStatus> = {
+        authToken,
+        body: {
+          isVerified: false,
+          message: 'Presentation signature can no be verified'
+        }
+      };
+      return result;
+    }
 
     let areCredentialsValid = true;
 
@@ -239,17 +270,6 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
         areCredentialsValid = false;
         break;
       }
-    }
-
-    if (!isPresentationVerified) {
-      const result: UnumDto<VerifiedStatus> = {
-        authToken,
-        body: {
-          isVerified: false,
-          message: 'Presentation signature can no be verified'
-        }
-      };
-      return result;
     }
 
     if (!areCredentialsValid) {

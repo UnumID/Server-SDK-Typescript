@@ -225,7 +225,12 @@ exports.verifyEncryptedPresentation = function (authorization, encryptedPresenta
                 return [2 /*return*/, result];
             case 4:
                 error_1 = _a.sent();
-                logger_1.default.error("Error handling encrypted presentation request to UnumID Saas. Error " + error_1);
+                if (error_1 instanceof library_crypto_1.CryptoError) {
+                    logger_1.default.error('Crypto error handling encrypted presentation', error_1);
+                }
+                else {
+                    logger_1.default.error('Error handling encrypted presentation request to UnumID Saas.', error_1);
+                }
                 throw error_1;
             case 5: return [2 /*return*/];
         }

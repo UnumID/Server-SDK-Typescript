@@ -4,7 +4,7 @@ import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { isCredentialExpired } from '../../src/verifier/isCredentialExpired';
 import { checkCredentialStatus } from '../../src/verifier/checkCredentialStatus';
 import { dummyAuthToken, dummyRsaPrivateKey, dummyRsaPublicKey, makeDummyDidDocument } from './mocks';
-import { encrypt } from 'library-crypto-typescript';
+import { encrypt } from '@unumid/library-crypto';
 import { omit } from 'lodash';
 import { DecryptedPresentation } from '../../src/types';
 // import { publicKeyNotFoundInDidDocViaProofVerification } from '@unumid/errors';

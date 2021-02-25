@@ -2,7 +2,7 @@
 import { DecryptedPresentation, Presentation, PresentationOrNoPresentation, UnumDto } from '../types';
 import { validateProof } from './validateProof';
 import { requireAuth } from '../requireAuth';
-import { decrypt } from '@unumid/library-crypto';
+import { CryptoError, decrypt } from '@unumid/library-crypto';
 import { JSONObj, CustError, isArrayEmpty, EncryptedData } from '@unumid/library-issuer-verifier-utility';
 import logger from '../logger';
 import { NoPresentation, VerifiedStatus, verifyNoPresentation, verifyPresentation } from '..';
@@ -212,7 +212,12 @@ export const verifyEncryptedPresentation = async (authorization: string, encrypt
 
     return result;
   } catch (error) {
-    logger.error(`Error handling encrypted presentation request to UnumID Saas. Error ${error}`);
+    if (error instanceof CryptoError) {
+      logger.error('Crypto error handling encrypted presentation', error);
+    } else {
+      logger.error('Error handling encrypted presentation request to UnumID Saas.', error);
+    }
+
     throw error;
   }
 };
