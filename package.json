@@ -42,7 +42,7 @@
     "typescript": "^3.9.7"
   },
   "dependencies": {
-    "@unumid/library-issuer-verifier-utility": "https://github.com/UnumID/library-issuer-verifier-utility.git#error",
+    "@unumid/library-issuer-verifier-utility": "https://github.com/UnumID/library-issuer-verifier-utility.git#v0.5.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "fast-json-stable-stringify": "^2.1.0",
