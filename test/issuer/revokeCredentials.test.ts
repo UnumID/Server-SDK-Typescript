@@ -1,10 +1,10 @@
-import * as utilLib from 'library-issuer-verifier-utility';
+import * as utilLib from '@unumid/library-issuer-verifier-utility';
 import { dummyAuthToken, dummyAdminKey } from './mocks';
 import { revokeCredential } from '../../src/issuer/revokeCredentials';
 import { UnumDto } from '../../src/types';
 
-jest.mock('library-issuer-verifier-utility', () => {
-  const actual = jest.requireActual('library-issuer-verifier-utility');
+jest.mock('@unumid/library-issuer-verifier-utility', () => {
+  const actual = jest.requireActual('@unumid/library-issuer-verifier-utility');
   return {
     ...actual,
     makeNetworkRequest: jest.fn()

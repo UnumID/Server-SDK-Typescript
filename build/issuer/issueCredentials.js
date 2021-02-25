@@ -42,7 +42,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.issueCredential = void 0;
 var config_1 = require("../config");
 var requireAuth_1 = require("../requireAuth");
-var library_issuer_verifier_utility_1 = require("library-issuer-verifier-utility");
+var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var logger_1 = __importDefault(require("../logger"));
 /**
  * Creates an object of type EncryptedCredentialOptions which encapsulates information relating to the encrypted credential data

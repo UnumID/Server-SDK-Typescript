@@ -1,16 +1,16 @@
-import * as utilLib from 'library-issuer-verifier-utility';
+import * as utilLib from '@unumid/library-issuer-verifier-utility';
 import { NoPresentation, Presentation, VerifiedStatus, UnumDto, verifyEncryptedPresentation, verifyNoPresentation } from '../../src/index';
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { isCredentialExpired } from '../../src/verifier/isCredentialExpired';
 import { checkCredentialStatus } from '../../src/verifier/checkCredentialStatus';
 import { dummyAuthToken, dummyRsaPrivateKey, dummyRsaPublicKey, makeDummyDidDocument } from './mocks';
-import { encrypt } from 'library-crypto-typescript';
+import { encrypt } from '@unumid/library-crypto';
 import { omit } from 'lodash';
 import { DecryptedPresentation } from '../../src/types';
 // import { publicKeyNotFoundInDidDocViaProofVerification } from '@unumid/errors';
 
-jest.mock('library-issuer-verifier-utility', () => ({
-  ...jest.requireActual('library-issuer-verifier-utility'),
+jest.mock('@unumid/library-issuer-verifier-utility', () => ({
+  ...jest.requireActual('@unumid/library-issuer-verifier-utility'),
   getDIDDoc: jest.fn(),
   doVerify: jest.fn(),
   makeNetworkRequest: jest.fn()

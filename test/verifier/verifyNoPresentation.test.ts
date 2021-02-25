@@ -4,11 +4,11 @@ import { omit } from 'lodash';
 
 import { verifyNoPresentation } from '../../src';
 import { NoPresentation, VerifiedStatus, UnumDto } from '../../src/types';
-import * as utilLib from 'library-issuer-verifier-utility';
+import * as utilLib from '@unumid/library-issuer-verifier-utility';
 import { dummyAuthToken, makeDummyDidDocument } from './mocks';
 
-jest.mock('library-issuer-verifier-utility', () => {
-  const actual = jest.requireActual('library-issuer-verifier-utility');
+jest.mock('@unumid/library-issuer-verifier-utility', () => {
+  const actual = jest.requireActual('@unumid/library-issuer-verifier-utility');
   return {
     ...actual,
     getDIDDoc: jest.fn(),

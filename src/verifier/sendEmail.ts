@@ -1,4 +1,4 @@
-import { CustError, handleAuthToken, isArrayEmpty, isArrayNotEmpty, makeNetworkRequest } from 'library-issuer-verifier-utility';
+import { CustError, handleAuthToken, isArrayEmpty, isArrayNotEmpty, makeNetworkRequest } from '@unumid/library-issuer-verifier-utility';
 
 import { configData } from '../config';
 import logger from '../logger';

@@ -1,12 +1,12 @@
-import * as utility from 'library-issuer-verifier-utility';
+import * as utility from '@unumid/library-issuer-verifier-utility';
 
 import { UnumDto, VerifiableCredential } from '../../src/types';
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { makeDummyDidDocument } from './mocks';
 
 // Selective "spyon" mocking example of package.
-jest.mock('library-issuer-verifier-utility', () => {
-  const actual = jest.requireActual('library-issuer-verifier-utility');
+jest.mock('@unumid/library-issuer-verifier-utility', () => {
+  const actual = jest.requireActual('@unumid/library-issuer-verifier-utility');
   return {
     ...actual,
     getDIDDoc: jest.fn(),

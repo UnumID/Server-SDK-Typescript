@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
-import { CustError, handleAuthToken, makeNetworkRequest } from 'library-issuer-verifier-utility';
+import { CustError, handleAuthToken, makeNetworkRequest } from '@unumid/library-issuer-verifier-utility';
 
 import { configData } from '../config';
 import logger from '../logger';

@@ -53,7 +53,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendRequest = exports.constructSignedPresentationRequest = exports.constructUnsignedPresentationRequest = void 0;
 var config_1 = require("../config");
 var requireAuth_1 = require("../requireAuth");
-var library_issuer_verifier_utility_1 = require("library-issuer-verifier-utility");
+var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
+var library_crypto_1 = require("@unumid/library-crypto");
 var logger_1 = __importDefault(require("../logger"));
 /**
  * Constructs an unsigned PresentationRequest from the incoming request body.
@@ -88,9 +89,20 @@ exports.constructUnsignedPresentationRequest = function (reqBody) {
  * @param privateKey String
  */
 exports.constructSignedPresentationRequest = function (unsignedPresentationRequest, privateKey) {
-    var proof = library_issuer_verifier_utility_1.createProof(unsignedPresentationRequest, privateKey, unsignedPresentationRequest.verifier, 'pem');
-    var signedPresentationRequest = __assign(__assign({}, unsignedPresentationRequest), { proof: proof });
-    return signedPresentationRequest;
+    try {
+        var proof = library_issuer_verifier_utility_1.createProof(unsignedPresentationRequest, privateKey, unsignedPresentationRequest.verifier, 'pem');
+        var signedPresentationRequest = __assign(__assign({}, unsignedPresentationRequest), { proof: proof });
+        return signedPresentationRequest;
+    }
+    catch (e) {
+        if (e instanceof library_crypto_1.CryptoError) {
+            logger_1.default.error("Issue in the crypto lib while creating presentation request " + unsignedPresentationRequest.uuid + " proof", e);
+        }
+        else {
+            logger_1.default.error("Issue while creating presentation request " + unsignedPresentationRequest.uuid + " proof", e);
+        }
+        throw e;
+    }
 };
 // validates incoming request body
 var validateSendRequestBody = function (sendRequestBody) {

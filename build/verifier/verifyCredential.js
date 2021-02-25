@@ -35,18 +35,23 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyCredential = void 0;
-var library_issuer_verifier_utility_1 = require("library-issuer-verifier-utility");
+var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
+var library_crypto_1 = require("@unumid/library-crypto");
 var lodash_1 = require("lodash");
 var config_1 = require("../config");
+var logger_1 = __importDefault(require("../logger"));
 /**
  * Used to verify the credential signature given the corresponding Did document's public key.
  * @param credential
  * @param authorization
  */
 exports.verifyCredential = function (credential, authorization) { return __awaiter(void 0, void 0, void 0, function () {
-    var proof, didDocumentResponse, authToken, publicKeyObject, data, isVerified, result;
+    var proof, didDocumentResponse, authToken, publicKeyObject, data, isVerified, result, result;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -60,12 +65,28 @@ exports.verifyCredential = function (credential, authorization) { return __await
                 authToken = library_issuer_verifier_utility_1.handleAuthToken(didDocumentResponse);
                 publicKeyObject = library_issuer_verifier_utility_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 data = lodash_1.omit(credential, 'proof');
-                isVerified = library_issuer_verifier_utility_1.doVerify(proof.signatureValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
-                result = {
-                    authToken: authToken,
-                    body: isVerified
-                };
-                return [2 /*return*/, result];
+                try {
+                    isVerified = library_issuer_verifier_utility_1.doVerify(proof.signatureValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
+                    result = {
+                        authToken: authToken,
+                        body: isVerified
+                    };
+                    return [2 /*return*/, result];
+                }
+                catch (e) {
+                    if (e instanceof library_crypto_1.CryptoError) {
+                        logger_1.default.error('Crypto error verifying the credential signature', e);
+                    }
+                    else {
+                        logger_1.default.error("Error verifying credential " + credential.id + " signature", e);
+                    }
+                    result = {
+                        authToken: authToken,
+                        body: false
+                    };
+                    return [2 /*return*/, result];
+                }
+                return [2 /*return*/];
         }
     });
 }); };

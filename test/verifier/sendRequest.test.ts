@@ -1,10 +1,10 @@
-import * as utilLib from 'library-issuer-verifier-utility';
+import * as utilLib from '@unumid/library-issuer-verifier-utility';
 import { sendRequest } from '../../src/index';
 import { PresentationRequestResponse, PresentationRequest, UnumDto, CredentialRequest } from '../../src/types';
 import { dummyAuthToken, makeDummyPresentationRequestResponse } from './mocks';
 
-jest.mock('library-issuer-verifier-utility', () => {
-  const actual = jest.requireActual('library-issuer-verifier-utility');
+jest.mock('@unumid/library-issuer-verifier-utility', () => {
+  const actual = jest.requireActual('@unumid/library-issuer-verifier-utility');
 
   return {
     ...actual,

@@ -3,7 +3,7 @@ import fetch from 'node-fetch';
 import { sendEmail } from '../../src/verifier/sendEmail';
 import { configData } from '../../src/config';
 import { ErrorResponseBody, UnumDto } from '../../src/types';
-import * as utilLib from 'library-issuer-verifier-utility';
+import * as utilLib from '@unumid/library-issuer-verifier-utility';
 
 jest.mock('node-fetch');
 const mockFetch = fetch as unknown as jest.Mock;

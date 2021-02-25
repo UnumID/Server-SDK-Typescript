@@ -1,7 +1,8 @@
 import * as express from 'express';
 import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
-import { getUUID, createProof, CustError, RESTData, makeNetworkRequest, handleAuthToken } from 'library-issuer-verifier-utility';
+import { getUUID, createProof, CustError, RESTData, makeNetworkRequest, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
+import { CryptoError } from '@unumid/library-crypto';
 
 import {
   CredentialRequest,
@@ -60,19 +61,29 @@ export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody
  * @param privateKey String
  */
 export const constructSignedPresentationRequest = (unsignedPresentationRequest: UnsignedPresentationRequest, privateKey: string): SignedPresentationRequest => {
-  const proof = createProof(
-    unsignedPresentationRequest,
-    privateKey,
-    unsignedPresentationRequest.verifier,
-    'pem'
-  );
+  try {
+    const proof = createProof(
+      unsignedPresentationRequest,
+      privateKey,
+      unsignedPresentationRequest.verifier,
+      'pem'
+    );
 
-  const signedPresentationRequest = {
-    ...unsignedPresentationRequest,
-    proof: proof
-  };
+    const signedPresentationRequest = {
+      ...unsignedPresentationRequest,
+      proof: proof
+    };
 
-  return signedPresentationRequest;
+    return signedPresentationRequest;
+  } catch (e) {
+    if (e instanceof CryptoError) {
+      logger.error(`Issue in the crypto lib while creating presentation request ${unsignedPresentationRequest.uuid} proof`, e);
+    } else {
+      logger.error(`Issue while creating presentation request ${unsignedPresentationRequest.uuid} proof`, e);
+    }
+
+    throw e;
+  }
 };
 
 // validates incoming request body

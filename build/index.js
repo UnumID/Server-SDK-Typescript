@@ -21,6 +21,6 @@ var issueCredentials_1 = require("./issuer/issueCredentials");
 Object.defineProperty(exports, "issueCredential", { enumerable: true, get: function () { return issueCredentials_1.issueCredential; } });
 var revokeCredentials_1 = require("./issuer/revokeCredentials");
 Object.defineProperty(exports, "revokeCredential", { enumerable: true, get: function () { return revokeCredentials_1.revokeCredential; } });
-var library_issuer_verifier_utility_1 = require("library-issuer-verifier-utility");
+var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 Object.defineProperty(exports, "CustError", { enumerable: true, get: function () { return library_issuer_verifier_utility_1.CustError; } });
 //# sourceMappingURL=index.js.map

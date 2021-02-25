@@ -1,6 +1,6 @@
 import request from 'supertest';
 
-import * as utilLib from 'library-issuer-verifier-utility';
+import * as utilLib from '@unumid/library-issuer-verifier-utility';
 import {
   dummyAuthToken,
   dummyVerifierApiKey,
@@ -10,8 +10,8 @@ import {
 import { registerVerifier } from '../../src/verifier/registerVerifier';
 import { UnumDto, RegisteredVerifier } from '../../src/types';
 
-jest.mock('library-issuer-verifier-utility', () => ({
-  ...jest.requireActual('library-issuer-verifier-utility'),
+jest.mock('@unumid/library-issuer-verifier-utility', () => ({
+  ...jest.requireActual('@unumid/library-issuer-verifier-utility'),
   makeNetworkRequest: jest.fn()
 }));
 

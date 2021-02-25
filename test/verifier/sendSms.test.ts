@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import * as utilLib from 'library-issuer-verifier-utility';
+import * as utilLib from '@unumid/library-issuer-verifier-utility';
 
 import { sendSms } from '../../src/verifier/sendSms';
 import { configData } from '../../src/config';

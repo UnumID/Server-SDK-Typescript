@@ -6,7 +6,7 @@ import {
   createProof,
   UnsignedCredential,
   Credential
-} from 'library-issuer-verifier-utility';
+} from '@unumid/library-issuer-verifier-utility';
 import { Issuer } from '../../src/types';
 import { configData } from '../../src/config';
 

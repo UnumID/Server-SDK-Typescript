@@ -1,7 +1,7 @@
 import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
 
-import { CustError, RESTData, makeNetworkRequest, JSONObj, handleAuthToken } from 'library-issuer-verifier-utility';
+import { CustError, RESTData, makeNetworkRequest, JSONObj, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
 import { UnumDto } from '../types';
 import logger from '../logger';
 

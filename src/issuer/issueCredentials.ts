@@ -2,8 +2,8 @@ import { configData } from '../config';
 import { CredentialOptions, EncryptedCredentialOptions, UnumDto } from '../types';
 import { requireAuth } from '../requireAuth';
 
-import { Credential, getDIDDoc, getKeyFromDIDDoc, CustError, EncryptedData, doEncrypt, UnsignedCredential, Proof, createProof, getUUID, RESTData, makeNetworkRequest, handleAuthToken } from 'library-issuer-verifier-utility';
-import { CredentialSubject, JSONObj } from 'library-issuer-verifier-utility/build/types';
+import { Credential, getDIDDoc, getKeyFromDIDDoc, CustError, EncryptedData, doEncrypt, UnsignedCredential, Proof, createProof, getUUID, RESTData, makeNetworkRequest, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
+import { CredentialSubject, JSONObj } from '@unumid/library-issuer-verifier-utility/build/types';
 import logger from '../logger';
 
 /**
