@@ -201,14 +201,15 @@ var validatePresentation = function (presentation) {
  */
 var doVerifyString = function (signature, dataString, data, publicKey, encoding) {
     if (encoding === void 0) { encoding = 'pem'; }
-    logger_1.default.debug("Signature verification using public key " + publicKey);
+    logger_1.default.debug("Signature STRING verification using public key " + publicKey);
     var result = library_crypto_1.verifyString(signature, dataString, publicKey, encoding);
+    logger_1.default.debug("Signature STRING is valid: " + result + ".");
     var finalResult = false;
     if (result) {
         // need to also verify that the stringData converted to an object matches the data object
         finalResult = lodash_1.default.isEqual(data, JSON.parse(dataString));
     }
-    logger_1.default.debug("Signature is valid: " + finalResult + ".");
+    logger_1.default.debug("Signature STRING is valid FINAL: " + finalResult + ".");
     return finalResult;
 };
 /**

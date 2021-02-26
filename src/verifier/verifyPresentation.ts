@@ -170,8 +170,9 @@ const validatePresentation = (presentation: Presentation): void => {
  * @param encoding String ('base58' | 'pem'), defaults to 'pem'
  */
 const doVerifyString = (signature: string, dataString: string, data: JSONObj, publicKey: string, encoding: 'base58' | 'pem' = 'pem'): boolean => {
-  logger.debug(`Signature verification using public key ${publicKey}`);
+  logger.debug(`Signature STRING verification using public key ${publicKey}`);
   const result:boolean = verifyString(signature, dataString, publicKey, encoding);
+  logger.debug(`Signature STRING is valid: ${result}.`);
 
   let finalResult = false;
   if (result) {
@@ -179,7 +180,7 @@ const doVerifyString = (signature: string, dataString: string, data: JSONObj, pu
     finalResult = _.isEqual(data, JSON.parse(dataString));
   }
 
-  logger.debug(`Signature is valid: ${finalResult}.`);
+  logger.debug(`Signature STRING is valid FINAL: ${finalResult}.`);
   return finalResult;
 };
 
