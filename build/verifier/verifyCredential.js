@@ -1,4 +1,23 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -42,7 +61,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyCredential = void 0;
 var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var library_crypto_1 = require("@unumid/library-crypto");
-var lodash_1 = require("lodash");
+var lodash_1 = __importStar(require("lodash"));
 var config_1 = require("../config");
 var logger_1 = __importDefault(require("../logger"));
 /**
@@ -52,10 +71,15 @@ var logger_1 = __importDefault(require("../logger"));
  * @param publicKey
  * @param encoding String ('base58' | 'pem'), defaults to 'pem'
  */
-var doVerifyString = function (signature, data, publicKey, encoding) {
+var doVerifyString = function (signature, dataString, data, publicKey, encoding) {
     if (encoding === void 0) { encoding = 'pem'; }
     logger_1.default.debug("Signature verification using public key " + publicKey);
-    var result = library_crypto_1.verifyString(signature, data, publicKey, encoding);
+    var result = library_crypto_1.verifyString(signature, dataString, publicKey, encoding);
+    var finalResult = false;
+    if (result) {
+        // need to also verify that the stringData converted to an object matches the data object
+        finalResult = lodash_1.default.isEqual(data, JSON.parse(dataString));
+    }
     logger_1.default.debug("Signature is valid: " + result + ".");
     return result;
 };
@@ -81,7 +105,7 @@ exports.verifyCredential = function (credential, authorization) { return __await
                 data = lodash_1.omit(credential, 'proof');
                 try {
                     isVerifiedData = library_issuer_verifier_utility_1.doVerify(proof.signatureValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
-                    isVerifiedString = doVerifyString(proof.signatureValue, proof.unsignedValue, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
+                    isVerifiedString = doVerifyString(proof.signatureValue, proof.unsignedValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
                     isVerified = isVerifiedData || isVerifiedString;
                     result = {
                         authToken: authToken,

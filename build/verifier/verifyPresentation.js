@@ -1,4 +1,23 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -40,7 +59,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyPresentation = void 0;
-var lodash_1 = require("lodash");
+var lodash_1 = __importStar(require("lodash"));
 var config_1 = require("../config");
 var validateProof_1 = require("./validateProof");
 var requireAuth_1 = require("../requireAuth");
@@ -180,12 +199,17 @@ var validatePresentation = function (presentation) {
  * @param publicKey
  * @param encoding String ('base58' | 'pem'), defaults to 'pem'
  */
-var doVerifyString = function (signature, data, publicKey, encoding) {
+var doVerifyString = function (signature, dataString, data, publicKey, encoding) {
     if (encoding === void 0) { encoding = 'pem'; }
     logger_1.default.debug("Signature verification using public key " + publicKey);
-    var result = library_crypto_1.verifyString(signature, data, publicKey, encoding);
-    logger_1.default.debug("Signature is valid: " + result + ".");
-    return result;
+    var result = library_crypto_1.verifyString(signature, dataString, publicKey, encoding);
+    var finalResult = false;
+    if (result) {
+        // need to also verify that the stringData converted to an object matches the data object
+        finalResult = lodash_1.default.isEqual(data, JSON.parse(dataString));
+    }
+    logger_1.default.debug("Signature is valid: " + finalResult + ".");
+    return finalResult;
 };
 /**
  * Handler to send information regarding the user agreeing to share a credential Presentation.
@@ -228,7 +252,7 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                     return [2 /*return*/, result_1];
                 }
                 isPresentationDataVerified = library_issuer_verifier_utility_1.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
-                isPresentationStringVerified = doVerifyString(proof.signatureValue, proof.unsignedValue, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
+                isPresentationStringVerified = doVerifyString(proof.signatureValue, proof.unsignedValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
                 isPresentationVerified = isPresentationDataVerified || isPresentationStringVerified;
                 areCredentialsValid = true;
                 _i = 0, _a = presentation.verifiableCredential;

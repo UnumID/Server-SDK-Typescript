@@ -1,4 +1,4 @@
-import { omit } from 'lodash';
+import _, { omit } from 'lodash';
 
 import { configData } from '../config';
 import { Presentation, UnumDto, VerifiedStatus } from '../types';
@@ -169,12 +169,18 @@ const validatePresentation = (presentation: Presentation): void => {
  * @param publicKey
  * @param encoding String ('base58' | 'pem'), defaults to 'pem'
  */
-const doVerifyString = (signature: string, data: string, publicKey: string, encoding: 'base58' | 'pem' = 'pem'): boolean => {
+const doVerifyString = (signature: string, dataString: string, data: JSONObj, publicKey: string, encoding: 'base58' | 'pem' = 'pem'): boolean => {
   logger.debug(`Signature verification using public key ${publicKey}`);
-  const result:boolean = verifyString(signature, data, publicKey, encoding);
+  const result:boolean = verifyString(signature, dataString, publicKey, encoding);
 
-  logger.debug(`Signature is valid: ${result}.`);
-  return result;
+  let finalResult = false;
+  if (result) {
+    // need to also verify that the stringData converted to an object matches the data object
+    finalResult = _.isEqual(data, JSON.parse(dataString));
+  }
+
+  logger.debug(`Signature is valid: ${finalResult}.`);
+  return finalResult;
 };
 
 /**
@@ -227,7 +233,7 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     // verifiableCredential is an array.  As of now we are verifying the entire credential object together.  We will have to modify
     // this logic to verify each credential present separately.  We can take this up later.
     const isPresentationDataVerified: boolean = doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
-    const isPresentationStringVerified: boolean = doVerifyString(proof.signatureValue, proof.unsignedValue, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
+    const isPresentationStringVerified: boolean = doVerifyString(proof.signatureValue, proof.unsignedValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
 
     const isPresentationVerified: boolean = isPresentationDataVerified || isPresentationStringVerified;
 
