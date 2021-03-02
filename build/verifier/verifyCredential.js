@@ -91,14 +91,13 @@ var doVerifyString = function (signature, dataString, data, publicKey, encoding)
  */
 exports.verifyCredential = function (credential, authorization) { return __awaiter(void 0, void 0, void 0, function () {
     var proof, didDocumentResponse, authToken, publicKeyObject, data, isVerifiedData, isVerifiedString, isVerified, result, result;
-    var _a;
-    return __generator(this, function (_b) {
-        switch (_b.label) {
+    return __generator(this, function (_a) {
+        switch (_a.label) {
             case 0:
                 proof = credential.proof;
                 return [4 /*yield*/, library_issuer_verifier_utility_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, proof.verificationMethod)];
             case 1:
-                didDocumentResponse = _b.sent();
+                didDocumentResponse = _a.sent();
                 if (didDocumentResponse instanceof Error) {
                     throw didDocumentResponse;
                 }
@@ -108,7 +107,7 @@ exports.verifyCredential = function (credential, authorization) { return __await
                 try {
                     isVerifiedData = library_issuer_verifier_utility_1.doVerify(proof.signatureValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
                     logger_1.default.debug("Credential isVerifiedData " + isVerifiedData);
-                    isVerifiedString = (_a = !isVerifiedData) !== null && _a !== void 0 ? _a : doVerifyString(proof.signatureValue, proof.unsignedValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
+                    isVerifiedString = isVerifiedData ? true : doVerifyString(proof.signatureValue, proof.unsignedValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
                     isVerified = isVerifiedData || isVerifiedString;
                     result = {
                         authToken: authToken,
