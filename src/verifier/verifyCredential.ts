@@ -17,13 +17,14 @@ const doVerifyString = (signature: string, dataString: string, data: JSONObj, pu
   logger.debug(`Credential Signature verification using public key ${publicKey}`);
   const result:boolean = verifyString(signature, dataString, publicKey, encoding);
 
+  logger.debug(`Credential Signature STRING is valid: ${result}.`);
   let finalResult = false;
   if (result) {
     // need to also verify that the stringData converted to an object matches the data object
     finalResult = _.isEqual(data, JSON.parse(dataString));
   }
 
-  logger.debug(`Credential Signature STRING is valid: ${finalResult}.`);
+  logger.debug(`Credential Signature STRING is valid FINAL: ${finalResult}.`);
   return finalResult;
 };
 

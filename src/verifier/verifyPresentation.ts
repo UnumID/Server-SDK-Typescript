@@ -172,8 +172,8 @@ const validatePresentation = (presentation: Presentation): void => {
 const doVerifyString = (signature: string, dataString: string, data: JSONObj, publicKey: string, encoding: 'base58' | 'pem' = 'pem'): boolean => {
   logger.debug(`Presentation Signature STRING verification using public key ${publicKey}`);
   const result:boolean = verifyString(signature, dataString, publicKey, encoding);
-  logger.debug(`Signature STRING is valid: ${result}.`);
 
+  logger.debug(`Presentation Signature STRING is valid: ${result}.`);
   let finalResult = false;
   if (result) {
     // need to also verify that the stringData converted to an object matches the data object
