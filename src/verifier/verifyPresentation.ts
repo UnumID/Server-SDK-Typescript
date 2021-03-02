@@ -234,6 +234,7 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     // verifiableCredential is an array.  As of now we are verifying the entire credential object together.  We will have to modify
     // this logic to verify each credential present separately.  We can take this up later.
     const isPresentationDataVerified: boolean = doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
+    logger.debug(`Presentation isPresentationDataVerified ${isPresentationDataVerified}`);
     const isPresentationStringVerified: boolean = !isPresentationDataVerified ?? doVerifyString(proof.signatureValue, proof.unsignedValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
 
     const isPresentationVerified: boolean = isPresentationDataVerified || isPresentationStringVerified;
