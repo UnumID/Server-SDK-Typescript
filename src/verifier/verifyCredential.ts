@@ -1,37 +1,10 @@
 import { getDIDDoc, getKeyFromDIDDoc, doVerify, handleAuthToken, JSONObj } from '@unumid/library-issuer-verifier-utility';
-import { CryptoError, verifyString } from '@unumid/library-crypto';
-import _, { omit } from 'lodash';
+import { CryptoError } from '@unumid/library-crypto';
+import { omit } from 'lodash';
 
 import { UnumDto, VerifiableCredential } from '../types';
 import { configData } from '../config';
 import logger from '../logger';
-
-/**
- * Verify the signature on the provided data object.
- * @param signature
- * @param data
- * @param publicKey
- * @param encoding String ('base58' | 'pem'), defaults to 'pem'
- */
-const doVerifyString = (signature: string, dataString: string, data: JSONObj, publicKey: string, encoding: 'base58' | 'pem' = 'pem'): boolean => {
-  if (!dataString) {
-    logger.debug('No Credential Signature unsignedString value; skipping string verification.');
-    return false;
-  }
-
-  logger.debug(`Credential Signature verification using public key ${publicKey}`);
-  const result:boolean = verifyString(signature, dataString, publicKey, encoding);
-
-  logger.debug(`Credential Signature STRING is valid: ${result}.`);
-  let finalResult = false;
-  if (result) {
-    // need to also verify that the stringData converted to an object matches the data object
-    finalResult = _.isEqual(data, JSON.parse(dataString));
-  }
-
-  logger.debug(`Credential Signature STRING is valid FINAL: ${finalResult}.`);
-  return finalResult;
-};
 
 /**
  * Used to verify the credential signature given the corresponding Did document's public key.
@@ -51,11 +24,13 @@ export const verifyCredential = async (credential: VerifiableCredential, authori
   const data = omit(credential, 'proof');
 
   try {
-    const isVerifiedData = doVerify(proof.signatureValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
-    logger.debug(`Credential isVerifiedData ${isVerifiedData}`);
-    const isVerifiedString = isVerifiedData ? true : doVerifyString(proof.signatureValue, proof.unsignedValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
+    // const isVerifiedData = doVerify(proof.signatureValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
+    // logger.debug(`Credential isVerifiedData ${isVerifiedData}`);
+    // const isVerifiedString = isVerifiedData ? true : doVerifyString(proof.signatureValue, proof.unsignedValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
+    // const isVerified = isVerifiedData || isVerifiedString;
 
-    const isVerified = isVerifiedData || isVerifiedString;
+    const isVerified: boolean = doVerify(proof.signatureValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding, proof.unsignedValue);
+
     const result: UnumDto<boolean> = {
       authToken,
       body: isVerified

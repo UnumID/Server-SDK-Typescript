@@ -1,4 +1,4 @@
-import _, { omit } from 'lodash';
+import { omit } from 'lodash';
 
 import { configData } from '../config';
 import { Presentation, UnumDto, VerifiedStatus } from '../types';
@@ -9,7 +9,6 @@ import { isCredentialExpired } from './isCredentialExpired';
 import { checkCredentialStatus } from './checkCredentialStatus';
 import { JSONObj, CustError, Proof, getDIDDoc, PublicKeyInfo, getKeyFromDIDDoc, doVerify, RESTData, makeNetworkRequest, isArrayEmpty, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
 import logger from '../logger';
-import { verifyString } from '@unumid/library-crypto';
 
 /**
  * Validates the attributes for a credential request to UnumID's SaaS.
@@ -163,33 +162,6 @@ const validatePresentation = (presentation: Presentation): void => {
 };
 
 /**
- * Verify the signature on the provided data object.
- * @param signature
- * @param data
- * @param publicKey
- * @param encoding String ('base58' | 'pem'), defaults to 'pem'
- */
-const doVerifyString = (signature: string, dataString: string, data: JSONObj, publicKey: string, encoding: 'base58' | 'pem' = 'pem'): boolean => {
-  if (!dataString) {
-    logger.debug('No Presentation Signature unsignedString value; skipping string verification.');
-    return false;
-  }
-
-  logger.debug(`Presentation Signature STRING verification using public key ${publicKey}`);
-  const result:boolean = verifyString(signature, dataString, publicKey, encoding);
-
-  logger.debug(`Presentation Signature STRING is valid: ${result}.`);
-  let finalResult = false;
-  if (result) {
-    // need to also verify that the stringData converted to an object matches the data object
-    finalResult = _.isEqual(data, JSON.parse(dataString));
-  }
-
-  logger.debug(`Presentation Signature STRING is valid FINAL: ${finalResult}.`);
-  return finalResult;
-};
-
-/**
  * Handler to send information regarding the user agreeing to share a credential Presentation.
  * @param authorization
  * @param presentation
@@ -238,11 +210,18 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     // The same scenario would be handled later.
     // verifiableCredential is an array.  As of now we are verifying the entire credential object together.  We will have to modify
     // this logic to verify each credential present separately.  We can take this up later.
-    const isPresentationDataVerified: boolean = doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
-    logger.debug(`Presentation isPresentationDataVerified ${isPresentationDataVerified}`);
-    const isPresentationStringVerified: boolean = isPresentationDataVerified ? true : doVerifyString(proof.signatureValue, proof.unsignedValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
+    const isPresentationVerified: boolean = doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding, proof.unsignedValue);
 
-    const isPresentationVerified: boolean = isPresentationDataVerified || isPresentationStringVerified;
+    if (!isPresentationVerified) {
+      const result: UnumDto<VerifiedStatus> = {
+        authToken,
+        body: {
+          isVerified: false,
+          message: 'Presentation signature can no be verified'
+        }
+      };
+      return result;
+    }
 
     let areCredentialsValid = true;
 
@@ -271,17 +250,6 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
         areCredentialsValid = false;
         break;
       }
-    }
-
-    if (!isPresentationVerified) {
-      const result: UnumDto<VerifiedStatus> = {
-        authToken,
-        body: {
-          isVerified: false,
-          message: 'Presentation signature can no be verified'
-        }
-      };
-      return result;
     }
 
     if (!areCredentialsValid) {

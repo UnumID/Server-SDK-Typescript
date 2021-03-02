@@ -1,23 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -61,40 +42,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyCredential = void 0;
 var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var library_crypto_1 = require("@unumid/library-crypto");
-var lodash_1 = __importStar(require("lodash"));
+var lodash_1 = require("lodash");
 var config_1 = require("../config");
 var logger_1 = __importDefault(require("../logger"));
-/**
- * Verify the signature on the provided data object.
- * @param signature
- * @param data
- * @param publicKey
- * @param encoding String ('base58' | 'pem'), defaults to 'pem'
- */
-var doVerifyString = function (signature, dataString, data, publicKey, encoding) {
-    if (encoding === void 0) { encoding = 'pem'; }
-    if (!dataString) {
-        logger_1.default.debug('No Credential Signature unsignedString value; skipping string verification.');
-        return false;
-    }
-    logger_1.default.debug("Credential Signature verification using public key " + publicKey);
-    var result = library_crypto_1.verifyString(signature, dataString, publicKey, encoding);
-    logger_1.default.debug("Credential Signature STRING is valid: " + result + ".");
-    var finalResult = false;
-    if (result) {
-        // need to also verify that the stringData converted to an object matches the data object
-        finalResult = lodash_1.default.isEqual(data, JSON.parse(dataString));
-    }
-    logger_1.default.debug("Credential Signature STRING is valid FINAL: " + finalResult + ".");
-    return finalResult;
-};
 /**
  * Used to verify the credential signature given the corresponding Did document's public key.
  * @param credential
  * @param authorization
  */
 exports.verifyCredential = function (credential, authorization) { return __awaiter(void 0, void 0, void 0, function () {
-    var proof, didDocumentResponse, authToken, publicKeyObject, data, isVerifiedData, isVerifiedString, isVerified, result, result;
+    var proof, didDocumentResponse, authToken, publicKeyObject, data, isVerified, result, result;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -109,10 +66,7 @@ exports.verifyCredential = function (credential, authorization) { return __await
                 publicKeyObject = library_issuer_verifier_utility_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 data = lodash_1.omit(credential, 'proof');
                 try {
-                    isVerifiedData = library_issuer_verifier_utility_1.doVerify(proof.signatureValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
-                    logger_1.default.debug("Credential isVerifiedData " + isVerifiedData);
-                    isVerifiedString = isVerifiedData ? true : doVerifyString(proof.signatureValue, proof.unsignedValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
-                    isVerified = isVerifiedData || isVerifiedString;
+                    isVerified = library_issuer_verifier_utility_1.doVerify(proof.signatureValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding, proof.unsignedValue);
                     result = {
                         authToken: authToken,
                         body: isVerified

@@ -20,8 +20,8 @@ var logger = winston_1.createLogger({
             level: config_1.configData.logLevel || 'info',
             format: consoleFormat
         })
-    ],
-    silent: process.env.NODE_ENV === 'test'
+    ]
+    // silent: process.env.NODE_ENV === 'test'
 });
 // Printing this info here instead of in ./config to prevent a circular dependency.
 logger.debug("Server SDK SaaS URL: " + config_1.configData.SaaSUrl);
