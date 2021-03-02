@@ -170,6 +170,11 @@ const validatePresentation = (presentation: Presentation): void => {
  * @param encoding String ('base58' | 'pem'), defaults to 'pem'
  */
 const doVerifyString = (signature: string, dataString: string, data: JSONObj, publicKey: string, encoding: 'base58' | 'pem' = 'pem'): boolean => {
+  if (!dataString) {
+    logger.debug('No Presentation Signature unsignedString value; skipping string verification.');
+    return false;
+  }
+
   logger.debug(`Presentation Signature STRING verification using public key ${publicKey}`);
   const result:boolean = verifyString(signature, dataString, publicKey, encoding);
 

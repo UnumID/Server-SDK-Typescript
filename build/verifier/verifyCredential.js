@@ -73,6 +73,10 @@ var logger_1 = __importDefault(require("../logger"));
  */
 var doVerifyString = function (signature, dataString, data, publicKey, encoding) {
     if (encoding === void 0) { encoding = 'pem'; }
+    if (!dataString) {
+        logger_1.default.debug('No Credential Signature unsignedString value; skipping string verification.');
+        return false;
+    }
     logger_1.default.debug("Credential Signature verification using public key " + publicKey);
     var result = library_crypto_1.verifyString(signature, dataString, publicKey, encoding);
     logger_1.default.debug("Credential Signature STRING is valid: " + result + ".");

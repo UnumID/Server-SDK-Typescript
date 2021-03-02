@@ -7,7 +7,6 @@ import { dummyAuthToken, dummyRsaPrivateKey, dummyRsaPublicKey, makeDummyDidDocu
 import { encrypt } from '@unumid/library-crypto';
 import { omit } from 'lodash';
 import { DecryptedPresentation } from '../../src/types';
-// import { publicKeyNotFoundInDidDocViaProofVerification } from '@unumid/errors';
 
 jest.mock('@unumid/library-issuer-verifier-utility', () => ({
   ...jest.requireActual('@unumid/library-issuer-verifier-utility'),
@@ -85,7 +84,7 @@ const populateMockData = (): utilLib.JSONObj => {
       proof: {
         created: '2020-09-03T18:42:30.658Z',
         signatureValue: '381yXYx2wa7qR4XMEWeLPWVR7xhksi4684VCZL7Yx9jXneVMxXoa3eT3dA5QU1tofsH4XrGbU8d4pNTiLRpa8iUWvWmAdnfE',
-        unsignedValue: '381yXYx2wa7qR4XMEWeLPWVR7xhksi4684VCZL7Yx9jXneVMxXoa3eT3dA5QU1tofsH4XrGbU8d4pNTiLRpa8iUWvWmAdnfE',
+        unsignedValue: 'todo',
         type: 'secp256r1Signature2020',
         verificationMethod: 'did:unum:2e05967f-216f-44c4-ae8e-d6f71cd17c5a',
         proofPurpose: 'AssertionMethod'
