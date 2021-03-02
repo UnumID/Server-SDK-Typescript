@@ -47,7 +47,7 @@ export const verifyCredential = async (credential: VerifiableCredential, authori
 
   try {
     const isVerifiedData = doVerify(proof.signatureValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
-    const isVerifiedString = doVerifyString(proof.signatureValue, proof.unsignedValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
+    const isVerifiedString = !isVerifiedData ?? doVerifyString(proof.signatureValue, proof.unsignedValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
 
     const isVerified = isVerifiedData || isVerifiedString;
     const result: UnumDto<boolean> = {

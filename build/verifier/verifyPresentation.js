@@ -220,10 +220,11 @@ var doVerifyString = function (signature, dataString, data, publicKey, encoding)
  */
 exports.verifyPresentation = function (authorization, presentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
     var data, proof, didDocumentResponse, authToken, pubKeyObj, result_1, isPresentationDataVerified, isPresentationStringVerified, isPresentationVerified, areCredentialsValid, _i, _a, credential, isExpired, isStatusValidResponse, isStatusValid, isVerifiedResponse, isVerified_1, result_2, result_3, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, result, error_1;
-    return __generator(this, function (_b) {
-        switch (_b.label) {
+    var _b;
+    return __generator(this, function (_c) {
+        switch (_c.label) {
             case 0:
-                _b.trys.push([0, 8, , 9]);
+                _c.trys.push([0, 8, , 9]);
                 requireAuth_1.requireAuth(authorization);
                 if (!presentation) {
                     throw new library_issuer_verifier_utility_1.CustError(400, 'presentation is required.');
@@ -236,7 +237,7 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                 proof = presentation.proof;
                 return [4 /*yield*/, library_issuer_verifier_utility_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, proof.verificationMethod)];
             case 1:
-                didDocumentResponse = _b.sent();
+                didDocumentResponse = _c.sent();
                 if (didDocumentResponse instanceof Error) {
                     throw didDocumentResponse;
                 }
@@ -253,11 +254,11 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                     return [2 /*return*/, result_1];
                 }
                 isPresentationDataVerified = library_issuer_verifier_utility_1.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
-                isPresentationStringVerified = doVerifyString(proof.signatureValue, proof.unsignedValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
+                isPresentationStringVerified = (_b = !isPresentationDataVerified) !== null && _b !== void 0 ? _b : doVerifyString(proof.signatureValue, proof.unsignedValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
                 isPresentationVerified = isPresentationDataVerified || isPresentationStringVerified;
                 areCredentialsValid = true;
                 _i = 0, _a = presentation.verifiableCredential;
-                _b.label = 2;
+                _c.label = 2;
             case 2:
                 if (!(_i < _a.length)) return [3 /*break*/, 6];
                 credential = _a[_i];
@@ -268,7 +269,7 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                 }
                 return [4 /*yield*/, checkCredentialStatus_1.checkCredentialStatus(credential, authToken)];
             case 3:
-                isStatusValidResponse = _b.sent();
+                isStatusValidResponse = _c.sent();
                 isStatusValid = isStatusValidResponse.body;
                 authToken = isStatusValidResponse.authToken;
                 if (!isStatusValid) {
@@ -277,14 +278,14 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                 }
                 return [4 /*yield*/, verifyCredential_1.verifyCredential(credential, authToken)];
             case 4:
-                isVerifiedResponse = _b.sent();
+                isVerifiedResponse = _c.sent();
                 isVerified_1 = isVerifiedResponse.body;
                 authToken = isVerifiedResponse.authToken;
                 if (!isVerified_1) {
                     areCredentialsValid = false;
                     return [3 /*break*/, 6];
                 }
-                _b.label = 5;
+                _c.label = 5;
             case 5:
                 _i++;
                 return [3 /*break*/, 2];
@@ -332,7 +333,7 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                 };
                 return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(receiptCallOptions)];
             case 7:
-                resp = _b.sent();
+                resp = _c.sent();
                 authToken = library_issuer_verifier_utility_1.handleAuthToken(resp);
                 result = {
                     authToken: authToken,
@@ -342,7 +343,7 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                 };
                 return [2 /*return*/, result];
             case 8:
-                error_1 = _b.sent();
+                error_1 = _c.sent();
                 logger_1.default.error('Error sending a verifyPresentation request to UnumID Saas.', error_1);
                 throw error_1;
             case 9: return [2 /*return*/];
