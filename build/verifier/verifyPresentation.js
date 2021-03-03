@@ -66,13 +66,10 @@ var validateCredentialInput = function (credentials) {
         var credPosStr = '[' + i + ']';
         var credential = credentials[i];
         if (credential) {
-            // retObj.valStat = false;
-            // retObj.msg = `${credential} @yes~~~~~~~~~~~ is required.`;
-            // break;
             retObj.stringifiedCredentials = true; // setting so know to add the object version of the stringified vc's
             credential = JSON.parse(credential);
         }
-        // Validate the existance of elements in verifiableCredential object
+        // Validate the existence of elements in verifiableCredential object
         var invalidMsg = "Invalid verifiableCredential" + credPosStr + ":";
         if (!credential['@context']) {
             retObj.valStat = false;
@@ -141,7 +138,7 @@ var validateCredentialInput = function (credentials) {
         // Check that proof object is valid
         validateProof_1.validateProof(credential.proof);
         if (retObj.stringifiedCredentials) {
-            // Adding the credential to the result list so can
+            // Adding the credential to the result list so can use the fully created objects downstream
             retObj.resultantCredentials.push(credential);
         }
     }
@@ -183,6 +180,7 @@ var validatePresentation = function (presentation) {
         throw new library_issuer_verifier_utility_1.CustError(400, retObj.msg);
     }
     else if (retObj.stringifiedCredentials) {
+        // adding the "objectified" vc, which were sent in string format to appease iOS veriable keyed object limitation: https://developer.apple.com/forums/thread/100417
         presentation.verifiableCredential = retObj.resultantCredentials;
     }
     // Check proof object is formatted correctly

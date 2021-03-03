@@ -31,14 +31,11 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
     let credential = credentials[i];
 
     if (credential as string) {
-      // retObj.valStat = false;
-      // retObj.msg = `${credential} @yes~~~~~~~~~~~ is required.`;
-      // break;
       retObj.stringifiedCredentials = true; // setting so know to add the object version of the stringified vc's
       credential = JSON.parse(credential);
     }
 
-    // Validate the existance of elements in verifiableCredential object
+    // Validate the existence of elements in verifiableCredential object
     const invalidMsg = `Invalid verifiableCredential${credPosStr}:`;
     if (!credential['@context']) {
       retObj.valStat = false;
@@ -120,7 +117,7 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
     validateProof(credential.proof);
 
     if (retObj.stringifiedCredentials) {
-      // Adding the credential to the result list so can
+      // Adding the credential to the result list so can use the fully created objects downstream
       retObj.resultantCredentials.push(credential);
     }
   }
@@ -171,6 +168,7 @@ const validatePresentation = (presentation: Presentation): Presentation => {
   if (!retObj.valStat) {
     throw new CustError(400, retObj.msg);
   } else if (retObj.stringifiedCredentials) {
+    // adding the "objectified" vc, which were sent in string format to appease iOS veriable keyed object limitation: https://developer.apple.com/forums/thread/100417
     presentation.verifiableCredential = retObj.resultantCredentials;
   }
 
