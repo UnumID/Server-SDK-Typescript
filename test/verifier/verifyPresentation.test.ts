@@ -1,9 +1,11 @@
 import * as utilLib from '@unumid/library-issuer-verifier-utility';
-import { Presentation, VerifiedStatus, UnumDto, verifyPresentation } from '../../src/index';
+import { Presentation, VerifiedStatus, UnumDto, verifyPresentation, Proof } from '../../src/index';
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { isCredentialExpired } from '../../src/verifier/isCredentialExpired';
 import { checkCredentialStatus } from '../../src/verifier/checkCredentialStatus';
-import { dummyAuthToken, makeDummyDidDocument } from './mocks';
+import { dummyAuthToken, dummyEccPrivateKey, makeDummyDidDocument } from './mocks';
+import { sign } from '@unumid/library-crypto';
+import stringify from 'fast-json-stable-stringify';
 // import { publicKeyNotFoundInDidDocViaProofVerification } from '@unumid/errors';
 
 jest.mock('@unumid/library-issuer-verifier-utility', () => ({
@@ -63,46 +65,74 @@ const populateMockData = (): utilLib.JSONObj => {
         'https://www.w3.org/2018/credentials/v1'
       ],
       credentialStatus: {
-        id: 'https://api.dev-unumid.org//credentialStatus/b2acd26a-ab18-4d18-9ad1-3b77f55c564b',
+        id: 'https://api.dev-unumid.org//credentialStatus/f8287c1e-0c56-460a-92af-5519f5c10cbf',
         type: 'CredentialStatus'
       },
       credentialSubject: {
-        id: 'did:unum:3ff2f020-50b0-4f4c-a267-a9f104aedcd8',
+        id: 'did:unum:5f5eb3dd-d0e0-4356-bfdd-96bc1393c705',
         test: 'test'
       },
-      issuer: 'did:unum:2e05967f-216f-44c4-ae8e-d6f71cd17c5a',
+      issuer: 'did:unum:7fc1753e-cdb7-428a-b6ce-eefc0e3634e5',
       type: [
         'VerifiableCredential',
-        'TestCredential'
+        'UsernameCredential'
       ],
-      id: 'b2acd26a-ab18-4d18-9ad1-3b77f55c564b',
-      issuanceDate: '2020-09-03T18:42:30.645Z',
+      id: 'f8287c1e-0c56-460a-92af-5519f5c10cbf',
+      issuanceDate: '2021-01-09T02:23:54.844Z',
+      expirationDate: '2022-01-09T00:00:00.000Z',
       proof: {
-        created: '2020-09-03T18:42:30.658Z',
-        signatureValue: '381yXYx2wa7qR4XMEWeLPWVR7xhksi4684VCZL7Yx9jXneVMxXoa3eT3dA5QU1tofsH4XrGbU8d4pNTiLRpa8iUWvWmAdnfE',
+        created: '2021-01-09T02:23:54.844Z',
         type: 'secp256r1Signature2020',
-        verificationMethod: 'did:unum:2e05967f-216f-44c4-ae8e-d6f71cd17c5a',
-        proofPurpose: 'AssertionMethod'
+        verificationMethod: 'did:unum:7fc1753e-cdb7-428a-b6ce-eefc0e3634e5',
+        proofPurpose: 'AssertionMethod',
+        signatureValue: '381yXZCEPSC9NB2smArjiBtvnGL6LZ2yAUW1qLQfhuZSyeQiCyrFRqkxfPoa1gaLaScR7cFVJmguo1v1JKYH6uEU4Zd32D9C',
+        unsignedValue: '{"@context":["https://www.w3.org/2018/credentials/v1"],"credentialStatus":{"id":"https://api.dev-unumid.org//credentialStatus/f8287c1e-0c56-460a-92af-5519f5c10cbf","type":"CredentialStatus"},"credentialSubject":{"id":"did:unum:5f5eb3dd-d0e0-4356-bfdd-96bc1393c705","username":"Analyst-Shoes-278"},"expirationDate":"2022-01-09T00:00:00.000Z","id":"f8287c1e-0c56-460a-92af-5519f5c10cbf","issuanceDate":"2021-01-09T02:23:54.844Z","issuer":"did:unum:7fc1753e-cdb7-428a-b6ce-eefc0e3634e5","proof":{"created":"2021-01-09T02:23:54.844Z","proofPurpose":"AssertionMethod","type":"secp256r1Signature2020","verificationMethod":"did:unum:7fc1753e-cdb7-428a-b6ce-eefc0e3634e5"},"type":["VerifiableCredential","UsernameCredential"]}'
       }
     }
   ];
   const presentationRequestUuid = '0cebee3b-3295-4ef6-a4d6-7dfea413b3aa';
-  const proof: utilLib.JSONObj = {
-    created: '2020-09-03T18:50:52.105Z',
-    signatureValue: 'iKx1CJLYue7vopUo2fqGps3TWmxqRxoBDTupumLkaNp2W3UeAjwLUf5WxLRCRkDzEFeKCgT7JdF5fqbpvqnBZoHyYzWYbmW4YQ',
-    type: 'secp256r1Signature2020',
-    verificationMethod: 'did:unum:3ff2f020-50b0-4f4c-a267-a9f104aedcd8',
-    proofPurpose: 'AssertionMethod'
-  };
+  // const proof: utilLib.JSONObj = {
+  //   created: '2020-09-03T18:50:52.105Z',
+  //   signatureValue: 'iKx1CJLYue7vopUo2fqGps3TWmxqRxoBDTupumLkaNp2W3UeAjwLUf5WxLRCRkDzEFeKCgT7JdF5fqbpvqnBZoHyYzWYbmW4YQ',
+  //   type: 'secp256r1Signature2020',
+  //   verificationMethod: 'did:unum:3ff2f020-50b0-4f4c-a267-a9f104aedcd8',
+  //   proofPurpose: 'AssertionMethod'
+  // };
   const invalidProof: utilLib.JSONObj = {
     created: '2020-09-03T18:50:52.105Z',
     signatureValue: 'iTx1CJLYue7vopUo2fqGps3TWmxqRxoBDTupumLkaNp2W3UeAjwLUf5WxLRCRkDzEFeKCgT7JdF5fqbpvqnBZoHyYzWYbmW4YQ',
+    unsignedValue: stringify({}),
     type: 'secp256r1Signature2020',
     verificationMethod: 'did:unum:3ff2f020-50b0-4f4c-a267-a9f104aedcd8',
     proofPurpose: 'AssertionMethod'
   };
   const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
   const verifier = 'did:unum:dd407b1a-ee7f-46a2-af2a-ccbb48cbb0dc';
+
+  const subjectDid = 'did:unum:3ff2f020-50b0-4f4c-a267-a9f104aedcd8';
+  const unsignedPresentation = {
+    '@context': ['https://www.w3.org/2018/credentials/v1'],
+    presentationRequestUuid,
+    verifiableCredential: [verifiableCredential],
+    type: ['VerifiablePresentation']
+  };
+
+  const signatureValue = sign(unsignedPresentation, dummyEccPrivateKey, 'base58');
+
+  const proof: Proof = {
+    created: new Date().toISOString(),
+    signatureValue,
+    unsignedValue: stringify(unsignedPresentation),
+    type: 'secp256r1Signature2020',
+    verificationMethod: subjectDid,
+    proofPurpose: 'assertionMethod'
+  };
+
+  const presentation = {
+    ...unsignedPresentation,
+    proof
+  };
+
   return ({
     context,
     type,
@@ -111,7 +141,8 @@ const populateMockData = (): utilLib.JSONObj => {
     proof,
     invalidProof,
     authHeader,
-    verifier
+    verifier,
+    presentation
   });
 };
 
@@ -211,12 +242,18 @@ describe('verifyPresentation - Failure Scenarios', () => {
     const dummySubjectDidDoc = await makeDummyDidDocument();
     const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
     mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
-    await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, invalidProof, verifier, authHeader);
+    verStatus = response.body.isVerified;
     expect(mockGetDIDDoc).toBeCalled();
   });
 
   it('verifies the presentation', async () => {
     expect(mockDoVerify).toBeCalled();
+  });
+
+  it('Result should be true', () => {
+    expect(verStatus).toBeDefined();
+    expect(verStatus).toBe(false);
   });
 
   it('returns a 404 status code if the did document has no public keys', async () => {

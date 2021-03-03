@@ -30,7 +30,7 @@ jobs:
           name: Jest Tests
           command: yarn test
 
-# workflows:
+workflows:
   # build-and-deploy-release: TODO to automate creation of npm modules
   #   jobs:
   #     - lint-and-test-job:
@@ -40,6 +40,6 @@ jobs:
   #           branches:
   #             ignore: /.*/
               
-  # lint-and-test:
-  #   jobs:
-  #     - lint-and-test-job
+  lint-and-test:
+    jobs:
+      - lint-and-test-job
