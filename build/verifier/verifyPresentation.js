@@ -208,8 +208,8 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                 if (!verifier) {
                     throw new library_issuer_verifier_utility_1.CustError(400, 'verifier is required.');
                 }
-                presentation = validatePresentation(presentation);
                 data = lodash_1.omit(presentation, 'proof');
+                presentation = validatePresentation(presentation);
                 proof = presentation.proof;
                 return [4 /*yield*/, library_issuer_verifier_utility_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, proof.verificationMethod)];
             case 1:

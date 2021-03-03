@@ -1,34 +1,34 @@
-version: 2.1
+# version: 2.1
 
-jobs:
-  lint-and-test-job:
-    docker:
-      - image: circleci/node:14.15.0
-    steps:
-      - checkout
-      - restore_cache:
-          key: yarn-v1-{{ checksum "yarn.lock" }}--{{ arch }}
+# jobs:
+#   lint-and-test-job:
+#     docker:
+#       - image: circleci/node:14.15.0
+#     steps:
+#       - checkout
+#       - restore_cache:
+#           key: yarn-v1-{{ checksum "yarn.lock" }}--{{ arch }}
 
-      - restore_cache:
-          key: node-v1-{{ checksum "package.json" }}--{{ arch }}
+#       - restore_cache:
+#           key: node-v1-{{ checksum "package.json" }}--{{ arch }}
 
-      - run: yarn install
+#       - run: yarn install
 
-      - save_cache:
-          key: yarn-v1-{{ checksum "yarn.lock" }}--{{ arch }}
-          paths:
-            - .cache/yarn
+#       - save_cache:
+#           key: yarn-v1-{{ checksum "yarn.lock" }}--{{ arch }}
+#           paths:
+#             - .cache/yarn
 
-      - save_cache:
-          key: node-v1-{{ checksum "package.json" }}--{{ arch }}
-          paths:
-            - node_modules
+#       - save_cache:
+#           key: node-v1-{{ checksum "package.json" }}--{{ arch }}
+#           paths:
+#             - node_modules
 
-      - run: yarn lint
+#       - run: yarn lint
       
-      - run:
-          name: Jest Tests
-          command: yarn test
+#       - run:
+#           name: Jest Tests
+#           command: yarn test
 
 # workflows:
 #   # build-and-deploy-release: TODO to automate creation of npm modules

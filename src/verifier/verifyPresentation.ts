@@ -198,8 +198,8 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
       throw new CustError(400, 'verifier is required.');
     }
 
-    presentation = validatePresentation(presentation);
     const data = omit(presentation, 'proof');
+    presentation = validatePresentation(presentation);
 
     const proof: Proof = presentation.proof;
 
