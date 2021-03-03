@@ -790,20 +790,20 @@
   dependencies:
     eslint-visitor-keys "^1.1.0"
 
-"@unumid/library-crypto@https://github.com/UnumID/Library-Crypto-TypeScript.git#sigTest":
+"@unumid/library-crypto@https://github.com/UnumID/Library-Crypto-TypeScript.git#v1.2.0":
   version "0.0.1"
-  resolved "https://github.com/UnumID/Library-Crypto-TypeScript.git#9220fc3f2f2f11106c6708ff82317e86b953e337"
+  resolved "https://github.com/UnumID/Library-Crypto-TypeScript.git#c453cc31ab0d283d4fd996359e6c43a9af87732b"
   dependencies:
     "@types/bs58" "^4.0.1"
     bs58 "^4.0.1"
     fast-json-stable-stringify "^2.1.0"
 
-"@unumid/library-issuer-verifier-utility@https://github.com/UnumID/library-issuer-verifier-utility.git#verify":
+"@unumid/library-issuer-verifier-utility@https://github.com/UnumID/library-issuer-verifier-utility.git#v0.6.0":
   version "1.0.0"
-  resolved "https://github.com/UnumID/library-issuer-verifier-utility.git#81481e32c211c68fa018beddd8e291ed7764613c"
+  resolved "https://github.com/UnumID/library-issuer-verifier-utility.git#b5d55f6fb531983470b38085eac17713c4e6d1e3"
   dependencies:
     "@types/lodash" "^4.14.168"
-    "@unumid/library-crypto" "https://github.com/UnumID/Library-Crypto-TypeScript.git#sigTest"
+    "@unumid/library-crypto" "https://github.com/UnumID/Library-Crypto-TypeScript.git#v1.2.0"
     dotenv "^8.2.0"
     express "^4.17.1"
     lodash "^4.17.21"
