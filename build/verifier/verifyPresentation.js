@@ -1,4 +1,23 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -40,7 +59,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyPresentation = void 0;
-var lodash_1 = require("lodash");
+var lodash_1 = __importStar(require("lodash"));
 var config_1 = require("../config");
 var validateProof_1 = require("./validateProof");
 var requireAuth_1 = require("../requireAuth");
@@ -65,7 +84,7 @@ var validateCredentialInput = function (credentials) {
     for (var i = 0; i < totCred; i++) {
         var credPosStr = '[' + i + ']';
         var credential = credentials[i];
-        if (credential) {
+        if (lodash_1.default.isString(credential)) {
             retObj.stringifiedCredentials = true; // setting so know to add the object version of the stringified vc's
             credential = JSON.parse(credential);
         }
