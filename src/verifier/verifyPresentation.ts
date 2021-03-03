@@ -16,7 +16,7 @@ import { CryptoError } from '@unumid/library-crypto';
  * @param credentials JSONObj
  */
 const validateCredentialInput = (credentials: JSONObj): JSONObj => {
-  const retObj: JSONObj = { valStat: true };
+  const retObj: JSONObj = { valStat: true, stringifiedCredentials: false, resultantCredentials: [] };
 
   if (isArrayEmpty(credentials)) {
     retObj.valStat = false;
@@ -34,6 +34,7 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
       // retObj.valStat = false;
       // retObj.msg = `${credential} @yes~~~~~~~~~~~ is required.`;
       // break;
+      retObj.stringifiedCredentials = true; // setting so know to add the object version of the stringified vc's
       credential = JSON.parse(credential);
     }
 
@@ -117,6 +118,11 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
 
     // Check that proof object is valid
     validateProof(credential.proof);
+
+    if (retObj.stringifiedCredentials) {
+      // Adding the credential to the result list so can
+      retObj.resultantCredentials.push(credential);
+    }
   }
 
   return (retObj);
@@ -124,9 +130,10 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
 
 /**
  * Validates the presentation object has the proper attributes.
+ * Returns the fully formed verifiableCredential object list if applicable (if was sent as a stringified object)
  * @param presentation Presentation
  */
-const validatePresentation = (presentation: Presentation): void => {
+const validatePresentation = (presentation: Presentation): Presentation => {
   const context = presentation['@context'];
   const { type, verifiableCredential, proof, presentationRequestUuid } = presentation;
   let retObj: JSONObj = {};
@@ -163,10 +170,14 @@ const validatePresentation = (presentation: Presentation): void => {
   retObj = validateCredentialInput(verifiableCredential);
   if (!retObj.valStat) {
     throw new CustError(400, retObj.msg);
+  } else if (retObj.stringifiedCredentials) {
+    presentation.verifiableCredential = retObj.resultantCredentials;
   }
 
   // Check proof object is formatted correctly
   validateProof(proof);
+
+  return presentation;
 };
 
 /**
@@ -187,7 +198,7 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
       throw new CustError(400, 'verifier is required.');
     }
 
-    validatePresentation(presentation);
+    presentation = validatePresentation(presentation);
     const data = omit(presentation, 'proof');
 
     const proof: Proof = presentation.proof;
