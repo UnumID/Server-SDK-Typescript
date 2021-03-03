@@ -7,7 +7,6 @@ import { dummyAuthToken, dummyRsaPrivateKey, dummyRsaPublicKey, makeDummyDidDocu
 import { encrypt } from '@unumid/library-crypto';
 import { omit } from 'lodash';
 import { DecryptedPresentation } from '../../src/types';
-// import { publicKeyNotFoundInDidDocViaProofVerification } from '@unumid/errors';
 
 jest.mock('@unumid/library-issuer-verifier-utility', () => ({
   ...jest.requireActual('@unumid/library-issuer-verifier-utility'),
@@ -85,6 +84,7 @@ const populateMockData = (): utilLib.JSONObj => {
       proof: {
         created: '2020-09-03T18:42:30.658Z',
         signatureValue: '381yXYx2wa7qR4XMEWeLPWVR7xhksi4684VCZL7Yx9jXneVMxXoa3eT3dA5QU1tofsH4XrGbU8d4pNTiLRpa8iUWvWmAdnfE',
+        unsignedValue: 'todo',
         type: 'secp256r1Signature2020',
         verificationMethod: 'did:unum:2e05967f-216f-44c4-ae8e-d6f71cd17c5a',
         proofPurpose: 'AssertionMethod'
@@ -112,7 +112,7 @@ const populateMockData = (): utilLib.JSONObj => {
   });
 };
 
-describe('verifyPresentation - Success Scenario', () => {
+describe('verifyEncryptedPresentation - Success Scenario', () => {
   let response: UnumDto<DecryptedPresentation>;
   let verStatus: boolean;
 
@@ -183,7 +183,7 @@ describe('verifyPresentation - Success Scenario', () => {
   });
 });
 
-describe('verifyPresentation - Failure Scenarios', () => {
+describe('verifyEncryptedPresentation - Failure Scenarios', () => {
   let response: UnumDto<DecryptedPresentation>;
   let verStatus: boolean;
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
@@ -243,7 +243,7 @@ describe('verifyPresentation - Failure Scenarios', () => {
   });
 });
 
-describe('verifyPresentation - Validation Failures', () => {
+describe('verifyEncryptedPresentation - Validation Failures', () => {
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
   it('returns a 400 status code with a descriptive error message when @context is missing', async () => {
@@ -366,7 +366,7 @@ describe('verifyPresentation - Validation Failures', () => {
   });
 });
 
-describe('verifyPresentation - Validation for verifiableCredential object', () => {
+describe('verifyEncryptedPresentation - Validation for verifiableCredential object', () => {
   let response: utilLib.JSONObj, preReq: utilLib.JSONObj;
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
@@ -460,7 +460,7 @@ describe('verifyPresentation - Validation for verifiableCredential object', () =
   });
 });
 
-describe('verifyPresentation - Validation for proof object', () => {
+describe('verifyEncryptedPresentation - Validation for proof object', () => {
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
   it('returns a 400 status code with a descriptive error message when created is missing', async () => {

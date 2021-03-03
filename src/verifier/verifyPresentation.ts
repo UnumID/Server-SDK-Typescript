@@ -213,7 +213,7 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     // this logic to verify each credential present separately.  We can take this up later.
     let isPresentationVerified = false;
     try {
-      isPresentationVerified = doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
+      isPresentationVerified = doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding, proof.unsignedValue);
     } catch (e) {
       if (e instanceof CryptoError) {
         logger.error(`CryptoError verifying presentation ${presentation.uuid} signature`, e);

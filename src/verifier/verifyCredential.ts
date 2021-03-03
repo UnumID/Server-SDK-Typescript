@@ -1,4 +1,4 @@
-import { getDIDDoc, getKeyFromDIDDoc, doVerify, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
+import { getDIDDoc, getKeyFromDIDDoc, doVerify, handleAuthToken, JSONObj } from '@unumid/library-issuer-verifier-utility';
 import { CryptoError } from '@unumid/library-crypto';
 import { omit } from 'lodash';
 
@@ -24,7 +24,8 @@ export const verifyCredential = async (credential: VerifiableCredential, authori
   const data = omit(credential, 'proof');
 
   try {
-    const isVerified = doVerify(proof.signatureValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
+    const isVerified: boolean = doVerify(proof.signatureValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding, proof.unsignedValue);
+
     const result: UnumDto<boolean> = {
       authToken,
       body: isVerified

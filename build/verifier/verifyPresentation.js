@@ -215,7 +215,7 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                 }
                 isPresentationVerified = false;
                 try {
-                    isPresentationVerified = library_issuer_verifier_utility_1.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
+                    isPresentationVerified = library_issuer_verifier_utility_1.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding, proof.unsignedValue);
                 }
                 catch (e) {
                     if (e instanceof library_crypto_1.CryptoError) {
