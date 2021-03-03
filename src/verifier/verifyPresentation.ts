@@ -16,7 +16,7 @@ import { CryptoError } from '@unumid/library-crypto';
  * @param credentials JSONObj
  */
 const validateCredentialInput = (credentials: JSONObj): JSONObj => {
-  const retObj: JSONObj = { valStat: true };
+  const retObj: JSONObj = { valStat: true, stringifiedCredentials: false, resultantCredentials: [] };
 
   if (isArrayEmpty(credentials)) {
     retObj.valStat = false;
@@ -28,9 +28,14 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
   const totCred = credentials.length;
   for (let i = 0; i < totCred; i++) {
     const credPosStr = '[' + i + ']';
-    const credential = credentials[i];
+    let credential = credentials[i];
 
-    // Validate the existance of elements in verifiableCredential object
+    if (typeof credential === 'string') {
+      retObj.stringifiedCredentials = true; // setting so know to add the object version of the stringified vc's
+      credential = JSON.parse(credential);
+    }
+
+    // Validate the existence of elements in verifiableCredential object
     const invalidMsg = `Invalid verifiableCredential${credPosStr}:`;
     if (!credential['@context']) {
       retObj.valStat = false;
@@ -110,6 +115,11 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
 
     // Check that proof object is valid
     validateProof(credential.proof);
+
+    if (retObj.stringifiedCredentials) {
+      // Adding the credential to the result list so can use the fully created objects downstream
+      retObj.resultantCredentials.push(credential);
+    }
   }
 
   return (retObj);
@@ -117,9 +127,10 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
 
 /**
  * Validates the presentation object has the proper attributes.
+ * Returns the fully formed verifiableCredential object list if applicable (if was sent as a stringified object)
  * @param presentation Presentation
  */
-const validatePresentation = (presentation: Presentation): void => {
+const validatePresentation = (presentation: Presentation): Presentation => {
   const context = presentation['@context'];
   const { type, verifiableCredential, proof, presentationRequestUuid } = presentation;
   let retObj: JSONObj = {};
@@ -156,10 +167,15 @@ const validatePresentation = (presentation: Presentation): void => {
   retObj = validateCredentialInput(verifiableCredential);
   if (!retObj.valStat) {
     throw new CustError(400, retObj.msg);
+  } else if (retObj.stringifiedCredentials) {
+    // adding the "objectified" vc, which were sent in string format to appease iOS variable keyed object limitation: https://developer.apple.com/forums/thread/100417
+    presentation.verifiableCredential = retObj.resultantCredentials;
   }
 
   // Check proof object is formatted correctly
   validateProof(proof);
+
+  return presentation;
 };
 
 /**
@@ -180,8 +196,8 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
       throw new CustError(400, 'verifier is required.');
     }
 
-    validatePresentation(presentation);
-    const data = omit(presentation, 'proof');
+    const data = omit(presentation, 'proof'); // Note: important that this data variable is created prior to the validation thanks to validatePresentation taking potentially stringified VerifiableCredentials objects array and converting them to proper objects.
+    presentation = validatePresentation(presentation);
 
     const proof: Proof = presentation.proof;
 

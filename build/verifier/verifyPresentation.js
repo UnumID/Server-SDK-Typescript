@@ -55,7 +55,7 @@ var library_crypto_1 = require("@unumid/library-crypto");
  * @param credentials JSONObj
  */
 var validateCredentialInput = function (credentials) {
-    var retObj = { valStat: true };
+    var retObj = { valStat: true, stringifiedCredentials: false, resultantCredentials: [] };
     if (library_issuer_verifier_utility_1.isArrayEmpty(credentials)) {
         retObj.valStat = false;
         retObj.msg = 'Invalid Presentation: verifiableCredential must be a non-empty array.';
@@ -65,7 +65,11 @@ var validateCredentialInput = function (credentials) {
     for (var i = 0; i < totCred; i++) {
         var credPosStr = '[' + i + ']';
         var credential = credentials[i];
-        // Validate the existance of elements in verifiableCredential object
+        if (typeof credential === 'string') {
+            retObj.stringifiedCredentials = true; // setting so know to add the object version of the stringified vc's
+            credential = JSON.parse(credential);
+        }
+        // Validate the existence of elements in verifiableCredential object
         var invalidMsg = "Invalid verifiableCredential" + credPosStr + ":";
         if (!credential['@context']) {
             retObj.valStat = false;
@@ -133,11 +137,16 @@ var validateCredentialInput = function (credentials) {
         }
         // Check that proof object is valid
         validateProof_1.validateProof(credential.proof);
+        if (retObj.stringifiedCredentials) {
+            // Adding the credential to the result list so can use the fully created objects downstream
+            retObj.resultantCredentials.push(credential);
+        }
     }
     return (retObj);
 };
 /**
  * Validates the presentation object has the proper attributes.
+ * Returns the fully formed verifiableCredential object list if applicable (if was sent as a stringified object)
  * @param presentation Presentation
  */
 var validatePresentation = function (presentation) {
@@ -170,8 +179,13 @@ var validatePresentation = function (presentation) {
     if (!retObj.valStat) {
         throw new library_issuer_verifier_utility_1.CustError(400, retObj.msg);
     }
+    else if (retObj.stringifiedCredentials) {
+        // adding the "objectified" vc, which were sent in string format to appease iOS variable keyed object limitation: https://developer.apple.com/forums/thread/100417
+        presentation.verifiableCredential = retObj.resultantCredentials;
+    }
     // Check proof object is formatted correctly
     validateProof_1.validateProof(proof);
+    return presentation;
 };
 /**
  * Handler to send information regarding the user agreeing to share a credential Presentation.
@@ -192,8 +206,8 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                 if (!verifier) {
                     throw new library_issuer_verifier_utility_1.CustError(400, 'verifier is required.');
                 }
-                validatePresentation(presentation);
                 data = lodash_1.omit(presentation, 'proof');
+                presentation = validatePresentation(presentation);
                 proof = presentation.proof;
                 return [4 /*yield*/, library_issuer_verifier_utility_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, proof.verificationMethod)];
             case 1:
