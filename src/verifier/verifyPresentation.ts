@@ -198,7 +198,7 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
       throw new CustError(400, 'verifier is required.');
     }
 
-    const data = omit(presentation, 'proof');
+    const data = omit(presentation, 'proof'); // Note: important that this data variable is created prior to the validation thanks to validatePresentation taking potentially stringified VerifiableCredentials objects array and converting them to proper objects.
     presentation = validatePresentation(presentation);
 
     const proof: Proof = presentation.proof;
