@@ -6,7 +6,6 @@ import { checkCredentialStatus } from '../../src/verifier/checkCredentialStatus'
 import { dummyAuthToken, dummyEccPrivateKey, makeDummyDidDocument } from './mocks';
 import { sign } from '@unumid/library-crypto';
 import stringify from 'fast-json-stable-stringify';
-// import { publicKeyNotFoundInDidDocViaProofVerification } from '@unumid/errors';
 
 jest.mock('@unumid/library-issuer-verifier-utility', () => ({
   ...jest.requireActual('@unumid/library-issuer-verifier-utility'),
@@ -91,13 +90,6 @@ const populateMockData = (): utilLib.JSONObj => {
     }
   ];
   const presentationRequestUuid = '0cebee3b-3295-4ef6-a4d6-7dfea413b3aa';
-  // const proof: utilLib.JSONObj = {
-  //   created: '2020-09-03T18:50:52.105Z',
-  //   signatureValue: 'iKx1CJLYue7vopUo2fqGps3TWmxqRxoBDTupumLkaNp2W3UeAjwLUf5WxLRCRkDzEFeKCgT7JdF5fqbpvqnBZoHyYzWYbmW4YQ',
-  //   type: 'secp256r1Signature2020',
-  //   verificationMethod: 'did:unum:3ff2f020-50b0-4f4c-a267-a9f104aedcd8',
-  //   proofPurpose: 'AssertionMethod'
-  // };
   const invalidProof: utilLib.JSONObj = {
     created: '2020-09-03T18:50:52.105Z',
     signatureValue: 'iTx1CJLYue7vopUo2fqGps3TWmxqRxoBDTupumLkaNp2W3UeAjwLUf5WxLRCRkDzEFeKCgT7JdF5fqbpvqnBZoHyYzWYbmW4YQ',

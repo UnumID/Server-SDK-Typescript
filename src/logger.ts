@@ -29,8 +29,8 @@ const logger = createLogger({
       level: configData.logLevel || 'info',
       format: consoleFormat
     })
-  ]
-  // silent: process.env.NODE_ENV === 'test'
+  ],
+  silent: process.env.NODE_ENV === 'test'
 });
 
 // Printing this info here instead of in ./config to prevent a circular dependency.

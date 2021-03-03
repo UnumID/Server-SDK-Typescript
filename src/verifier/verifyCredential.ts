@@ -24,11 +24,6 @@ export const verifyCredential = async (credential: VerifiableCredential, authori
   const data = omit(credential, 'proof');
 
   try {
-    // const isVerifiedData = doVerify(proof.signatureValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
-    // logger.debug(`Credential isVerifiedData ${isVerifiedData}`);
-    // const isVerifiedString = isVerifiedData ? true : doVerifyString(proof.signatureValue, proof.unsignedValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
-    // const isVerified = isVerifiedData || isVerifiedString;
-
     const isVerified: boolean = doVerify(proof.signatureValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding, proof.unsignedValue);
 
     const result: UnumDto<boolean> = {

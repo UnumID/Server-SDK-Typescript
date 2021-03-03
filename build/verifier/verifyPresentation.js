@@ -49,6 +49,7 @@ var isCredentialExpired_1 = require("./isCredentialExpired");
 var checkCredentialStatus_1 = require("./checkCredentialStatus");
 var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var logger_1 = __importDefault(require("../logger"));
+var library_crypto_1 = require("@unumid/library-crypto");
 /**
  * Validates the attributes for a credential request to UnumID's SaaS.
  * @param credentials JSONObj
@@ -179,7 +180,7 @@ var validatePresentation = function (presentation) {
  * @param verifier
  */
 exports.verifyPresentation = function (authorization, presentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, proof, didDocumentResponse, authToken, pubKeyObj, result_1, isPresentationVerified, result_2, areCredentialsValid, _i, _a, credential, isExpired, isStatusValidResponse, isStatusValid, isVerifiedResponse, isVerified_1, result_3, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, result, error_1;
+    var data, proof, didDocumentResponse, authToken, pubKeyObj, result_1, isPresentationVerified, result_2, result_3, areCredentialsValid, _i, _a, credential, isExpired, isStatusValidResponse, isStatusValid, isVerifiedResponse, isVerified_1, result_4, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, result, error_1;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -212,16 +213,35 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                     };
                     return [2 /*return*/, result_1];
                 }
-                isPresentationVerified = library_issuer_verifier_utility_1.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding, proof.unsignedValue);
-                if (!isPresentationVerified) {
+                isPresentationVerified = false;
+                try {
+                    isPresentationVerified = library_issuer_verifier_utility_1.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding, proof.unsignedValue);
+                }
+                catch (e) {
+                    if (e instanceof library_crypto_1.CryptoError) {
+                        logger_1.default.error("CryptoError verifying presentation " + presentation.uuid + " signature", e);
+                    }
+                    else {
+                        logger_1.default.error("Error verifying presentation " + presentation.uuid + " signature", e);
+                    }
                     result_2 = {
+                        authToken: authToken,
+                        body: {
+                            isVerified: false,
+                            message: "Exception verifying presentation signature. " + e.message
+                        }
+                    };
+                    return [2 /*return*/, result_2];
+                }
+                if (!isPresentationVerified) {
+                    result_3 = {
                         authToken: authToken,
                         body: {
                             isVerified: false,
                             message: 'Presentation signature can no be verified'
                         }
                     };
-                    return [2 /*return*/, result_2];
+                    return [2 /*return*/, result_3];
                 }
                 areCredentialsValid = true;
                 _i = 0, _a = presentation.verifiableCredential;
@@ -258,14 +278,14 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                 return [3 /*break*/, 2];
             case 6:
                 if (!areCredentialsValid) {
-                    result_3 = {
+                    result_4 = {
                         authToken: authToken,
                         body: {
                             isVerified: false,
                             message: 'Credential signature can not be verified.'
                         }
                     };
-                    return [2 /*return*/, result_3];
+                    return [2 /*return*/, result_4];
                 }
                 isVerified = isPresentationVerified && areCredentialsValid;
                 credentialTypes = presentation.verifiableCredential.flatMap(function (cred) { return cred.type.slice(1); });
