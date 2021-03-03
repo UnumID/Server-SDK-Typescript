@@ -168,7 +168,7 @@ const validatePresentation = (presentation: Presentation): Presentation => {
   if (!retObj.valStat) {
     throw new CustError(400, retObj.msg);
   } else if (retObj.stringifiedCredentials) {
-    // adding the "objectified" vc, which were sent in string format to appease iOS veriable keyed object limitation: https://developer.apple.com/forums/thread/100417
+    // adding the "objectified" vc, which were sent in string format to appease iOS variable keyed object limitation: https://developer.apple.com/forums/thread/100417
     presentation.verifiableCredential = retObj.resultantCredentials;
   }
 
