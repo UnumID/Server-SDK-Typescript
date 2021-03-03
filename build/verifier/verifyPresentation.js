@@ -66,9 +66,10 @@ var validateCredentialInput = function (credentials) {
         var credPosStr = '[' + i + ']';
         var credential = credentials[i];
         if (credential) {
-            retObj.valStat = false;
-            retObj.msg = credential + " @yes~~~~~~~~~~~ is required.";
-            break;
+            // retObj.valStat = false;
+            // retObj.msg = `${credential} @yes~~~~~~~~~~~ is required.`;
+            // break;
+            credential = JSON.parse(credential);
         }
         // Validate the existance of elements in verifiableCredential object
         var invalidMsg = "Invalid verifiableCredential" + credPosStr + ":";
