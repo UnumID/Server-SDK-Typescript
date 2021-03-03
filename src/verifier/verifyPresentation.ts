@@ -30,6 +30,12 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
     const credPosStr = '[' + i + ']';
     const credential = credentials[i];
 
+    if (credential as string) {
+      retObj.valStat = false;
+      retObj.msg = `${credential} @yes~~~~~~~~~~~ is required.`;
+      break;
+    }
+
     // Validate the existance of elements in verifiableCredential object
     const invalidMsg = `Invalid verifiableCredential${credPosStr}:`;
     if (!credential['@context']) {
