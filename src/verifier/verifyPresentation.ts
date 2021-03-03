@@ -1,4 +1,4 @@
-import _, { omit } from 'lodash';
+import { omit } from 'lodash';
 
 import { configData } from '../config';
 import { Presentation, UnumDto, VerifiedStatus } from '../types';
@@ -30,7 +30,7 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
     const credPosStr = '[' + i + ']';
     let credential = credentials[i];
 
-    if (_.isString(credential)) {
+    if (typeof credential === 'string') {
       retObj.stringifiedCredentials = true; // setting so know to add the object version of the stringified vc's
       credential = JSON.parse(credential);
     }
