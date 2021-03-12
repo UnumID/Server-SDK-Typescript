@@ -6,13 +6,13 @@ exports.extractCredentialInfo = void 0;
  * @param presentation // a post decrypted and verified presentation object;
  */
 exports.extractCredentialInfo = function (presentation) {
-    var credentialTypes = [];
-    for (var _i = 0, _a = presentation.verifiableCredential; _i < _a.length; _i++) {
-        var credential = _a[_i];
-        credentialTypes.push(credential.type);
-    }
+    // const credentialTypes = [];
+    // for (const credential of presentation.verifiableCredential) {
+    //   credentialTypes.push(credential.type);
+    // }
+    var credentialTypes = presentation.verifiableCredential.flatMap(function (cred) { return cred.type.slice(1); }); // cut off the preceding 'VerifiableCredential' string in each array
     return {
-        credentialTypes: credentialTypes.flat(),
+        credentialTypes: credentialTypes,
         subjectDid: presentation.proof.verificationMethod
     };
 };
