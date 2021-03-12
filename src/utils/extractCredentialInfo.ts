@@ -12,8 +12,11 @@ export const extractCredentialInfo = (presentation: Presentation): CredentialInf
     credentialTypes = presentation.verifiableCredentials.flatMap(cred => isArrayNotEmpty(cred.type) && cred.type[0] === 'VerifiableCredential' ? cred.type.slice(1) : cred.type);
   }
 
+  // need to handle the possiblity of a did fragment being part of the verification method.
+  const subjectDid = presentation.proof.verificationMethod.split('#')[0];
+
   return {
     credentialTypes,
-    subjectDid: presentation.proof.verificationMethod
+    subjectDid
   };
 };

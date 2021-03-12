@@ -12,9 +12,11 @@ exports.extractCredentialInfo = function (presentation) {
         // cut off the preceding 'VerifiableCredential' string in each credential type array
         credentialTypes = presentation.verifiableCredentials.flatMap(function (cred) { return library_issuer_verifier_utility_1.isArrayNotEmpty(cred.type) && cred.type[0] === 'VerifiableCredential' ? cred.type.slice(1) : cred.type; });
     }
+    // need to handle the possiblity of a did fragment being part of the verification method.
+    var subjectDid = presentation.proof.verificationMethod.split('#')[0];
     return {
         credentialTypes: credentialTypes,
-        subjectDid: presentation.proof.verificationMethod
+        subjectDid: subjectDid
     };
 };
 //# sourceMappingURL=extractCredentialInfo.js.map
