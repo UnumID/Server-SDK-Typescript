@@ -1,3 +1,4 @@
+import { isArrayNotEmpty } from '@unumid/library-issuer-verifier-utility';
 import { CredentialInfo, Presentation } from '../types';
 
 /**
@@ -5,15 +6,9 @@ import { CredentialInfo, Presentation } from '../types';
  * @param presentation // a post decrypted and verified presentation object;
  */
 export const extractCredentialInfo = (presentation: Presentation): CredentialInfo => {
-  // const credentialTypes = [];
-  // for (const credential of presentation.verifiableCredential) {
-  //   credentialTypes.push(credential.type);
-  // }
-
-  const credentialTypes = presentation.verifiableCredential.flatMap(cred => cred.type.slice(1)); // cut off the preceding 'VerifiableCredential' string in each array
-
   return {
-    credentialTypes,
+    // cut off the preceding 'VerifiableCredential' string in each credential type array
+    credentialTypes: presentation.verifiableCredential.flatMap(cred => isArrayNotEmpty(cred.type) && cred.type[0] === 'VerifiableCredential' ? cred.type.slice(1) : cred.type),
     subjectDid: presentation.proof.verificationMethod
   };
 };

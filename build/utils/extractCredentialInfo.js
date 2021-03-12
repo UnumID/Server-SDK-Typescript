@@ -1,18 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.extractCredentialInfo = void 0;
+var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 /**
  * Handler to extract credential reporting information meant to be relied to UnumID's SaaS for the enhanced analytics dashboard.
  * @param presentation // a post decrypted and verified presentation object;
  */
 exports.extractCredentialInfo = function (presentation) {
-    // const credentialTypes = [];
-    // for (const credential of presentation.verifiableCredential) {
-    //   credentialTypes.push(credential.type);
-    // }
-    var credentialTypes = presentation.verifiableCredential.flatMap(function (cred) { return cred.type.slice(1); }); // cut off the preceding 'VerifiableCredential' string in each array
     return {
-        credentialTypes: credentialTypes,
+        // cut off the preceding 'VerifiableCredential' string in each credential type array
+        credentialTypes: presentation.verifiableCredential.flatMap(function (cred) { return library_issuer_verifier_utility_1.isArrayNotEmpty(cred.type) && cred.type[0] === 'VerifiableCredential' ? cred.type.slice(1) : cred.type; }),
         subjectDid: presentation.proof.verificationMethod
     };
 };

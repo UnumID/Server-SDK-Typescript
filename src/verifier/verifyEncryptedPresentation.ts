@@ -207,7 +207,6 @@ export const verifyEncryptedPresentation = async (authorization: string, encrypt
         ...verificationResult.body,
         type: 'VerifiablePresentation',
         presentation: presentation
-        // credentials: verificationResult.body.isVerified ? presentation.verifiableCredential : undefined
       }
     };
 
