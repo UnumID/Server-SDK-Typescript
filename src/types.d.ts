@@ -143,7 +143,7 @@ export interface VerifiableCredential {
 export interface UnsignedPresentation {
   '@context': ['https://www.w3.org/2018/credentials/v1', ...string[]];
   type: ['VerifiablePresentation', ...string[]];
-  verifiableCredential: VerifiableCredential[];
+  verifiableCredentials: VerifiableCredential[];
   presentationRequestUuid: string;
   uuid: string;
 }

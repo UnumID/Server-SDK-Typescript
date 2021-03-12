@@ -26,11 +26,11 @@ const mockGetDIDDoc = utilLib.getDIDDoc as jest.Mock;
 const mockDoVerify = utilLib.doVerify as jest.Mock;
 const mockMakeNetworkRequest = utilLib.makeNetworkRequest as jest.Mock;
 
-const callVerifyEncryptedPresentation = (context, type, verifiableCredential, presentationRequestUuid, proof, verifier, auth = ''): Promise<UnumDto<DecryptedPresentation>> => {
+const callVerifyEncryptedPresentation = (context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, auth = ''): Promise<UnumDto<DecryptedPresentation>> => {
   const presentation: Presentation = {
     '@context': context,
     type,
-    verifiableCredential,
+    verifiableCredentials,
     presentationRequestUuid,
     proof,
     uuid: 'a'
@@ -61,7 +61,7 @@ const copyCredentialObj = (credential: utilLib.JSONObj, elemName: string, elemVa
 const populateMockData = (): utilLib.JSONObj => {
   const context: string[] = ['https://www.w3.org/2018/credentials/v1'];
   const type: string[] = ['VerifiablePresentation'];
-  const verifiableCredential: utilLib.JSONObj[] = [
+  const verifiableCredentials: utilLib.JSONObj[] = [
     {
       '@context': [
         'https://www.w3.org/2018/credentials/v1'
@@ -104,7 +104,7 @@ const populateMockData = (): utilLib.JSONObj => {
   return ({
     context,
     type,
-    verifiableCredential,
+    verifiableCredentials,
     presentationRequestUuid,
     proof,
     authHeader,
@@ -116,7 +116,7 @@ describe('verifyEncryptedPresentation - Success Scenario', () => {
   let response: UnumDto<DecryptedPresentation>;
   let verStatus: boolean;
 
-  const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
+  const { context, type, verifiableCredentials, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
   beforeAll(async () => {
     const dummySubjectDidDoc = await makeDummyDidDocument();
@@ -128,7 +128,7 @@ describe('verifyEncryptedPresentation - Success Scenario', () => {
     mockIsCredentialExpired.mockReturnValue(false);
     mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: true });
     mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers: dummyResponseHeaders });
-    response = await callVerifyEncryptedPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+    response = await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
     verStatus = response.body.isVerified;
   });
 
@@ -145,19 +145,19 @@ describe('verifyEncryptedPresentation - Success Scenario', () => {
   });
 
   it('verifies each credential', () => {
-    verifiableCredential.forEach((vc) => {
+    verifiableCredentials.forEach((vc) => {
       expect(mockVerifyCredential).toBeCalledWith(vc, authHeader);
     });
   });
 
   it('checks if each credential is expired', () => {
-    verifiableCredential.forEach((vc) => {
+    verifiableCredentials.forEach((vc) => {
       expect(mockIsCredentialExpired).toBeCalledWith(vc);
     });
   });
 
   it('checks the status of each credential', () => {
-    verifiableCredential.forEach((vc) => {
+    verifiableCredentials.forEach((vc) => {
       expect(mockCheckCredentialStatus).toBeCalledWith(vc, authHeader);
     });
   });
@@ -178,7 +178,7 @@ describe('verifyEncryptedPresentation - Success Scenario', () => {
     mockGetDIDDoc.mockResolvedValue({ body: dummySubjectDidDoc, authToken: undefined });
     mockCheckCredentialStatus.mockReturnValue({ authToken: undefined, body: true });
     mockVerifyCredential.mockResolvedValue({ authToken: undefined, body: true });
-    response = await callVerifyEncryptedPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+    response = await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
     expect(response.authToken).toBeUndefined();
   });
 });
@@ -186,7 +186,7 @@ describe('verifyEncryptedPresentation - Success Scenario', () => {
 describe('verifyEncryptedPresentation - Failure Scenarios', () => {
   let response: UnumDto<DecryptedPresentation>;
   let verStatus: boolean;
-  const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
+  const { context, type, verifiableCredentials, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
   beforeAll(async () => {
     const dummySubjectDidDoc = await makeDummyDidDocument();
@@ -197,8 +197,8 @@ describe('verifyEncryptedPresentation - Failure Scenarios', () => {
     mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: false });
     mockIsCredentialExpired.mockReturnValue(true);
     mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: false });
-    verifiableCredential[0].proof.verificationMethod = proof.verificationMethod;
-    response = await callVerifyEncryptedPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+    verifiableCredentials[0].proof.verificationMethod = proof.verificationMethod;
+    response = await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
     verStatus = response.body.isVerified;
   });
 
@@ -226,7 +226,7 @@ describe('verifyEncryptedPresentation - Failure Scenarios', () => {
     };
     const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
     mockGetDIDDoc.mockResolvedValueOnce({ body: dummyDidDocWithoutKeys, headers: dummyResponseHeaders });
-    const response = await callVerifyEncryptedPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+    const response = await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
     expect(response.body.isVerified).toBe(false);
     expect(response.body.message).toBe('Public key not found for the DID associated with the proof.verificationMethod');
   });
@@ -235,7 +235,7 @@ describe('verifyEncryptedPresentation - Failure Scenarios', () => {
     mockGetDIDDoc.mockResolvedValueOnce(new utilLib.CustError(404, 'DID Document not found.'));
 
     try {
-      await callVerifyEncryptedPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toEqual(404);
@@ -244,11 +244,11 @@ describe('verifyEncryptedPresentation - Failure Scenarios', () => {
 });
 
 describe('verifyEncryptedPresentation - Validation Failures', () => {
-  const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
+  const { context, type, verifiableCredentials, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
   it('returns a 400 status code with a descriptive error message when @context is missing', async () => {
     try {
-      await callVerifyEncryptedPresentation('', type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation('', type, verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -258,7 +258,7 @@ describe('verifyEncryptedPresentation - Validation Failures', () => {
 
   it('returns a 400 status code with a descriptive error message when type is missing', async () => {
     try {
-      await callVerifyEncryptedPresentation(context, '', verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, '', verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -266,19 +266,19 @@ describe('verifyEncryptedPresentation - Validation Failures', () => {
     }
   });
 
-  it('returns a 400 status code with a descriptive error message when verifiableCredential is missing', async () => {
+  it('returns a 400 status code with a descriptive error message when verifiableCredentials is missing', async () => {
     try {
       await callVerifyEncryptedPresentation(context, type, '', presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid Presentation: verifiableCredential is required.');
+      expect(e.message).toBe('Invalid Presentation: verifiableCredentials is required.');
     }
   });
 
   it('returns a 400 status code with a descriptive error message when presentationRequestUuid is missing', async () => {
     try {
-      await callVerifyEncryptedPresentation(context, type, verifiableCredential, '', proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, verifiableCredentials, '', proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -288,7 +288,7 @@ describe('verifyEncryptedPresentation - Validation Failures', () => {
 
   it('returns a 400 status code with a descriptive error message when proof is missing', async () => {
     try {
-      await callVerifyEncryptedPresentation(context, type, verifiableCredential, presentationRequestUuid, '', verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, '', verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -298,7 +298,7 @@ describe('verifyEncryptedPresentation - Validation Failures', () => {
 
   it('returns a 400 status code with a descriptive error message when @context is not an array', async () => {
     try {
-      await callVerifyEncryptedPresentation('https://www.w3.org/2018/credentials/v1', type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation('https://www.w3.org/2018/credentials/v1', type, verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -308,7 +308,7 @@ describe('verifyEncryptedPresentation - Validation Failures', () => {
 
   it('returns a 400 status code with a descriptive error message when @context array is empty', async () => {
     try {
-      await callVerifyEncryptedPresentation([], type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation([], type, verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -318,7 +318,7 @@ describe('verifyEncryptedPresentation - Validation Failures', () => {
 
   it('returns a 400 status code with a descriptive error message when type is not an array', async () => {
     try {
-      await callVerifyEncryptedPresentation(context, 'VerifiablePresentation', verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, 'VerifiablePresentation', verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -328,7 +328,7 @@ describe('verifyEncryptedPresentation - Validation Failures', () => {
 
   it('returns a 400 status code with a descriptive error message when type is empty', async () => {
     try {
-      await callVerifyEncryptedPresentation(context, [], verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, [], verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -336,29 +336,29 @@ describe('verifyEncryptedPresentation - Validation Failures', () => {
     }
   });
 
-  it('returns a 400 status code with a descriptive error message when verifiableCredential is not an array', async () => {
+  it('returns a 400 status code with a descriptive error message when verifiableCredentials is not an array', async () => {
     try {
-      await callVerifyEncryptedPresentation(context, type, 'verifiableCredential', presentationRequestUuid, proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, 'verifiableCredentials', presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid Presentation: verifiableCredential must be a non-empty array.');
+      expect(e.message).toBe('Invalid Presentation: verifiableCredentials must be a non-empty array.');
     }
   });
 
-  it('returns a 400 status code with a descriptive error message when verifiableCredential array is empty', async () => {
+  it('returns a 400 status code with a descriptive error message when verifiableCredentials array is empty', async () => {
     try {
       await callVerifyEncryptedPresentation(context, type, [], presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid Presentation: verifiableCredential must be a non-empty array.');
+      expect(e.message).toBe('Invalid Presentation: verifiableCredentials must be a non-empty array.');
     }
   });
 
   it('returns a 401 status code if x-auth-token header is missing', async () => {
     try {
-      await callVerifyEncryptedPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, '');
+      await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, '');
       fail();
     } catch (e) {
       expect(e.code).toEqual(401);
@@ -366,107 +366,107 @@ describe('verifyEncryptedPresentation - Validation Failures', () => {
   });
 });
 
-describe('verifyEncryptedPresentation - Validation for verifiableCredential object', () => {
+describe('verifyEncryptedPresentation - Validation for verifiableCredentials object', () => {
   let response: utilLib.JSONObj, preReq: utilLib.JSONObj;
-  const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
+  const { context, type, verifiableCredentials, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
   let cred;
   it('Response code should be ' + 400 + ' when @context is not passed', async () => {
-    cred = copyCredentialObj(verifiableCredential[0], '@context');
+    cred = copyCredentialObj(verifiableCredentials[0], '@context');
     try {
       await callVerifyEncryptedPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid verifiableCredential[0]: @context is required.');
+      expect(e.message).toBe('Invalid verifiableCredentials[0]: @context is required.');
     }
   });
 
   it('Response code should be ' + 400 + ' when credentialStatus is not passed', async () => {
-    cred = copyCredentialObj(verifiableCredential[0], 'credentialStatus');
+    cred = copyCredentialObj(verifiableCredentials[0], 'credentialStatus');
     try {
       await callVerifyEncryptedPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid verifiableCredential[0]: credentialStatus is required.');
+      expect(e.message).toBe('Invalid verifiableCredentials[0]: credentialStatus is required.');
     }
   });
 
   it('Response code should be ' + 400 + ' when credentialSubject is not passed', async () => {
-    cred = copyCredentialObj(verifiableCredential[0], 'credentialSubject');
+    cred = copyCredentialObj(verifiableCredentials[0], 'credentialSubject');
     try {
       await callVerifyEncryptedPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid verifiableCredential[0]: credentialSubject is required.');
+      expect(e.message).toBe('Invalid verifiableCredentials[0]: credentialSubject is required.');
     }
   });
 
   it('Response code should be ' + 400 + ' when issuer is not passed', async () => {
-    cred = copyCredentialObj(verifiableCredential[0], 'issuer');
+    cred = copyCredentialObj(verifiableCredentials[0], 'issuer');
     try {
       await callVerifyEncryptedPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid verifiableCredential[0]: issuer is required.');
+      expect(e.message).toBe('Invalid verifiableCredentials[0]: issuer is required.');
     }
   });
 
   it('Response code should be ' + 400 + ' when type is not passed', async () => {
-    cred = copyCredentialObj(verifiableCredential[0], 'type');
+    cred = copyCredentialObj(verifiableCredentials[0], 'type');
     try {
       await callVerifyEncryptedPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid verifiableCredential[0]: type is required.');
+      expect(e.message).toBe('Invalid verifiableCredentials[0]: type is required.');
     }
   });
 
   it('Response code should be ' + 400 + ' when id is not passed', async () => {
-    cred = copyCredentialObj(verifiableCredential[0], 'id');
+    cred = copyCredentialObj(verifiableCredentials[0], 'id');
     try {
       await callVerifyEncryptedPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid verifiableCredential[0]: id is required.');
+      expect(e.message).toBe('Invalid verifiableCredentials[0]: id is required.');
     }
   });
 
   it('Response code should be ' + 400 + ' when issuanceDate is not passed', async () => {
-    cred = copyCredentialObj(verifiableCredential[0], 'issuanceDate');
+    cred = copyCredentialObj(verifiableCredentials[0], 'issuanceDate');
     try {
       await callVerifyEncryptedPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid verifiableCredential[0]: issuanceDate is required.');
+      expect(e.message).toBe('Invalid verifiableCredentials[0]: issuanceDate is required.');
     }
   });
 
   it('Response code should be ' + 400 + ' when proof is not passed', async () => {
-    cred = copyCredentialObj(verifiableCredential[0], 'proof');
+    cred = copyCredentialObj(verifiableCredentials[0], 'proof');
     try {
       await callVerifyEncryptedPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid verifiableCredential[0]: proof is required.');
+      expect(e.message).toBe('Invalid verifiableCredentials[0]: proof is required.');
     }
   });
 });
 
 describe('verifyEncryptedPresentation - Validation for proof object', () => {
-  const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
+  const { context, type, verifiableCredentials, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
   it('returns a 400 status code with a descriptive error message when created is missing', async () => {
     const invalidProof = { created: '', signatureValue: proof.signatureValue, type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
     try {
-      await callVerifyEncryptedPresentation(context, type, verifiableCredential, presentationRequestUuid, invalidProof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, invalidProof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -477,7 +477,7 @@ describe('verifyEncryptedPresentation - Validation for proof object', () => {
   it('returns a 400 status code with a descriptive error message when signatureValue is missing', async () => {
     const invalidProof = { created: proof.created, signatureValue: '', type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
     try {
-      await callVerifyEncryptedPresentation(context, type, verifiableCredential, presentationRequestUuid, invalidProof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, invalidProof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -488,7 +488,7 @@ describe('verifyEncryptedPresentation - Validation for proof object', () => {
   it('returns a 400 status code with a descriptive error message when type is missing', async () => {
     const invalidProof = { created: proof.created, signatureValue: proof.signatureValue, type: '', verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
     try {
-      await callVerifyEncryptedPresentation(context, type, verifiableCredential, presentationRequestUuid, invalidProof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, invalidProof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -499,7 +499,7 @@ describe('verifyEncryptedPresentation - Validation for proof object', () => {
   it('returns a 400 status code with a descriptive error message when verificationMethod is missing', async () => {
     const invalidProof = { created: proof.created, signatureValue: proof.signatureValue, type: proof.type, verificationMethod: '', proofPurpose: proof.proofPurpose };
     try {
-      await callVerifyEncryptedPresentation(context, type, verifiableCredential, presentationRequestUuid, invalidProof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, invalidProof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -510,7 +510,7 @@ describe('verifyEncryptedPresentation - Validation for proof object', () => {
   it('returns a 400 status code with a descriptive error message when proofPurpose is missing', async () => {
     const invalidProof = { created: proof.created, signatureValue: proof.signatureValue, type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: '' };
     try {
-      await callVerifyEncryptedPresentation(context, type, verifiableCredential, presentationRequestUuid, invalidProof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, invalidProof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);

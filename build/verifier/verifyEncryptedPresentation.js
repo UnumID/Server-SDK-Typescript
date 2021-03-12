@@ -65,7 +65,7 @@ var validateCredentialInput = function (credentials) {
     var retObj = { valStat: true };
     if (library_issuer_verifier_utility_1.isArrayEmpty(credentials)) {
         retObj.valStat = false;
-        retObj.msg = 'Invalid Presentation: verifiableCredential must be a non-empty array.';
+        retObj.msg = 'Invalid Presentation: verifiableCredentials must be a non-empty array.';
         return (retObj);
     }
     var totCred = credentials.length;
@@ -73,7 +73,7 @@ var validateCredentialInput = function (credentials) {
         var credPosStr = '[' + i + ']';
         var credential = credentials[i];
         // Validate the existance of elements in verifiableCredential object
-        var invalidMsg = "Invalid verifiableCredential" + credPosStr + ":";
+        var invalidMsg = "Invalid verifiableCredentials" + credPosStr + ":";
         if (!credential['@context']) {
             retObj.valStat = false;
             retObj.msg = invalidMsg + " @context is required.";
@@ -149,7 +149,7 @@ var validateCredentialInput = function (credentials) {
  */
 var validatePresentation = function (presentation) {
     var context = presentation['@context'];
-    var type = presentation.type, verifiableCredential = presentation.verifiableCredential, proof = presentation.proof, presentationRequestUuid = presentation.presentationRequestUuid;
+    var type = presentation.type, verifiableCredentials = presentation.verifiableCredentials, proof = presentation.proof, presentationRequestUuid = presentation.presentationRequestUuid;
     var retObj = {};
     // validate required fields
     if (!context) {
@@ -158,8 +158,8 @@ var validatePresentation = function (presentation) {
     if (!type) {
         throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: type is required.');
     }
-    if (!verifiableCredential) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: verifiableCredential is required.');
+    if (!verifiableCredentials) {
+        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: verifiableCredentials is required.');
     }
     if (!proof) {
         throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: proof is required.');
@@ -173,7 +173,7 @@ var validatePresentation = function (presentation) {
     if (library_issuer_verifier_utility_1.isArrayEmpty(type)) {
         throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: type must be a non-empty array.');
     }
-    retObj = validateCredentialInput(verifiableCredential);
+    retObj = validateCredentialInput(verifiableCredentials);
     if (!retObj.valStat) {
         throw new library_issuer_verifier_utility_1.CustError(400, retObj.msg);
     }

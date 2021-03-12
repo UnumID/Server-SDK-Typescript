@@ -7,10 +7,16 @@ var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier
  * @param presentation // a post decrypted and verified presentation object;
  */
 exports.extractCredentialInfo = function (presentation) {
-    return {
+    var credentialTypes = [];
+    if (library_issuer_verifier_utility_1.isArrayNotEmpty(presentation.verifiableCredentials)) {
         // cut off the preceding 'VerifiableCredential' string in each credential type array
-        credentialTypes: presentation.verifiableCredential.flatMap(function (cred) { return library_issuer_verifier_utility_1.isArrayNotEmpty(cred.type) && cred.type[0] === 'VerifiableCredential' ? cred.type.slice(1) : cred.type; }),
-        subjectDid: presentation.proof.verificationMethod
+        credentialTypes = presentation.verifiableCredentials.flatMap(function (cred) { return library_issuer_verifier_utility_1.isArrayNotEmpty(cred.type) && cred.type[0] === 'VerifiableCredential' ? cred.type.slice(1) : cred.type; });
+    }
+    // need to handle the possibility of a did fragment being part of the verification method.
+    var subjectDid = presentation.proof.verificationMethod.split('#')[0];
+    return {
+        credentialTypes: credentialTypes,
+        subjectDid: subjectDid
     };
 };
 //# sourceMappingURL=extractCredentialInfo.js.map

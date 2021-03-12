@@ -25,11 +25,11 @@ const mockGetDIDDoc = utilLib.getDIDDoc as jest.Mock;
 const mockDoVerify = utilLib.doVerify as jest.Mock;
 const mockMakeNetworkRequest = utilLib.makeNetworkRequest as jest.Mock;
 
-const callVerifyPresentation = (context, type, verifiableCredential, presentationRequestUuid, proof, verifier, auth = ''): Promise<UnumDto<VerifiedStatus>> => {
+const callVerifyPresentation = (context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, auth = ''): Promise<UnumDto<VerifiedStatus>> => {
   const presentation: Presentation = {
     '@context': context,
     type,
-    verifiableCredential,
+    verifiableCredentials,
     presentationRequestUuid,
     proof,
     uuid: 'a'
@@ -275,7 +275,7 @@ describe('verifyPresentation - Failure Scenarios', () => {
   });
 });
 
-describe('verifyPresentation - Success Scenario with verifiableCredentialString', () => {
+describe('verifyPresentation - Success Scenario with verifiableCredentialsString', () => {
   let response: UnumDto<VerifiedStatus>;
   let verStatus: boolean;
 
@@ -376,7 +376,7 @@ describe('verifyPresentation - Validation Failures', () => {
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid Presentation: verifiableCredential is required.');
+      expect(e.message).toBe('Invalid Presentation: verifiableCredentials is required.');
     }
   });
 
@@ -440,23 +440,23 @@ describe('verifyPresentation - Validation Failures', () => {
     }
   });
 
-  it('returns a 400 status code with a descriptive error message when verifiableCredential is not an array', async () => {
+  it('returns a 400 status code with a descriptive error message when verifiableCredentials is not an array', async () => {
     try {
       await callVerifyPresentation(context, type, 'verifiableCredential', presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid Presentation: verifiableCredential must be a non-empty array.');
+      expect(e.message).toBe('Invalid Presentation: verifiableCredentials must be a non-empty array.');
     }
   });
 
-  it('returns a 400 status code with a descriptive error message when verifiableCredential array is empty', async () => {
+  it('returns a 400 status code with a descriptive error message when verifiableCredentials array is empty', async () => {
     try {
       await callVerifyPresentation(context, type, [], presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid Presentation: verifiableCredential must be a non-empty array.');
+      expect(e.message).toBe('Invalid Presentation: verifiableCredentials must be a non-empty array.');
     }
   });
 
@@ -482,7 +482,7 @@ describe('verifyPresentation - Validation for verifiableCredential object', () =
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid verifiableCredential[0]: @context is required.');
+      expect(e.message).toBe('Invalid verifiableCredentials[0]: @context is required.');
     }
   });
 
@@ -493,7 +493,7 @@ describe('verifyPresentation - Validation for verifiableCredential object', () =
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid verifiableCredential[0]: credentialStatus is required.');
+      expect(e.message).toBe('Invalid verifiableCredentials[0]: credentialStatus is required.');
     }
   });
 
@@ -504,7 +504,7 @@ describe('verifyPresentation - Validation for verifiableCredential object', () =
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid verifiableCredential[0]: credentialSubject is required.');
+      expect(e.message).toBe('Invalid verifiableCredentials[0]: credentialSubject is required.');
     }
   });
 
@@ -515,7 +515,7 @@ describe('verifyPresentation - Validation for verifiableCredential object', () =
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid verifiableCredential[0]: issuer is required.');
+      expect(e.message).toBe('Invalid verifiableCredentials[0]: issuer is required.');
     }
   });
 
@@ -526,7 +526,7 @@ describe('verifyPresentation - Validation for verifiableCredential object', () =
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid verifiableCredential[0]: type is required.');
+      expect(e.message).toBe('Invalid verifiableCredentials[0]: type is required.');
     }
   });
 
@@ -537,7 +537,7 @@ describe('verifyPresentation - Validation for verifiableCredential object', () =
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid verifiableCredential[0]: id is required.');
+      expect(e.message).toBe('Invalid verifiableCredentials[0]: id is required.');
     }
   });
 
@@ -548,7 +548,7 @@ describe('verifyPresentation - Validation for verifiableCredential object', () =
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid verifiableCredential[0]: issuanceDate is required.');
+      expect(e.message).toBe('Invalid verifiableCredentials[0]: issuanceDate is required.');
     }
   });
 
@@ -559,7 +559,7 @@ describe('verifyPresentation - Validation for verifiableCredential object', () =
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid verifiableCredential[0]: proof is required.');
+      expect(e.message).toBe('Invalid verifiableCredentials[0]: proof is required.');
     }
   });
 });
