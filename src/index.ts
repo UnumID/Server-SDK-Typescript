@@ -10,6 +10,7 @@ import { registerIssuer } from './issuer/registerIssuer';
 import { issueCredential } from './issuer/issueCredentials';
 import { revokeCredential } from './issuer/revokeCredentials';
 import { CustError, Proof, Credential, CredentialSubject } from '@unumid/library-issuer-verifier-utility';
+import { extractCredentialInfo } from './utils/extractCredentialInfo';
 
 export {
   // Issuer Functions
@@ -37,5 +38,7 @@ export {
   // Util Types
   CustError,
   Proof,
-  Credential
+  Credential,
+  // Util Functions
+  extractCredentialInfo
 };

@@ -271,7 +271,15 @@ export interface VerifiedStatus {
  */
 export interface DecryptedPresentation extends VerifiedStatus {
   type: 'VerifiablePresentation' | 'NoPresentation'
-  credentials?: VerifiableCredential[]
+  presentation?: Presentation
+}
+
+/**
+ * A type which simplifies handling the information useful for analytics in a presentation.
+ */
+export interface CredentialInfo {
+  credentialTypes: string[], // Just the credentials types that were included in the presentation
+  subjectDid: string // the subjectDid that presented the credentials in the presentation
 }
 
 /**

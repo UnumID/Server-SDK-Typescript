@@ -10,7 +10,8 @@ import { registerIssuer } from './issuer/registerIssuer';
 import { issueCredential } from './issuer/issueCredentials';
 import { revokeCredential } from './issuer/revokeCredentials';
 import { CustError, Proof, Credential, CredentialSubject } from '@unumid/library-issuer-verifier-utility';
+import { extractCredentialInfo } from './utils/extractCredentialInfo';
 export { registerIssuer, issueCredential, revokeCredential, registerVerifier, sendEmail, sendRequest, sendSms, verifyNoPresentation, // Deprecated as an exposed function in favor of verifyEncryptedPresentation. Ought to be removed after holder stops sending presentations to the test customer app
 verifyPresentation, // Deprecated as an exposed function in favor of verifyEncryptedPresentation. Ought to be removed after holder stops sending presentations to the test customer app
-verifyEncryptedPresentation, UnumDto, RegisteredVerifier, PresentationRequestResponse, VerifiedStatus, NoPresentation, Presentation, RegisteredIssuer, CredentialSubject, DecryptedPresentation, CustError, Proof, Credential };
+verifyEncryptedPresentation, UnumDto, RegisteredVerifier, PresentationRequestResponse, VerifiedStatus, NoPresentation, Presentation, RegisteredIssuer, CredentialSubject, DecryptedPresentation, CustError, Proof, Credential, extractCredentialInfo };
 //# sourceMappingURL=index.d.ts.map

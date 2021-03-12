@@ -300,7 +300,7 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     }
 
     const isVerified = isPresentationVerified && areCredentialsValid; // always true if here
-    const credentialTypes = presentation.verifiableCredential.flatMap(cred => cred.type.slice(1));
+    const credentialTypes = presentation.verifiableCredential.flatMap(cred => cred.type.slice(1)); // cut off the preceding 'VerifiableCredential' string in each array
     const issuers = presentation.verifiableCredential.map(cred => cred.issuer);
     const subject = proof.verificationMethod;
     const receiptOptions = {
