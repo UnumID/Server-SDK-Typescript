@@ -58,7 +58,7 @@ var validateCredentialInput = function (credentials) {
     var retObj = { valStat: true, stringifiedCredentials: false, resultantCredentials: [] };
     if (library_issuer_verifier_utility_1.isArrayEmpty(credentials)) {
         retObj.valStat = false;
-        retObj.msg = 'Invalid Presentation: verifiableCredential must be a non-empty array.';
+        retObj.msg = 'Invalid Presentation: verifiableCredentials must be a non-empty array.';
         return (retObj);
     }
     var totCred = credentials.length;
@@ -70,7 +70,7 @@ var validateCredentialInput = function (credentials) {
             credential = JSON.parse(credential);
         }
         // Validate the existence of elements in verifiableCredential object
-        var invalidMsg = "Invalid verifiableCredential" + credPosStr + ":";
+        var invalidMsg = "Invalid verifiableCredentials" + credPosStr + ":";
         if (!credential['@context']) {
             retObj.valStat = false;
             retObj.msg = invalidMsg + " @context is required.";
@@ -151,7 +151,7 @@ var validateCredentialInput = function (credentials) {
  */
 var validatePresentation = function (presentation) {
     var context = presentation['@context'];
-    var type = presentation.type, verifiableCredential = presentation.verifiableCredential, proof = presentation.proof, presentationRequestUuid = presentation.presentationRequestUuid;
+    var type = presentation.type, verifiableCredentials = presentation.verifiableCredentials, proof = presentation.proof, presentationRequestUuid = presentation.presentationRequestUuid;
     var retObj = {};
     // validate required fields
     if (!context) {
@@ -160,8 +160,8 @@ var validatePresentation = function (presentation) {
     if (!type) {
         throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: type is required.');
     }
-    if (!verifiableCredential) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: verifiableCredential is required.');
+    if (!verifiableCredentials) {
+        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: verifiableCredentials is required.');
     }
     if (!proof) {
         throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: proof is required.');
@@ -175,13 +175,13 @@ var validatePresentation = function (presentation) {
     if (library_issuer_verifier_utility_1.isArrayEmpty(type)) {
         throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: type must be a non-empty array.');
     }
-    retObj = validateCredentialInput(verifiableCredential);
+    retObj = validateCredentialInput(verifiableCredentials);
     if (!retObj.valStat) {
         throw new library_issuer_verifier_utility_1.CustError(400, retObj.msg);
     }
     else if (retObj.stringifiedCredentials) {
         // adding the "objectified" vc, which were sent in string format to appease iOS variable keyed object limitation: https://developer.apple.com/forums/thread/100417
-        presentation.verifiableCredential = retObj.resultantCredentials;
+        presentation.verifiableCredentials = retObj.resultantCredentials;
     }
     // Check proof object is formatted correctly
     validateProof_1.validateProof(proof);
@@ -258,7 +258,7 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                     return [2 /*return*/, result_3];
                 }
                 areCredentialsValid = true;
-                _i = 0, _a = presentation.verifiableCredential;
+                _i = 0, _a = presentation.verifiableCredentials;
                 _b.label = 2;
             case 2:
                 if (!(_i < _a.length)) return [3 /*break*/, 6];
@@ -302,8 +302,8 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                     return [2 /*return*/, result_4];
                 }
                 isVerified = isPresentationVerified && areCredentialsValid;
-                credentialTypes = presentation.verifiableCredential.flatMap(function (cred) { return cred.type.slice(1); });
-                issuers = presentation.verifiableCredential.map(function (cred) { return cred.issuer; });
+                credentialTypes = presentation.verifiableCredentials.flatMap(function (cred) { return cred.type.slice(1); });
+                issuers = presentation.verifiableCredentials.map(function (cred) { return cred.issuer; });
                 subject = proof.verificationMethod;
                 receiptOptions = {
                     type: ['PresentationVerified'],

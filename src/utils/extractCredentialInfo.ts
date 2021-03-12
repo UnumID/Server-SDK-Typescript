@@ -6,9 +6,14 @@ import { CredentialInfo, Presentation } from '../types';
  * @param presentation // a post decrypted and verified presentation object;
  */
 export const extractCredentialInfo = (presentation: Presentation): CredentialInfo => {
-  return {
+  let credentialTypes: string[] = [];
+  if (isArrayNotEmpty(presentation.verifiableCredentials)) {
     // cut off the preceding 'VerifiableCredential' string in each credential type array
-    credentialTypes: presentation.verifiableCredential.flatMap(cred => isArrayNotEmpty(cred.type) && cred.type[0] === 'VerifiableCredential' ? cred.type.slice(1) : cred.type),
+    credentialTypes = presentation.verifiableCredentials.flatMap(cred => isArrayNotEmpty(cred.type) && cred.type[0] === 'VerifiableCredential' ? cred.type.slice(1) : cred.type);
+  }
+
+  return {
+    credentialTypes,
     subjectDid: presentation.proof.verificationMethod
   };
 };

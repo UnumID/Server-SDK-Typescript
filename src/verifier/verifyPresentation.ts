@@ -20,7 +20,7 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
 
   if (isArrayEmpty(credentials)) {
     retObj.valStat = false;
-    retObj.msg = 'Invalid Presentation: verifiableCredential must be a non-empty array.';
+    retObj.msg = 'Invalid Presentation: verifiableCredentials must be a non-empty array.';
 
     return (retObj);
   }
@@ -36,7 +36,7 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
     }
 
     // Validate the existence of elements in verifiableCredential object
-    const invalidMsg = `Invalid verifiableCredential${credPosStr}:`;
+    const invalidMsg = `Invalid verifiableCredentials${credPosStr}:`;
     if (!credential['@context']) {
       retObj.valStat = false;
       retObj.msg = `${invalidMsg} @context is required.`;
@@ -132,7 +132,7 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
  */
 const validatePresentation = (presentation: Presentation): Presentation => {
   const context = presentation['@context'];
-  const { type, verifiableCredential, proof, presentationRequestUuid } = presentation;
+  const { type, verifiableCredentials, proof, presentationRequestUuid } = presentation;
   let retObj: JSONObj = {};
 
   // validate required fields
@@ -144,8 +144,8 @@ const validatePresentation = (presentation: Presentation): Presentation => {
     throw new CustError(400, 'Invalid Presentation: type is required.');
   }
 
-  if (!verifiableCredential) {
-    throw new CustError(400, 'Invalid Presentation: verifiableCredential is required.');
+  if (!verifiableCredentials) {
+    throw new CustError(400, 'Invalid Presentation: verifiableCredentials is required.');
   }
 
   if (!proof) {
@@ -164,12 +164,12 @@ const validatePresentation = (presentation: Presentation): Presentation => {
     throw new CustError(400, 'Invalid Presentation: type must be a non-empty array.');
   }
 
-  retObj = validateCredentialInput(verifiableCredential);
+  retObj = validateCredentialInput(verifiableCredentials);
   if (!retObj.valStat) {
     throw new CustError(400, retObj.msg);
   } else if (retObj.stringifiedCredentials) {
     // adding the "objectified" vc, which were sent in string format to appease iOS variable keyed object limitation: https://developer.apple.com/forums/thread/100417
-    presentation.verifiableCredential = retObj.resultantCredentials;
+    presentation.verifiableCredentials = retObj.resultantCredentials;
   }
 
   // Check proof object is formatted correctly
@@ -261,7 +261,7 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
 
     let areCredentialsValid = true;
 
-    for (const credential of presentation.verifiableCredential) {
+    for (const credential of presentation.verifiableCredentials) {
       const isExpired = isCredentialExpired(credential);
 
       if (isExpired) {
@@ -300,8 +300,8 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
     }
 
     const isVerified = isPresentationVerified && areCredentialsValid; // always true if here
-    const credentialTypes = presentation.verifiableCredential.flatMap(cred => cred.type.slice(1)); // cut off the preceding 'VerifiableCredential' string in each array
-    const issuers = presentation.verifiableCredential.map(cred => cred.issuer);
+    const credentialTypes = presentation.verifiableCredentials.flatMap(cred => cred.type.slice(1)); // cut off the preceding 'VerifiableCredential' string in each array
+    const issuers = presentation.verifiableCredentials.map(cred => cred.issuer);
     const subject = proof.verificationMethod;
     const receiptOptions = {
       type: ['PresentationVerified'],
