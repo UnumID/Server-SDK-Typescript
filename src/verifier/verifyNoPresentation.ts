@@ -76,7 +76,7 @@ export const verifyNoPresentation = async (authorization: string, noPresentation
 
     validateNoPresentationParams(noPresentation);
 
-    const { proof: { verificationMethod, signatureValue } } = noPresentation;
+    const { proof: { verificationMethod, signatureValue, unsignedValue } } = noPresentation;
 
     const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, verificationMethod);
 
@@ -91,7 +91,7 @@ export const verifyNoPresentation = async (authorization: string, noPresentation
 
     const unsignedNoPresentation = omit(noPresentation, 'proof');
 
-    const isVerified = doVerify(signatureValue, unsignedNoPresentation, publicKey, encoding);
+    const isVerified = doVerify(signatureValue, unsignedNoPresentation, publicKey, encoding, unsignedValue);
 
     if (!isVerified) {
       const result: UnumDto<VerifiedStatus> = {

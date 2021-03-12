@@ -85,14 +85,14 @@ exports.validateNoPresentationParams = function (noPresentation) {
  * @param verifier
  */
 exports.verifyNoPresentation = function (authorization, noPresentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, verificationMethod, signatureValue, didDocumentResponse, authToken, publicKeyInfos, _b, publicKey, encoding, unsignedNoPresentation, isVerified, result_1, receiptOptions, receiptCallOptions, resp, result, e_1;
+    var _a, verificationMethod, signatureValue, unsignedValue, didDocumentResponse, authToken, publicKeyInfos, _b, publicKey, encoding, unsignedNoPresentation, isVerified, result_1, receiptOptions, receiptCallOptions, resp, result, e_1;
     return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
                 _c.trys.push([0, 3, , 4]);
                 requireAuth_1.requireAuth(authorization);
                 exports.validateNoPresentationParams(noPresentation);
-                _a = noPresentation.proof, verificationMethod = _a.verificationMethod, signatureValue = _a.signatureValue;
+                _a = noPresentation.proof, verificationMethod = _a.verificationMethod, signatureValue = _a.signatureValue, unsignedValue = _a.unsignedValue;
                 return [4 /*yield*/, library_issuer_verifier_utility_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, verificationMethod)];
             case 1:
                 didDocumentResponse = _c.sent();
@@ -103,7 +103,7 @@ exports.verifyNoPresentation = function (authorization, noPresentation, verifier
                 publicKeyInfos = library_issuer_verifier_utility_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 _b = publicKeyInfos[0], publicKey = _b.publicKey, encoding = _b.encoding;
                 unsignedNoPresentation = lodash_1.omit(noPresentation, 'proof');
-                isVerified = library_issuer_verifier_utility_1.doVerify(signatureValue, unsignedNoPresentation, publicKey, encoding);
+                isVerified = library_issuer_verifier_utility_1.doVerify(signatureValue, unsignedNoPresentation, publicKey, encoding, unsignedValue);
                 if (!isVerified) {
                     result_1 = {
                         authToken: authToken,
