@@ -79,7 +79,6 @@ export const sendEmail = async (authorization: string, to: string, subject: stri
       data: body
     };
 
-    // const apiResponse = await makeNetworkRequest<EmailResponseBody>(data);
     const apiResponse = await makeNetworkRequest<EmailResponseBody>(data);
 
     const authToken: string = handleAuthToken(apiResponse);

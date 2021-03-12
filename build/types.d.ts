@@ -271,7 +271,17 @@ export interface VerifiedStatus {
  */
 export interface DecryptedPresentation extends VerifiedStatus {
   type: 'VerifiablePresentation' | 'NoPresentation'
-  credentials?: VerifiableCredential[]
+  // credentials?: VerifiableCredential[]
+  presentation?: Presentation
+}
+
+/**
+ * A type which simplifies handling the information in a presentation. This type
+ * is what ought to be returned to UnumId's saas for analytics.
+ */
+export interface CredentialInfo {
+  credentialTypes: string[], // Just the credentials types that were included in the presentation
+  subjectDid: string // the subjectDid that presented the credentials in the presentation
 }
 
 /**
