@@ -111,53 +111,6 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
   return (retObj);
 };
 
-/**
- * Validates the presentation object has the proper attributes.
- * @param presentation Presentation
- */
-const validatePresentation = (presentation: Presentation): void => {
-  const context = presentation['@context'];
-  const { type, verifiableCredentials, proof, presentationRequestUuid } = presentation;
-  let retObj: JSONObj = {};
-
-  // validate required fields
-  if (!context) {
-    throw new CustError(400, 'Invalid Presentation: @context is required.');
-  }
-
-  if (!type) {
-    throw new CustError(400, 'Invalid Presentation: type is required.');
-  }
-
-  if (!verifiableCredentials) {
-    throw new CustError(400, 'Invalid Presentation: verifiableCredentials is required.');
-  }
-
-  if (!proof) {
-    throw new CustError(400, 'Invalid Presentation: proof is required.');
-  }
-
-  if (!presentationRequestUuid) {
-    throw new CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
-  }
-
-  if (isArrayEmpty(context)) {
-    throw new CustError(400, 'Invalid Presentation: @context must be a non-empty array.');
-  }
-
-  if (isArrayEmpty(type)) {
-    throw new CustError(400, 'Invalid Presentation: type must be a non-empty array.');
-  }
-
-  retObj = validateCredentialInput(verifiableCredentials);
-  if (!retObj.valStat) {
-    throw new CustError(400, retObj.msg);
-  }
-
-  // Check proof object is formatted correctly
-  validateProof(proof);
-};
-
 function isPresentation (presentation: PresentationOrNoPresentation): presentation is Presentation {
   return presentation.type[0] === 'VerifiablePresentation';
 }

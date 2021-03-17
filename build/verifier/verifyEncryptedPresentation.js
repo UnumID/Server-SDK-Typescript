@@ -143,43 +143,6 @@ var validateCredentialInput = function (credentials) {
     }
     return (retObj);
 };
-/**
- * Validates the presentation object has the proper attributes.
- * @param presentation Presentation
- */
-var validatePresentation = function (presentation) {
-    var context = presentation['@context'];
-    var type = presentation.type, verifiableCredentials = presentation.verifiableCredentials, proof = presentation.proof, presentationRequestUuid = presentation.presentationRequestUuid;
-    var retObj = {};
-    // validate required fields
-    if (!context) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: @context is required.');
-    }
-    if (!type) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: type is required.');
-    }
-    if (!verifiableCredentials) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: verifiableCredentials is required.');
-    }
-    if (!proof) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: proof is required.');
-    }
-    if (!presentationRequestUuid) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
-    }
-    if (library_issuer_verifier_utility_1.isArrayEmpty(context)) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: @context must be a non-empty array.');
-    }
-    if (library_issuer_verifier_utility_1.isArrayEmpty(type)) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: type must be a non-empty array.');
-    }
-    retObj = validateCredentialInput(verifiableCredentials);
-    if (!retObj.valStat) {
-        throw new library_issuer_verifier_utility_1.CustError(400, retObj.msg);
-    }
-    // Check proof object is formatted correctly
-    validateProof_1.validateProof(proof);
-};
 function isPresentation(presentation) {
     return presentation.type[0] === 'VerifiablePresentation';
 }

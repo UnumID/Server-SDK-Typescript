@@ -253,7 +253,7 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
         authToken,
         body: {
           isVerified: false,
-          message: 'Presentation signature can no be verified'
+          message: 'Presentation signature can not be verified'
         }
       };
       return result;
