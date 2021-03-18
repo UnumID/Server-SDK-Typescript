@@ -22,12 +22,12 @@ const mockGetDIDDoc = utilLib.getDIDDoc as jest.Mock;
 const mockDoEncrypt = utilLib.doEncrypt as jest.Mock;
 const mockCreateProof = utilLib.createProof as jest.Mock;
 
-function callIssueCreds (credentialSubject: CredentialSubject, type: string, issuer: string, expirationDate: Date, eccPrivateKey: string, auth: string): Promise<UnumDto<Credential>> {
+function callIssueCreds (credentialSubject: CredentialSubject, type: string[], issuer: string, expirationDate: Date, eccPrivateKey: string, auth: string): Promise<UnumDto<Credential>> {
   return issueCredential(auth, type, issuer, credentialSubject, eccPrivateKey, expirationDate);
 }
 
 describe('issueCredential', () => {
-  let responseDto: UnumDto<Credential>, response:Credential, responseAuthToken: string;
+  let responseDto: UnumDto<Credential>, response:UnumDto<Credential>, responseAuthToken: string;
   const credentialSubject: CredentialSubject = {
     id: 'did:unum:a0cd2e20-5f3e-423c-8382-afc722eaca9e',
     value: 'dummy value'

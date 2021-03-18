@@ -1,7 +1,8 @@
 import { omit } from 'lodash';
 
 import { configData } from '../config';
-import { Presentation, UnumDto, VerifiedStatus } from '../types';
+import { UnumDto, VerifiedStatus } from '../types';
+import { Presentation } from '@unumid/types';
 import { validateProof } from './validateProof';
 import { requireAuth } from '../requireAuth';
 import { verifyCredential } from './verifyCredential';

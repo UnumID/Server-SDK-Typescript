@@ -1,6 +1,6 @@
 import { UnumDto } from '../types';
+import { CredentialSubject } from '@unumid/types';
 import { Credential } from '@unumid/library-issuer-verifier-utility';
-import { CredentialSubject } from '@unumid/library-issuer-verifier-utility/build/types';
 /**
  * Handles issuing a credential with UnumID's SaaS.
  *

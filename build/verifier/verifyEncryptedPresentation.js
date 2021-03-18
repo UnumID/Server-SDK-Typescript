@@ -51,98 +51,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyEncryptedPresentation = void 0;
-var validateProof_1 = require("./validateProof");
 var requireAuth_1 = require("../requireAuth");
 var library_crypto_1 = require("@unumid/library-crypto");
 var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var logger_1 = __importDefault(require("../logger"));
 var __1 = require("..");
-/**
- * Validates the attributes for a credential request to UnumID's SaaS.
- * @param credentials JSONObj
- */
-var validateCredentialInput = function (credentials) {
-    var retObj = { valStat: true };
-    if (library_issuer_verifier_utility_1.isArrayEmpty(credentials)) {
-        retObj.valStat = false;
-        retObj.msg = 'Invalid Presentation: verifiableCredentials must be a non-empty array.';
-        return (retObj);
-    }
-    var totCred = credentials.length;
-    for (var i = 0; i < totCred; i++) {
-        var credPosStr = '[' + i + ']';
-        var credential = credentials[i];
-        // Validate the existance of elements in verifiableCredential object
-        var invalidMsg = "Invalid verifiableCredentials" + credPosStr + ":";
-        if (!credential['@context']) {
-            retObj.valStat = false;
-            retObj.msg = invalidMsg + " @context is required.";
-            break;
-        }
-        if (!credential.credentialStatus) {
-            retObj.valStat = false;
-            retObj.msg = invalidMsg + " credentialStatus is required.";
-            break;
-        }
-        if (!credential.credentialSubject) {
-            retObj.valStat = false;
-            retObj.msg = invalidMsg + " credentialSubject is required.";
-            break;
-        }
-        if (!credential.issuer) {
-            retObj.valStat = false;
-            retObj.msg = invalidMsg + " issuer is required.";
-            break;
-        }
-        if (!credential.type) {
-            retObj.valStat = false;
-            retObj.msg = invalidMsg + " type is required.";
-            break;
-        }
-        if (!credential.id) {
-            retObj.valStat = false;
-            retObj.msg = invalidMsg + " id is required.";
-            break;
-        }
-        if (!credential.issuanceDate) {
-            retObj.valStat = false;
-            retObj.msg = invalidMsg + " issuanceDate is required.";
-            break;
-        }
-        if (!credential.proof) {
-            retObj.valStat = false;
-            retObj.msg = invalidMsg + " proof is required.";
-            break;
-        }
-        // Check @context is an array and not empty
-        if (library_issuer_verifier_utility_1.isArrayEmpty(credential['@context'])) {
-            retObj.valStat = false;
-            retObj.msg = invalidMsg + " @context must be a non-empty array.";
-            break;
-        }
-        // Check CredentialStatus object has id and type elements.
-        if (!credential.credentialStatus.id || !credential.credentialStatus.type) {
-            retObj.valStat = false;
-            retObj.msg = invalidMsg + " credentialStatus must contain id and type properties.";
-            break;
-        }
-        // Check credentialSubject object has id element.
-        if (!credential.credentialSubject.id) {
-            retObj.valStat = false;
-            retObj.msg = invalidMsg + " credentialSubject must contain id property.";
-            break;
-        }
-        // Check type is an array and not empty
-        if (library_issuer_verifier_utility_1.isArrayEmpty(credential.type)) {
-            retObj.valStat = false;
-            retObj.msg = invalidMsg + " type must be a non-empty array.";
-            break;
-        }
-        // Check that proof object is valid
-        validateProof_1.validateProof(credential.proof);
-    }
-    return (retObj);
-};
 function isPresentation(presentation) {
     return presentation.type[0] === 'VerifiablePresentation';
 }

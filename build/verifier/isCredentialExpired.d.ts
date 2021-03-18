@@ -1,4 +1,4 @@
-import { VerifiableCredential } from '../types';
+import { VerifiableCredential } from '@unumid/types';
 /**
  * Helper to assess the expiration status of a credential.
  * @param credential VerifiableCredential

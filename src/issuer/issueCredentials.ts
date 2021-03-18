@@ -1,9 +1,10 @@
 import { configData } from '../config';
-import { CredentialOptions, EncryptedCredentialOptions, UnumDto } from '../types';
+import { CredentialOptions, UnumDto } from '../types';
 import { requireAuth } from '../requireAuth';
+import { EncryptedCredentialOptions, CredentialSubject } from '@unumid/types';
 
 import { Credential, getDIDDoc, getKeyFromDIDDoc, CustError, EncryptedData, doEncrypt, UnsignedCredential, Proof, createProof, getUUID, RESTData, makeNetworkRequest, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
-import { CredentialSubject, JSONObj } from '@unumid/library-issuer-verifier-utility/build/types';
+import { JSONObj } from '@unumid/library-issuer-verifier-utility/build/types';
 import logger from '../logger';
 
 /**
@@ -80,7 +81,7 @@ const constructUnsignedCredentialObj = (credOpts: CredentialOptions): UnsignedCr
     },
     credentialSubject: credOpts.credentialSubject,
     issuer: credOpts.issuer,
-    type: credOpts.type,
+    type: ['VerifiableCredential', ...credOpts.type],
     id: credentialId,
     issuanceDate: new Date(),
     expirationDate: credOpts.expirationDate
@@ -144,8 +145,9 @@ const validateInputs = (type: string|string[], issuer: string, credentialSubject
 const constructCredentialOptions = (type: string|string[], issuer: string, credentialSubject: CredentialSubject, eccPrivateKey: string, expirationDate?: Date): CredentialOptions => {
   // HACK ALERT: removing duplicate 'VerifiableCredential' if present in type string[]
   const typeList: string[] = ['VerifiableCredential'].concat(type); // Need to have some value in the "base" array so just just the keyword we are going to filter over.
-  const rawTypes = typeList.filter(t => t !== 'VerifiableCredential');
-  const types = ['VerifiableCredential'].concat(rawTypes); // Adding back the filtered keyword, effectively ensuring there is only one at the start of the array
+  const types = typeList.filter(t => t !== 'VerifiableCredential');
+  // const rawTypes = typeList.filter(t => t !== 'VerifiableCredential');
+  // const types = ['VerifiableCredential'].concat(rawTypes); // Adding back the filtered keyword, effectively ensuring there is only one at the start of the array
 
   const credOpt: CredentialOptions = {
     credentialSubject,

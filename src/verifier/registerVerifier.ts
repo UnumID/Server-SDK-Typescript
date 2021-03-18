@@ -1,7 +1,8 @@
 import { configData } from '../config';
-import { RegisteredVerifier, UnumDto, VerifierOptions } from '../types';
-import { KeyPair, PublicKeyInfo, getUUID, KeyPairSet, CustError, createKeyPairSet, RESTData, JSONObj, makeNetworkRequest, DidKeyType, isArrayEmpty, isArrayNotEmpty, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
+import { RegisteredVerifier, UnumDto } from '../types';
+import { KeyPair, PublicKeyInfo, getUUID, KeyPairSet, CustError, createKeyPairSet, RESTData, JSONObj, makeNetworkRequest, DidKeyType, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
 import logger from '../logger';
+import { VerifierOptions } from '@unumid/types';
 
 /**
  * Creates an object to encapsulate key information.

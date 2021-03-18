@@ -1,4 +1,5 @@
-import { CredentialRequest, PresentationRequestResponse, SendRequestReqBody, SignedPresentationRequest, UnsignedPresentationRequest, UnumDto } from '../types';
+import { CredentialRequest, SignedPresentationRequest, UnsignedPresentationRequest } from '@unumid/types';
+import { PresentationRequestResponse, SendRequestReqBody, UnumDto } from '../types';
 /**
  * Constructs an unsigned PresentationRequest from the incoming request body.
  * @param reqBody SendRequestReqBody
