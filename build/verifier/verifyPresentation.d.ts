@@ -1,4 +1,5 @@
-import { Presentation, UnumDto, VerifiedStatus } from '../types';
+import { UnumDto, VerifiedStatus } from '../types';
+import { Presentation } from '@unumid/types';
 /**
  * Handler to send information regarding the user agreeing to share a credential Presentation.
  * @param authorization

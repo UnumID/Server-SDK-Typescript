@@ -1,4 +1,5 @@
-import { NoPresentation, UnumDto, VerifiedStatus } from '../types';
+import { UnumDto, VerifiedStatus } from '../types';
+import { NoPresentation } from '@unumid/types';
 /**
  * Validates the NoPresentation type to ensure the necessary attributes.
  * @param noPresentation NoPresentation

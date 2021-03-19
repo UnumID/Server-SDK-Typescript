@@ -3,13 +3,11 @@ import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
 import { getUUID, createProof, CustError, RESTData, makeNetworkRequest, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
 import { CryptoError } from '@unumid/library-crypto';
+import { CredentialRequest, SignedPresentationRequest, UnsignedPresentationRequest } from '@unumid/types';
 
 import {
-  CredentialRequest,
   PresentationRequestResponse,
   SendRequestReqBody,
-  SignedPresentationRequest,
-  UnsignedPresentationRequest,
   UnumDto
 } from '../types';
 import logger from '../logger';

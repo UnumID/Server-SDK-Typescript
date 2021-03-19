@@ -1,6 +1,7 @@
 import { handleAuthToken, makeNetworkRequest } from '@unumid/library-issuer-verifier-utility';
+import { VerifiableCredential } from '@unumid/types';
 
-import { VerifiableCredential, CredentialStatus, UnumDto } from '../types';
+import { CredentialStatus, UnumDto } from '../types';
 import { configData } from '../config';
 
 /**

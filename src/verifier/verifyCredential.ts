@@ -1,10 +1,11 @@
-import { getDIDDoc, getKeyFromDIDDoc, doVerify, handleAuthToken, JSONObj } from '@unumid/library-issuer-verifier-utility';
+import { getDIDDoc, getKeyFromDIDDoc, doVerify, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
 import { CryptoError } from '@unumid/library-crypto';
 import { omit } from 'lodash';
 
-import { UnumDto, VerifiableCredential } from '../types';
+import { UnumDto } from '../types';
 import { configData } from '../config';
 import logger from '../logger';
+import { VerifiableCredential } from '@unumid/types';
 
 /**
  * Used to verify the credential signature given the corresponding Did document's public key.

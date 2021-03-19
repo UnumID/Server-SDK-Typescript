@@ -35,6 +35,13 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __spreadArrays = (this && this.__spreadArrays) || function () {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -115,7 +122,7 @@ var constructUnsignedCredentialObj = function (credOpts) {
         },
         credentialSubject: credOpts.credentialSubject,
         issuer: credOpts.issuer,
-        type: credOpts.type,
+        type: __spreadArrays(['VerifiableCredential'], credOpts.type),
         id: credentialId,
         issuanceDate: new Date(),
         expirationDate: credOpts.expirationDate
@@ -167,8 +174,7 @@ var validateInputs = function (type, issuer, credentialSubject, eccPrivateKey, e
 var constructCredentialOptions = function (type, issuer, credentialSubject, eccPrivateKey, expirationDate) {
     // HACK ALERT: removing duplicate 'VerifiableCredential' if present in type string[]
     var typeList = ['VerifiableCredential'].concat(type); // Need to have some value in the "base" array so just just the keyword we are going to filter over.
-    var rawTypes = typeList.filter(function (t) { return t !== 'VerifiableCredential'; });
-    var types = ['VerifiableCredential'].concat(rawTypes); // Adding back the filtered keyword, effectively ensuring there is only one at the start of the array
+    var types = typeList.filter(function (t) { return t !== 'VerifiableCredential'; });
     var credOpt = {
         credentialSubject: credentialSubject,
         issuer: issuer,

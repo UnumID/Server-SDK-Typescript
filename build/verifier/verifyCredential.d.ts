@@ -1,4 +1,5 @@
-import { UnumDto, VerifiableCredential } from '../types';
+import { UnumDto } from '../types';
+import { VerifiableCredential } from '@unumid/types';
 /**
  * Used to verify the credential signature given the corresponding Did document's public key.
  * @param credential
