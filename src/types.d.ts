@@ -1,5 +1,5 @@
-import { KeyPairSet, Proof, PublicKeyInfo, EncryptedData } from '@unumid/library-issuer-verifier-utility';
-import { Issuer, CredentialSubject, Verifier } from '@unumid/types';
+import { KeyPairSet, PublicKeyInfo } from '@unumid/library-issuer-verifier-utility';
+import { Issuer, CredentialSubject, Verifier, PresentationRequest, VerifierInfo, IssuerInfoMap } from '@unumid/types';
 
 /**
  * Encapsulates necessary Issuer entity attributes during creation.
@@ -20,17 +20,6 @@ export interface CredentialOptions {
   expirationDate?: Date;
 }
 
-// /**
-//  * Encapsulates necessary information relating to the encrypted credential data during creation.
-//  */
-// export interface EncryptedCredentialOptions {
-//   credentialId: string;
-//   subject: string;
-//   issuer: string;
-//   type: string[];
-//   data: EncryptedData;
-// }
-
 /**
  * Encapsulates API Key attributes for Issuer registration.
  */
@@ -41,44 +30,12 @@ export interface IssuerApiKey {
   type: 'Issuer';
 }
 
-// /**
-//  * Encapsulates Issuer entity attributes.
-//  */
-// export interface Issuer {
-//   uuid: string;
-//   customerUuid: string;
-//   name: string;
-//   did: string;
-//   createdAt: Date;
-//   updatedAt: Date;
-//   isAuthorized: boolean;
-// }
-
 /**
  * Encapsulates a successfully registered Issuer entity.
  */
 export interface RegisteredIssuer extends Issuer {
   keys: KeyPairSet;
 }
-
-// /**
-//  * Encapsulates necessary Verifier entity attributes during creation.
-//  */
-// export interface VerifierOptions {
-//   name: string;
-//   customerUuid: string;
-//   url: string;
-//   publicKeyInfo: Array<PublicKeyInfo>;
-// }
-
-// /**
-//  * Encapsulates necessary CredentialRequest entity attributes.
-//  */
-// export interface CredentialRequest {
-//   type: string;
-//   issuers: string[];
-//   required?: boolean;
-// }
 
 /**
  * Encapsulates PresentationRequest attributes.
@@ -100,72 +57,6 @@ export interface SendRequestReqBody extends PresentationRequestParams {
   eccPrivateKey: string;
 }
 
-// /**
-//  * Encapsulates addition request attributes to the general presentation request type for the purposes of sending an unsigned presentation request.
-//  */
-// export interface UnsignedPresentationRequest extends PresentationRequestParams {
-//   uuid: string;
-// }
-
-// /**
-//  * Encapsulates addition request attributes to the unsigned presentation request type for the purposes of sending a signed presentation request.
-//  */
-// export interface SignedPresentationRequest extends UnsignedPresentationRequest {
-//   proof: Proof;
-// }
-
-// /**
-//  * Encapsulates addition request attributes to the signed presentation request type for the purposes of valid presentation request with metadata.
-//  */
-// export interface PresentationRequest extends SignedPresentationRequest {
-//   createdAt: Date;
-//   updatedAt: Date;
-// }
-
-// /**
-//  * Encapsulates a verifiable credential attributes.
-//  */
-
-// export interface VerifiableCredential {
-//   ['@context']: ['https://www.w3.org/2018/credentials/v1', ...string[]];
-//   id: string;
-//   credentialSubject: any;
-//   credentialStatus: { id: string, type: string };
-//   issuer: string;
-//   type: ['VerifiableCredential', ...string[]];
-//   issuanceDate: Date;
-//   expirationDate?: Date;
-//   proof: Proof;
-// }
-
-// /**
-//  * Encapsulates an unsigned presentation attributes.
-//  */
-// export interface UnsignedPresentation {
-//   '@context': ['https://www.w3.org/2018/credentials/v1', ...string[]];
-//   type: ['VerifiablePresentation', ...string[]];
-//   verifiableCredentials: VerifiableCredential[];
-//   presentationRequestUuid: string;
-//   uuid: string;
-// }
-
-// /**
-//  * Encapsulates addition attributes to the unsigned presentation entity to create a Presentation entity.
-//  */
-// export interface Presentation extends UnsignedPresentation {
-//   proof: Proof;
-// }
-
-// /**
-//  * Encapsulates attributes for a presentation request declined.
-//  */
-// export interface NoPresentation {
-//   type: ['NoPresentation', ...string[]];
-//   proof: Proof;
-//   holder: string;
-//   presentationRequestUuid: string;
-// }
-
 export type PresentationOrNoPresentation = Presentation | NoPresentation;
 
 /**
@@ -179,30 +70,6 @@ export interface VerifierApiKey {
   createdAt: Date;
   updatedAt: Date;
 }
-
-// /**
-//  * Encapsulates Verifier metadata attributes.
-//  */
-// export interface VerifierInfo {
-//   did: string;
-//   name: string;
-//   url: string;
-// }
-
-// /**
-//  * Encapsulates Issuer metadata attributes.
-//  */
-// export interface IssuerInfo {
-//   did: string;
-//   name: string;
-// }
-
-// /**
-//  * Encapsulates a map of Issuer metadata attributes keyed on the corresponding did.
-//  */
-// export interface IssuerInfoMap {
-//   [did: string]: IssuerInfo;
-// }
 
 /**
  * Encapsulates the response attributes of a PresentationRequest.
@@ -233,20 +100,6 @@ export interface ErrorResponseBody {
   code: number;
   message: string;
 }
-
-// /**
-//  * Encapsulates Verifier entity attributes.
-//  */
-// export interface Verifier {
-//   uuid: string;
-//   createdAt: Date;
-//   updatedAt: Date;
-//   isAuthorized: boolean;
-//   customerUuid: string;
-//   name: string;
-//   did: string;
-//   url: string;
-// }
 
 /**
  * Encapsulates a registered Verifier entity.
