@@ -800,11 +800,11 @@
 
 "@unumid/library-issuer-verifier-utility@https://github.com/UnumID/library-issuer-verifier-utility.git#types":
   version "1.0.0"
-  resolved "https://github.com/UnumID/library-issuer-verifier-utility.git#2fe8481e9b4d39b5cacc8d78e24df1b07d1c7698"
+  resolved "https://github.com/UnumID/library-issuer-verifier-utility.git#dd8a532f093ec34f9d7a401ca06c744c8f28c24b"
   dependencies:
     "@types/lodash" "^4.14.168"
     "@unumid/library-crypto" "https://github.com/UnumID/Library-Crypto-TypeScript.git#v1.2.0"
-    "@unumid/types" "https://github.com/UnumID/types.git#sdk"
+    "@unumid/types" "https://github.com/UnumID/types.git#v0.0.5"
     dotenv "^8.2.0"
     express "^4.17.1"
     lodash "^4.17.21"
@@ -815,6 +815,10 @@
 "@unumid/types@https://github.com/UnumID/types.git#sdk":
   version "0.0.1"
   resolved "https://github.com/UnumID/types.git#2cb122d705bce0651ca475be1ae594b3edff102a"
+
+"@unumid/types@https://github.com/UnumID/types.git#v0.0.5":
+  version "0.0.1"
+  resolved "https://github.com/UnumID/types.git#0e072747b1787e33bf74358cbda2bcce0c130485"
 
 abab@^2.0.3:
   version "2.0.5"
