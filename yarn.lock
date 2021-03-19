@@ -812,10 +812,6 @@
     uuid "^8.2.0"
     winston "^3.3.3"
 
-"@unumid/types@https://github.com/UnumID/types.git#sdk":
-  version "0.0.1"
-  resolved "https://github.com/UnumID/types.git#2cb122d705bce0651ca475be1ae594b3edff102a"
-
 "@unumid/types@https://github.com/UnumID/types.git#v0.0.5":
   version "0.0.1"
   resolved "https://github.com/UnumID/types.git#0e072747b1787e33bf74358cbda2bcce0c130485"

@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "@unumid/library-issuer-verifier-utility": "https://github.com/UnumID/library-issuer-verifier-utility.git#types",
-    "@unumid/types": "https://github.com/UnumID/types.git#sdk",
+    "@unumid/types": "https://github.com/UnumID/types.git#v0.0.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "fast-json-stable-stringify": "^2.1.0",
