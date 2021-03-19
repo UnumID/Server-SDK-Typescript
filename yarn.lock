@@ -798,9 +798,9 @@
     bs58 "^4.0.1"
     fast-json-stable-stringify "^2.1.0"
 
-"@unumid/library-issuer-verifier-utility@https://github.com/UnumID/library-issuer-verifier-utility.git#types":
+"@unumid/library-issuer-verifier-utility@https://github.com/UnumID/library-issuer-verifier-utility.git#v0.6.2":
   version "1.0.0"
-  resolved "https://github.com/UnumID/library-issuer-verifier-utility.git#dd8a532f093ec34f9d7a401ca06c744c8f28c24b"
+  resolved "https://github.com/UnumID/library-issuer-verifier-utility.git#9de39ef2f0ff3947d7a08a72dd9723e7a2a1f129"
   dependencies:
     "@types/lodash" "^4.14.168"
     "@unumid/library-crypto" "https://github.com/UnumID/Library-Crypto-TypeScript.git#v1.2.0"
