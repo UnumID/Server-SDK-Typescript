@@ -235,6 +235,7 @@ Response Body: **DecryptedPresentation**
 {
   isVerified: boolean; // boolean indicating wether the signatures signed by the subject (user) is valid 
   type: 'VerifiablePresentation' | 'NoPresentation' // type of the presentation. NoPresentation means the presentation request was declined by the user.
+  presentation: Presentation | NoPresentation, // the decrypted presentation which corresponds to the type attribute.
   credentials?: VerifiableCredential[] // (optional) a list of VerifiableCredential objects. This is the decrypted credential information. Only populated if the presentation signatures are verified and of type `VerifiablePresentation`.
   message?: string; // (optional) message detailing why the verification did not succeed if isVerified is false.
 }
