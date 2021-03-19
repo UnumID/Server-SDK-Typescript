@@ -1,5 +1,5 @@
 import { KeyPairSet, Proof, PublicKeyInfo, EncryptedData } from '@unumid/library-issuer-verifier-utility';
-import { Issuer, CredentialSubject } from '@unumid/types';
+import { Issuer, CredentialSubject, Verifier } from '@unumid/types';
 
 /**
  * Encapsulates necessary Issuer entity attributes during creation.
@@ -234,19 +234,19 @@ export interface ErrorResponseBody {
   message: string;
 }
 
-/**
- * Encapsulates Verifier entity attributes.
- */
-export interface Verifier {
-  uuid: string;
-  createdAt: Date;
-  updatedAt: Date;
-  isAuthorized: boolean;
-  customerUuid: string;
-  name: string;
-  did: string;
-  url: string;
-}
+// /**
+//  * Encapsulates Verifier entity attributes.
+//  */
+// export interface Verifier {
+//   uuid: string;
+//   createdAt: Date;
+//   updatedAt: Date;
+//   isAuthorized: boolean;
+//   customerUuid: string;
+//   name: string;
+//   did: string;
+//   url: string;
+// }
 
 /**
  * Encapsulates a registered Verifier entity.
@@ -272,7 +272,7 @@ export interface VerifiedStatus {
  */
 export interface DecryptedPresentation extends VerifiedStatus {
   type: 'VerifiablePresentation' | 'NoPresentation'
-  presentation?: Presentation
+  presentation: Presentation
 }
 
 /**

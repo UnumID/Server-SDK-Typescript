@@ -42,7 +42,8 @@ export const verifyEncryptedPresentation = async (authorization: string, encrypt
         authToken: verificationResult.authToken,
         body: {
           ...verificationResult.body,
-          type: 'NoPresentation'
+          type: 'NoPresentation',
+          presentation: presentation
         }
       };
 

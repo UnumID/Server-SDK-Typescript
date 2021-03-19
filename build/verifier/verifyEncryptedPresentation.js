@@ -88,7 +88,7 @@ exports.verifyEncryptedPresentation = function (authorization, encryptedPresenta
                 verificationResult_1 = _a.sent();
                 result_1 = {
                     authToken: verificationResult_1.authToken,
-                    body: __assign(__assign({}, verificationResult_1.body), { type: 'NoPresentation' })
+                    body: __assign(__assign({}, verificationResult_1.body), { type: 'NoPresentation', presentation: presentation })
                 };
                 return [2 /*return*/, result_1];
             case 2: return [4 /*yield*/, __1.verifyPresentation(authorization, presentation, verifierDid)];
