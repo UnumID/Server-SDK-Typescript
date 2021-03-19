@@ -1,5 +1,5 @@
 import { KeyPairSet, PublicKeyInfo } from '@unumid/library-issuer-verifier-utility';
-import { Issuer, CredentialSubject, Verifier, PresentationRequest, VerifierInfo, IssuerInfoMap } from '@unumid/types';
+import { Issuer, CredentialSubject, Verifier, PresentationRequest, VerifierInfo, IssuerInfoMap, CredentialRequest, Presentation, NoPresentation } from '@unumid/types';
 
 /**
  * Encapsulates necessary Issuer entity attributes during creation.
@@ -125,7 +125,7 @@ export interface VerifiedStatus {
  */
 export interface DecryptedPresentation extends VerifiedStatus {
   type: 'VerifiablePresentation' | 'NoPresentation'
-  presentation: Presentation
+  presentation: Presentation | NoPresentation
 }
 
 /**

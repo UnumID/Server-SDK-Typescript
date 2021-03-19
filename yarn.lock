@@ -800,7 +800,7 @@
 
 "@unumid/library-issuer-verifier-utility@https://github.com/UnumID/library-issuer-verifier-utility.git#types":
   version "1.0.0"
-  resolved "https://github.com/UnumID/library-issuer-verifier-utility.git#caf8541727f9a1f707489713a0689ec47a592516"
+  resolved "https://github.com/UnumID/library-issuer-verifier-utility.git#4386f919e5e29b01fc2f577066ce1f62ed65f425"
   dependencies:
     "@types/lodash" "^4.14.168"
     "@unumid/library-crypto" "https://github.com/UnumID/Library-Crypto-TypeScript.git#v1.2.0"
