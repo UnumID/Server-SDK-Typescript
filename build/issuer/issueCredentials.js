@@ -175,8 +175,6 @@ var constructCredentialOptions = function (type, issuer, credentialSubject, eccP
     // HACK ALERT: removing duplicate 'VerifiableCredential' if present in type string[]
     var typeList = ['VerifiableCredential'].concat(type); // Need to have some value in the "base" array so just just the keyword we are going to filter over.
     var types = typeList.filter(function (t) { return t !== 'VerifiableCredential'; });
-    // const rawTypes = typeList.filter(t => t !== 'VerifiableCredential');
-    // const types = ['VerifiableCredential'].concat(rawTypes); // Adding back the filtered keyword, effectively ensuring there is only one at the start of the array
     var credOpt = {
         credentialSubject: credentialSubject,
         issuer: issuer,
