@@ -85,9 +85,9 @@ var validateInParams = function (name, customerUuid, apiKey) {
 };
 /**
  * Handles registering an Issuer with UnumID's SaaS.
- * @param name string
- * @param customerUuid string
- * @param apiKey string
+ * @param name
+ * @param customerUuid
+ * @param apiKey
  */
 exports.registerIssuer = function (name, customerUuid, apiKey) { return __awaiter(void 0, void 0, void 0, function () {
     var kpSet, issuerOpt, restData, restResp, authToken, issuerResp, error_1;

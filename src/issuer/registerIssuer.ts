@@ -52,9 +52,9 @@ const validateInParams = (name: string, customerUuid: string, apiKey: string) =>
 
 /**
  * Handles registering an Issuer with UnumID's SaaS.
- * @param name string
- * @param customerUuid string
- * @param apiKey string
+ * @param name
+ * @param customerUuid
+ * @param apiKey
  */
 export const registerIssuer = async (name: string, customerUuid: string, apiKey: string): Promise<UnumDto<RegisteredIssuer>> => {
   try {
