@@ -55,9 +55,7 @@ You need to provide your issuer DID (created when you registered), as well as yo
 
 This returns a credential `id` that you should store so you can later revoke the credential if need be. We would recommend storing the entire credential indexed on the resultant credential `id`. Note that there are also id fields within credentialSubject and credentialStatus, but these are different. They refer to the subject DID and credential status identifier, respectively.
 
-:::info
-The private keys never leave your app. This function, like all the others in this SDK, needs them in order to handle to cryptographic functionality on your behalf.
-:::
+**Important**: The private keys never leave your app. This function, like all the others in this SDK, needs them in order to handle to cryptographic functionality on your behalf.
 
 Parameters
 ```typescript
@@ -153,9 +151,7 @@ You need to provide your verifier DID (created when you registered) and the UUID
 
 To request credentials, you need to specify the credentialType and one or more acceptable issuers (entities that issue those credentials). If you list more than one issuer, the user can share a credential issued by any of the ones you list.
 
-:::info
-The private keys never leave your app. This function, like all the others in this SDK, needs them in order to handle to cryptographic functionality on your behalf.
-:::
+**Important**: The private keys never leave your app. This function, like all the others in this SDK, needs them in order to handle to cryptographic functionality on your behalf.
 
 Parameters
 ```typescript
@@ -201,9 +197,8 @@ Verify a encrypted Presentation.
 
 This is used in service behind the `/presentation` endpoint that needs to be defined according to [this](unum.id) spec which UnumID's SaaS forwards encrypted Presentations to. It handles decrypting the encrypted presentation and verifies the signature is valid. 
 
-:::tip
-Although this request is coming from UnumID's SaaS, UnumID never has access to the credentials within the presentation due to the encryption. Do not forget to save the signing and encryption private keys returned during the **registerVerifier** step.
-:::
+
+**Important**: Although this request is coming from UnumID's SaaS, UnumID never has access to the credentials within the presentation due to the encryption. Do not forget to save the signing and encryption private keys returned during the **registerVerifier** step.
 
 Parameters
 ```typescript
@@ -247,9 +242,8 @@ Use to send a deep link to a user by email. The message will be delivered from D
 
 To request (a presentation of) credentials from a user, you first create the request object and receive a deep link that references it. The user need to receive this deep link, which will open the correct app on their phone and prompt them to share the credentials. Email is one convenient channel, though keep in mind that the user will need to click the link from their phone for the deep link to work.
 
-:::tip
-JSON special characters such a double quote or backslash in the `subject` or `htmlBody` fields will need to be escaped with a backslash, i.e. "the best org in the country" must be \"the best org in the country\".
-:::
+
+**Tip**: JSON special characters such a double quote or backslash in the `subject` or `htmlBody` fields will need to be escaped with a backslash, i.e. "the best org in the country" must be \"the best org in the country\".
 
 Parameters
 ```typescript

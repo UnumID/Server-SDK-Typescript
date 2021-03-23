@@ -108,9 +108,7 @@
 				<p>Issue a credential to a subject (user).</p>
 				<p>You need to provide your issuer DID (created when you registered), as well as your signing and encryption private keys, which the Issuer uses to sign and encrypt the credential. You need to specify a credentialType, which verifiers will use to later request the credential from the user.</p>
 				<p>This returns a credential <code>id</code> that you should store so you can later revoke the credential if need be. We would recommend storing the entire credential indexed on the resultant credential <code>id</code>. Note that there are also id fields within credentialSubject and credentialStatus, but these are different. They refer to the subject DID and credential status identifier, respectively.</p>
-				<p>:::info
-					The private keys never leave your app. This function, like all the others in this SDK, needs them in order to handle to cryptographic functionality on your behalf.
-				:::</p>
+				<p><strong>Important</strong>: The private keys never leave your app. This function, like all the others in this SDK, needs them in order to handle to cryptographic functionality on your behalf.</p>
 				<p>Parameters</p>
 				<pre><code class="language-typescript"><span style="color: #A31515">&quot;credentialSubject&quot;</span><span style="color: #000000">: {</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;id&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// a DID identifying the Subject of the Credential</span>
@@ -192,9 +190,7 @@
 				<p>Create a request for (a presentation of) credentials from a user.</p>
 				<p>You need to provide your verifier DID (created when you registered) and the UUID of the holder app from which the user can share the data. You also need to provide your signing private key, which the Verifier App uses to sign the request.</p>
 				<p>To request credentials, you need to specify the credentialType and one or more acceptable issuers (entities that issue those credentials). If you list more than one issuer, the user can share a credential issued by any of the ones you list.</p>
-				<p>:::info
-					The private keys never leave your app. This function, like all the others in this SDK, needs them in order to handle to cryptographic functionality on your behalf.
-				:::</p>
+				<p><strong>Important</strong>: The private keys never leave your app. This function, like all the others in this SDK, needs them in order to handle to cryptographic functionality on your behalf.</p>
 				<p>Parameters</p>
 				<pre><code class="language-typescript"><span style="color: #A31515">&quot;verifier&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// your Verifier DID</span>
 <span style="color: #A31515">&quot;credentialRequests&quot;</span><span style="color: #000000">: </span><span style="color: #001080">CredentialRequest</span><span style="color: #000000">[], </span><span style="color: #008000">// a list of one or more CredentialRequest objects. Describes the Credentials which should be shared to fulfill the PresentationRequest</span>
@@ -235,9 +231,7 @@
 				</a>
 				<p>Verify a encrypted Presentation. </p>
 				<p>This is used in service behind the <code>/presentation</code> endpoint that needs to be defined according to <a href="unum.id">this</a> spec which UnumID&#39;s SaaS forwards encrypted Presentations to. It handles decrypting the encrypted presentation and verifies the signature is valid. </p>
-				<p>:::tip
-					Although this request is coming from UnumID&#39;s SaaS, UnumID never has access to the credentials within the presentation due to the encryption. Do not forget to save the signing and encryption private keys returned during the <strong>registerVerifier</strong> step.
-				:::</p>
+				<p><strong>Important</strong>: Although this request is coming from UnumID&#39;s SaaS, UnumID never has access to the credentials within the presentation due to the encryption. Do not forget to save the signing and encryption private keys returned during the <strong>registerVerifier</strong> step.</p>
 				<p>Parameters</p>
 				<pre><code class="language-typescript"><span style="color: #A31515">&quot;encryptedPresentation&quot;</span><span style="color: #000000">: </span><span style="color: #001080">EncryptedData</span><span style="color: #000000">, </span><span style="color: #008000">// the encrypted presentation with sensitive credential information.</span>
 <span style="color: #A31515">&quot;verifierDid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// the did associated with the verifier&#039;s public that was used to encrypt the presentation by the Holder SDK.</span>
@@ -270,9 +264,7 @@
 				</a>
 				<p>Use to send a deep link to a user by email. The message will be delivered from <a href="mailto:DoNotReply@UnumID.org">DoNotReply@UnumID.org</a>. You can of course use your own email sending service if you prefer.</p>
 				<p>To request (a presentation of) credentials from a user, you first create the request object and receive a deep link that references it. The user need to receive this deep link, which will open the correct app on their phone and prompt them to share the credentials. Email is one convenient channel, though keep in mind that the user will need to click the link from their phone for the deep link to work.</p>
-				<p>:::tip
-					JSON special characters such a double quote or backslash in the <code>subject</code> or <code>htmlBody</code> fields will need to be escaped with a backslash, i.e. &quot;the best org in the country&quot; must be &quot;the best org in the country&quot;.
-				:::</p>
+				<p><strong>Tip</strong>: JSON special characters such a double quote or backslash in the <code>subject</code> or <code>htmlBody</code> fields will need to be escaped with a backslash, i.e. &quot;the best org in the country&quot; must be &quot;the best org in the country&quot;.</p>
 				<p>Parameters</p>
 				<pre><code class="language-typescript"><span style="color: #000000">{</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;to&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// target email</span>
