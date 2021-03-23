@@ -283,3 +283,8 @@ Soon, we hope to open source this project and uploaded the package as public NPM
 Logs level defaults to Info. One can set to debug for more information via the environment variable LOG_LEVEL, i.e. LOG_LEVEL=debug. We are using standard NPM log levels. More details on the various log levels [here](https://github.com/winstonjs/winston#logging-levels).
 
 The logs default to stdout so can be aggregated using any log provider you would like from disk.
+
+### Documentation
+High level technical documentation can be found [here](https://https://docs.unum.id/server-sdk) which is served via [Docusaurus](https://github.com/UnumID/UnumID.github.io). More detailed generated from source documentation can be found [here](https://docs.unum.id/Server-SDK-Typescript/index.html) which is served via repo specific Github pages via the /docs folder of the main branch.
+
+In order to generate the Typedoc documentation from the source code run the `createTypedocs.sh` script.
