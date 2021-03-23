@@ -1,84 +1,63 @@
-# UnumID Server SDK
+This SDK combines the functionality of an [**Issuer**](#issuer) and [**Verifier**](#verifier) entity to work with UnumID's SaaS.
 
-This SDK combines the functionality of an **Issuer** and **Verifier** entity to work with UnumID's SaaS. For necessary account creation and API keys please email admin@unum.id.
+## SDK Functionality
+The Server SDK uses the **UnumDto** type to facilitate handling many response body types while providing a reliable structure to access the result.
 
-## Issuer
-The Issuer functionality is used by a customer acting as an Issuer. It allows customers to perform actions such as issuing and revoking Credentials.
-## Verifier
-The Verifier functionality is used by a customer acting as a verifier. Most importantly, it allows customers to send PresentationRequests to the UnumID mobile SDK and to verify the encrypted Presentation responses.
-
-### Distribution
-
-Currently this project is still closed source, so standard distribution options via public source code or NPM repository are not viable. Downstream projects are leveraging this project via it's git url using Docker Buildkit to provide SSH credentials for access to this Github source code repo. An example of such a buildkit configuration can be found in the [hooli-demo-server](https://github.com/UnumID/hooli-demo-server) `Dockerfile` and `.circleci/config.yaml`.
-
-We considered opting to build and push as a private module through a private Github NPM repo. However due to the complexities of configuring a downstream project to have rights to pull from the private NPM repo we have opted to not add pushing a private package to our CI job. 
-
-Soon, we hope to open source this project and uploaded the package as public NPM module.  
-### Global Dependencies
-- NodeJS v14.0.0 or higher, preferably v14.15.0 or higher
-- yarn
-
-## Logging
-One can set the log level via the env var LOG_LEVEL. It defaults to info. Set to debug for more information, i.e. LOG_LEVEL=debug.
-
-We are using standard NPM log levels. More details on the various log levels [here](https://github.com/winstonjs/winston#logging-levels).
-
-The logs default to stdout so can be aggregated using any log provider you would like from disk.
-
-## SDK functionality
-The Server SDK uses the UnumDto type to facilitate handling many response body types while providing a reliable structure to access the result body and importantly the rolling JWT authToken.
-
-**UnumDto**
-
-```
-authToken: string; // The JWT auth token which is used by the SDK to authenticate with UnumID's SaaS. This is periodically refreshed thus its value should be read and stored in every resultant function call. 
-body: T; // The placeholder for the function's response type is function specific. 
+```typescript title="UnumDto"
+{
+  "authToken": string; // The JWT auth token which is used by the SDK to authenticate with UnumID's SaaS. This is periodically refreshed thus its value should be read and stored in every resultant function call. 
+  "body": T; // The placeholder for the function's response type is function specific. 
+}
 ```
 
 **Authentication**
-Every request detailed below requires a Bearer `authToken` as a first parameter which is used to authenticate request to UnumID's SaaS on your behalf. As mention above this auth token updated upon every subsequent function call and should be read via the `authToken` attribute and persisted accordingly for later requests. 
+Every request detailed below requires a preceding Bearer `authToken` as a first parameter which is used to authenticate request to UnumID's SaaS on your behalf. As mention above this auth token updated upon every subsequent function call and should be read via the `authToken` attribute and persisted accordingly for later requests. 
 
 **Errors** 
-Errors returned by UnumID's SaaS will also be wrapped in the UnumDto object so that the potentially updated `authToken` can be retrieved. Validation errors which are created prior to any internal calls to UnumID's SaaS will however simply be of type Error and are thrown. This is due to never making a network call with the provided authToken so no potential new authToken to pass back. For this reason we recommend wrapping all SDK calls in a try/catch.
-### Issuer
-#### registerIssuer
-Register an issuer corresponding to your customer UUID and issuer API key provided by UnumID. As a customer, you can register as many issuers as you like (or none at all), depending on your use case. Note, however, that you'll need a unique issuer API key for each one.
+Errors returned by UnumID's SaaS will also be wrapped in the UnumDto object so that the (potentially) updated `authToken` can be retrieved. Validation errors which are created prior to any internal calls to UnumID's SaaS will however simply by of type Error and are thrown. This is due to never making a network call with the provided authToken so no (potential) new token to pass back.
+## Issuer
+The Issuer functionality is used by a customer acting as an Issuer. It allows one to register Issuers and perform actions such as issuing and revoking Credentials.
+
+### registerIssuer
+Register an issuer corresponding to your customer UUID and issuer API key provided by UnumID's SaaS. As a customer, you can register as many issuers as you like (or none at all), depending on your use case. Note, however, that you'll need a unique issuer API key for each one.
 
 You should store the DID (`did`) and encryption and signing key pairs (`keys`) that this returns. You'll need these to issue credentials to users.
 
 Parameters:
 ```typescript
-"name": string, // a human-readable name for the Issuer. It will be displayed to users via the mobile SDK when Credentials from the Issuer are created.
-"customerUuid": string, // your UnumID customer uuid
-"apiKey": string // a unique Issuer API key obtained from UnumID
+"name": string, // a human-readable name for the Issuer. It will be displayed to users in the Holder when Credentials from the Issuer are created.
+"customerUuid": string, // your Unum ID customer uuid
+"apiKey": string // a unique Issuer API key obtained from Unum ID
 ```
 
-Response Body: **RegisteredIssuer**
-```typescript
+Response Body:  [**RegisteredIssuer**](https://docs.unum.id/Server-SDK-Typescript/interfaces/registeredissuer.html)
+```typescript title="RegisteredIssuer"
 {
-  "uuid": string, // identifies the new Issuer in the UnumID database
+  "uuid": string, // identifies the new Issuer in the Unum ID database
   "customerUuid": string, // identifies the customer which Created the Issuer
-  "did": string, // identifies the Issuer in the UnumID decentralized ecosystem
+  "did": string, // identifies the Issuer in the Unum ID decentralized ecosystem
   "name": string, // a human-readable name for the Issuer
   "createdAt": string, // the date and time the Issuer was registered
   "updatedAt": string, // the date and time the Issuer was last updated
   "keys": {
     "signing": {
       "privateKey": string, // your Issuer Signing Private Key. You will need to provide it in order to issue Credentials
-      "publicKey": string, // your Issuer Signing Public Key. It is also stored in the Issuer's DID Document, and can be used by other entities in the UnumID ecosystem to verify the Issuer's signature on Credentials it issues.
+      "publicKey": string, // your Issuer Signing Public Key. It is also stored in the Issuer's DID Document, and can be used by other entities in the Unum ID ecosystem to verify the Issuer's signature on Credentials it issues.
     }
   }
 }
 ```
 
-#### issueCredential
-Issue a credential to a Subject, also known as a User.
+### issueCredential
+Issue a credential to a subject (user).
 
-You need to provide your Issuer DID (created when you registered), as well as your signing and encryption private keys, which the Issuer uses to sign and encrypt the credential. You need to specify a credential `type`, which verifiers will use to later request the credential from the user.
+You need to provide your issuer DID (created when you registered), as well as your signing and encryption private keys, which the Issuer uses to sign and encrypt the credential. You need to specify a credentialType, which verifiers will use to later request the credential from the user.
 
-This returns a credential `id` that should be stored for reference. For example, the credential id is required to revoke the credential if need be. We would recommend storing the entire credential indexed on the resultant credential `id`. Note that there are also id fields within a `credentialSubject` and `credentialStatus`, but these are different. They refer to the subject DID and credential status identifier, respectively, as defined by the W3C spec [[1](https://www.w3.org/TR/vc-data-model/#credential-subject)],[[2](https://www.w3.org/TR/vc-data-model/#status)].
+This returns a credential `id` that you should store so you can later revoke the credential if need be. We would recommend storing the entire credential indexed on the resultant credential `id`. Note that there are also id fields within credentialSubject and credentialStatus, but these are different. They refer to the subject DID and credential status identifier, respectively.
 
-**Important**: The private keys never leave your app. This function, like all the others in this SDK, needs them in order to handle to cryptographic functionality on your behalf.
+:::info
+The private keys never leave your app. This function, like all the others in this SDK, needs them in order to handle to cryptographic functionality on your behalf.
+:::
 
 Parameters
 ```typescript
@@ -92,8 +71,8 @@ Parameters
 "eccPrivateKey": string // your Issuer's Private Key
 ```
 
-Response Body: **Credential**
-```typescript
+Response Body: [**Credential**](https://docs.unum.id/Server-SDK-Typescript/interfaces/credential.html)
+```typescript title="Credential"
 {
     "@context": ["https://www.w3.org/2018/credentials/v1"], // this field is specified in the W3C Verifiable Credential spec
     "credentialStatus": {
@@ -113,7 +92,7 @@ Response Body: **Credential**
 }
 ```
 
-#### revokeCredential
+### revokeCredential
 Revoke a credential, i.e. make it invalid.
 
 You need to provide the credential `id` (created when you issued the credential).
@@ -125,65 +104,58 @@ Parameters
 }
 ```
 
-Response Body: Empty 
-If unsuccessful and exception will be thrown.
+Response Body: **Empty**. If unsuccessful and exception will be thrown.
 ```typescript
 {}
 ```
 
-### Verifier
-#### registerVerifier
-Register a verifier corresponding to your customer UUID and verifier API key that UnumID provides. As a customer, you can register as many verifiers as you like (or none at all), depending on your use case. Note, however, that you'll need a unique verifier API key for each one.
+## Verifier
+The Verifier functionality is used by a customer acting as a verifier. It allows one to register verifiers. Most importantly, it allows one to send PresentationRequests and verify Presentations.
+
+### registerVerifier
+Register a verifier corresponding to your customer UUID and verifier API key that UnumID's SaaS provides. As a customer, you can register as many verifiers as you like (or none at all), depending on your use case. Note, however, that you'll need a unique verifier API key for each one.
 
 You should store the DID (`did`) and signing key pair (`keys`) that this returns. You'll need these to create requests for (presentations of) credentials from users.
 
 Parameters
 ```typescript
 "name": string, // a human-readable name for the verifier. It will be displayed to users in the Holder when receiving a PresentationRequest.
-"customerUuid": string, // your UnumID customer uuid
-"apiKey": string // a unique Verifier API key obtained from UnumID
+"customerUuid": string, // your Unum ID customer uuid
+"apiKey": string // a unique Verifier API key obtained from Unum ID
 ```
 
-Response body: **RegisteredVerifier**
-```typescript
+Response body: [**RegisteredVerifier**](https://docs.unum.id/Server-SDK-Typescript/interfaces/registeredverifier.html)
+```typescript title="RegisteredVerifier"
 {
-  "uuid": string, // identifies the new Verifier in the UnumID database
+  "uuid": string, // identifies the new Verifier in the Unum ID database
   "customerUuid": string, // identifies the customer which Created the Verifier
-  "did": string, // identifies the Verifier in the UnumID decentralized ecosystem
+  "did": string, // identifies the Verifier in the Unum ID decentralized ecosystem
   "name": string, // a human-readable name for the Verifier
   "createdAt": string, // the date and time the Verifier was registered
   "updatedAt": string, // the date and time the Verifier was last updated
   "keys": {
     "signing": {
       "privateKey": string, // your Verifier Signing Private Key. You will need to provide it in order to send PresentationRequests
-      "publicKey": string, // your Verifier Signing Public Key. It is also stored in the Verifiers DID Document, and can be used by other entities in the UnumID ecosystem to verify the Verifier's signature on PresentationRequests it creates
+      "publicKey": string, // your Verifier Signing Public Key. It is also stored in the Verifiers DID Document, and can be used by other entities in the Unum ID ecosystem to verify the Verifier's signature on PresentationRequests it creates
     }, "encryption": {
       "privateKey": string, // your Verifier Encryption Private Key. You will need to provide it in order to send PresentationRequests
-      "publicKey": string, // your Verifier Encryption Public Key. It is also stored in the Verifiers DID Document, and can be used by other entities in the UnumID ecosystem to encrypt presentations for the Verifier to verifier.
+      "publicKey": string, // your Verifier Encryption Public Key. It is also stored in the Verifiers DID Document, and can be used by other entities in the Unum ID ecosystem to encrypt presentations for the Verifier to verifier.
     }
   }
 }
 ```
 
 
-#### sendRequest
+### sendRequest
 Create a request for (a presentation of) credentials from a user.
 
-You need to provide your verifier DID (created when you registered) and the UUID of the holder app from which the user can share the data. You also need to provide your signing private key, which the SDK uses to sign the request.
+You need to provide your verifier DID (created when you registered) and the UUID of the holder app from which the user can share the data. You also need to provide your signing private key, which the Verifier App uses to sign the request.
 
-**Important**: The signing private key never leaves your app. This function, like all the others in this SDK, is solely using it to handle to cryptographic functionality on your behalf.
+To request credentials, you need to specify the credentialType and one or more acceptable issuers (entities that issue those credentials). If you list more than one issuer, the user can share a credential issued by any of the ones you list.
 
-To request credentials, you need to populate one or more CredentialRequest objects, defined in the UnumID generic [types](https://github.com/UnumID/types/blob/0e072747b1787e33bf74358cbda2bcce0c130485/index.d.ts#L111-L115) project and shown below.
-
-```typescript
-export interface CredentialRequest {
-  type: string; // the string matching the desire credential type
-  issuers: string[]; // list of acceptable issuer DIDs that have issued the credential
-  required?: boolean; // to denote wether this particular credential is required in response to the PresentationRequest. Defaults behavior resolves this to true.
-}
-```
-If you list more than one acceptable `issuers` (entities that issued the desired credential type), the user can share a credential issued by any of the ones listed.
-
+:::info
+The private keys never leave your app. This function, like all the others in this SDK, needs them in order to handle to cryptographic functionality on your behalf.
+:::
 
 Parameters
 ```typescript
@@ -195,11 +167,11 @@ Parameters
 "metadata": object // any additional data to include in the PresentationRequest
 ```
 
-Response Body: **PresentationRequestResponse**
-```typescript
+Response Body: [**PresentationRequestResponse**](https://docs.unum.id/Server-SDK-Typescript/interfaces/presentationrequestresponse.html)
+```typescript title="PresentationRequestResponse"
 {
   "presentationRequest": {
-    "uuid": string, // identifies the PresentationRequest in the UnumID database
+    "uuid": string, // identifies the PresentationRequest in the Unum ID database
     "createdAt": string, // the date and time the PresentationRequest was created
     "updatedAt": string, // the date and time the PresentationRequest was last updated. This should always be the same as createdAt
     "expiresAt": string, // the date and time the PresentationRequest expires
@@ -224,13 +196,14 @@ Response Body: **PresentationRequestResponse**
 }
 ```
 
-#### verifyEncryptedPresentation 
-Handles decrypting the encrypted presentation and verifies the signatures are valid.
+### verifyEncryptedPresentation 
+Verify a encrypted Presentation. 
 
-This is used in service behind the `/presentation` endpoint that needs to be defined according to [this](https://unumid.postman.co/workspace/Unum-ID-Team-Workspace~48b1f312-a6e6-4bcc-86a0-aa4bc37df9b4/api/09ad0ccd-c614-4d54-a1b4-ff9ae85b8449?version=c217a461-fc05-4476-a792-6c9163f2a198&tab=define) spec which UnumID's SaaS forwards encrypted Presentations to.  
+This is used in service behind the `/presentation` endpoint that needs to be defined according to [this](unum.id) spec which UnumID's SaaS forwards encrypted Presentations to. It handles decrypting the encrypted presentation and verifies the signature is valid. 
 
-**Important** Although the mobile SDK sends the presentations directly to UnumID's SaaS, UnumID never has access to the credentials within the presentation. The mobile SDK encrypts all presentations with the presentation requesting verifier's public key, to which the requestor is the only ones with necessary decryption private key, the Verifier's `encryptionPrivateKey`, an attribute created with the registerVerifier call.
-
+:::tip
+Although this request is coming from UnumID's SaaS, UnumID never has access to the credentials within the presentation due to the encryption. Do not forget to save the signing and encryption private keys returned during the **registerVerifier** step.
+:::
 
 Parameters
 ```typescript
@@ -240,19 +213,18 @@ Parameters
 ```
 
 
-Response Body: **DecryptedPresentation**
-```typescript
+Response Body: [**DecryptedPresentation**](https://docs.unum.id/Server-SDK-Typescript/interfaces/decryptedpresentation.html)
+```typescript title="DecryptedPresentation"
 {
   isVerified: boolean; // boolean indicating wether the signatures signed by the subject (user) is valid 
   type: 'VerifiablePresentation' | 'NoPresentation' // type of the presentation. NoPresentation means the presentation request was declined by the user.
-  presentation: Presentation | NoPresentation, // the decrypted presentation which corresponds to the type attribute.
   credentials?: VerifiableCredential[] // (optional) a list of VerifiableCredential objects. This is the decrypted credential information. Only populated if the presentation signatures are verified and of type `VerifiablePresentation`.
   message?: string; // (optional) message detailing why the verification did not succeed if isVerified is false.
 }
 ```
 
-#### sendSms
-Use to send a deep link to a user by SMS. The message will be delivered from an UnumID associated phone number. You can of course use your own SMS sending service if you prefer.
+### sendSms
+Use to send a deep link to a user by SMS. The message will be delivered from an Unum ID associated phone number. You can of course use your own SMS sending service if you prefer.
 
 To request (a presentation of) credentials from a user, you first create the request object and receive a deep link that references it. The user need to receive this deep link, which will open the correct app on their phone and prompt them to share the credentials. SMS is one convenient channel.
 
@@ -265,18 +237,19 @@ Parameters
 }
 ```
 
-Response Body: Empty 
-If unsuccessful and exception will be thrown.
+Response Body: **Empty**. If unsuccessful and exception will be thrown.
 ```typescript
 {}
 ```
 
-#### sendEmail
-Use to send a deep link to a user by email. The message will be delivered from no-reply@unum.id. You can of course use your own email sending service if you prefer.
+### sendEmail
+Use to send a deep link to a user by email. The message will be delivered from DoNotReply@UnumID.org. You can of course use your own email sending service if you prefer.
 
 To request (a presentation of) credentials from a user, you first create the request object and receive a deep link that references it. The user need to receive this deep link, which will open the correct app on their phone and prompt them to share the credentials. Email is one convenient channel, though keep in mind that the user will need to click the link from their phone for the deep link to work.
 
-Note: JSON special characters such a double quote or backslash in the `subject` or `htmlBody` fields will need to be escaped with a single backslash (\\), i.e. "the best org in the country" must be \\"the best org in the country\\".
+:::tip
+JSON special characters such a double quote or backslash in the `subject` or `htmlBody` fields will need to be escaped with a backslash, i.e. "the best org in the country" must be \"the best org in the country\".
+:::
 
 Parameters
 ```typescript
@@ -289,8 +262,24 @@ Parameters
 }
 ```
 
-Response Body: Empty 
-If unsuccessful and exception will be thrown.
+Response Body: **Empty**. If unsuccessful and exception will be thrown.
 ```typescript
 {}
 ```
+
+## Other Information
+### Distribution
+
+Currently this project is still closed source, so standard distribution options via public source code or NPM repository are not viable. In downstream projects are leveraging this project via it's git url using Docker Buildkit to provide SSH credentials for access to this Github source code repo. An example of such a buildkit configuration can be found in the [hooli-demo-server](https://github.com/UnumID/hooli-demo-server) `Dockerfile` and `.circleci/config.yaml`.
+
+We considered opting to build and push as a private module through a private Github NPM repo. However due to the complexities of configuring a downstream project to have rights to pull from the private NPM repo we have opted to not add pushing a private package to our CI job. 
+
+Soon, we hope to open source this project and uploaded the package as public NPM module.  
+### Global Dependencies
+- NodeJS v14.0.0 or higher, preferably v14.15.0 or higher
+- yarn
+
+### Logging
+Logs level defaults to Info. One can set to debug for more information via the environment variable LOG_LEVEL, i.e. LOG_LEVEL=debug. We are using standard NPM log levels. More details on the various log levels [here](https://github.com/winstonjs/winston#logging-levels).
+
+The logs default to stdout so can be aggregated using any log provider you would like from disk.
