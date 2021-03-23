@@ -58,46 +58,46 @@
 	<div class="row">
 		<div class="col-8 col-content">
 			<div class="tsd-panel tsd-typography">
-				<p>This SDK combines the functionality of an <a href="#issuer"><strong>Issuer</strong></a> and <a href="#verifier"><strong>Verifier</strong></a> entity to work with UnumID&#39;s SaaS.</p>
+				<p>This SDK combines the functionality of an <a href="#issuer"><strong>Issuer</strong></a> and <a href="#verifier"><strong>Verifier</strong></a> entities to work with UnumID&#39;s SaaS. For necessary account creation and API keys please email <a href="mailto:admin@unum.id">admin@unum.id</a>.</p>
 				<a href="#sdk-functionality" id="sdk-functionality" style="color: inherit; text-decoration: none;">
 					<h2>SDK Functionality</h2>
 				</a>
-				<p>The Server SDK uses the <strong>UnumDto</strong> type to facilitate handling many response body types while providing a reliable structure to access the result.</p>
+				<p>The Server SDK uses the <strong>UnumDto</strong> type to facilitate handling many response body types while providing a reliable structure to access the result body and importantly the rolling JWT authToken.</p>
 				<pre><code class="language-typescript"><span style="color: #000000">{</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;authToken&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">; </span><span style="color: #008000">// The JWT auth token which is used by the SDK to authenticate with UnumID&#039;s SaaS. This is periodically refreshed thus its value should be read and stored in every resultant function call. </span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;body&quot;</span><span style="color: #000000">: </span><span style="color: #0070C1">T</span><span style="color: #000000">; </span><span style="color: #008000">// The placeholder for the function&#039;s response type is function specific. </span>
 <span style="color: #000000">}</span>
 </code></pre>
 				<p><strong>Authentication</strong>
-				Every request detailed below requires a preceding Bearer <code>authToken</code> as a first parameter which is used to authenticate request to UnumID&#39;s SaaS on your behalf. As mention above this auth token updated upon every subsequent function call and should be read via the <code>authToken</code> attribute and persisted accordingly for later requests. </p>
+				Every request detailed below requires a Bearer <code>authToken</code> as a first parameter which is used to authenticate request to UnumID&#39;s SaaS on your behalf. As mention above this auth token updated upon every subsequent function call and should be read via the <code>authToken</code> attribute and persisted accordingly for later requests. </p>
 				<p><strong>Errors</strong>
-				Errors returned by UnumID&#39;s SaaS will also be wrapped in the UnumDto object so that the (potentially) updated <code>authToken</code> can be retrieved. Validation errors which are created prior to any internal calls to UnumID&#39;s SaaS will however simply by of type Error and are thrown. This is due to never making a network call with the provided authToken so no (potential) new token to pass back.</p>
+				Errors returned by UnumID&#39;s SaaS will also be wrapped in the UnumDto object so that the potentially updated <code>authToken</code> can be retrieved. Validation errors which are created prior to any internal calls to UnumID&#39;s SaaS will be of type Error and are thrown. This is due to never making a network call with the provided authToken so no potential new authToken to pass back. For this reason we recommend wrapping all SDK calls in a try/catch.</p>
 				<a href="#issuer" id="issuer" style="color: inherit; text-decoration: none;">
 					<h2>Issuer</h2>
 				</a>
-				<p>The Issuer functionality is used by a customer acting as an Issuer. It allows one to register Issuers and perform actions such as issuing and revoking Credentials.</p>
+				<p>The Issuer functionality is used by a customer acting as an Issuer. It allows customers to perform actions such as issuing and revoking Credentials.</p>
 				<a href="#registerissuer" id="registerissuer" style="color: inherit; text-decoration: none;">
 					<h3>registerIssuer</h3>
 				</a>
-				<p>Register an issuer corresponding to your customer UUID and issuer API key provided by UnumID&#39;s SaaS. As a customer, you can register as many issuers as you like (or none at all), depending on your use case. Note, however, that you&#39;ll need a unique issuer API key for each one.</p>
+				<p>Register an issuer corresponding to your customer UUID and issuer API key provided by UnumID. As a customer, you can register as many issuers as you like (or none at all), depending on your use case. Note, however, that you&#39;ll need a unique issuer API key for each one.</p>
 				<p>You should store the DID (<code>did</code>) and encryption and signing key pairs (<code>keys</code>) that this returns. You&#39;ll need these to issue credentials to users.</p>
 				<p>Parameters:</p>
-				<pre><code class="language-typescript"><span style="color: #A31515">&quot;name&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// a human-readable name for the Issuer. It will be displayed to users in the Holder when Credentials from the Issuer are created.</span>
-<span style="color: #A31515">&quot;customerUuid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// your Unum ID customer uuid</span>
-<span style="color: #A31515">&quot;apiKey&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// a unique Issuer API key obtained from Unum ID</span>
+				<pre><code class="language-typescript"><span style="color: #A31515">&quot;name&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// a human-readable name for the Issuer. It will be displayed to users via the mobile SDK when Credentials from the Issuer are created.</span>
+<span style="color: #A31515">&quot;customerUuid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// your UnumID customer uuid</span>
+<span style="color: #A31515">&quot;apiKey&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// a unique Issuer API key obtained from UnumID</span>
 </code></pre>
 				<p>Response Body:  <a href="https://docs.unum.id/Server-SDK-Typescript/interfaces/registeredissuer.html"><strong>RegisteredIssuer</strong></a></p>
 				<pre><code class="language-typescript"><span style="color: #000000">{</span>
-<span style="color: #000000">  </span><span style="color: #A31515">&quot;uuid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// identifies the new Issuer in the Unum ID database</span>
+<span style="color: #000000">  </span><span style="color: #A31515">&quot;uuid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// identifies the new Issuer in the UnumID database</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;customerUuid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// identifies the customer which Created the Issuer</span>
-<span style="color: #000000">  </span><span style="color: #A31515">&quot;did&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// identifies the Issuer in the Unum ID decentralized ecosystem</span>
+<span style="color: #000000">  </span><span style="color: #A31515">&quot;did&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// identifies the Issuer in the UnumID decentralized ecosystem</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;name&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// a human-readable name for the Issuer</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;createdAt&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// the date and time the Issuer was registered</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;updatedAt&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// the date and time the Issuer was last updated</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;keys&quot;</span><span style="color: #000000">: {</span>
 <span style="color: #000000">    </span><span style="color: #A31515">&quot;signing&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> {</span>
 <span style="color: #000000">      </span><span style="color: #A31515">&quot;privateKey&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// your Issuer Signing Private Key. You will need to provide it in order to issue Credentials</span>
-<span style="color: #000000">      </span><span style="color: #A31515">&quot;publicKey&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// your Issuer Signing Public Key. It is also stored in the Issuer&#039;s DID Document, and can be used by other entities in the Unum ID ecosystem to verify the Issuer&#039;s signature on Credentials it issues.</span>
+<span style="color: #000000">      </span><span style="color: #A31515">&quot;publicKey&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// your Issuer Signing Public Key. It is also stored in the Issuer&#039;s DID Document, and can be used by other entities in the UnumID ecosystem to verify the Issuer&#039;s signature on Credentials it issues.</span>
 <span style="color: #000000">    }</span>
 <span style="color: #000000">  }</span>
 <span style="color: #000000">}</span>
@@ -105,9 +105,9 @@
 				<a href="#issuecredential" id="issuecredential" style="color: inherit; text-decoration: none;">
 					<h3>issueCredential</h3>
 				</a>
-				<p>Issue a credential to a subject (user).</p>
-				<p>You need to provide your issuer DID (created when you registered), as well as your signing and encryption private keys, which the Issuer uses to sign and encrypt the credential. You need to specify a credentialType, which verifiers will use to later request the credential from the user.</p>
-				<p>This returns a credential <code>id</code> that you should store so you can later revoke the credential if need be. We would recommend storing the entire credential indexed on the resultant credential <code>id</code>. Note that there are also id fields within credentialSubject and credentialStatus, but these are different. They refer to the subject DID and credential status identifier, respectively.</p>
+				<p>Issue a credential to a Subject, also known as a User.</p>
+				<p>You need to provide your Issuer DID (created when you registered), as well as your signing and encryption private keys, which the Issuer uses to sign and encrypt the credential. You need to specify a credential <code>type</code>, which verifiers will use to later request the credential from the user.</p>
+				<p>This returns a credential <code>id</code> that should be stored for reference. For example, the credential id is required to revoke the credential if need be. We would recommend storing the entire credential indexed on the resultant credential <code>id</code>. Note that there are also id fields within a <code>credentialSubject</code> and <code>credentialStatus</code>, but these are different. They refer to the subject DID and credential status identifier, respectively, as defined by the W3C spec [<a href="https://www.w3.org/TR/vc-data-model/#credential-subject">1</a>],[<a href="https://www.w3.org/TR/vc-data-model/#status">2</a>].</p>
 				<p><strong>Important</strong>: The private keys never leave your app. This function, like all the others in this SDK, needs them in order to handle to cryptographic functionality on your behalf.</p>
 				<p>Parameters</p>
 				<pre><code class="language-typescript"><span style="color: #A31515">&quot;credentialSubject&quot;</span><span style="color: #000000">: {</span>
@@ -154,32 +154,32 @@
 				<a href="#verifier" id="verifier" style="color: inherit; text-decoration: none;">
 					<h2>Verifier</h2>
 				</a>
-				<p>The Verifier functionality is used by a customer acting as a verifier. It allows one to register verifiers. Most importantly, it allows one to send PresentationRequests and verify Presentations.</p>
+				<p>The Verifier functionality is used by a customer acting as a verifier. Most importantly, it allows customers to send PresentationRequests to the UnumID mobile SDK and to verify the encrypted Presentation responses.</p>
 				<a href="#registerverifier" id="registerverifier" style="color: inherit; text-decoration: none;">
 					<h3>registerVerifier</h3>
 				</a>
-				<p>Register a verifier corresponding to your customer UUID and verifier API key that UnumID&#39;s SaaS provides. As a customer, you can register as many verifiers as you like (or none at all), depending on your use case. Note, however, that you&#39;ll need a unique verifier API key for each one.</p>
+				<p>Register a verifier corresponding to your customer UUID and verifier API key that UnumID provides. As a customer, you can register as many verifiers as you like (or none at all), depending on your use case. Note, however, that you&#39;ll need a unique verifier API key for each one.</p>
 				<p>You should store the DID (<code>did</code>) and signing key pair (<code>keys</code>) that this returns. You&#39;ll need these to create requests for (presentations of) credentials from users.</p>
 				<p>Parameters</p>
 				<pre><code class="language-typescript"><span style="color: #A31515">&quot;name&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// a human-readable name for the verifier. It will be displayed to users in the Holder when receiving a PresentationRequest.</span>
-<span style="color: #A31515">&quot;customerUuid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// your Unum ID customer uuid</span>
-<span style="color: #A31515">&quot;apiKey&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// a unique Verifier API key obtained from Unum ID</span>
+<span style="color: #A31515">&quot;customerUuid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// your UnumID customer uuid</span>
+<span style="color: #A31515">&quot;apiKey&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// a unique Verifier API key obtained from UnumID</span>
 </code></pre>
 				<p>Response body: <a href="https://docs.unum.id/Server-SDK-Typescript/interfaces/registeredverifier.html"><strong>RegisteredVerifier</strong></a></p>
 				<pre><code class="language-typescript"><span style="color: #000000">{</span>
-<span style="color: #000000">  </span><span style="color: #A31515">&quot;uuid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// identifies the new Verifier in the Unum ID database</span>
+<span style="color: #000000">  </span><span style="color: #A31515">&quot;uuid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// identifies the new Verifier in the UnumID database</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;customerUuid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// identifies the customer which Created the Verifier</span>
-<span style="color: #000000">  </span><span style="color: #A31515">&quot;did&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// identifies the Verifier in the Unum ID decentralized ecosystem</span>
+<span style="color: #000000">  </span><span style="color: #A31515">&quot;did&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// identifies the Verifier in the UnumID decentralized ecosystem</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;name&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// a human-readable name for the Verifier</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;createdAt&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// the date and time the Verifier was registered</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;updatedAt&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// the date and time the Verifier was last updated</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;keys&quot;</span><span style="color: #000000">: {</span>
 <span style="color: #000000">    </span><span style="color: #A31515">&quot;signing&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> {</span>
 <span style="color: #000000">      </span><span style="color: #A31515">&quot;privateKey&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// your Verifier Signing Private Key. You will need to provide it in order to send PresentationRequests</span>
-<span style="color: #000000">      </span><span style="color: #A31515">&quot;publicKey&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// your Verifier Signing Public Key. It is also stored in the Verifiers DID Document, and can be used by other entities in the Unum ID ecosystem to verify the Verifier&#039;s signature on PresentationRequests it creates</span>
+<span style="color: #000000">      </span><span style="color: #A31515">&quot;publicKey&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// your Verifier Signing Public Key. It is also stored in the Verifiers DID Document, and can be used by other entities in the UnumID ecosystem to verify the Verifier&#039;s signature on PresentationRequests it creates</span>
 <span style="color: #000000">    }, </span><span style="color: #A31515">&quot;encryption&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> {</span>
 <span style="color: #000000">      </span><span style="color: #A31515">&quot;privateKey&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// your Verifier Encryption Private Key. You will need to provide it in order to send PresentationRequests</span>
-<span style="color: #000000">      </span><span style="color: #A31515">&quot;publicKey&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// your Verifier Encryption Public Key. It is also stored in the Verifiers DID Document, and can be used by other entities in the Unum ID ecosystem to encrypt presentations for the Verifier to verifier.</span>
+<span style="color: #000000">      </span><span style="color: #A31515">&quot;publicKey&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// your Verifier Encryption Public Key. It is also stored in the Verifiers DID Document, and can be used by other entities in the UnumID ecosystem to encrypt presentations for the Verifier to verifier.</span>
 <span style="color: #000000">    }</span>
 <span style="color: #000000">  }</span>
 <span style="color: #000000">}</span>
@@ -188,9 +188,16 @@
 					<h3>sendRequest</h3>
 				</a>
 				<p>Create a request for (a presentation of) credentials from a user.</p>
-				<p>You need to provide your verifier DID (created when you registered) and the UUID of the holder app from which the user can share the data. You also need to provide your signing private key, which the Verifier App uses to sign the request.</p>
-				<p>To request credentials, you need to specify the credentialType and one or more acceptable issuers (entities that issue those credentials). If you list more than one issuer, the user can share a credential issued by any of the ones you list.</p>
-				<p><strong>Important</strong>: The private keys never leave your app. This function, like all the others in this SDK, needs them in order to handle to cryptographic functionality on your behalf.</p>
+				<p>You need to provide your verifier DID (created when you registered) and the UUID of the holder app from which the user can share the data. You also need to provide your signing private key, which the SDK uses to sign the request.</p>
+				<p><strong>Important</strong>: The signing private key never leaves your app. This function, like all the others in this SDK, is solely using it to handle to cryptographic functionality on your behalf.</p>
+				<p>To request credentials, you need to populate one or more <a href="https://docs.unum.id/types/interfaces/credentialrequest.html">CredentialRequest</a> objects, defined in the UnumID generic <a href="https://github.com/UnumID/types/blob/00ba819e661e2856ba9909923ac6f083b9a15e85/index.d.ts#L113-L117">types</a> project and shown below.</p>
+				<pre><code class="language-typescript"><span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">interface</span><span style="color: #000000"> </span><span style="color: #267F99">CredentialRequest</span><span style="color: #000000"> {</span>
+<span style="color: #000000">  </span><span style="color: #001080">type</span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000">; </span><span style="color: #008000">// the string matching the desire credential type</span>
+<span style="color: #000000">  </span><span style="color: #001080">issuers</span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000">[]; </span><span style="color: #008000">// list of acceptable issuer DIDs that have issued the credential</span>
+<span style="color: #000000">  </span><span style="color: #001080">required</span><span style="color: #000000">?: </span><span style="color: #267F99">boolean</span><span style="color: #000000">; </span><span style="color: #008000">// to denote wether this particular credential is required in response to the PresentationRequest. Defaults behavior resolves this to true.</span>
+<span style="color: #000000">}</span>
+</code></pre>
+				<p>If you list more than one acceptable <code>issuers</code> (entities that issued the desired credential type), the user can share a credential issued by any of the ones listed.</p>
 				<p>Parameters</p>
 				<pre><code class="language-typescript"><span style="color: #A31515">&quot;verifier&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// your Verifier DID</span>
 <span style="color: #A31515">&quot;credentialRequests&quot;</span><span style="color: #000000">: </span><span style="color: #001080">CredentialRequest</span><span style="color: #000000">[], </span><span style="color: #008000">// a list of one or more CredentialRequest objects. Describes the Credentials which should be shared to fulfill the PresentationRequest</span>
@@ -202,7 +209,7 @@
 				<p>Response Body: <a href="https://docs.unum.id/Server-SDK-Typescript/interfaces/presentationrequestresponse.html"><strong>PresentationRequestResponse</strong></a></p>
 				<pre><code class="language-typescript"><span style="color: #000000">{</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;presentationRequest&quot;</span><span style="color: #000000">: {</span>
-<span style="color: #000000">    </span><span style="color: #A31515">&quot;uuid&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// identifies the PresentationRequest in the Unum ID database</span>
+<span style="color: #000000">    </span><span style="color: #A31515">&quot;uuid&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// identifies the PresentationRequest in the UnumID database</span>
 <span style="color: #000000">    </span><span style="color: #A31515">&quot;createdAt&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// the date and time the PresentationRequest was created</span>
 <span style="color: #000000">    </span><span style="color: #A31515">&quot;updatedAt&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// the date and time the PresentationRequest was last updated. This should always be the same as createdAt</span>
 <span style="color: #000000">    </span><span style="color: #A31515">&quot;expiresAt&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// the date and time the PresentationRequest expires</span>
@@ -229,9 +236,9 @@
 				<a href="#verifyencryptedpresentation" id="verifyencryptedpresentation" style="color: inherit; text-decoration: none;">
 					<h3>verifyEncryptedPresentation</h3>
 				</a>
-				<p>Verify a encrypted Presentation. </p>
-				<p>This is used in service behind the <code>/presentation</code> endpoint that needs to be defined according to <a href="unum.id">this</a> spec which UnumID&#39;s SaaS forwards encrypted Presentations to. It handles decrypting the encrypted presentation and verifies the signature is valid. </p>
-				<p><strong>Important</strong>: Although this request is coming from UnumID&#39;s SaaS, UnumID never has access to the credentials within the presentation due to the encryption. Do not forget to save the signing and encryption private keys returned during the <strong>registerVerifier</strong> step.</p>
+				<p>Handles decrypting the encrypted presentation and verifies the signatures are valid.</p>
+				<p>This is used in service behind the <code>/presentation</code> endpoint that needs to be defined according to <a href="https://unumid.postman.co/workspace/Unum-ID-Team-Workspace~48b1f312-a6e6-4bcc-86a0-aa4bc37df9b4/api/09ad0ccd-c614-4d54-a1b4-ff9ae85b8449?version=c217a461-fc05-4476-a792-6c9163f2a198&amp;tab=define">this</a> spec which UnumID&#39;s SaaS forwards encrypted Presentations to.  </p>
+				<p><strong>Important</strong> Although the mobile SDK sends the presentations directly to UnumID&#39;s SaaS, UnumID never has access to the credentials within the presentation. The mobile SDK encrypts all presentations with the presentation requesting verifier&#39;s public key, to which the requestor is the only ones with necessary decryption private key, the Verifier&#39;s <code>encryptionPrivateKey</code>, an attribute created with the registerVerifier call.</p>
 				<p>Parameters</p>
 				<pre><code class="language-typescript"><span style="color: #A31515">&quot;encryptedPresentation&quot;</span><span style="color: #000000">: </span><span style="color: #001080">EncryptedData</span><span style="color: #000000">, </span><span style="color: #008000">// the encrypted presentation with sensitive credential information.</span>
 <span style="color: #A31515">&quot;verifierDid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// the did associated with the verifier&#039;s public that was used to encrypt the presentation by the Holder SDK.</span>
@@ -241,6 +248,7 @@
 				<pre><code class="language-typescript"><span style="color: #000000">{</span>
 <span style="color: #000000">  isVerified: </span><span style="color: #001080">boolean</span><span style="color: #000000">; </span><span style="color: #008000">// boolean indicating wether the signatures signed by the subject (user) is valid </span>
 <span style="color: #000000">  type: </span><span style="color: #A31515">&#039;VerifiablePresentation&#039;</span><span style="color: #000000"> | </span><span style="color: #A31515">&#039;NoPresentation&#039;</span><span style="color: #000000"> </span><span style="color: #008000">// type of the presentation. NoPresentation means the presentation request was declined by the user.</span>
+<span style="color: #000000">  presentation: </span><span style="color: #001080">Presentation</span><span style="color: #000000"> | </span><span style="color: #001080">NoPresentation</span><span style="color: #000000">, </span><span style="color: #008000">// the decrypted presentation which corresponds to the type attribute.</span>
 <span style="color: #000000">  </span><span style="color: #001080">credentials</span><span style="color: #000000">?: </span><span style="color: #001080">VerifiableCredential</span><span style="color: #000000">[] </span><span style="color: #008000">// (optional) a list of VerifiableCredential objects. This is the decrypted credential information. Only populated if the presentation signatures are verified and of type `VerifiablePresentation`.</span>
 <span style="color: #000000">  </span><span style="color: #001080">message</span><span style="color: #000000">?: </span><span style="color: #001080">string</span><span style="color: #000000">; </span><span style="color: #008000">// (optional) message detailing why the verification did not succeed if isVerified is false.</span>
 <span style="color: #000000">}</span>
@@ -248,7 +256,7 @@
 				<a href="#sendsms" id="sendsms" style="color: inherit; text-decoration: none;">
 					<h3>sendSms</h3>
 				</a>
-				<p>Use to send a deep link to a user by SMS. The message will be delivered from an Unum ID associated phone number. You can of course use your own SMS sending service if you prefer.</p>
+				<p>Use to send a deep link to a user by SMS. The message will be delivered from an UnumID associated phone number. You can of course use your own SMS sending service if you prefer.</p>
 				<p>To request (a presentation of) credentials from a user, you first create the request object and receive a deep link that references it. The user need to receive this deep link, which will open the correct app on their phone and prompt them to share the credentials. SMS is one convenient channel.</p>
 				<p>Parameters</p>
 				<pre><code class="language-typescript"><span style="color: #000000">{</span>
@@ -262,9 +270,9 @@
 				<a href="#sendemail" id="sendemail" style="color: inherit; text-decoration: none;">
 					<h3>sendEmail</h3>
 				</a>
-				<p>Use to send a deep link to a user by email. The message will be delivered from <a href="mailto:DoNotReply@UnumID.org">DoNotReply@UnumID.org</a>. You can of course use your own email sending service if you prefer.</p>
+				<p>Use to send a deep link to a user by email. The message will be delivered from <a href="mailto:no-reply@unum.id">no-reply@unum.id</a>. You can of course use your own email sending service if you prefer.</p>
 				<p>To request (a presentation of) credentials from a user, you first create the request object and receive a deep link that references it. The user need to receive this deep link, which will open the correct app on their phone and prompt them to share the credentials. Email is one convenient channel, though keep in mind that the user will need to click the link from their phone for the deep link to work.</p>
-				<p><strong>Tip</strong>: JSON special characters such a double quote or backslash in the <code>subject</code> or <code>htmlBody</code> fields will need to be escaped with a backslash, i.e. &quot;the best org in the country&quot; must be &quot;the best org in the country&quot;.</p>
+				<p><strong>Tip</strong>: JSON special characters such a double quote or backslash in the <code>subject</code> or <code>htmlBody</code> fields will need to be escaped with a single backslash (\), i.e. &quot;the best org in the country&quot; must be \&quot;the best org in the country\&quot;.</p>
 				<p>Parameters</p>
 				<pre><code class="language-typescript"><span style="color: #000000">{</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;to&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// target email</span>
@@ -283,7 +291,7 @@
 				<a href="#distribution" id="distribution" style="color: inherit; text-decoration: none;">
 					<h3>Distribution</h3>
 				</a>
-				<p>Currently this project is still closed source, so standard distribution options via public source code or NPM repository are not viable. In downstream projects are leveraging this project via it&#39;s git url using Docker Buildkit to provide SSH credentials for access to this Github source code repo. An example of such a buildkit configuration can be found in the <a href="https://github.com/UnumID/hooli-demo-server">hooli-demo-server</a> <code>Dockerfile</code> and <code>.circleci/config.yaml</code>.</p>
+				<p>Currently this project is still closed source, so standard distribution options via public source code or NPM repository are not viable. Downstream projects are leveraging this project via it&#39;s git url using Docker Buildkit to provide SSH credentials for access to this Github source code repo. An example of such a buildkit configuration can be found in the <a href="https://github.com/UnumID/hooli-demo-server">hooli-demo-server</a> <code>Dockerfile</code> and <code>.circleci/config.yaml</code>.</p>
 				<p>We considered opting to build and push as a private module through a private Github NPM repo. However due to the complexities of configuring a downstream project to have rights to pull from the private NPM repo we have opted to not add pushing a private package to our CI job. </p>
 				<p>Soon, we hope to open source this project and uploaded the package as public NPM module.  </p>
 				<a href="#global-dependencies" id="global-dependencies" style="color: inherit; text-decoration: none;">
