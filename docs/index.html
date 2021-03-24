@@ -278,7 +278,8 @@
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;from&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// from email</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;replyTo&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// replyTo email</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;subject&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// subject of the email</span>
-<span style="color: #000000">  </span><span style="color: #A31515">&quot;textBody&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// email message body</span>
+<span style="color: #000000">  </span><span style="color: #A31515">&quot;textBody?&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// email message body (can not be used with htmlBody)</span>
+<span style="color: #000000">  </span><span style="color: #A31515">&quot;htmlBody?&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// email html message body (can not be used with textBody)</span>
 <span style="color: #000000">}</span>
 </code></pre>
 				<p>Response Body: <strong>Empty</strong>. If unsuccessful and exception will be thrown.</p>

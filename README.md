@@ -260,7 +260,8 @@ Parameters
   "from": string, // from email
   "replyTo": string, // replyTo email
   "subject": string, // subject of the email
-  "textBody": string, // email message body
+  "textBody?": string, // email message body (can not be used with htmlBody)
+  "htmlBody?": string, // email html message body (can not be used with textBody)
 }
 ```
 
