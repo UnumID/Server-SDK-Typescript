@@ -812,10 +812,9 @@
     uuid "^8.2.0"
     winston "^3.3.3"
 
-"@unumid/types@git+ssh://git@github.com/UnumID/types.git#v0.0.5":
+"@unumid/types@git+ssh://git@github.com/UnumID/types.git#v0.0.8":
   version "0.0.1"
-  uid "0e072747b1787e33bf74358cbda2bcce0c130485"
-  resolved "git+ssh://git@github.com/UnumID/types.git#0e072747b1787e33bf74358cbda2bcce0c130485"
+  resolved "git+ssh://git@github.com/UnumID/types.git#c9ba2581295a37b8b6fa62bed979e739967ac4a4"
 
 "@unumid/types@https://github.com/UnumID/types.git#v0.0.5":
   version "0.0.1"
