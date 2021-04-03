@@ -83,7 +83,7 @@ export interface PresentationRequestResponse {
 }
 
 /**
- * Encapsulates the statues of a Credential.
+ * Encapsulates the statues of a Credential with the internal uuid.
  */
 export interface CredentialStatus extends CredentialStatusInfo {
   uuid: string;
