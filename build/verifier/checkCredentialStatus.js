@@ -39,28 +39,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkCredentialStatus = void 0;
 var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var config_1 = require("../config");
-// /**
-//  * Helper to check the status of a credential: verified, revoked, etc.
-//  * @param credential
-//  * @param authorization
-//  */
-// export const checkCredentialStatus = async (credential: VerifiableCredential, authorization: string): Promise<UnumDto<boolean>> => {
-//   const options = {
-//     baseUrl: configData.SaaSUrl,
-//     endPoint: `credentialStatus/${credential.id}`,
-//     method: 'GET',
-//     header: { Authorization: authorization }
-//   };
-//   const credentialStatusResponse = await makeNetworkRequest<CredentialStatus>(options);
-//   const credentialStatus = credentialStatusResponse.body;
-//   const authToken: string = handleAuthToken(credentialStatusResponse);
-//   const valid = credentialStatus.status === 'valid';
-//   const result: UnumDto<boolean> = {
-//     authToken,
-//     body: valid
-//   };
-//   return result;
-// };
 /**
  * Helper to check the status of a credential: verified, revoked, etc.
  * @param credential
