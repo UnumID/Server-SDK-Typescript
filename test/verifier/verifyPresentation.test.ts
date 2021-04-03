@@ -155,7 +155,7 @@ describe('verifyPresentation - Success Scenario', () => {
     mockDoVerify.mockResolvedValue(true);
     mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: true });
     mockIsCredentialExpired.mockReturnValue(false);
-    mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: true });
+    mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: { status: 'valid' } });
     mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers: dummyResponseHeaders });
     response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
     verStatus = response.body.isVerified;
@@ -187,7 +187,7 @@ describe('verifyPresentation - Success Scenario', () => {
 
   it('checks the status of each credential', () => {
     verifiableCredential.forEach((vc) => {
-      expect(mockCheckCredentialStatus).toBeCalledWith(vc, authHeader);
+      expect(mockCheckCredentialStatus).toBeCalledWith(vc.id, authHeader);
     });
   });
 
@@ -205,7 +205,7 @@ describe('verifyPresentation - Success Scenario', () => {
     const dummyApiResponse = { body: dummySubjectDidDoc };
     mockMakeNetworkRequest.mockResolvedValueOnce(dummyApiResponse);
     mockGetDIDDoc.mockResolvedValue({ body: dummySubjectDidDoc, authToken: undefined });
-    mockCheckCredentialStatus.mockReturnValue({ authToken: undefined, body: true });
+    mockCheckCredentialStatus.mockReturnValue({ authToken: undefined, body: { status: 'valid' } });
     mockVerifyCredential.mockResolvedValue({ authToken: undefined, body: true });
     mockDoVerify.mockReturnValueOnce(true);
     response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
@@ -225,7 +225,7 @@ describe('verifyPresentation - Failure Scenarios', () => {
     mockDoVerify.mockReturnValueOnce(false);
     mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: false });
     mockIsCredentialExpired.mockReturnValue(true);
-    mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: false });
+    mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: { status: 'revoked' } });
     verifiableCredential[0].proof.verificationMethod = proof.verificationMethod;
   });
 
@@ -289,7 +289,7 @@ describe('verifyPresentation - Success Scenario with verifiableCredentialsString
     mockDoVerify.mockResolvedValue(true);
     mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: true });
     mockIsCredentialExpired.mockReturnValue(false);
-    mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: true });
+    mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: { status: 'valid' } });
     mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers: dummyResponseHeaders });
     response = await callVerifyPresentation(context, type, verifiableCredentialString, presentationRequestUuid, proof, verifier, authHeader);
     verStatus = response.body.isVerified;
@@ -321,7 +321,7 @@ describe('verifyPresentation - Success Scenario with verifiableCredentialsString
 
   it('checks the status of each credential', () => {
     verifiableCredential.forEach((vc) => {
-      expect(mockCheckCredentialStatus).toBeCalledWith(vc, authHeader);
+      expect(mockCheckCredentialStatus).toBeCalledWith(vc.id, authHeader);
     });
   });
 
@@ -339,7 +339,7 @@ describe('verifyPresentation - Success Scenario with verifiableCredentialsString
     const dummyApiResponse = { body: dummySubjectDidDoc };
     mockMakeNetworkRequest.mockResolvedValueOnce(dummyApiResponse);
     mockGetDIDDoc.mockResolvedValue({ body: dummySubjectDidDoc, authToken: undefined });
-    mockCheckCredentialStatus.mockReturnValue({ authToken: undefined, body: true });
+    mockCheckCredentialStatus.mockReturnValue({ authToken: undefined, body: { status: 'valid' } });
     mockVerifyCredential.mockResolvedValue({ authToken: undefined, body: true });
     mockDoVerify.mockReturnValueOnce(true);
     response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);

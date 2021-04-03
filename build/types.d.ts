@@ -85,8 +85,14 @@ export interface PresentationRequestResponse {
 /**
  * Encapsulates the statues of a Credential.
  */
-export interface CredentialStatus {
+export interface CredentialStatus extends CredentialStatusInfo {
   uuid: string;
+}
+
+/**
+ * Encapsulates the statues of a Credential.
+ */
+export interface CredentialStatusInfo {
   createdAt: Date;
   updatedAt: Date;
   credentialId: string;
@@ -109,7 +115,7 @@ export interface RegisteredVerifier extends Verifier {
 }
 
 /**
- * A type came about need to convey that a credential presentation can not be verified.
+ * A type to convey why a presentation can not be verified.
  * While this would normally be served by throwing an exception we want to pass back the auth token returned
  * by calls to the SaaS via the UnumDto type.
  */

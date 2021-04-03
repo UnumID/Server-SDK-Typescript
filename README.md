@@ -270,6 +270,27 @@ Response Body: **Empty**. If unsuccessful and exception will be thrown.
 {}
 ```
 
+### checkCredentialStatus
+Used to check the status of a credential. Currently the only valid status are: verified and revoked.
+
+Parameters
+```typescript
+{
+  "credentialId": string, // the id of the credential in question
+  "authorization": string // auth token
+}
+```
+
+Response Body: **CredentialStatusInfo**. If unsuccessful and exception will be thrown.
+```typescript
+{
+  createdAt: Date; // the time  the credential was recorded as created in the UnumID SaaS db
+  updatedAt: Date; // the time  the credential was recorded as updated in the UnumID SaaS db
+  credentialId: string; // the did (aka id) of the credential this status is in regard to
+  status: 'valid' | 'revoked'; // the status
+}
+```
+
 ## Other Information
 ### Distribution
 

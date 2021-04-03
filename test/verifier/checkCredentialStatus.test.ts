@@ -30,7 +30,7 @@ describe('checkCredentialStatus', () => {
   it('calls the SaaS api to check the credential\'s status', async () => {
     mockMakeNetworkRequest.mockResolvedValueOnce({ body: { status: 'valid' } });
 
-    await checkCredentialStatus(credential1, authHeader);
+    await checkCredentialStatus(credential1.id, authHeader);
     expect(mockMakeNetworkRequest).toBeCalled();
 
     const receivedArgs = mockMakeNetworkRequest.mock.calls[0][0];
@@ -40,14 +40,14 @@ describe('checkCredentialStatus', () => {
 
   it('returns true if the credential status is valid', async () => {
     mockMakeNetworkRequest.mockResolvedValueOnce({ body: { status: 'valid' } });
-    const isValid = await checkCredentialStatus(credential1, authHeader);
-    expect(isValid.body).toBe(true);
+    const credentialStatusInfo = await checkCredentialStatus(credential1.id, authHeader);
+    expect(credentialStatusInfo.body.status === 'valid').toBe(true);
   });
 
   it('returns false if the credential status is revoked', async () => {
     mockMakeNetworkRequest.mockResolvedValueOnce({ body: { status: 'revoked' } });
 
-    const isValid = await checkCredentialStatus(credential2, authHeader);
-    expect(isValid.body).toBe(false);
+    const credentialStatusInfo = await checkCredentialStatus(credential2.id, authHeader);
+    expect(credentialStatusInfo.body.status === 'valid').toBe(false);
   });
 });

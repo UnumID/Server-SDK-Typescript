@@ -39,31 +39,52 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkCredentialStatus = void 0;
 var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var config_1 = require("../config");
+// /**
+//  * Helper to check the status of a credential: verified, revoked, etc.
+//  * @param credential
+//  * @param authorization
+//  */
+// export const checkCredentialStatus = async (credential: VerifiableCredential, authorization: string): Promise<UnumDto<boolean>> => {
+//   const options = {
+//     baseUrl: configData.SaaSUrl,
+//     endPoint: `credentialStatus/${credential.id}`,
+//     method: 'GET',
+//     header: { Authorization: authorization }
+//   };
+//   const credentialStatusResponse = await makeNetworkRequest<CredentialStatus>(options);
+//   const credentialStatus = credentialStatusResponse.body;
+//   const authToken: string = handleAuthToken(credentialStatusResponse);
+//   const valid = credentialStatus.status === 'valid';
+//   const result: UnumDto<boolean> = {
+//     authToken,
+//     body: valid
+//   };
+//   return result;
+// };
 /**
  * Helper to check the status of a credential: verified, revoked, etc.
  * @param credential
- * @param authHeader
+ * @param authorization
  */
-exports.checkCredentialStatus = function (credential, authHeader) { return __awaiter(void 0, void 0, void 0, function () {
-    var options, credentialStatusResponse, credentialStatus, authToken, valid, result;
+exports.checkCredentialStatus = function (credentialId, authorization) { return __awaiter(void 0, void 0, void 0, function () {
+    var options, credentialStatusResponse, credentialStatus, authToken, result;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 options = {
                     baseUrl: config_1.configData.SaaSUrl,
-                    endPoint: "credentialStatus/" + credential.id,
+                    endPoint: "credentialStatus/" + credentialId,
                     method: 'GET',
-                    header: { Authorization: authHeader }
+                    header: { Authorization: authorization }
                 };
                 return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(options)];
             case 1:
                 credentialStatusResponse = _a.sent();
                 credentialStatus = credentialStatusResponse.body;
                 authToken = library_issuer_verifier_utility_1.handleAuthToken(credentialStatusResponse);
-                valid = credentialStatus.status === 'valid';
                 result = {
                     authToken: authToken,
-                    body: valid
+                    body: credentialStatus
                 };
                 return [2 /*return*/, result];
         }
