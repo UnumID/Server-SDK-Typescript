@@ -12,6 +12,7 @@ import { revokeCredential } from './issuer/revokeCredentials';
 import { CustError, Proof, Credential, CredentialSubject } from '@unumid/library-issuer-verifier-utility';
 import { extractCredentialInfo } from './utils/extractCredentialInfo';
 import { NoPresentation, Presentation } from '@unumid/types';
+import { checkCredentialStatus } from './verifier/checkCredentialStatus';
 
 export {
   // Issuer Functions
@@ -26,6 +27,7 @@ export {
   verifyNoPresentation, // Deprecated as an exposed function in favor of verifyEncryptedPresentation. Ought to be removed after holder stops sending presentations to the test customer app
   verifyPresentation, // Deprecated as an exposed function in favor of verifyEncryptedPresentation. Ought to be removed after holder stops sending presentations to the test customer app
   verifyEncryptedPresentation,
+  checkCredentialStatus,
   // Types
   UnumDto,
   RegisteredVerifier,

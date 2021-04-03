@@ -126,7 +126,7 @@ describe('verifyEncryptedPresentation - Success Scenario', () => {
     mockDoVerify.mockReturnValueOnce(true);
     mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: true });
     mockIsCredentialExpired.mockReturnValue(false);
-    mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: true });
+    mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: { status: 'valid' } });
     mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers: dummyResponseHeaders });
     response = await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
     verStatus = response.body.isVerified;
@@ -158,7 +158,7 @@ describe('verifyEncryptedPresentation - Success Scenario', () => {
 
   it('checks the status of each credential', () => {
     verifiableCredentials.forEach((vc) => {
-      expect(mockCheckCredentialStatus).toBeCalledWith(vc, authHeader);
+      expect(mockCheckCredentialStatus).toBeCalledWith(vc.id, authHeader);
     });
   });
 

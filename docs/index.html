@@ -285,6 +285,24 @@
 				<p>Response Body: <strong>Empty</strong>. If unsuccessful and exception will be thrown.</p>
 				<pre><code class="language-typescript"><span style="color: #000000">{}</span>
 </code></pre>
+				<a href="#checkcredentialstatus" id="checkcredentialstatus" style="color: inherit; text-decoration: none;">
+					<h3>checkCredentialStatus</h3>
+				</a>
+				<p>Used to check the status of a credential. Currently the only valid status are: verified and revoked.</p>
+				<p>Parameters</p>
+				<pre><code class="language-typescript"><span style="color: #000000">{</span>
+<span style="color: #000000">  </span><span style="color: #A31515">&quot;credentialId&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// the id of the credential in question</span>
+<span style="color: #000000">  </span><span style="color: #A31515">&quot;authorization&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// auth token</span>
+<span style="color: #000000">}</span>
+</code></pre>
+				<p>Response Body: <strong>CredentialStatusInfo</strong>. If unsuccessful and exception will be thrown.</p>
+				<pre><code class="language-typescript"><span style="color: #000000">{</span>
+<span style="color: #000000">  createdAt: </span><span style="color: #267F99">Date</span><span style="color: #000000">; </span><span style="color: #008000">// the time  the credential was recorded as created in the UnumID SaaS db</span>
+<span style="color: #000000">  updatedAt: </span><span style="color: #267F99">Date</span><span style="color: #000000">; </span><span style="color: #008000">// the time  the credential was recorded as updated in the UnumID SaaS db</span>
+<span style="color: #000000">  credentialId: </span><span style="color: #001080">string</span><span style="color: #000000">; </span><span style="color: #008000">// the did (aka id) of the credential this status is in regard to</span>
+<span style="color: #000000">  status: </span><span style="color: #A31515">&#039;valid&#039;</span><span style="color: #000000"> | </span><span style="color: #A31515">&#039;revoked&#039;</span><span style="color: #000000">; </span><span style="color: #008000">// the status</span>
+<span style="color: #000000">}</span>
+</code></pre>
 				<a href="#other-information" id="other-information" style="color: inherit; text-decoration: none;">
 					<h2>Other Information</h2>
 				</a>
@@ -361,6 +379,9 @@
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/verifiedstatus.html" class="tsd-kind-icon">Verified<wbr>Status</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#checkcredentialstatus" class="tsd-kind-icon">check<wbr>Credential<wbr>Status</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="modules.html#extractcredentialinfo" class="tsd-kind-icon">extract<wbr>Credential<wbr>Info</a>

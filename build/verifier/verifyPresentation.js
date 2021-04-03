@@ -268,10 +268,10 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
                     areCredentialsValid = false;
                     return [3 /*break*/, 6];
                 }
-                return [4 /*yield*/, checkCredentialStatus_1.checkCredentialStatus(credential, authToken)];
+                return [4 /*yield*/, checkCredentialStatus_1.checkCredentialStatus(credential.id, authToken)];
             case 3:
                 isStatusValidResponse = _b.sent();
-                isStatusValid = isStatusValidResponse.body;
+                isStatusValid = isStatusValidResponse.body.status === 'valid';
                 authToken = isStatusValidResponse.authToken;
                 if (!isStatusValid) {
                     areCredentialsValid = false;

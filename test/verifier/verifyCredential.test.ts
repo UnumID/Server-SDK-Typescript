@@ -1,6 +1,7 @@
 import * as utility from '@unumid/library-issuer-verifier-utility';
+import { VerifiableCredential } from '@unumid/types';
 
-import { UnumDto, VerifiableCredential } from '../../src/types';
+import { UnumDto } from '../../src/types';
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { makeDummyDidDocument } from './mocks';
 

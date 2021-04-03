@@ -1,7 +1,7 @@
 import { omit } from 'lodash';
 
 import { configData } from '../config';
-import { UnumDto, VerifiedStatus } from '../types';
+import { CredentialStatus, CredentialStatusInfo, UnumDto, VerifiedStatus } from '../types';
 import { Presentation } from '@unumid/types';
 import { validateProof } from './validateProof';
 import { requireAuth } from '../requireAuth';
@@ -270,8 +270,8 @@ export const verifyPresentation = async (authorization: string, presentation: Pr
         break;
       }
 
-      const isStatusValidResponse: UnumDto<boolean> = await checkCredentialStatus(credential, authToken);
-      const isStatusValid = isStatusValidResponse.body;
+      const isStatusValidResponse: UnumDto<CredentialStatusInfo> = await checkCredentialStatus(credential.id, authToken);
+      const isStatusValid = isStatusValidResponse.body.status === 'valid';
       authToken = isStatusValidResponse.authToken;
 
       if (!isStatusValid) {

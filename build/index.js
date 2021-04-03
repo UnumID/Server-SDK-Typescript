@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.extractCredentialInfo = exports.CustError = exports.verifyEncryptedPresentation = exports.verifyPresentation = exports.verifyNoPresentation = exports.sendSms = exports.sendRequest = exports.sendEmail = exports.registerVerifier = exports.revokeCredential = exports.issueCredential = exports.registerIssuer = void 0;
+exports.extractCredentialInfo = exports.CustError = exports.checkCredentialStatus = exports.verifyEncryptedPresentation = exports.verifyPresentation = exports.verifyNoPresentation = exports.sendSms = exports.sendRequest = exports.sendEmail = exports.registerVerifier = exports.revokeCredential = exports.issueCredential = exports.registerIssuer = void 0;
 var registerVerifier_1 = require("./verifier/registerVerifier");
 Object.defineProperty(exports, "registerVerifier", { enumerable: true, get: function () { return registerVerifier_1.registerVerifier; } });
 var sendEmail_1 = require("./verifier/sendEmail");
@@ -25,4 +25,6 @@ var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier
 Object.defineProperty(exports, "CustError", { enumerable: true, get: function () { return library_issuer_verifier_utility_1.CustError; } });
 var extractCredentialInfo_1 = require("./utils/extractCredentialInfo");
 Object.defineProperty(exports, "extractCredentialInfo", { enumerable: true, get: function () { return extractCredentialInfo_1.extractCredentialInfo; } });
+var checkCredentialStatus_1 = require("./verifier/checkCredentialStatus");
+Object.defineProperty(exports, "checkCredentialStatus", { enumerable: true, get: function () { return checkCredentialStatus_1.checkCredentialStatus; } });
 //# sourceMappingURL=index.js.map
