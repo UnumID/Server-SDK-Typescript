@@ -43,14 +43,14 @@ exports.updateCredentialStatus = void 0;
 var config_1 = require("../config");
 var requireAuth_1 = require("../requireAuth");
 var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
-var types_1 = require("@unumid/types");
+// import { CredentialStatusOptions, _CredentialStatusOptions } from '@unumid/types';
 var logger_1 = __importDefault(require("../logger"));
+var types_1 = require("@unumid/types");
 /**
  * Helper to validate request inputs.
  * @param req Request
  */
 var validateInputs = function (credentialId, status) {
-    // const validateInputs = (credentialId: string, status: 'revoked' | 'valid'): void => {
     // Credential ID is mandatory.
     if (!credentialId) {
         throw new library_issuer_verifier_utility_1.CustError(400, 'credentialId is required.');

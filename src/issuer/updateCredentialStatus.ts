@@ -3,7 +3,6 @@ import { requireAuth } from '../requireAuth';
 
 import { CustError, RESTData, makeNetworkRequest, JSONObj, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
 import { UnumDto } from '../types';
-// import { CredentialStatusOptions, _CredentialStatusOptions } from '@unumid/types';
 import logger from '../logger';
 import { CredentialStatusOptions, _CredentialStatusOptions } from '@unumid/types';
 
@@ -12,7 +11,6 @@ import { CredentialStatusOptions, _CredentialStatusOptions } from '@unumid/types
  * @param req Request
  */
 const validateInputs = (credentialId: string, status: CredentialStatusOptions): void => {
-// const validateInputs = (credentialId: string, status: 'revoked' | 'valid'): void => {
   // Credential ID is mandatory.
   if (!credentialId) {
     throw new CustError(400, 'credentialId is required.');
@@ -32,7 +30,6 @@ const validateInputs = (credentialId: string, status: CredentialStatusOptions): 
  * @param status CredentialStatusOptions // status to update the credential to (defaults to 'revoked')
  */
 export const updateCredentialStatus = async (authorization: string, credentialId: string, status: CredentialStatusOptions = 'revoked'): Promise<UnumDto<undefined>> => {
-// export const updateCredentialStatus = async (authorization: string, credentialId: string, status: 'revoked' | 'valid' = 'revoked'): Promise<UnumDto<undefined>> => {
   try {
     requireAuth(authorization);
 

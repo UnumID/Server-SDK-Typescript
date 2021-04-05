@@ -798,13 +798,13 @@
     bs58 "^4.0.1"
     fast-json-stable-stringify "^2.1.0"
 
-"@unumid/library-issuer-verifier-utility@git+ssh://git@github.com/UnumID/library-issuer-verifier-utility.git#rt":
+"@unumid/library-issuer-verifier-utility@git+ssh://git@github.com/UnumID/library-issuer-verifier-utility.git#v0.8.0":
   version "1.0.0"
-  resolved "git+ssh://git@github.com/UnumID/library-issuer-verifier-utility.git#6f5a1d9784291c944d1643f6025cc40fc268065c"
+  resolved "git+ssh://git@github.com/UnumID/library-issuer-verifier-utility.git#a2bfeef087576d2dc3f44992240059856bd97c40"
   dependencies:
     "@types/lodash" "^4.14.168"
     "@unumid/library-crypto" "https://github.com/UnumID/Library-Crypto-TypeScript.git#v1.2.0"
-    "@unumid/types" "git+ssh://git@github.com/UnumID/types.git#rt"
+    "@unumid/types" "git+ssh://git@github.com/UnumID/types.git#v1.1.0"
     dotenv "^8.2.0"
     express "^4.17.1"
     lodash "^4.17.21"
@@ -812,9 +812,9 @@
     uuid "^8.2.0"
     winston "^3.3.3"
 
-"@unumid/types@git+ssh://git@github.com/UnumID/types.git#rt":
+"@unumid/types@git+ssh://git@github.com/UnumID/types.git#v1.1.0":
   version "0.0.1"
-  resolved "git+ssh://git@github.com/UnumID/types.git#4a31e233b4f5f1b4aa768354810a696070576775"
+  resolved "git+ssh://git@github.com/UnumID/types.git#32e9a3e40e4de23339925bd28ba1eabf218e7f3e"
   dependencies:
     runtypes "^6.0.0"
 

@@ -71,14 +71,14 @@ describe('updateCredentialStatus - Failure cases', () => {
     }
   });
 
-  // it('returns a CustError with a descriptive error message if the status is not a valid CredentialStatusOptions string literal', async () => {
-  //   try {
-  //     await updateCredentialStatus(authHeader, credentialId, 'fake');
-  //     fail();
-  //   } catch (e) {
-  //     expect(e).toEqual(new utilLib.CustError(400, 'status does not match a valid CredentialStatusOptions string literal.'));
-  //     expect(e.code).toEqual(400);
-  //     expect(e.message).toEqual('status does not match a valid CredentialStatusOptions string literal.');
-  //   }
-  // });
+  it('returns a CustError with a descriptive error message if the status is not a valid CredentialStatusOptions string literal', async () => {
+    try {
+      await updateCredentialStatus(authHeader, credentialId, 'fake');
+      fail();
+    } catch (e) {
+      expect(e).toEqual(new utilLib.CustError(400, 'status does not match a valid CredentialStatusOptions string literal.'));
+      expect(e.code).toEqual(400);
+      expect(e.message).toEqual('status does not match a valid CredentialStatusOptions string literal.');
+    }
+  });
 });
