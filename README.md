@@ -59,14 +59,14 @@ This returns a credential `id` that should be stored for reference. For example,
 
 Parameters
 ```typescript
-"credentialSubject": {
-  "id": string, // a DID identifying the Subject of the Credential
-  [key: string]: any, // any number of claims about the subject, expressed as key-value pairs
-},
 "type": string || string[], // The Credential type(s)
-"issuer": string, // DID identifying the Issuer issuing the Credential
-"expirationDate": string, // date and time after which the Credential will no longer be valid
-"eccPrivateKey": string // your Issuer's Private Key
+"issuer": string, // your issuer DID
+"credentialSubject": {
+  "id": string, // subject DID
+  [key: string]: any, // data about subject (any valid JSON)
+},
+"signingPrivateKey": string // your issuer signing private key
+"expirationDate"?: string, // (optional) when credential will no longer be valid (ISO 8601 date/time)
 ```
 
 Response Body: [**Credential**](https://docs.unum.id/Server-SDK-Typescript/interfaces/credential.html)
@@ -164,12 +164,12 @@ If you list more than one acceptable `issuers` (entities that issued the desired
 
 Parameters
 ```typescript
-"verifier": string, // your Verifier DID
-"credentialRequests": CredentialRequest[], // a list of one or more CredentialRequest objects. Describes the Credentials which should be shared to fulfill the PresentationRequest
-"eccPrivateKey": string, // your Verifier's Private Key
-"holderAppUuid": string, // identifies which Holder App the PresentationRequest should be sent to
-"expiresAt": string, // Optional. The date and time the PresentationRequest should expire. Default is 10 minutes after creation
-"metadata": object // any additional data to include in the PresentationRequest
+"verifier": string, // your verifier DID
+"credentialRequests": CredentialRequest[], // a list of one or more CredentialRequest objects. Encodes which credentials should be included in presentation that responds to PresentationRequest.
+"signingPrivateKey": string, // your verifier signing private key
+"holderAppUuid": string, // identifies mobile app subjects will share presentations from
+"expiresAt": string, // (optional) when PresentationRequest will no longer be valid (ISO 8601 date/time). Default is 10 minutes after creation.
+"metadata": object // (optional) any additional data to include in PresentationRequest
 ```
 
 Response Body: [**PresentationRequestResponse**](https://docs.unum.id/Server-SDK-Typescript/interfaces/presentationrequestresponse.html)

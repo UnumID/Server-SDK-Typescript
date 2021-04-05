@@ -156,7 +156,7 @@ var validateSendRequestBody = function (sendRequestBody) {
     }
     // ECC Private Key is mandatory input parameter
     if (!eccPrivateKey) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid PresentationRequest options: eccPrivateKey is required.');
+        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid PresentationRequest options: signingPrivateKey is required.');
     }
 };
 /**
@@ -164,7 +164,7 @@ var validateSendRequestBody = function (sendRequestBody) {
  * @param authorization
  * @param verifier
  * @param credentialRequests
- * @param eccPrivateKey
+ * @param signingPrivateKey
  * @param holderAppUuid
  */
 exports.sendRequest = function (authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata) { return __awaiter(void 0, void 0, void 0, function () {

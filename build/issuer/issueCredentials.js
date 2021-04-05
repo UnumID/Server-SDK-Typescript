@@ -134,9 +134,9 @@ var constructUnsignedCredentialObj = function (credOpts) {
  * @param type
  * @param issuer
  * @param credentialSubject
- * @param eccPrivateKey
+ * @param signingPrivateKey
  */
-var validateInputs = function (type, issuer, credentialSubject, eccPrivateKey, expirationDate) {
+var validateInputs = function (type, issuer, credentialSubject, signingPrivateKey, expirationDate) {
     if (!type) {
         // type element is mandatory, and it can be either string or an array
         throw new library_issuer_verifier_utility_1.CustError(400, 'type is required.');
@@ -147,8 +147,8 @@ var validateInputs = function (type, issuer, credentialSubject, eccPrivateKey, e
     if (!credentialSubject) {
         throw new library_issuer_verifier_utility_1.CustError(400, 'credentialSubject is required.');
     }
-    if (!eccPrivateKey) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'eccPrivateKey is required.');
+    if (!signingPrivateKey) {
+        throw new library_issuer_verifier_utility_1.CustError(400, 'signingPrivateKey is required.');
     }
     // id must be present in credentialSubject input parameter
     if (!credentialSubject.id) {
@@ -160,8 +160,8 @@ var validateInputs = function (type, issuer, credentialSubject, eccPrivateKey, e
     if (typeof issuer !== 'string') {
         throw new library_issuer_verifier_utility_1.CustError(400, 'issuer must be a string.');
     }
-    if (typeof eccPrivateKey !== 'string') {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'eccPrivateKey must be a string.');
+    if (typeof signingPrivateKey !== 'string') {
+        throw new library_issuer_verifier_utility_1.CustError(400, 'signingPrivateKey must be a string.');
     }
     // expirationDate must be a Date object and return a properly formed time. Invalid Date.getTime() will produce NaN
     if (expirationDate && (!(expirationDate instanceof Date) || isNaN(expirationDate.getTime()))) {
@@ -171,7 +171,7 @@ var validateInputs = function (type, issuer, credentialSubject, eccPrivateKey, e
         throw new library_issuer_verifier_utility_1.CustError(400, 'expirationDate must be in the future.');
     }
 };
-var constructCredentialOptions = function (type, issuer, credentialSubject, eccPrivateKey, expirationDate) {
+var constructCredentialOptions = function (type, issuer, credentialSubject, signingPrivateKey, expirationDate) {
     // HACK ALERT: removing duplicate 'VerifiableCredential' if present in type string[]
     var typeList = ['VerifiableCredential'].concat(type); // Need to have some value in the "base" array so just just the keyword we are going to filter over.
     var types = typeList.filter(function (t) { return t !== 'VerifiableCredential'; });
@@ -190,10 +190,10 @@ var constructCredentialOptions = function (type, issuer, credentialSubject, eccP
  * @param type
  * @param issuer
  * @param credentialSubject
- * @param eccPrivateKey
+ * @param signingPrivateKey
  * @param expirationDate
  */
-exports.issueCredential = function (authorization, type, issuer, credentialSubject, eccPrivateKey, expirationDate) { return __awaiter(void 0, void 0, void 0, function () {
+exports.issueCredential = function (authorization, type, issuer, credentialSubject, signingPrivateKey, expirationDate) { return __awaiter(void 0, void 0, void 0, function () {
     var credentialOptions, unsignedCredential, credential, encryptedCredentialOptions, encryptedCredentialUploadOptions, restData, restResp, authToken, issuedCredential, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
@@ -202,10 +202,10 @@ exports.issueCredential = function (authorization, type, issuer, credentialSubje
                 // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
                 requireAuth_1.requireAuth(authorization);
                 // Validate the inputs
-                validateInputs(type, issuer, credentialSubject, eccPrivateKey, expirationDate);
-                credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, eccPrivateKey, expirationDate);
+                validateInputs(type, issuer, credentialSubject, signingPrivateKey, expirationDate);
+                credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, signingPrivateKey, expirationDate);
                 unsignedCredential = constructUnsignedCredentialObj(credentialOptions);
-                credential = constructSignedCredentialObj(unsignedCredential, eccPrivateKey);
+                credential = constructSignedCredentialObj(unsignedCredential, signingPrivateKey);
                 return [4 /*yield*/, constructEncryptedCredentialOpts(credential, authorization)];
             case 1:
                 encryptedCredentialOptions = _a.sent();

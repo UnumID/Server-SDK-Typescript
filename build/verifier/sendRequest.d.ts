@@ -16,7 +16,7 @@ export declare const constructSignedPresentationRequest: (unsignedPresentationRe
  * @param authorization
  * @param verifier
  * @param credentialRequests
- * @param eccPrivateKey
+ * @param signingPrivateKey
  * @param holderAppUuid
  */
 export declare const sendRequest: (authorization: string, verifier: string, credentialRequests: CredentialRequest[], eccPrivateKey: string, holderAppUuid: string, expirationDate?: Date | undefined, metadata?: Record<string, unknown> | undefined) => Promise<UnumDto<PresentationRequestResponse>>;

@@ -147,9 +147,9 @@ describe('issueCredential - Failure cases', () => {
       await issueCredential(authHeader, type, issuer, credentialSubject, undefined, expirationDate);
       fail();
     } catch (e) {
-      expect(e).toEqual(new utilLib.CustError(400, 'eccPrivateKey is required.'));
+      expect(e).toEqual(new utilLib.CustError(400, 'signingPrivateKey is required.'));
       expect(e.code).toEqual(400);
-      expect(e.message).toEqual('eccPrivateKey is required.');
+      expect(e.message).toEqual('signingPrivateKey is required.');
     }
   });
 
