@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -40,304 +51,65 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyPresentation = void 0;
-var lodash_1 = require("lodash");
-var config_1 = require("../config");
-var validateProof_1 = require("./validateProof");
 var requireAuth_1 = require("../requireAuth");
-var verifyCredential_1 = require("./verifyCredential");
-var isCredentialExpired_1 = require("./isCredentialExpired");
-var checkCredentialStatus_1 = require("./checkCredentialStatus");
+var library_crypto_1 = require("@unumid/library-crypto");
 var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var logger_1 = __importDefault(require("../logger"));
-var library_crypto_1 = require("@unumid/library-crypto");
-/**
- * Validates the attributes for a credential request to UnumID's SaaS.
- * @param credentials JSONObj
- */
-var validateCredentialInput = function (credentials) {
-    var retObj = { valStat: true, stringifiedCredentials: false, resultantCredentials: [] };
-    if (library_issuer_verifier_utility_1.isArrayEmpty(credentials)) {
-        retObj.valStat = false;
-        retObj.msg = 'Invalid Presentation: verifiableCredentials must be a non-empty array.';
-        return (retObj);
-    }
-    var totCred = credentials.length;
-    for (var i = 0; i < totCred; i++) {
-        var credPosStr = '[' + i + ']';
-        var credential = credentials[i];
-        if (typeof credential === 'string') {
-            retObj.stringifiedCredentials = true; // setting so know to add the object version of the stringified vc's
-            credential = JSON.parse(credential);
-        }
-        // Validate the existence of elements in verifiableCredential object
-        var invalidMsg = "Invalid verifiableCredentials" + credPosStr + ":";
-        if (!credential['@context']) {
-            retObj.valStat = false;
-            retObj.msg = invalidMsg + " @context is required.";
-            break;
-        }
-        if (!credential.credentialStatus) {
-            retObj.valStat = false;
-            retObj.msg = invalidMsg + " credentialStatus is required.";
-            break;
-        }
-        if (!credential.credentialSubject) {
-            retObj.valStat = false;
-            retObj.msg = invalidMsg + " credentialSubject is required.";
-            break;
-        }
-        if (!credential.issuer) {
-            retObj.valStat = false;
-            retObj.msg = invalidMsg + " issuer is required.";
-            break;
-        }
-        if (!credential.type) {
-            retObj.valStat = false;
-            retObj.msg = invalidMsg + " type is required.";
-            break;
-        }
-        if (!credential.id) {
-            retObj.valStat = false;
-            retObj.msg = invalidMsg + " id is required.";
-            break;
-        }
-        if (!credential.issuanceDate) {
-            retObj.valStat = false;
-            retObj.msg = invalidMsg + " issuanceDate is required.";
-            break;
-        }
-        if (!credential.proof) {
-            retObj.valStat = false;
-            retObj.msg = invalidMsg + " proof is required.";
-            break;
-        }
-        // Check @context is an array and not empty
-        if (library_issuer_verifier_utility_1.isArrayEmpty(credential['@context'])) {
-            retObj.valStat = false;
-            retObj.msg = invalidMsg + " @context must be a non-empty array.";
-            break;
-        }
-        // Check CredentialStatus object has id and type elements.
-        if (!credential.credentialStatus.id || !credential.credentialStatus.type) {
-            retObj.valStat = false;
-            retObj.msg = invalidMsg + " credentialStatus must contain id and type properties.";
-            break;
-        }
-        // Check credentialSubject object has id element.
-        if (!credential.credentialSubject.id) {
-            retObj.valStat = false;
-            retObj.msg = invalidMsg + " credentialSubject must contain id property.";
-            break;
-        }
-        // Check type is an array and not empty
-        if (library_issuer_verifier_utility_1.isArrayEmpty(credential.type)) {
-            retObj.valStat = false;
-            retObj.msg = invalidMsg + " type must be a non-empty array.";
-            break;
-        }
-        // Check that proof object is valid
-        validateProof_1.validateProof(credential.proof);
-        if (retObj.stringifiedCredentials) {
-            // Adding the credential to the result list so can use the fully created objects downstream
-            retObj.resultantCredentials.push(credential);
-        }
-    }
-    return (retObj);
-};
-/**
- * Validates the presentation object has the proper attributes.
- * Returns the fully formed verifiableCredential object list if applicable (if was sent as a stringified object)
- * @param presentation Presentation
- */
-var validatePresentation = function (presentation) {
-    var context = presentation['@context'];
-    var type = presentation.type, verifiableCredentials = presentation.verifiableCredentials, proof = presentation.proof, presentationRequestUuid = presentation.presentationRequestUuid;
-    var retObj = {};
-    // validate required fields
-    if (!context) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: @context is required.');
-    }
-    if (!type) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: type is required.');
-    }
-    if (!verifiableCredentials) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: verifiableCredentials is required.');
-    }
-    if (!proof) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: proof is required.');
-    }
-    if (!presentationRequestUuid) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
-    }
-    if (library_issuer_verifier_utility_1.isArrayEmpty(context)) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: @context must be a non-empty array.');
-    }
-    if (library_issuer_verifier_utility_1.isArrayEmpty(type)) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: type must be a non-empty array.');
-    }
-    retObj = validateCredentialInput(verifiableCredentials);
-    if (!retObj.valStat) {
-        throw new library_issuer_verifier_utility_1.CustError(400, retObj.msg);
-    }
-    else if (retObj.stringifiedCredentials) {
-        // adding the "objectified" vc, which were sent in string format to appease iOS variable keyed object limitation: https://developer.apple.com/forums/thread/100417
-        presentation.verifiableCredentials = retObj.resultantCredentials;
-    }
-    // Check proof object is formatted correctly
-    validateProof_1.validateProof(proof);
-    return presentation;
-};
+var verifyNoPresentationHelper_1 = require("./verifyNoPresentationHelper");
+var verifyPresentationHelper_1 = require("./verifyPresentationHelper");
+function isPresentation(presentation) {
+    return presentation.type[0] === 'VerifiablePresentation';
+}
 /**
  * Handler to send information regarding the user agreeing to share a credential Presentation.
- * @param authorization
- * @param presentation
- * @param verifier
+ * @param authorization: string
+ * @param encryptedPresentation: EncryptedData
+ * @param verifierDid: string
  */
-exports.verifyPresentation = function (authorization, presentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, proof, didDocumentResponse, authToken, pubKeyObj, result_1, isPresentationVerified, result_2, result_3, areCredentialsValid, _i, _a, credential, isExpired, isStatusValidResponse, isStatusValid, isVerifiedResponse, isVerified_1, result_4, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, result, error_1;
-    return __generator(this, function (_b) {
-        switch (_b.label) {
+exports.verifyPresentation = function (authorization, encryptedPresentation, verifierDid, encryptionPrivateKey) { return __awaiter(void 0, void 0, void 0, function () {
+    var presentation, verificationResult_1, result_1, verificationResult, result, error_1;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
             case 0:
-                _b.trys.push([0, 8, , 9]);
+                _a.trys.push([0, 4, , 5]);
                 requireAuth_1.requireAuth(authorization);
-                if (!presentation) {
-                    throw new library_issuer_verifier_utility_1.CustError(400, 'presentation is required.');
+                if (!encryptedPresentation) {
+                    throw new library_issuer_verifier_utility_1.CustError(400, 'encryptedPresentation is required.');
                 }
-                if (!verifier) {
+                if (!verifierDid) { // verifier did
                     throw new library_issuer_verifier_utility_1.CustError(400, 'verifier is required.');
                 }
-                data = lodash_1.omit(presentation, 'proof');
-                presentation = validatePresentation(presentation);
-                proof = presentation.proof;
-                return [4 /*yield*/, library_issuer_verifier_utility_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, proof.verificationMethod)];
+                if (!encryptionPrivateKey) {
+                    throw new library_issuer_verifier_utility_1.CustError(400, 'verifier encryptionPrivateKey is required.');
+                }
+                presentation = library_crypto_1.decrypt(encryptionPrivateKey, encryptedPresentation);
+                if (!!isPresentation(presentation)) return [3 /*break*/, 2];
+                return [4 /*yield*/, verifyNoPresentationHelper_1.verifyNoPresentationHelper(authorization, presentation, verifierDid)];
             case 1:
-                didDocumentResponse = _b.sent();
-                if (didDocumentResponse instanceof Error) {
-                    throw didDocumentResponse;
-                }
-                authToken = library_issuer_verifier_utility_1.handleAuthToken(didDocumentResponse);
-                pubKeyObj = library_issuer_verifier_utility_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
-                if (pubKeyObj.length === 0) {
-                    result_1 = {
-                        authToken: authToken,
-                        body: {
-                            isVerified: false,
-                            message: 'Public key not found for the DID associated with the proof.verificationMethod'
-                        }
-                    };
-                    return [2 /*return*/, result_1];
-                }
-                isPresentationVerified = false;
-                try {
-                    isPresentationVerified = library_issuer_verifier_utility_1.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding, proof.unsignedValue);
-                }
-                catch (e) {
-                    if (e instanceof library_crypto_1.CryptoError) {
-                        logger_1.default.error("CryptoError verifying presentation " + presentation.uuid + " signature", e);
-                    }
-                    else {
-                        logger_1.default.error("Error verifying presentation " + presentation.uuid + " signature", e);
-                    }
-                    result_2 = {
-                        authToken: authToken,
-                        body: {
-                            isVerified: false,
-                            message: "Exception verifying presentation signature. " + e.message
-                        }
-                    };
-                    return [2 /*return*/, result_2];
-                }
-                if (!isPresentationVerified) {
-                    result_3 = {
-                        authToken: authToken,
-                        body: {
-                            isVerified: false,
-                            message: 'Presentation signature can not be verified'
-                        }
-                    };
-                    return [2 /*return*/, result_3];
-                }
-                areCredentialsValid = true;
-                _i = 0, _a = presentation.verifiableCredentials;
-                _b.label = 2;
-            case 2:
-                if (!(_i < _a.length)) return [3 /*break*/, 6];
-                credential = _a[_i];
-                isExpired = isCredentialExpired_1.isCredentialExpired(credential);
-                if (isExpired) {
-                    areCredentialsValid = false;
-                    return [3 /*break*/, 6];
-                }
-                return [4 /*yield*/, checkCredentialStatus_1.checkCredentialStatus(credential.id, authToken)];
+                verificationResult_1 = _a.sent();
+                result_1 = {
+                    authToken: verificationResult_1.authToken,
+                    body: __assign(__assign({}, verificationResult_1.body), { type: 'NoPresentation', presentation: presentation })
+                };
+                return [2 /*return*/, result_1];
+            case 2: return [4 /*yield*/, verifyPresentationHelper_1.verifyPresentationHelper(authorization, presentation, verifierDid)];
             case 3:
-                isStatusValidResponse = _b.sent();
-                isStatusValid = isStatusValidResponse.body.status === 'valid';
-                authToken = isStatusValidResponse.authToken;
-                if (!isStatusValid) {
-                    areCredentialsValid = false;
-                    return [3 /*break*/, 6];
-                }
-                return [4 /*yield*/, verifyCredential_1.verifyCredential(credential, authToken)];
-            case 4:
-                isVerifiedResponse = _b.sent();
-                isVerified_1 = isVerifiedResponse.body;
-                authToken = isVerifiedResponse.authToken;
-                if (!isVerified_1) {
-                    areCredentialsValid = false;
-                    return [3 /*break*/, 6];
-                }
-                _b.label = 5;
-            case 5:
-                _i++;
-                return [3 /*break*/, 2];
-            case 6:
-                if (!areCredentialsValid) {
-                    result_4 = {
-                        authToken: authToken,
-                        body: {
-                            isVerified: false,
-                            message: 'Credential signature can not be verified.'
-                        }
-                    };
-                    return [2 /*return*/, result_4];
-                }
-                isVerified = isPresentationVerified && areCredentialsValid;
-                credentialTypes = presentation.verifiableCredentials.flatMap(function (cred) { return cred.type.slice(1); });
-                issuers = presentation.verifiableCredentials.map(function (cred) { return cred.issuer; });
-                subject = proof.verificationMethod;
-                receiptOptions = {
-                    type: ['PresentationVerified'],
-                    verifier: verifier,
-                    subject: subject,
-                    data: {
-                        credentialTypes: credentialTypes,
-                        issuers: issuers,
-                        isVerified: isVerified
-                    }
-                };
-                receiptCallOptions = {
-                    method: 'POST',
-                    baseUrl: config_1.configData.SaaSUrl,
-                    endPoint: 'receipt',
-                    header: { Authorization: authToken },
-                    data: receiptOptions
-                };
-                return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(receiptCallOptions)];
-            case 7:
-                resp = _b.sent();
-                authToken = library_issuer_verifier_utility_1.handleAuthToken(resp);
+                verificationResult = _a.sent();
                 result = {
-                    authToken: authToken,
-                    body: {
-                        isVerified: isVerified
-                    }
+                    authToken: verificationResult.authToken,
+                    body: __assign(__assign({}, verificationResult.body), { type: 'VerifiablePresentation', presentation: presentation })
                 };
                 return [2 /*return*/, result];
-            case 8:
-                error_1 = _b.sent();
-                logger_1.default.error('Error sending a verifyPresentation request to UnumID Saas.', error_1);
+            case 4:
+                error_1 = _a.sent();
+                if (error_1 instanceof library_crypto_1.CryptoError) {
+                    logger_1.default.error('Crypto error handling encrypted presentation', error_1);
+                }
+                else {
+                    logger_1.default.error('Error handling encrypted presentation request to UnumID Saas.', error_1);
+                }
                 throw error_1;
-            case 9: return [2 /*return*/];
+            case 5: return [2 /*return*/];
         }
     });
 }); };

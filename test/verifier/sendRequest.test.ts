@@ -1,6 +1,7 @@
 import * as utilLib from '@unumid/library-issuer-verifier-utility';
+import { CredentialRequest } from '@unumid/types';
 import { sendRequest } from '../../src/index';
-import { PresentationRequestResponse, PresentationRequest, UnumDto, CredentialRequest } from '../../src/types';
+import { PresentationRequestResponse, UnumDto } from '../../src/types';
 import { dummyAuthToken, makeDummyPresentationRequestResponse } from './mocks';
 
 jest.mock('@unumid/library-issuer-verifier-utility', () => {
@@ -284,9 +285,9 @@ describe('sendRequest - Failure cases', () => {
       );
       fail();
     } catch (e) {
-      expect(e).toEqual(new utilLib.CustError(400, 'Invalid PresentationRequest options: eccPrivateKey is required.'));
+      expect(e).toEqual(new utilLib.CustError(400, 'Invalid PresentationRequest options: signingPrivateKey is required.'));
       expect(e.code).toEqual(400);
-      expect(e.message).toEqual('Invalid PresentationRequest options: eccPrivateKey is required.');
+      expect(e.message).toEqual('Invalid PresentationRequest options: signingPrivateKey is required.');
     }
   });
 

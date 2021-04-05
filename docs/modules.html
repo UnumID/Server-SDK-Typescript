@@ -93,12 +93,10 @@
 								<li class="tsd-kind-function"><a href="modules.html#issuecredential" class="tsd-kind-icon">issue<wbr>Credential</a></li>
 								<li class="tsd-kind-function"><a href="modules.html#registerissuer" class="tsd-kind-icon">register<wbr>Issuer</a></li>
 								<li class="tsd-kind-function"><a href="modules.html#registerverifier" class="tsd-kind-icon">register<wbr>Verifier</a></li>
-								<li class="tsd-kind-function"><a href="modules.html#revokecredential" class="tsd-kind-icon">revoke<wbr>Credential</a></li>
 								<li class="tsd-kind-function"><a href="modules.html#sendemail" class="tsd-kind-icon">send<wbr>Email</a></li>
 								<li class="tsd-kind-function"><a href="modules.html#sendrequest" class="tsd-kind-icon">send<wbr>Request</a></li>
 								<li class="tsd-kind-function"><a href="modules.html#sendsms" class="tsd-kind-icon">send<wbr>Sms</a></li>
-								<li class="tsd-kind-function"><a href="modules.html#verifyencryptedpresentation" class="tsd-kind-icon">verify<wbr>Encrypted<wbr>Presentation</a></li>
-								<li class="tsd-kind-function"><a href="modules.html#verifynopresentation" class="tsd-kind-icon">verify<wbr>NoPresentation</a></li>
+								<li class="tsd-kind-function"><a href="modules.html#updatecredentialstatus" class="tsd-kind-icon">update<wbr>Credential<wbr>Status</a></li>
 								<li class="tsd-kind-function"><a href="modules.html#verifypresentation" class="tsd-kind-icon">verify<wbr>Presentation</a></li>
 							</ul>
 						</section>
@@ -117,7 +115,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/0df81d4/src/verifier/checkCredentialStatus.ts#L11">src/verifier/checkCredentialStatus.ts:11</a></li>
+									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/bf15cc9/src/verifier/checkCredentialStatus.ts#L11">src/verifier/checkCredentialStatus.ts:11</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -150,7 +148,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/0df81d4/src/utils/extractCredentialInfo.ts#L9">src/utils/extractCredentialInfo.ts:9</a></li>
+									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/bf15cc9/src/utils/extractCredentialInfo.ts#L9">src/utils/extractCredentialInfo.ts:9</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -175,13 +173,13 @@
 					<a name="issuecredential" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagConst">Const</span> issue<wbr>Credential</h3>
 					<ul class="tsd-signatures tsd-kind-function">
-						<li class="tsd-signature tsd-kind-icon">issue<wbr>Credential<span class="tsd-signature-symbol">(</span>authorization<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span>, type<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, issuer<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, credentialSubject<span class="tsd-signature-symbol">: </span><a href="interfaces/credentialsubject.html" class="tsd-signature-type" data-tsd-kind="Interface">CredentialSubject</a>, eccPrivateKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, expirationDate<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Date</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/unumdto.html" class="tsd-signature-type" data-tsd-kind="Interface">UnumDto</a><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/credential.html" class="tsd-signature-type" data-tsd-kind="Interface">Credential</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">issue<wbr>Credential<span class="tsd-signature-symbol">(</span>authorization<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span>, type<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, issuer<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, credentialSubject<span class="tsd-signature-symbol">: </span><a href="interfaces/credentialsubject.html" class="tsd-signature-type" data-tsd-kind="Interface">CredentialSubject</a>, signingPrivateKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, expirationDate<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Date</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/unumdto.html" class="tsd-signature-type" data-tsd-kind="Interface">UnumDto</a><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/credential.html" class="tsd-signature-type" data-tsd-kind="Interface">Credential</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/0df81d4/src/issuer/issueCredentials.ts#L170">src/issuer/issueCredentials.ts:170</a></li>
+									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/bf15cc9/src/issuer/issueCredentials.ts#L170">src/issuer/issueCredentials.ts:170</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -204,7 +202,7 @@
 									<h5>credentialSubject: <a href="interfaces/credentialsubject.html" class="tsd-signature-type" data-tsd-kind="Interface">CredentialSubject</a></h5>
 								</li>
 								<li>
-									<h5>eccPrivateKey: <span class="tsd-signature-type">string</span></h5>
+									<h5>signingPrivateKey: <span class="tsd-signature-type">string</span></h5>
 								</li>
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> expirationDate: <span class="tsd-signature-type">Date</span></h5>
@@ -226,7 +224,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/0df81d4/src/issuer/registerIssuer.ts#L59">src/issuer/registerIssuer.ts:59</a></li>
+									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/bf15cc9/src/issuer/registerIssuer.ts#L59">src/issuer/registerIssuer.ts:59</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -262,7 +260,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/0df81d4/src/verifier/registerVerifier.ts#L63">src/verifier/registerVerifier.ts:63</a></li>
+									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/bf15cc9/src/verifier/registerVerifier.ts#L63">src/verifier/registerVerifier.ts:63</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -292,39 +290,6 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function">
-					<a name="revokecredential" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> revoke<wbr>Credential</h3>
-					<ul class="tsd-signatures tsd-kind-function">
-						<li class="tsd-signature tsd-kind-icon">revoke<wbr>Credential<span class="tsd-signature-symbol">(</span>authorization<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, credentialId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/unumdto.html" class="tsd-signature-type" data-tsd-kind="Interface">UnumDto</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/0df81d4/src/issuer/revokeCredentials.ts#L24">src/issuer/revokeCredentials.ts:24</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Handler to revoke credentials. It relays the revoke credential metadata to UnumID&#39;s SaaS.</p>
-								</div>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>authorization: <span class="tsd-signature-type">string</span></h5>
-								</li>
-								<li>
-									<h5>credentialId: <span class="tsd-signature-type">string</span></h5>
-									<div class="tsd-comment tsd-typography">
-									</div>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/unumdto.html" class="tsd-signature-type" data-tsd-kind="Interface">UnumDto</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function">
 					<a name="sendemail" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagConst">Const</span> send<wbr>Email</h3>
 					<ul class="tsd-signatures tsd-kind-function">
@@ -334,7 +299,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/0df81d4/src/verifier/sendEmail.ts#L67">src/verifier/sendEmail.ts:67</a></li>
+									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/bf15cc9/src/verifier/sendEmail.ts#L67">src/verifier/sendEmail.ts:67</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -376,7 +341,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/0df81d4/src/verifier/sendRequest.ts#L169">src/verifier/sendRequest.ts:169</a></li>
+									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/bf15cc9/src/verifier/sendRequest.ts#L169">src/verifier/sendRequest.ts:169</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -424,7 +389,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/0df81d4/src/verifier/sendSms.ts#L54">src/verifier/sendSms.ts:54</a></li>
+									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/bf15cc9/src/verifier/sendSms.ts#L54">src/verifier/sendSms.ts:54</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -452,16 +417,59 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function">
-					<a name="verifyencryptedpresentation" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> verify<wbr>Encrypted<wbr>Presentation</h3>
+					<a name="updatecredentialstatus" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> update<wbr>Credential<wbr>Status</h3>
 					<ul class="tsd-signatures tsd-kind-function">
-						<li class="tsd-signature tsd-kind-icon">verify<wbr>Encrypted<wbr>Presentation<span class="tsd-signature-symbol">(</span>authorization<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, encryptedPresentation<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">EncryptedData</span>, verifierDid<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, encryptionPrivateKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/unumdto.html" class="tsd-signature-type" data-tsd-kind="Interface">UnumDto</a><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/decryptedpresentation.html" class="tsd-signature-type" data-tsd-kind="Interface">DecryptedPresentation</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">update<wbr>Credential<wbr>Status<span class="tsd-signature-symbol">(</span>authorization<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, credentialId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, status<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">&quot;valid&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;revoked&quot;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/unumdto.html" class="tsd-signature-type" data-tsd-kind="Interface">UnumDto</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/0df81d4/src/verifier/verifyEncryptedPresentation.ts#L20">src/verifier/verifyEncryptedPresentation.ts:20</a></li>
+									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/bf15cc9/src/issuer/updateCredentialStatus.ts#L32">src/issuer/updateCredentialStatus.ts:32</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Handler to change a credential&#39;s status. It relays the updated credential metadata to UnumID&#39;s SaaS.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>authorization: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>string // auth string</p>
+									</div>
+								</li>
+								<li>
+									<h5>credentialId: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>string // id of credential to revoke</p>
+									</div>
+								</li>
+								<li>
+									<h5>status: <span class="tsd-signature-type">&quot;valid&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;revoked&quot;</span><span class="tsd-signature-symbol"> = &#x27;revoked&#x27;</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>CredentialStatusOptions // status to update the credential to (defaults to &#39;revoked&#39;)</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/unumdto.html" class="tsd-signature-type" data-tsd-kind="Interface">UnumDto</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function">
+					<a name="verifypresentation" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> verify<wbr>Presentation</h3>
+					<ul class="tsd-signatures tsd-kind-function">
+						<li class="tsd-signature tsd-kind-icon">verify<wbr>Presentation<span class="tsd-signature-symbol">(</span>authorization<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, encryptedPresentation<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">EncryptedData</span>, verifierDid<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, encryptionPrivateKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/unumdto.html" class="tsd-signature-type" data-tsd-kind="Interface">UnumDto</a><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/decryptedpresentation.html" class="tsd-signature-type" data-tsd-kind="Interface">DecryptedPresentation</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/bf15cc9/src/verifier/verifyPresentation.ts#L22">src/verifier/verifyPresentation.ts:22</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -485,78 +493,6 @@
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/unumdto.html" class="tsd-signature-type" data-tsd-kind="Interface">UnumDto</a><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/decryptedpresentation.html" class="tsd-signature-type" data-tsd-kind="Interface">DecryptedPresentation</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function">
-					<a name="verifynopresentation" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> verify<wbr>NoPresentation</h3>
-					<ul class="tsd-signatures tsd-kind-function">
-						<li class="tsd-signature tsd-kind-icon">verify<wbr>NoPresentation<span class="tsd-signature-symbol">(</span>authorization<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, noPresentation<span class="tsd-signature-symbol">: </span><a href="interfaces/nopresentation.html" class="tsd-signature-type" data-tsd-kind="Interface">NoPresentation</a>, verifier<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/unumdto.html" class="tsd-signature-type" data-tsd-kind="Interface">UnumDto</a><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/verifiedstatus.html" class="tsd-signature-type" data-tsd-kind="Interface">VerifiedStatus</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/0df81d4/src/verifier/verifyNoPresentation.ts#L74">src/verifier/verifyNoPresentation.ts:74</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Handler for when a user does not agree to share the information in the credential request.</p>
-								</div>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>authorization: <span class="tsd-signature-type">string</span></h5>
-								</li>
-								<li>
-									<h5>noPresentation: <a href="interfaces/nopresentation.html" class="tsd-signature-type" data-tsd-kind="Interface">NoPresentation</a></h5>
-								</li>
-								<li>
-									<h5>verifier: <span class="tsd-signature-type">string</span></h5>
-									<div class="tsd-comment tsd-typography">
-									</div>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/unumdto.html" class="tsd-signature-type" data-tsd-kind="Interface">UnumDto</a><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/verifiedstatus.html" class="tsd-signature-type" data-tsd-kind="Interface">VerifiedStatus</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function">
-					<a name="verifypresentation" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> verify<wbr>Presentation</h3>
-					<ul class="tsd-signatures tsd-kind-function">
-						<li class="tsd-signature tsd-kind-icon">verify<wbr>Presentation<span class="tsd-signature-symbol">(</span>authorization<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, presentation<span class="tsd-signature-symbol">: </span><a href="interfaces/presentation.html" class="tsd-signature-type" data-tsd-kind="Interface">Presentation</a>, verifier<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/unumdto.html" class="tsd-signature-type" data-tsd-kind="Interface">UnumDto</a><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/verifiedstatus.html" class="tsd-signature-type" data-tsd-kind="Interface">VerifiedStatus</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/0df81d4/src/verifier/verifyPresentation.ts#L188">src/verifier/verifyPresentation.ts:188</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Handler to send information regarding the user agreeing to share a credential Presentation.</p>
-								</div>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>authorization: <span class="tsd-signature-type">string</span></h5>
-								</li>
-								<li>
-									<h5>presentation: <a href="interfaces/presentation.html" class="tsd-signature-type" data-tsd-kind="Interface">Presentation</a></h5>
-								</li>
-								<li>
-									<h5>verifier: <span class="tsd-signature-type">string</span></h5>
-									<div class="tsd-comment tsd-typography">
-									</div>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/unumdto.html" class="tsd-signature-type" data-tsd-kind="Interface">UnumDto</a><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/verifiedstatus.html" class="tsd-signature-type" data-tsd-kind="Interface">VerifiedStatus</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -630,9 +566,6 @@
 						<a href="modules.html#registerverifier" class="tsd-kind-icon">register<wbr>Verifier</a>
 					</li>
 					<li class=" tsd-kind-function">
-						<a href="modules.html#revokecredential" class="tsd-kind-icon">revoke<wbr>Credential</a>
-					</li>
-					<li class=" tsd-kind-function">
 						<a href="modules.html#sendemail" class="tsd-kind-icon">send<wbr>Email</a>
 					</li>
 					<li class=" tsd-kind-function">
@@ -642,10 +575,7 @@
 						<a href="modules.html#sendsms" class="tsd-kind-icon">send<wbr>Sms</a>
 					</li>
 					<li class=" tsd-kind-function">
-						<a href="modules.html#verifyencryptedpresentation" class="tsd-kind-icon">verify<wbr>Encrypted<wbr>Presentation</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="modules.html#verifynopresentation" class="tsd-kind-icon">verify<wbr>NoPresentation</a>
+						<a href="modules.html#updatecredentialstatus" class="tsd-kind-icon">update<wbr>Credential<wbr>Status</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="modules.html#verifypresentation" class="tsd-kind-icon">verify<wbr>Presentation</a>

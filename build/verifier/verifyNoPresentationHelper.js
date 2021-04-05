@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyNoPresentation = exports.validateNoPresentationParams = void 0;
+exports.verifyNoPresentationHelper = exports.validateNoPresentationParams = void 0;
 var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var lodash_1 = require("lodash");
 var validateProof_1 = require("./validateProof");
@@ -84,7 +84,7 @@ exports.validateNoPresentationParams = function (noPresentation) {
  * @param noPresentation
  * @param verifier
  */
-exports.verifyNoPresentation = function (authorization, noPresentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
+exports.verifyNoPresentationHelper = function (authorization, noPresentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
     var _a, verificationMethod, signatureValue, unsignedValue, didDocumentResponse, authToken, publicKeyInfos, _b, publicKey, encoding, unsignedNoPresentation, isVerified, result_1, receiptOptions, receiptCallOptions, resp, result, e_1;
     return __generator(this, function (_c) {
         switch (_c.label) {
@@ -148,4 +148,4 @@ exports.verifyNoPresentation = function (authorization, noPresentation, verifier
         }
     });
 }); };
-//# sourceMappingURL=verifyNoPresentation.js.map
+//# sourceMappingURL=verifyNoPresentationHelper.js.map

@@ -1,9 +1,9 @@
 import { configData } from '../config';
 import { CredentialOptions, UnumDto } from '../types';
 import { requireAuth } from '../requireAuth';
-import { EncryptedCredentialOptions, CredentialSubject } from '@unumid/types';
+import { EncryptedCredentialOptions } from '@unumid/types';
 
-import { Credential, getDIDDoc, getKeyFromDIDDoc, CustError, EncryptedData, doEncrypt, UnsignedCredential, Proof, createProof, getUUID, RESTData, makeNetworkRequest, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
+import { Credential, getDIDDoc, getKeyFromDIDDoc, CustError, EncryptedData, doEncrypt, UnsignedCredential, Proof, createProof, getUUID, RESTData, makeNetworkRequest, handleAuthToken, CredentialSubject } from '@unumid/library-issuer-verifier-utility';
 import { JSONObj } from '@unumid/library-issuer-verifier-utility/build/types';
 import logger from '../logger';
 
@@ -95,9 +95,9 @@ const constructUnsignedCredentialObj = (credOpts: CredentialOptions): UnsignedCr
  * @param type
  * @param issuer
  * @param credentialSubject
- * @param eccPrivateKey
+ * @param signingPrivateKey
  */
-const validateInputs = (type: string|string[], issuer: string, credentialSubject: CredentialSubject, eccPrivateKey: string, expirationDate?: Date): void => {
+const validateInputs = (type: string|string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, expirationDate?: Date): void => {
   if (!type) {
     // type element is mandatory, and it can be either string or an array
     throw new CustError(400, 'type is required.');
@@ -111,8 +111,8 @@ const validateInputs = (type: string|string[], issuer: string, credentialSubject
     throw new CustError(400, 'credentialSubject is required.');
   }
 
-  if (!eccPrivateKey) {
-    throw new CustError(400, 'eccPrivateKey is required.');
+  if (!signingPrivateKey) {
+    throw new CustError(400, 'signingPrivateKey is required.');
   }
 
   // id must be present in credentialSubject input parameter
@@ -128,8 +128,8 @@ const validateInputs = (type: string|string[], issuer: string, credentialSubject
     throw new CustError(400, 'issuer must be a string.');
   }
 
-  if (typeof eccPrivateKey !== 'string') {
-    throw new CustError(400, 'eccPrivateKey must be a string.');
+  if (typeof signingPrivateKey !== 'string') {
+    throw new CustError(400, 'signingPrivateKey must be a string.');
   }
 
   // expirationDate must be a Date object and return a properly formed time. Invalid Date.getTime() will produce NaN
@@ -142,7 +142,7 @@ const validateInputs = (type: string|string[], issuer: string, credentialSubject
   }
 };
 
-const constructCredentialOptions = (type: string|string[], issuer: string, credentialSubject: CredentialSubject, eccPrivateKey: string, expirationDate?: Date): CredentialOptions => {
+const constructCredentialOptions = (type: string|string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, expirationDate?: Date): CredentialOptions => {
   // HACK ALERT: removing duplicate 'VerifiableCredential' if present in type string[]
   const typeList: string[] = ['VerifiableCredential'].concat(type); // Need to have some value in the "base" array so just just the keyword we are going to filter over.
   const types = typeList.filter(t => t !== 'VerifiableCredential');
@@ -164,25 +164,25 @@ const constructCredentialOptions = (type: string|string[], issuer: string, crede
  * @param type
  * @param issuer
  * @param credentialSubject
- * @param eccPrivateKey
+ * @param signingPrivateKey
  * @param expirationDate
  */
-export const issueCredential = async (authorization: string | undefined, type: string | string[], issuer: string, credentialSubject: CredentialSubject, eccPrivateKey: string, expirationDate?: Date): Promise<UnumDto<Credential>> => {
+export const issueCredential = async (authorization: string | undefined, type: string | string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, expirationDate?: Date): Promise<UnumDto<Credential>> => {
   try {
     // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
     requireAuth(authorization);
 
     // Validate the inputs
-    validateInputs(type, issuer, credentialSubject, eccPrivateKey, expirationDate);
+    validateInputs(type, issuer, credentialSubject, signingPrivateKey, expirationDate);
 
     // Construct CredentialOptions object
-    const credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, eccPrivateKey, expirationDate);
+    const credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, signingPrivateKey, expirationDate);
 
     // Create the UnsignedCredential object
     const unsignedCredential = constructUnsignedCredentialObj(credentialOptions);
 
     // Create the signed Credential object from the unsignedCredential object
-    const credential = constructSignedCredentialObj(unsignedCredential, eccPrivateKey);
+    const credential = constructSignedCredentialObj(unsignedCredential, signingPrivateKey);
 
     // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
     const encryptedCredentialOptions = await constructEncryptedCredentialOpts(credential, authorization as string);

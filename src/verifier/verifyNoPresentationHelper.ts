@@ -71,7 +71,7 @@ export const validateNoPresentationParams = (noPresentation: NoPresentation): vo
  * @param noPresentation
  * @param verifier
  */
-export const verifyNoPresentation = async (authorization: string, noPresentation: NoPresentation, verifier: string): Promise<UnumDto<VerifiedStatus>> => {
+export const verifyNoPresentationHelper = async (authorization: string, noPresentation: NoPresentation, verifier: string): Promise<UnumDto<VerifiedStatus>> => {
   try {
     requireAuth(authorization);
 

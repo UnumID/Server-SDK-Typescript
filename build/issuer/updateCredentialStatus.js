@@ -39,56 +39,67 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.revokeCredential = void 0;
+exports.updateCredentialStatus = void 0;
 var config_1 = require("../config");
 var requireAuth_1 = require("../requireAuth");
 var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var logger_1 = __importDefault(require("../logger"));
+var types_1 = require("@unumid/types");
 /**
  * Helper to validate request inputs.
  * @param req Request
  */
-var validateInputs = function (credentialId) {
+var validateInputs = function (credentialId, status) {
     // Credential ID is mandatory.
     if (!credentialId) {
         throw new library_issuer_verifier_utility_1.CustError(400, 'credentialId is required.');
     }
+    try {
+        types_1._CredentialStatusOptions.check(status);
+    }
+    catch (e) {
+        throw new library_issuer_verifier_utility_1.CustError(400, 'status does not match a valid CredentialStatusOptions string literal.');
+    }
 };
 /**
- * Handler to revoke credentials. It relays the revoke credential metadata to UnumID's SaaS.
- * @param authorization
- * @param credentialId
+ * Handler to change a credential's status. It relays the updated credential metadata to UnumID's SaaS.
+ * @param authorization string // auth string
+ * @param credentialId string // id of credential to revoke
+ * @param status CredentialStatusOptions // status to update the credential to (defaults to 'revoked')
  */
-exports.revokeCredential = function (authorization, credentialId) { return __awaiter(void 0, void 0, void 0, function () {
-    var restData, response, authToken, revokedCredential, error_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 2, , 3]);
-                requireAuth_1.requireAuth(authorization);
-                validateInputs(credentialId);
-                restData = {
-                    method: 'PATCH',
-                    baseUrl: config_1.configData.SaaSUrl,
-                    endPoint: 'credentialStatus/' + credentialId,
-                    header: { Authorization: authorization },
-                    data: { status: 'revoked' }
-                };
-                return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(restData)];
-            case 1:
-                response = _a.sent();
-                authToken = library_issuer_verifier_utility_1.handleAuthToken(response);
-                revokedCredential = {
-                    authToken: authToken,
-                    body: undefined
-                };
-                return [2 /*return*/, revokedCredential];
-            case 2:
-                error_1 = _a.sent();
-                logger_1.default.error("Error revoking a credential with UnumID SaaS. " + error_1);
-                throw error_1;
-            case 3: return [2 /*return*/];
-        }
+exports.updateCredentialStatus = function (authorization, credentialId, status) {
+    if (status === void 0) { status = 'revoked'; }
+    return __awaiter(void 0, void 0, void 0, function () {
+        var restData, response, authToken, revokedCredential, error_1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 2, , 3]);
+                    requireAuth_1.requireAuth(authorization);
+                    validateInputs(credentialId, status);
+                    restData = {
+                        method: 'PATCH',
+                        baseUrl: config_1.configData.SaaSUrl,
+                        endPoint: 'credentialStatus/' + credentialId,
+                        header: { Authorization: authorization },
+                        data: { status: status }
+                    };
+                    return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(restData)];
+                case 1:
+                    response = _a.sent();
+                    authToken = library_issuer_verifier_utility_1.handleAuthToken(response);
+                    revokedCredential = {
+                        authToken: authToken,
+                        body: undefined
+                    };
+                    return [2 /*return*/, revokedCredential];
+                case 2:
+                    error_1 = _a.sent();
+                    logger_1.default.error("Error revoking a credential with UnumID SaaS. " + error_1);
+                    throw error_1;
+                case 3: return [2 /*return*/];
+            }
+        });
     });
-}); };
-//# sourceMappingURL=revokeCredentials.js.map
+};
+//# sourceMappingURL=updateCredentialStatus.js.map

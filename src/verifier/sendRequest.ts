@@ -154,7 +154,7 @@ const validateSendRequestBody = (sendRequestBody: SendRequestReqBody): void => {
 
   // ECC Private Key is mandatory input parameter
   if (!eccPrivateKey) {
-    throw new CustError(400, 'Invalid PresentationRequest options: eccPrivateKey is required.');
+    throw new CustError(400, 'Invalid PresentationRequest options: signingPrivateKey is required.');
   }
 };
 
