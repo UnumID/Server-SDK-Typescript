@@ -10,10 +10,17 @@ import logger from '../logger';
  * Helper to validate request inputs.
  * @param req Request
  */
-const validateInputs = (credentialId: string): void => {
+const validateInputs = (credentialId: string, status: CredentialStatusOptions): void => {
+// const validateInputs = (credentialId: string, status: 'revoked' | 'valid'): void => {
   // Credential ID is mandatory.
   if (!credentialId) {
     throw new CustError(400, 'credentialId is required.');
+  }
+
+  try {
+    CredentialStatusOptions.check(status);
+  } catch (e) {
+    throw new CustError(400, 'status does not match a valid CredentialStatusOptions string literal.');
   }
 };
 
@@ -23,11 +30,12 @@ const validateInputs = (credentialId: string): void => {
  * @param credentialId string // id of credential to revoke
  * @param status CredentialStatusOptions // status to update the credential to (defaults to 'revoked')
  */
-export const changeCredentialStatus = async (authorization: string, credentialId: string, status: CredentialStatusOptions = 'revoked'): Promise<UnumDto<undefined>> => {
+export const updateCredentialStatus = async (authorization: string, credentialId: string, status: CredentialStatusOptions = 'revoked'): Promise<UnumDto<undefined>> => {
+// export const updateCredentialStatus = async (authorization: string, credentialId: string, status: 'revoked' | 'valid' = 'revoked'): Promise<UnumDto<undefined>> => {
   try {
     requireAuth(authorization);
 
-    validateInputs(credentialId);
+    validateInputs(credentialId, status);
 
     const restData: RESTData = {
       method: 'PATCH',

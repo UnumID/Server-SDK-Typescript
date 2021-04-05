@@ -94,15 +94,20 @@ Response Body: [**Credential**](https://docs.unum.id/Server-SDK-Typescript/inter
 }
 ```
 
-### revokeCredential
-Revoke a credential, i.e. make it invalid.
+### updateCredentialStatus
+Update a credential, i.e. make it invalid.
 
-You need to provide the credential `id` (created when you issued the credential).
+You need to provide the credential `id` (created when you issued the credential) and a [CredentialStatusOptions](https://docs.unum.id/types/modules.html#credentialstatusoptions) `status`. Currently there are only two statuses:"valid" and "revoked".
+
+```typescript title="CredentialStatusOptions"
+export type CredentialStatusOptions = 'valid' | 'revoked';
+```
 
 Parameters
 ```typescript
 {
-  "credentialId": string // id of credential to revoke
+  "credentialId": string // id of the credential
+  "status": CredentialStatusOptions // status to update the credential to (defaults to 'revoked')
 }
 ```
 

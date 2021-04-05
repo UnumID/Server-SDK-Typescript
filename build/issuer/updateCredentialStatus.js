@@ -39,20 +39,27 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.changeCredentialStatus = void 0;
+exports.updateCredentialStatus = void 0;
 var config_1 = require("../config");
 var requireAuth_1 = require("../requireAuth");
 var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
+// import { CredentialStatusOptions } from '@unumid/types';
 var logger_1 = __importDefault(require("../logger"));
 /**
  * Helper to validate request inputs.
  * @param req Request
  */
-var validateInputs = function (credentialId) {
+// const validateInputs = (credentialId: string, status: CredentialStatusOptions): void => {
+var validateInputs = function (credentialId, status) {
     // Credential ID is mandatory.
     if (!credentialId) {
         throw new library_issuer_verifier_utility_1.CustError(400, 'credentialId is required.');
     }
+    // try {
+    //   CredentialStatusOptions.check(status);
+    // } catch (e) {
+    //   throw new CustError(400, 'status does not match a valid CredentialStatusOptions string literal.');
+    // }
 };
 /**
  * Handler to change a credential's status. It relays the updated credential metadata to UnumID's SaaS.
@@ -60,7 +67,8 @@ var validateInputs = function (credentialId) {
  * @param credentialId string // id of credential to revoke
  * @param status CredentialStatusOptions // status to update the credential to (defaults to 'revoked')
  */
-exports.changeCredentialStatus = function (authorization, credentialId, status) {
+// export const updateCredentialStatus = async (authorization: string, credentialId: string, status: CredentialStatusOptions = 'revoked'): Promise<UnumDto<undefined>> => {
+exports.updateCredentialStatus = function (authorization, credentialId, status) {
     if (status === void 0) { status = 'revoked'; }
     return __awaiter(void 0, void 0, void 0, function () {
         var restData, response, authToken, revokedCredential, error_1;
@@ -69,7 +77,7 @@ exports.changeCredentialStatus = function (authorization, credentialId, status) 
                 case 0:
                     _a.trys.push([0, 2, , 3]);
                     requireAuth_1.requireAuth(authorization);
-                    validateInputs(credentialId);
+                    validateInputs(credentialId, status);
                     restData = {
                         method: 'PATCH',
                         baseUrl: config_1.configData.SaaSUrl,
@@ -95,4 +103,4 @@ exports.changeCredentialStatus = function (authorization, credentialId, status) 
         });
     });
 };
-//# sourceMappingURL=changeCredentialStatus.js.map
+//# sourceMappingURL=updateCredentialStatus.js.map

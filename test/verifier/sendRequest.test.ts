@@ -1,6 +1,7 @@
 import * as utilLib from '@unumid/library-issuer-verifier-utility';
+import { CredentialRequest } from '@unumid/types';
 import { sendRequest } from '../../src/index';
-import { PresentationRequestResponse, PresentationRequest, UnumDto, CredentialRequest } from '../../src/types';
+import { PresentationRequestResponse, UnumDto } from '../../src/types';
 import { dummyAuthToken, makeDummyPresentationRequestResponse } from './mocks';
 
 jest.mock('@unumid/library-issuer-verifier-utility', () => {

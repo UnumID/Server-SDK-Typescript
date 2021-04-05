@@ -6,7 +6,7 @@ import { UnumDto, RegisteredVerifier, PresentationRequestResponse, RegisteredIss
 import { verifyPresentation } from './verifier/verifyPresentation';
 import { registerIssuer } from './issuer/registerIssuer';
 import { issueCredential } from './issuer/issueCredentials';
-import { changeCredentialStatus } from './issuer/changeCredentialStatus';
+import { updateCredentialStatus } from './issuer/updateCredentialStatus';
 import { CustError, Proof, Credential, CredentialSubject } from '@unumid/library-issuer-verifier-utility';
 import { extractCredentialInfo } from './utils/extractCredentialInfo';
 import { NoPresentation, Presentation } from '@unumid/types';
@@ -16,7 +16,7 @@ export {
   // Issuer Functions
   registerIssuer,
   issueCredential,
-  changeCredentialStatus,
+  updateCredentialStatus,
   // Verifier Functions
   registerVerifier,
   sendEmail,
