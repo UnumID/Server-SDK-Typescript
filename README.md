@@ -207,7 +207,7 @@ Response Body: [**PresentationRequestResponse**](https://docs.unum.id/Server-SDK
 }
 ```
 
-### verifyEncryptedPresentation 
+### verifyPresentation 
 Handles decrypting the encrypted presentation and verifies the signatures are valid.
 
 This is used in service behind the `/presentation` endpoint that needs to be defined according to [this](https://unumid.postman.co/workspace/Unum-ID-Team-Workspace~48b1f312-a6e6-4bcc-86a0-aa4bc37df9b4/api/09ad0ccd-c614-4d54-a1b4-ff9ae85b8449?version=c217a461-fc05-4476-a792-6c9163f2a198&tab=define) spec which UnumID's SaaS forwards encrypted Presentations to.  

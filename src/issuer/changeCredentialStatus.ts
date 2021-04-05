@@ -3,6 +3,7 @@ import { requireAuth } from '../requireAuth';
 
 import { CustError, RESTData, makeNetworkRequest, JSONObj, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
 import { UnumDto } from '../types';
+import { CredentialStatusOptions } from '@unumid/types';
 import logger from '../logger';
 
 /**
@@ -17,11 +18,12 @@ const validateInputs = (credentialId: string): void => {
 };
 
 /**
- * Handler to revoke credentials. It relays the revoke credential metadata to UnumID's SaaS.
- * @param authorization
- * @param credentialId
+ * Handler to change a credential's status. It relays the updated credential metadata to UnumID's SaaS.
+ * @param authorization string // auth string
+ * @param credentialId string // id of credential to revoke
+ * @param status CredentialStatusOptions // status to update the credential to (defaults to 'revoked')
  */
-export const revokeCredential = async (authorization: string, credentialId: string): Promise<UnumDto<undefined>> => {
+export const changeCredentialStatus = async (authorization: string, credentialId: string, status: CredentialStatusOptions = 'revoked'): Promise<UnumDto<undefined>> => {
   try {
     requireAuth(authorization);
 
@@ -32,7 +34,7 @@ export const revokeCredential = async (authorization: string, credentialId: stri
       baseUrl: configData.SaaSUrl,
       endPoint: 'credentialStatus/' + credentialId,
       header: { Authorization: authorization },
-      data: { status: 'revoked' }
+      data: { status }
     };
 
     // make request to SaaS to update the CredentialStatus

@@ -96,7 +96,8 @@ export interface CredentialStatusInfo {
   createdAt: Date;
   updatedAt: Date;
   credentialId: string;
-  status: 'valid' | 'revoked';
+  // status: 'valid' | 'revoked';
+  status: CredentialStatusEnum
 }
 
 /**
