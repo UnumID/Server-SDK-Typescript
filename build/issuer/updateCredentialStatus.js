@@ -43,7 +43,6 @@ exports.updateCredentialStatus = void 0;
 var config_1 = require("../config");
 var requireAuth_1 = require("../requireAuth");
 var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
-// import { CredentialStatusOptions, _CredentialStatusOptions } from '@unumid/types';
 var logger_1 = __importDefault(require("../logger"));
 var types_1 = require("@unumid/types");
 /**
