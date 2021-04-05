@@ -1,11 +1,12 @@
 import * as utilLib from '@unumid/library-issuer-verifier-utility';
-import { Presentation, VerifiedStatus, UnumDto, verifyPresentation, Proof } from '../../src/index';
+import { Presentation, VerifiedStatus, UnumDto, Proof } from '../../src/index';
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { isCredentialExpired } from '../../src/verifier/isCredentialExpired';
 import { checkCredentialStatus } from '../../src/verifier/checkCredentialStatus';
 import { dummyAuthToken, dummyEccPrivateKey, makeDummyDidDocument } from './mocks';
 import { sign } from '@unumid/library-crypto';
 import stringify from 'fast-json-stable-stringify';
+import { verifyPresentation } from '../../src/verifier/verifyPresentation';
 
 jest.mock('@unumid/library-issuer-verifier-utility', () => ({
   ...jest.requireActual('@unumid/library-issuer-verifier-utility'),

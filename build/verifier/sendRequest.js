@@ -164,7 +164,7 @@ var validateSendRequestBody = function (sendRequestBody) {
  * @param authorization
  * @param verifier
  * @param credentialRequests
- * @param signingPrivateKey
+ * @param eccPrivateKey
  * @param holderAppUuid
  */
 exports.sendRequest = function (authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata) { return __awaiter(void 0, void 0, void 0, function () {

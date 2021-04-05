@@ -5,7 +5,9 @@ import { requireAuth } from '../requireAuth';
 import { CryptoError, decrypt } from '@unumid/library-crypto';
 import { CustError, EncryptedData } from '@unumid/library-issuer-verifier-utility';
 import logger from '../logger';
-import { NoPresentation, VerifiedStatus, verifyNoPresentation, verifyPresentation } from '..';
+import { NoPresentation, VerifiedStatus } from '..';
+import { verifyNoPresentation } from './verifyNoPresentation';
+import { verifyPresentation } from './verifyPresentation';
 
 function isPresentation (presentation: PresentationOrNoPresentation): presentation is Presentation {
   return presentation.type[0] === 'VerifiablePresentation';

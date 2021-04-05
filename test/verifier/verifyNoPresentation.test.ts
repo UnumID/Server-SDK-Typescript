@@ -2,10 +2,11 @@ import supertest from 'supertest';
 
 import { omit } from 'lodash';
 
-import { verifyNoPresentation } from '../../src';
-import { NoPresentation, VerifiedStatus, UnumDto } from '../../src/types';
+import { VerifiedStatus, UnumDto } from '../../src/types';
 import * as utilLib from '@unumid/library-issuer-verifier-utility';
 import { dummyAuthToken, makeDummyDidDocument } from './mocks';
+import { NoPresentation } from '@unumid/types';
+import { verifyNoPresentation } from '../../src/verifier/verifyNoPresentation';
 
 jest.mock('@unumid/library-issuer-verifier-utility', () => {
   const actual = jest.requireActual('@unumid/library-issuer-verifier-utility');

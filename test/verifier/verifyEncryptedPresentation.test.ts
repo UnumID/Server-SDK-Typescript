@@ -1,5 +1,5 @@
 import * as utilLib from '@unumid/library-issuer-verifier-utility';
-import { NoPresentation, Presentation, VerifiedStatus, UnumDto, verifyEncryptedPresentation, verifyNoPresentation } from '../../src/index';
+import { NoPresentation, Presentation, VerifiedStatus, UnumDto } from '../../src/index';
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { isCredentialExpired } from '../../src/verifier/isCredentialExpired';
 import { checkCredentialStatus } from '../../src/verifier/checkCredentialStatus';
@@ -7,6 +7,8 @@ import { dummyAuthToken, dummyRsaPrivateKey, dummyRsaPublicKey, makeDummyDidDocu
 import { encrypt } from '@unumid/library-crypto';
 import { omit } from 'lodash';
 import { DecryptedPresentation } from '../../src/types';
+import { verifyEncryptedPresentation } from '../../src/verifier/verifyEncryptedPresentation';
+import { verifyNoPresentation } from '../../src/verifier/verifyNoPresentation';
 
 jest.mock('@unumid/library-issuer-verifier-utility', () => ({
   ...jest.requireActual('@unumid/library-issuer-verifier-utility'),
