@@ -55,7 +55,7 @@ var requireAuth_1 = require("../requireAuth");
 var library_crypto_1 = require("@unumid/library-crypto");
 var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var logger_1 = __importDefault(require("../logger"));
-var verifyNoPresentation_1 = require("./verifyNoPresentation");
+var verifyNoPresentationHelper_1 = require("./verifyNoPresentationHelper");
 var verifyPresentationHelper_1 = require("./verifyPresentationHelper");
 function isPresentation(presentation) {
     return presentation.type[0] === 'VerifiablePresentation';
@@ -84,7 +84,7 @@ exports.verifyEncryptedPresentation = function (authorization, encryptedPresenta
                 }
                 presentation = library_crypto_1.decrypt(encryptionPrivateKey, encryptedPresentation);
                 if (!!isPresentation(presentation)) return [3 /*break*/, 2];
-                return [4 /*yield*/, verifyNoPresentation_1.verifyNoPresentation(authorization, presentation, verifierDid)];
+                return [4 /*yield*/, verifyNoPresentationHelper_1.verifyNoPresentationHelper(authorization, presentation, verifierDid)];
             case 1:
                 verificationResult_1 = _a.sent();
                 result_1 = {

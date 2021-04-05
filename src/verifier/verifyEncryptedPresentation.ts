@@ -6,7 +6,7 @@ import { CryptoError, decrypt } from '@unumid/library-crypto';
 import { CustError, EncryptedData } from '@unumid/library-issuer-verifier-utility';
 import logger from '../logger';
 import { NoPresentation, VerifiedStatus } from '..';
-import { verifyNoPresentation } from './verifyNoPresentation';
+import { verifyNoPresentationHelper } from './verifyNoPresentationHelper';
 import { verifyPresentationHelper } from './verifyPresentationHelper';
 
 function isPresentation (presentation: PresentationOrNoPresentation): presentation is Presentation {
@@ -39,7 +39,7 @@ export const verifyEncryptedPresentation = async (authorization: string, encrypt
     const presentation = <Presentation|NoPresentation> decrypt(encryptionPrivateKey, encryptedPresentation);
 
     if (!isPresentation(presentation)) {
-      const verificationResult: UnumDto<VerifiedStatus> = await verifyNoPresentation(authorization, presentation, verifierDid);
+      const verificationResult: UnumDto<VerifiedStatus> = await verifyNoPresentationHelper(authorization, presentation, verifierDid);
       const result: UnumDto<DecryptedPresentation> = {
         authToken: verificationResult.authToken,
         body: {

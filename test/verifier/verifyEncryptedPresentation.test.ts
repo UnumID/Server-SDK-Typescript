@@ -8,7 +8,7 @@ import { encrypt } from '@unumid/library-crypto';
 import { omit } from 'lodash';
 import { DecryptedPresentation } from '../../src/types';
 import { verifyEncryptedPresentation } from '../../src/verifier/verifyEncryptedPresentation';
-import { verifyNoPresentation } from '../../src/verifier/verifyNoPresentation';
+import { verifyNoPresentationHelper } from '../../src/verifier/verifyNoPresentationHelper';
 
 jest.mock('@unumid/library-issuer-verifier-utility', () => ({
   ...jest.requireActual('@unumid/library-issuer-verifier-utility'),
@@ -557,7 +557,7 @@ const callVerifyNoPresentation = (
   verifier: string,
   authHeader?: string
 ): Promise<UnumDto<VerifiedStatus>> => {
-  return verifyNoPresentation(authHeader, noPresentation, verifier);
+  return verifyNoPresentationHelper(authHeader, noPresentation, verifier);
 };
 
 describe('verifyNoPresentation', () => {

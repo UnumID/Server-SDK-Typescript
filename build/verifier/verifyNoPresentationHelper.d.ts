@@ -11,5 +11,5 @@ export declare const validateNoPresentationParams: (noPresentation: NoPresentati
  * @param noPresentation
  * @param verifier
  */
-export declare const verifyNoPresentation: (authorization: string, noPresentation: NoPresentation, verifier: string) => Promise<UnumDto<VerifiedStatus>>;
-//# sourceMappingURL=verifyNoPresentation.d.ts.map
+export declare const verifyNoPresentationHelper: (authorization: string, noPresentation: NoPresentation, verifier: string) => Promise<UnumDto<VerifiedStatus>>;
+//# sourceMappingURL=verifyNoPresentationHelper.d.ts.map
