@@ -185,7 +185,7 @@ const validatePresentation = (presentation: Presentation): Presentation => {
  * @param presentation
  * @param verifier
  */
-export const verifyPresentation = async (authorization: string, presentation: Presentation, verifier: string): Promise<UnumDto<VerifiedStatus>> => {
+export const verifyPresentationHelper = async (authorization: string, presentation: Presentation, verifier: string): Promise<UnumDto<VerifiedStatus>> => {
   try {
     requireAuth(authorization);
 

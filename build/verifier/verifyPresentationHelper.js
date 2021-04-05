@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyPresentation = void 0;
+exports.verifyPresentationHelper = void 0;
 var lodash_1 = require("lodash");
 var config_1 = require("../config");
 var validateProof_1 = require("./validateProof");
@@ -193,7 +193,7 @@ var validatePresentation = function (presentation) {
  * @param presentation
  * @param verifier
  */
-exports.verifyPresentation = function (authorization, presentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
+exports.verifyPresentationHelper = function (authorization, presentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
     var data, proof, didDocumentResponse, authToken, pubKeyObj, result_1, isPresentationVerified, result_2, result_3, areCredentialsValid, _i, _a, credential, isExpired, isStatusValidResponse, isStatusValid, isVerifiedResponse, isVerified_1, result_4, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, result, error_1;
     return __generator(this, function (_b) {
         switch (_b.label) {
@@ -341,4 +341,4 @@ exports.verifyPresentation = function (authorization, presentation, verifier) { 
         }
     });
 }); };
-//# sourceMappingURL=verifyPresentation.js.map
+//# sourceMappingURL=verifyPresentationHelper.js.map

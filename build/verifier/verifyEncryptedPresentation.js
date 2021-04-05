@@ -56,7 +56,7 @@ var library_crypto_1 = require("@unumid/library-crypto");
 var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var logger_1 = __importDefault(require("../logger"));
 var verifyNoPresentation_1 = require("./verifyNoPresentation");
-var verifyPresentation_1 = require("./verifyPresentation");
+var verifyPresentationHelper_1 = require("./verifyPresentationHelper");
 function isPresentation(presentation) {
     return presentation.type[0] === 'VerifiablePresentation';
 }
@@ -92,7 +92,7 @@ exports.verifyEncryptedPresentation = function (authorization, encryptedPresenta
                     body: __assign(__assign({}, verificationResult_1.body), { type: 'NoPresentation', presentation: presentation })
                 };
                 return [2 /*return*/, result_1];
-            case 2: return [4 /*yield*/, verifyPresentation_1.verifyPresentation(authorization, presentation, verifierDid)];
+            case 2: return [4 /*yield*/, verifyPresentationHelper_1.verifyPresentationHelper(authorization, presentation, verifierDid)];
             case 3:
                 verificationResult = _a.sent();
                 result = {

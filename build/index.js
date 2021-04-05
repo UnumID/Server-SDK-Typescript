@@ -9,8 +9,6 @@ var sendRequest_1 = require("./verifier/sendRequest");
 Object.defineProperty(exports, "sendRequest", { enumerable: true, get: function () { return sendRequest_1.sendRequest; } });
 var sendSms_1 = require("./verifier/sendSms");
 Object.defineProperty(exports, "sendSms", { enumerable: true, get: function () { return sendSms_1.sendSms; } });
-// import { verifyNoPresentation } from './verifier/verifyNoPresentation';
-// import { verifyPresentation } from './verifier/verifyPresentation';
 var verifyEncryptedPresentation_1 = require("./verifier/verifyEncryptedPresentation");
 Object.defineProperty(exports, "verifyPresentation", { enumerable: true, get: function () { return verifyEncryptedPresentation_1.verifyEncryptedPresentation; } });
 var registerIssuer_1 = require("./issuer/registerIssuer");
