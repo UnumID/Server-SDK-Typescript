@@ -43,23 +43,24 @@ exports.updateCredentialStatus = void 0;
 var config_1 = require("../config");
 var requireAuth_1 = require("../requireAuth");
 var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
-// import { CredentialStatusOptions } from '@unumid/types';
+var types_1 = require("@unumid/types");
 var logger_1 = __importDefault(require("../logger"));
 /**
  * Helper to validate request inputs.
  * @param req Request
  */
-// const validateInputs = (credentialId: string, status: CredentialStatusOptions): void => {
 var validateInputs = function (credentialId, status) {
+    // const validateInputs = (credentialId: string, status: 'revoked' | 'valid'): void => {
     // Credential ID is mandatory.
     if (!credentialId) {
         throw new library_issuer_verifier_utility_1.CustError(400, 'credentialId is required.');
     }
-    // try {
-    //   CredentialStatusOptions.check(status);
-    // } catch (e) {
-    //   throw new CustError(400, 'status does not match a valid CredentialStatusOptions string literal.');
-    // }
+    try {
+        types_1._CredentialStatusOptions.check(status);
+    }
+    catch (e) {
+        throw new library_issuer_verifier_utility_1.CustError(400, 'status does not match a valid CredentialStatusOptions string literal.');
+    }
 };
 /**
  * Handler to change a credential's status. It relays the updated credential metadata to UnumID's SaaS.
@@ -67,7 +68,6 @@ var validateInputs = function (credentialId, status) {
  * @param credentialId string // id of credential to revoke
  * @param status CredentialStatusOptions // status to update the credential to (defaults to 'revoked')
  */
-// export const updateCredentialStatus = async (authorization: string, credentialId: string, status: CredentialStatusOptions = 'revoked'): Promise<UnumDto<undefined>> => {
 exports.updateCredentialStatus = function (authorization, credentialId, status) {
     if (status === void 0) { status = 'revoked'; }
     return __awaiter(void 0, void 0, void 0, function () {

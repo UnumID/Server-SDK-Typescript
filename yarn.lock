@@ -800,11 +800,11 @@
 
 "@unumid/library-issuer-verifier-utility@git+ssh://git@github.com/UnumID/library-issuer-verifier-utility.git#rt":
   version "1.0.0"
-  resolved "git+ssh://git@github.com/UnumID/library-issuer-verifier-utility.git#b68477b5cfe156960cb55741462d7d30cfb505b9"
+  resolved "git+ssh://git@github.com/UnumID/library-issuer-verifier-utility.git#6f5a1d9784291c944d1643f6025cc40fc268065c"
   dependencies:
     "@types/lodash" "^4.14.168"
     "@unumid/library-crypto" "https://github.com/UnumID/Library-Crypto-TypeScript.git#v1.2.0"
-    "@unumid/types" "git+ssh://git@github.com/UnumID/types.git#v1.0.2"
+    "@unumid/types" "git+ssh://git@github.com/UnumID/types.git#rt"
     dotenv "^8.2.0"
     express "^4.17.1"
     lodash "^4.17.21"
@@ -812,10 +812,11 @@
     uuid "^8.2.0"
     winston "^3.3.3"
 
-"@unumid/types@git+ssh://git@github.com/UnumID/types.git#rt", "@unumid/types@git+ssh://git@github.com/UnumID/types.git#v1.0.2":
+"@unumid/types@git+ssh://git@github.com/UnumID/types.git#rt":
   version "0.0.1"
-  uid adf35c557db6444c0d6ebcb30894bfffb74df572
-  resolved "git+ssh://git@github.com/UnumID/types.git#adf35c557db6444c0d6ebcb30894bfffb74df572"
+  resolved "git+ssh://git@github.com/UnumID/types.git#4a31e233b4f5f1b4aa768354810a696070576775"
+  dependencies:
+    runtypes "^6.0.0"
 
 abab@^2.0.3:
   version "2.0.5"
@@ -4337,6 +4338,11 @@ rsvp@^4.8.4:
   version "4.8.5"
   resolved "https://registry.yarnpkg.com/rsvp/-/rsvp-4.8.5.tgz#c8f155311d167f68f21e168df71ec5b083113734"
   integrity sha512-nfMOlASu9OnRJo1mbEk2cz0D56a1MBNrJ7orjRZQG10XDyuvwksKbuXNp6qa+kbn839HwjwhBzhFmdsaEAfauA==
+
+runtypes@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/runtypes/-/runtypes-6.0.0.tgz#0010e7e050a41d4ab38b6138051dfb8774a53f07"
+  integrity sha512-hVBZ2S0i9MmyViSpwCU7TGFuEZxjPIeTMbhCpz59/8C3IGbPL6N03bIVALGfVWZQ+MTXORjWpWnZUP3hPyw96w==
 
 safe-buffer@5.1.2, safe-buffer@~5.1.0, safe-buffer@~5.1.1:
   version "5.1.2"

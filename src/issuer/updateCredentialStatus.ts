@@ -1,9 +1,10 @@
 import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
 
+import { Literal, Static, Union } from 'runtypes';
 import { CustError, RESTData, makeNetworkRequest, JSONObj, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
 import { UnumDto } from '../types';
-import { CredentialStatusOptions } from '@unumid/types';
+import { CredentialStatusOptions, _CredentialStatusOptions } from '@unumid/types';
 import logger from '../logger';
 
 /**
@@ -18,7 +19,7 @@ const validateInputs = (credentialId: string, status: CredentialStatusOptions): 
   }
 
   try {
-    CredentialStatusOptions.check(status);
+    _CredentialStatusOptions.check(status);
   } catch (e) {
     throw new CustError(400, 'status does not match a valid CredentialStatusOptions string literal.');
   }
