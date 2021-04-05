@@ -1,12 +1,14 @@
 import * as utilLib from '@unumid/library-issuer-verifier-utility';
-import { Presentation, VerifiedStatus, UnumDto, Proof } from '../../src/index';
+import { NoPresentation, Presentation, VerifiedStatus, UnumDto } from '../../src/index';
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { isCredentialExpired } from '../../src/verifier/isCredentialExpired';
 import { checkCredentialStatus } from '../../src/verifier/checkCredentialStatus';
-import { dummyAuthToken, dummyEccPrivateKey, makeDummyDidDocument } from './mocks';
-import { sign } from '@unumid/library-crypto';
-import stringify from 'fast-json-stable-stringify';
-import { verifyPresentationHelper as verifyPresentation } from '../../src/verifier/verifyPresentationHelper';
+import { dummyAuthToken, dummyRsaPrivateKey, dummyRsaPublicKey, makeDummyDidDocument } from './mocks';
+import { encrypt } from '@unumid/library-crypto';
+import { omit } from 'lodash';
+import { DecryptedPresentation } from '../../src/types';
+import { verifyPresentation } from '../../src/verifier/verifyPresentation';
+import { verifyNoPresentationHelper } from '../../src/verifier/verifyNoPresentationHelper';
 
 jest.mock('@unumid/library-issuer-verifier-utility', () => ({
   ...jest.requireActual('@unumid/library-issuer-verifier-utility'),
@@ -26,7 +28,7 @@ const mockGetDIDDoc = utilLib.getDIDDoc as jest.Mock;
 const mockDoVerify = utilLib.doVerify as jest.Mock;
 const mockMakeNetworkRequest = utilLib.makeNetworkRequest as jest.Mock;
 
-const callVerifyPresentation = (context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, auth = ''): Promise<UnumDto<VerifiedStatus>> => {
+const callVerifyEncryptedPresentation = (context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, auth = ''): Promise<UnumDto<DecryptedPresentation>> => {
   const presentation: Presentation = {
     '@context': context,
     type,
@@ -35,7 +37,9 @@ const callVerifyPresentation = (context, type, verifiableCredentials, presentati
     proof,
     uuid: 'a'
   };
-  return verifyPresentation(auth, presentation, verifier);
+
+  const encryptedPresentation = encrypt(`did:unum:${utilLib.getUUID()}`, dummyRsaPublicKey, presentation, 'pem');
+  return verifyPresentation(auth, encryptedPresentation, verifier, dummyRsaPrivateKey);
 };
 
 const copyCredentialObj = (credential: utilLib.JSONObj, elemName: string, elemValue = ''): utilLib.JSONObj => {
@@ -59,106 +63,74 @@ const copyCredentialObj = (credential: utilLib.JSONObj, elemName: string, elemVa
 const populateMockData = (): utilLib.JSONObj => {
   const context: string[] = ['https://www.w3.org/2018/credentials/v1'];
   const type: string[] = ['VerifiablePresentation'];
-  const verifiableCredentialObj =
-      {
-        '@context': [
-          'https://www.w3.org/2018/credentials/v1'
-        ],
-        credentialStatus: {
-          id: 'https://api.dev-unumid.org//credentialStatus/f8287c1e-0c56-460a-92af-5519f5c10cbf',
-          type: 'CredentialStatus'
-        },
-        credentialSubject: {
-          id: 'did:unum:5f5eb3dd-d0e0-4356-bfdd-96bc1393c705',
-          test: 'test'
-        },
-        issuer: 'did:unum:7fc1753e-cdb7-428a-b6ce-eefc0e3634e5',
-        type: [
-          'VerifiableCredential',
-          'UsernameCredential'
-        ],
-        id: 'f8287c1e-0c56-460a-92af-5519f5c10cbf',
-        issuanceDate: '2021-01-09T02:23:54.844Z',
-        expirationDate: '2022-01-09T00:00:00.000Z',
-        proof: {
-          created: '2021-01-09T02:23:54.844Z',
-          type: 'secp256r1Signature2020',
-          verificationMethod: 'did:unum:7fc1753e-cdb7-428a-b6ce-eefc0e3634e5',
-          proofPurpose: 'AssertionMethod',
-          signatureValue: '381yXZCEPSC9NB2smArjiBtvnGL6LZ2yAUW1qLQfhuZSyeQiCyrFRqkxfPoa1gaLaScR7cFVJmguo1v1JKYH6uEU4Zd32D9C',
-          unsignedValue: '{"@context":["https://www.w3.org/2018/credentials/v1"],"credentialStatus":{"id":"https://api.dev-unumid.org//credentialStatus/f8287c1e-0c56-460a-92af-5519f5c10cbf","type":"CredentialStatus"},"credentialSubject":{"id":"did:unum:5f5eb3dd-d0e0-4356-bfdd-96bc1393c705","username":"Analyst-Shoes-278"},"expirationDate":"2022-01-09T00:00:00.000Z","id":"f8287c1e-0c56-460a-92af-5519f5c10cbf","issuanceDate":"2021-01-09T02:23:54.844Z","issuer":"did:unum:7fc1753e-cdb7-428a-b6ce-eefc0e3634e5","proof":{"created":"2021-01-09T02:23:54.844Z","proofPurpose":"AssertionMethod","type":"secp256r1Signature2020","verificationMethod":"did:unum:7fc1753e-cdb7-428a-b6ce-eefc0e3634e5"},"type":["VerifiableCredential","UsernameCredential"]}'
-        }
-      };
-  const verifiableCredential = [verifiableCredentialObj];
-  const verifiableCredentialString = [stringify(verifiableCredentialObj)];
-
+  const verifiableCredentials: utilLib.JSONObj[] = [
+    {
+      '@context': [
+        'https://www.w3.org/2018/credentials/v1'
+      ],
+      credentialStatus: {
+        id: 'https://api.dev-unumid.org//credentialStatus/b2acd26a-ab18-4d18-9ad1-3b77f55c564b',
+        type: 'CredentialStatus'
+      },
+      credentialSubject: {
+        id: 'did:unum:3ff2f020-50b0-4f4c-a267-a9f104aedcd8',
+        test: 'test'
+      },
+      issuer: 'did:unum:2e05967f-216f-44c4-ae8e-d6f71cd17c5a',
+      type: [
+        'VerifiableCredential',
+        'TestCredential'
+      ],
+      id: 'b2acd26a-ab18-4d18-9ad1-3b77f55c564b',
+      issuanceDate: '2020-09-03T18:42:30.645Z',
+      proof: {
+        created: '2020-09-03T18:42:30.658Z',
+        signatureValue: '381yXYx2wa7qR4XMEWeLPWVR7xhksi4684VCZL7Yx9jXneVMxXoa3eT3dA5QU1tofsH4XrGbU8d4pNTiLRpa8iUWvWmAdnfE',
+        unsignedValue: 'todo',
+        type: 'secp256r1Signature2020',
+        verificationMethod: 'did:unum:2e05967f-216f-44c4-ae8e-d6f71cd17c5a',
+        proofPurpose: 'AssertionMethod'
+      }
+    }
+  ];
   const presentationRequestUuid = '0cebee3b-3295-4ef6-a4d6-7dfea413b3aa';
-  const invalidProof: utilLib.JSONObj = {
+  const proof: utilLib.JSONObj = {
     created: '2020-09-03T18:50:52.105Z',
-    signatureValue: 'iTx1CJLYue7vopUo2fqGps3TWmxqRxoBDTupumLkaNp2W3UeAjwLUf5WxLRCRkDzEFeKCgT7JdF5fqbpvqnBZoHyYzWYbmW4YQ',
-    unsignedValue: stringify({}),
+    signatureValue: 'iKx1CJLYue7vopUo2fqGps3TWmxqRxoBDTupumLkaNp2W3UeAjwLUf5WxLRCRkDzEFeKCgT7JdF5fqbpvqnBZoHyYzWYbmW4YQ',
     type: 'secp256r1Signature2020',
     verificationMethod: 'did:unum:3ff2f020-50b0-4f4c-a267-a9f104aedcd8',
     proofPurpose: 'AssertionMethod'
   };
   const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
   const verifier = 'did:unum:dd407b1a-ee7f-46a2-af2a-ccbb48cbb0dc';
-
-  const subjectDid = 'did:unum:3ff2f020-50b0-4f4c-a267-a9f104aedcd8';
-  const unsignedPresentation = {
-    '@context': ['https://www.w3.org/2018/credentials/v1'],
-    presentationRequestUuid,
-    verifiableCredential: [verifiableCredential],
-    type: ['VerifiablePresentation']
-  };
-
-  const signatureValue = sign(unsignedPresentation, dummyEccPrivateKey, 'base58');
-
-  const proof: Proof = {
-    created: new Date().toISOString(),
-    signatureValue,
-    unsignedValue: stringify(unsignedPresentation),
-    type: 'secp256r1Signature2020',
-    verificationMethod: subjectDid,
-    proofPurpose: 'assertionMethod'
-  };
-
-  const presentation = {
-    ...unsignedPresentation,
-    proof
-  };
-
   return ({
     context,
     type,
-    verifiableCredential,
-    verifiableCredentialString,
+    verifiableCredentials,
     presentationRequestUuid,
     proof,
-    invalidProof,
     authHeader,
-    verifier,
-    presentation
+    verifier
   });
 };
 
-describe('verifyPresentation - Success Scenario', () => {
-  let response: UnumDto<VerifiedStatus>;
+describe('verifyEncryptedPresentation - Success Scenario', () => {
+  let response: UnumDto<DecryptedPresentation>;
   let verStatus: boolean;
 
-  const { context, type, verifiableCredential, verifiableCredentialString, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
+  const { context, type, verifiableCredentials, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
   beforeAll(async () => {
     const dummySubjectDidDoc = await makeDummyDidDocument();
 
     const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
     mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
-    mockDoVerify.mockResolvedValue(true);
+    mockDoVerify.mockReturnValueOnce(true);
     mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: true });
     mockIsCredentialExpired.mockReturnValue(false);
     mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: { status: 'valid' } });
     mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers: dummyResponseHeaders });
-    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+    response = await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
     verStatus = response.body.isVerified;
   });
 
@@ -175,19 +147,19 @@ describe('verifyPresentation - Success Scenario', () => {
   });
 
   it('verifies each credential', () => {
-    verifiableCredential.forEach((vc) => {
+    verifiableCredentials.forEach((vc) => {
       expect(mockVerifyCredential).toBeCalledWith(vc, authHeader);
     });
   });
 
   it('checks if each credential is expired', () => {
-    verifiableCredential.forEach((vc) => {
+    verifiableCredentials.forEach((vc) => {
       expect(mockIsCredentialExpired).toBeCalledWith(vc);
     });
   });
 
   it('checks the status of each credential', () => {
-    verifiableCredential.forEach((vc) => {
+    verifiableCredentials.forEach((vc) => {
       expect(mockCheckCredentialStatus).toBeCalledWith(vc.id, authHeader);
     });
   });
@@ -206,48 +178,45 @@ describe('verifyPresentation - Success Scenario', () => {
     const dummyApiResponse = { body: dummySubjectDidDoc };
     mockMakeNetworkRequest.mockResolvedValueOnce(dummyApiResponse);
     mockGetDIDDoc.mockResolvedValue({ body: dummySubjectDidDoc, authToken: undefined });
-    mockCheckCredentialStatus.mockReturnValue({ authToken: undefined, body: { status: 'valid' } });
+    mockCheckCredentialStatus.mockReturnValue({ authToken: undefined, body: true });
     mockVerifyCredential.mockResolvedValue({ authToken: undefined, body: true });
-    mockDoVerify.mockReturnValueOnce(true);
-    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+    response = await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
     expect(response.authToken).toBeUndefined();
   });
 });
 
-describe('verifyPresentation - Failure Scenarios', () => {
-  let response: UnumDto<VerifiedStatus>;
+describe('verifyEncryptedPresentation - Failure Scenarios', () => {
+  let response: UnumDto<DecryptedPresentation>;
   let verStatus: boolean;
-  const { context, type, verifiableCredential, presentationRequestUuid, proof, invalidProof, authHeader, verifier } = populateMockData();
+  const { context, type, verifiableCredentials, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
   beforeAll(async () => {
     const dummySubjectDidDoc = await makeDummyDidDocument();
-    const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
 
+    const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
+    mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
     mockDoVerify.mockReturnValueOnce(false);
     mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: false });
     mockIsCredentialExpired.mockReturnValue(true);
-    mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: { status: 'revoked' } });
-    verifiableCredential[0].proof.verificationMethod = proof.verificationMethod;
+    mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: false });
+    verifiableCredentials[0].proof.verificationMethod = proof.verificationMethod;
+    response = await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
+    verStatus = response.body.isVerified;
   });
 
   afterAll(() => {
     jest.clearAllMocks();
   });
 
-  it('gets the subject did document', async () => {
-    const dummySubjectDidDoc = await makeDummyDidDocument();
-    const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
-    mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
-    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, invalidProof, verifier, authHeader);
-    verStatus = response.body.isVerified;
+  it('gets the subject did document', () => {
     expect(mockGetDIDDoc).toBeCalled();
   });
 
-  it('verifies the presentation', async () => {
+  it('verifies the presentation', () => {
     expect(mockDoVerify).toBeCalled();
   });
 
-  it('Result should be true', () => {
+  it('Result should be false', () => {
     expect(verStatus).toBeDefined();
     expect(verStatus).toBe(false);
   });
@@ -259,7 +228,7 @@ describe('verifyPresentation - Failure Scenarios', () => {
     };
     const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
     mockGetDIDDoc.mockResolvedValueOnce({ body: dummyDidDocWithoutKeys, headers: dummyResponseHeaders });
-    const response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+    const response = await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
     expect(response.body.isVerified).toBe(false);
     expect(response.body.message).toBe('Public key not found for the DID associated with the proof.verificationMethod');
   });
@@ -268,7 +237,7 @@ describe('verifyPresentation - Failure Scenarios', () => {
     mockGetDIDDoc.mockResolvedValueOnce(new utilLib.CustError(404, 'DID Document not found.'));
 
     try {
-      await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toEqual(404);
@@ -276,84 +245,12 @@ describe('verifyPresentation - Failure Scenarios', () => {
   });
 });
 
-describe('verifyPresentation - Success Scenario with verifiableCredentialsString', () => {
-  let response: UnumDto<VerifiedStatus>;
-  let verStatus: boolean;
-
-  const { context, type, verifiableCredential, verifiableCredentialString, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
-
-  beforeAll(async () => {
-    const dummySubjectDidDoc = await makeDummyDidDocument();
-
-    const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
-    mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
-    mockDoVerify.mockResolvedValue(true);
-    mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: true });
-    mockIsCredentialExpired.mockReturnValue(false);
-    mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: { status: 'valid' } });
-    mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers: dummyResponseHeaders });
-    response = await callVerifyPresentation(context, type, verifiableCredentialString, presentationRequestUuid, proof, verifier, authHeader);
-    verStatus = response.body.isVerified;
-  });
-
-  afterAll(() => {
-    jest.clearAllMocks();
-  });
-
-  it('gets the subject did document', () => {
-    expect(mockGetDIDDoc).toBeCalled();
-  });
-
-  it('verifies the presentation', () => {
-    expect(mockDoVerify).toBeCalled();
-  });
-
-  it('verifies each credential', () => {
-    verifiableCredential.forEach((vc) => {
-      expect(mockVerifyCredential).toBeCalledWith(vc, authHeader);
-    });
-  });
-
-  it('checks if each credential is expired', () => {
-    verifiableCredential.forEach((vc) => {
-      expect(mockIsCredentialExpired).toBeCalledWith(vc);
-    });
-  });
-
-  it('checks the status of each credential', () => {
-    verifiableCredential.forEach((vc) => {
-      expect(mockCheckCredentialStatus).toBeCalledWith(vc.id, authHeader);
-    });
-  });
-
-  it('Result should be true', () => {
-    expect(verStatus).toBeDefined();
-    expect(verStatus).toBe(true);
-  });
-
-  it('returns the x-auth-token header returned from the SaaS api in the x-auth-token header', () => {
-    expect(response.authToken).toEqual(dummyAuthToken);
-  });
-
-  it('does not return an x-auth-token header if the SaaS does not return an x-auth-token header', async () => {
-    const dummySubjectDidDoc = await makeDummyDidDocument();
-    const dummyApiResponse = { body: dummySubjectDidDoc };
-    mockMakeNetworkRequest.mockResolvedValueOnce(dummyApiResponse);
-    mockGetDIDDoc.mockResolvedValue({ body: dummySubjectDidDoc, authToken: undefined });
-    mockCheckCredentialStatus.mockReturnValue({ authToken: undefined, body: { status: 'valid' } });
-    mockVerifyCredential.mockResolvedValue({ authToken: undefined, body: true });
-    mockDoVerify.mockReturnValueOnce(true);
-    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
-    expect(response.authToken).toBeUndefined();
-  });
-});
-
-describe('verifyPresentation - Validation Failures', () => {
-  const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
+describe('verifyEncryptedPresentation - Validation Failures', () => {
+  const { context, type, verifiableCredentials, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
   it('returns a 400 status code with a descriptive error message when @context is missing', async () => {
     try {
-      await callVerifyPresentation('', type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation('', type, verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -363,7 +260,7 @@ describe('verifyPresentation - Validation Failures', () => {
 
   it('returns a 400 status code with a descriptive error message when type is missing', async () => {
     try {
-      await callVerifyPresentation(context, '', verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, '', verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -371,9 +268,9 @@ describe('verifyPresentation - Validation Failures', () => {
     }
   });
 
-  it('returns a 400 status code with a descriptive error message when verifiableCredential is missing', async () => {
+  it('returns a 400 status code with a descriptive error message when verifiableCredentials is missing', async () => {
     try {
-      await callVerifyPresentation(context, type, '', presentationRequestUuid, proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, '', presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -383,7 +280,7 @@ describe('verifyPresentation - Validation Failures', () => {
 
   it('returns a 400 status code with a descriptive error message when presentationRequestUuid is missing', async () => {
     try {
-      await callVerifyPresentation(context, type, verifiableCredential, '', proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, verifiableCredentials, '', proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -393,7 +290,7 @@ describe('verifyPresentation - Validation Failures', () => {
 
   it('returns a 400 status code with a descriptive error message when proof is missing', async () => {
     try {
-      await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, '', verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, '', verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -403,7 +300,7 @@ describe('verifyPresentation - Validation Failures', () => {
 
   it('returns a 400 status code with a descriptive error message when @context is not an array', async () => {
     try {
-      await callVerifyPresentation('https://www.w3.org/2018/credentials/v1', type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation('https://www.w3.org/2018/credentials/v1', type, verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -413,7 +310,7 @@ describe('verifyPresentation - Validation Failures', () => {
 
   it('returns a 400 status code with a descriptive error message when @context array is empty', async () => {
     try {
-      await callVerifyPresentation([], type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation([], type, verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -423,7 +320,7 @@ describe('verifyPresentation - Validation Failures', () => {
 
   it('returns a 400 status code with a descriptive error message when type is not an array', async () => {
     try {
-      await callVerifyPresentation(context, 'VerifiablePresentation', verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, 'VerifiablePresentation', verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -433,7 +330,7 @@ describe('verifyPresentation - Validation Failures', () => {
 
   it('returns a 400 status code with a descriptive error message when type is empty', async () => {
     try {
-      await callVerifyPresentation(context, [], verifiableCredential, presentationRequestUuid, proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, [], verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -443,7 +340,7 @@ describe('verifyPresentation - Validation Failures', () => {
 
   it('returns a 400 status code with a descriptive error message when verifiableCredentials is not an array', async () => {
     try {
-      await callVerifyPresentation(context, type, 'verifiableCredential', presentationRequestUuid, proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, 'verifiableCredentials', presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -453,7 +350,7 @@ describe('verifyPresentation - Validation Failures', () => {
 
   it('returns a 400 status code with a descriptive error message when verifiableCredentials array is empty', async () => {
     try {
-      await callVerifyPresentation(context, type, [], presentationRequestUuid, proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, [], presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -463,7 +360,7 @@ describe('verifyPresentation - Validation Failures', () => {
 
   it('returns a 401 status code if x-auth-token header is missing', async () => {
     try {
-      await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, '');
+      await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, '');
       fail();
     } catch (e) {
       expect(e.code).toEqual(401);
@@ -471,15 +368,15 @@ describe('verifyPresentation - Validation Failures', () => {
   });
 });
 
-describe('verifyPresentation - Validation for verifiableCredential object', () => {
+describe('verifyEncryptedPresentation - Validation for verifiableCredentials object', () => {
   let response: utilLib.JSONObj, preReq: utilLib.JSONObj;
-  const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
+  const { context, type, verifiableCredentials, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
   let cred;
   it('Response code should be ' + 400 + ' when @context is not passed', async () => {
-    cred = copyCredentialObj(verifiableCredential[0], '@context');
+    cred = copyCredentialObj(verifiableCredentials[0], '@context');
     try {
-      await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -488,9 +385,9 @@ describe('verifyPresentation - Validation for verifiableCredential object', () =
   });
 
   it('Response code should be ' + 400 + ' when credentialStatus is not passed', async () => {
-    cred = copyCredentialObj(verifiableCredential[0], 'credentialStatus');
+    cred = copyCredentialObj(verifiableCredentials[0], 'credentialStatus');
     try {
-      await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -499,9 +396,9 @@ describe('verifyPresentation - Validation for verifiableCredential object', () =
   });
 
   it('Response code should be ' + 400 + ' when credentialSubject is not passed', async () => {
-    cred = copyCredentialObj(verifiableCredential[0], 'credentialSubject');
+    cred = copyCredentialObj(verifiableCredentials[0], 'credentialSubject');
     try {
-      await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -510,9 +407,9 @@ describe('verifyPresentation - Validation for verifiableCredential object', () =
   });
 
   it('Response code should be ' + 400 + ' when issuer is not passed', async () => {
-    cred = copyCredentialObj(verifiableCredential[0], 'issuer');
+    cred = copyCredentialObj(verifiableCredentials[0], 'issuer');
     try {
-      await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -521,9 +418,9 @@ describe('verifyPresentation - Validation for verifiableCredential object', () =
   });
 
   it('Response code should be ' + 400 + ' when type is not passed', async () => {
-    cred = copyCredentialObj(verifiableCredential[0], 'type');
+    cred = copyCredentialObj(verifiableCredentials[0], 'type');
     try {
-      await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -532,9 +429,9 @@ describe('verifyPresentation - Validation for verifiableCredential object', () =
   });
 
   it('Response code should be ' + 400 + ' when id is not passed', async () => {
-    cred = copyCredentialObj(verifiableCredential[0], 'id');
+    cred = copyCredentialObj(verifiableCredentials[0], 'id');
     try {
-      await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -543,9 +440,9 @@ describe('verifyPresentation - Validation for verifiableCredential object', () =
   });
 
   it('Response code should be ' + 400 + ' when issuanceDate is not passed', async () => {
-    cred = copyCredentialObj(verifiableCredential[0], 'issuanceDate');
+    cred = copyCredentialObj(verifiableCredentials[0], 'issuanceDate');
     try {
-      await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -554,9 +451,9 @@ describe('verifyPresentation - Validation for verifiableCredential object', () =
   });
 
   it('Response code should be ' + 400 + ' when proof is not passed', async () => {
-    cred = copyCredentialObj(verifiableCredential[0], 'proof');
+    cred = copyCredentialObj(verifiableCredentials[0], 'proof');
     try {
-      await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -565,13 +462,13 @@ describe('verifyPresentation - Validation for verifiableCredential object', () =
   });
 });
 
-describe('verifyPresentation - Validation for proof object', () => {
-  const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
+describe('verifyEncryptedPresentation - Validation for proof object', () => {
+  const { context, type, verifiableCredentials, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
   it('returns a 400 status code with a descriptive error message when created is missing', async () => {
     const invalidProof = { created: '', signatureValue: proof.signatureValue, type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
     try {
-      await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, invalidProof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, invalidProof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -582,7 +479,7 @@ describe('verifyPresentation - Validation for proof object', () => {
   it('returns a 400 status code with a descriptive error message when signatureValue is missing', async () => {
     const invalidProof = { created: proof.created, signatureValue: '', type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
     try {
-      await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, invalidProof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, invalidProof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -593,7 +490,7 @@ describe('verifyPresentation - Validation for proof object', () => {
   it('returns a 400 status code with a descriptive error message when type is missing', async () => {
     const invalidProof = { created: proof.created, signatureValue: proof.signatureValue, type: '', verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
     try {
-      await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, invalidProof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, invalidProof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -604,7 +501,7 @@ describe('verifyPresentation - Validation for proof object', () => {
   it('returns a 400 status code with a descriptive error message when verificationMethod is missing', async () => {
     const invalidProof = { created: proof.created, signatureValue: proof.signatureValue, type: proof.type, verificationMethod: '', proofPurpose: proof.proofPurpose };
     try {
-      await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, invalidProof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, invalidProof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
@@ -615,11 +512,193 @@ describe('verifyPresentation - Validation for proof object', () => {
   it('returns a 400 status code with a descriptive error message when proofPurpose is missing', async () => {
     const invalidProof = { created: proof.created, signatureValue: proof.signatureValue, type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: '' };
     try {
-      await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, invalidProof, verifier, authHeader);
+      await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, invalidProof, verifier, authHeader);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
       expect(e.message).toBe('Invalid Presentation: proof.proofPurpose is required.');
     }
+  });
+});
+
+const dummyNoPresentation: NoPresentation = {
+  holder: 'did:unum:50fb0b5b-79ff-4db9-9f33-d93feab702db',
+  presentationRequestUuid: 'd5cc3673-d72f-45fa-bc87-36c305f8d0a5',
+  type: [
+    'NoPresentation',
+    'NoPresentation'
+  ],
+  proof: {
+    signatureValue: 'AN1rKvtGeqaB4L16dr2gwF9jZF77hdhrb8iBsTgUTt2XqUyoJYnfQQmczxMuKLM2zWU6E6DSSaqzWVsisbD3VhG8taLWGx6BY',
+    unsignedValue: 'unsigned sig value',
+    created: '2020-09-29T00:05:57.107Z',
+    type: 'secp256r1signature2020',
+    verificationMethod: 'did:unum:50fb0b5b-79ff-4db9-9f33-d93feab702db',
+    proofPurpose: 'assertionMethod'
+  }
+};
+
+const dummyNoPresentationWithoutType = omit(dummyNoPresentation, 'type') as NoPresentation;
+const dummyNoPresentationWithoutRequestUuid = omit(dummyNoPresentation, 'presentationRequestUuid') as NoPresentation;
+const dummyNoPresentationWithoutHolder = omit(dummyNoPresentation, 'holder') as NoPresentation;
+const dummyNoPresentationWithoutProof = omit(dummyNoPresentation, 'proof') as NoPresentation;
+
+const dummyNoPresentationBadType = { ...dummyNoPresentation, type: {} } as NoPresentation;
+const dummyNoPresentationBadTypeKeywordMissing = { ...dummyNoPresentation, type: ['No Presenation'] } as NoPresentation;
+const dummyNoPresentationBadRequestUuid = { ...dummyNoPresentation, presentationRequestUuid: {} } as NoPresentation;
+const dummyNoPresentationBadHolder = { ...dummyNoPresentation, holder: {} } as NoPresentation;
+const dummyNoPresentationBadProof = { ...dummyNoPresentation, proof: {} } as NoPresentation;
+
+const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
+const verifier = 'did:unum:dd407b1a-ee7f-46a2-af2a-ccbb48cbb0dc';
+
+const callVerifyNoPresentation = (
+  noPresentation: NoPresentation,
+  verifier: string,
+  authHeader?: string
+): Promise<UnumDto<VerifiedStatus>> => {
+  return verifyNoPresentationHelper(authHeader, noPresentation, verifier);
+};
+
+describe('verifyNoPresentation', () => {
+  beforeAll(async () => {
+    const dummyDidDoc = await makeDummyDidDocument({ id: dummyNoPresentation.holder });
+    const headers = { 'x-auth-token': dummyAuthToken };
+    mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
+    mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers });
+  });
+
+  afterAll(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('success', () => {
+    let response: UnumDto<VerifiedStatus>, responseAuthToken: string;
+
+    beforeEach(async () => {
+      mockDoVerify.mockReturnValue(true);
+      response = await callVerifyNoPresentation(dummyNoPresentation, verifier, authHeader);
+      responseAuthToken = response.authToken;
+    });
+
+    it('gets the holder did', () => {
+      expect(mockGetDIDDoc).toBeCalled();
+    });
+
+    it('verifies the NoPresentation', () => {
+      expect(mockDoVerify).toBeCalled();
+    });
+
+    it('returns the result of verification', () => {
+      expect(response.body.isVerified).toBe(true);
+    });
+
+    it('returns the x-auth-token header returned from the SaaS api in the x-auth-token header', () => {
+      expect(responseAuthToken).toEqual(dummyAuthToken);
+    });
+
+    it('does not return an x-auth-token header if the SaaS does not return an x-auth-token header', async () => {
+      const dummySubjectDidDoc = await makeDummyDidDocument();
+      const dummyApiResponse = { body: dummySubjectDidDoc };
+      mockMakeNetworkRequest.mockResolvedValueOnce(dummyApiResponse);
+      mockGetDIDDoc.mockResolvedValue({ body: dummySubjectDidDoc });
+      response = await callVerifyNoPresentation(dummyNoPresentation, verifier, authHeader);
+      expect(response.authToken).toBeUndefined();
+    });
+  });
+
+  describe('verifyNoPresentation error', () => {
+    it('returns a 401 status code if the x-auth-token header is missing', async () => {
+      try {
+        await callVerifyNoPresentation(dummyNoPresentation, verifier, '');
+        fail();
+      } catch (e) {
+        expect(e.code).toEqual(401);
+      }
+    });
+
+    it('returns a 400 status code with a descriptive error message if type is missing', async () => {
+      try {
+        await callVerifyNoPresentation(dummyNoPresentationWithoutType, verifier, authHeader);
+        fail();
+      } catch (e) {
+        expect(e.code).toEqual(400);
+        expect(e.message).toEqual('Invalid Presentation: type is required.');
+      }
+    });
+
+    it('returns a 400 status code with a descriptive error message if proof is missing', async () => {
+      try {
+        await callVerifyNoPresentation(dummyNoPresentationWithoutProof, verifier, authHeader);
+        fail();
+      } catch (e) {
+        expect(e.code).toEqual(400);
+        expect(e.message).toEqual('Invalid Presentation: proof is required.');
+      }
+    });
+
+    it('returns a 400 status code with a descriptive error message if holder is missing', async () => {
+      try {
+        await callVerifyNoPresentation(dummyNoPresentationWithoutHolder, verifier, authHeader);
+        fail();
+      } catch (e) {
+        expect(e.code).toEqual(400);
+        expect(e.message).toEqual('Invalid Presentation: holder is required.');
+      }
+    });
+
+    it('returns a 400 status code with a descriptive error presentationRequestUuid if holder is missing', async () => {
+      try {
+        await callVerifyNoPresentation(dummyNoPresentationWithoutRequestUuid, verifier, authHeader);
+        fail();
+      } catch (e) {
+        expect(e.code).toEqual(400);
+        expect(e.message).toEqual('Invalid Presentation: presentationRequestUuid is required.');
+      }
+    });
+
+    it('returns a 400 status code with a descriptive error message if type is invalid', async () => {
+      try {
+        await callVerifyNoPresentation(dummyNoPresentationBadTypeKeywordMissing, verifier, authHeader);
+      } catch (e) {
+        expect(e.code).toEqual(400);
+        expect(e.message).toEqual('Invalid type: first element must be \'NoPresentation\'.');
+      }
+    });
+
+    it('returns a 400 status code with a descriptive error message if type is not an array', async () => {
+      try {
+        await callVerifyNoPresentation(dummyNoPresentationBadType, verifier, authHeader);
+      } catch (e) {
+        expect(e.code).toEqual(400);
+        expect(e.message).toEqual('Invalid Presentation: type must be a non-empty array.');
+      }
+    });
+
+    it('returns a 400 status code with a descriptive error message if holder is invalid', async () => {
+      try {
+        await callVerifyNoPresentation(dummyNoPresentationBadHolder, verifier, authHeader);
+      } catch (e) {
+        expect(e.code).toEqual(400);
+        expect(e.message).toEqual('Invalid holder: must be a string.');
+      }
+    });
+
+    it('returns a 400 status code with a descriptive error message if presentationRequestUuid is invalid', async () => {
+      try {
+        await callVerifyNoPresentation(dummyNoPresentationBadRequestUuid, verifier, authHeader);
+      } catch (e) {
+        expect(e.code).toEqual(400);
+        expect(e.message).toEqual('Invalid presentationRequestUuid: must be a string.');
+      }
+    });
+
+    it('returns a 400 status code if proof is invalid', async () => {
+      try {
+        await callVerifyNoPresentation(dummyNoPresentationBadProof, verifier, authHeader);
+      } catch (e) {
+        expect(e.code).toEqual(400);
+      }
+    });
   });
 });

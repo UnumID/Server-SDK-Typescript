@@ -3,7 +3,7 @@ import { sendEmail } from './verifier/sendEmail';
 import { sendRequest } from './verifier/sendRequest';
 import { sendSms } from './verifier/sendSms';
 import { UnumDto, RegisteredVerifier, PresentationRequestResponse, RegisteredIssuer, VerifiedStatus, DecryptedPresentation, CredentialInfo, CredentialStatusInfo } from './types';
-import { verifyEncryptedPresentation as verifyPresentation } from './verifier/verifyEncryptedPresentation';
+import { verifyPresentation } from './verifier/verifyPresentation';
 import { registerIssuer } from './issuer/registerIssuer';
 import { issueCredential } from './issuer/issueCredentials';
 import { revokeCredential } from './issuer/revokeCredentials';

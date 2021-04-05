@@ -19,7 +19,7 @@ function isPresentation (presentation: PresentationOrNoPresentation): presentati
  * @param encryptedPresentation: EncryptedData
  * @param verifierDid: string
  */
-export const verifyEncryptedPresentation = async (authorization: string, encryptedPresentation: EncryptedData, verifierDid: string, encryptionPrivateKey: string): Promise<UnumDto<DecryptedPresentation>> => {
+export const verifyPresentation = async (authorization: string, encryptedPresentation: EncryptedData, verifierDid: string, encryptionPrivateKey: string): Promise<UnumDto<DecryptedPresentation>> => {
   try {
     requireAuth(authorization);
 

@@ -1,0 +1,1 @@
+{"version":3,"file":"verifyPresentation.d.ts","sourceRoot":"","sources":["../../src/verifier/verifyPresentation.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,qBAAqB,EAAgC,OAAO,EAAE,MAAM,UAAU,CAAC;AAIxF,OAAO,EAAa,aAAa,EAAE,MAAM,yCAAyC,CAAC;AAUnF;;;;;GAKG;AACH,eAAO,MAAM,kBAAkB,kBAAyB,MAAM,yBAAyB,aAAa,eAAe,MAAM,wBAAwB,MAAM,KAAG,OAAO,CAAC,OAAO,CAAC,qBAAqB,CAAC,CAqD/L,CAAC"}

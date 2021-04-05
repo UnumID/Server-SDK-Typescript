@@ -50,7 +50,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyEncryptedPresentation = void 0;
+exports.verifyPresentation = void 0;
 var requireAuth_1 = require("../requireAuth");
 var library_crypto_1 = require("@unumid/library-crypto");
 var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
@@ -66,7 +66,7 @@ function isPresentation(presentation) {
  * @param encryptedPresentation: EncryptedData
  * @param verifierDid: string
  */
-exports.verifyEncryptedPresentation = function (authorization, encryptedPresentation, verifierDid, encryptionPrivateKey) { return __awaiter(void 0, void 0, void 0, function () {
+exports.verifyPresentation = function (authorization, encryptedPresentation, verifierDid, encryptionPrivateKey) { return __awaiter(void 0, void 0, void 0, function () {
     var presentation, verificationResult_1, result_1, verificationResult, result, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
@@ -113,4 +113,4 @@ exports.verifyEncryptedPresentation = function (authorization, encryptedPresenta
         }
     });
 }); };
-//# sourceMappingURL=verifyEncryptedPresentation.js.map
+//# sourceMappingURL=verifyPresentation.js.map

@@ -6,5 +6,5 @@ import { EncryptedData } from '@unumid/library-issuer-verifier-utility';
  * @param encryptedPresentation: EncryptedData
  * @param verifierDid: string
  */
-export declare const verifyEncryptedPresentation: (authorization: string, encryptedPresentation: EncryptedData, verifierDid: string, encryptionPrivateKey: string) => Promise<UnumDto<DecryptedPresentation>>;
-//# sourceMappingURL=verifyEncryptedPresentation.d.ts.map
+export declare const verifyPresentation: (authorization: string, encryptedPresentation: EncryptedData, verifierDid: string, encryptionPrivateKey: string) => Promise<UnumDto<DecryptedPresentation>>;
+//# sourceMappingURL=verifyPresentation.d.ts.map
