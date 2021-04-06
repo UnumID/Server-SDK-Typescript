@@ -17,10 +17,10 @@ import { CryptoError } from '@unumid/library-crypto';
  * @param credentials JSONObj
  */
 const validateCredentialInput = (credentials: JSONObj): JSONObj => {
-  const retObj: JSONObj = { valStat: true, stringifiedCredentials: false, resultantCredentials: [] };
+  const retObj: JSONObj = { valid: true, stringifiedCredentials: false, resultantCredentials: [] };
 
   if (isArrayEmpty(credentials)) {
-    retObj.valStat = false;
+    retObj.valid = false;
     retObj.msg = 'Invalid Presentation: verifiableCredentials must be a non-empty array.';
 
     return (retObj);
@@ -39,77 +39,77 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
     // Validate the existence of elements in verifiableCredential object
     const invalidMsg = `Invalid verifiableCredentials${credPosStr}:`;
     if (!credential['@context']) {
-      retObj.valStat = false;
+      retObj.valid = false;
       retObj.msg = `${invalidMsg} @context is required.`;
       break;
     }
 
     if (!credential.credentialStatus) {
-      retObj.valStat = false;
+      retObj.valid = false;
       retObj.msg = `${invalidMsg} credentialStatus is required.`;
       break;
     }
 
     if (!credential.credentialSubject) {
-      retObj.valStat = false;
+      retObj.valid = false;
       retObj.msg = `${invalidMsg} credentialSubject is required.`;
       break;
     }
 
     if (!credential.issuer) {
-      retObj.valStat = false;
+      retObj.valid = false;
       retObj.msg = `${invalidMsg} issuer is required.`;
       break;
     }
 
     if (!credential.type) {
-      retObj.valStat = false;
+      retObj.valid = false;
       retObj.msg = `${invalidMsg} type is required.`;
       break;
     }
 
     if (!credential.id) {
-      retObj.valStat = false;
+      retObj.valid = false;
       retObj.msg = `${invalidMsg} id is required.`;
       break;
     }
 
     if (!credential.issuanceDate) {
-      retObj.valStat = false;
+      retObj.valid = false;
       retObj.msg = `${invalidMsg} issuanceDate is required.`;
       break;
     }
 
     if (!credential.proof) {
-      retObj.valStat = false;
+      retObj.valid = false;
       retObj.msg = `${invalidMsg} proof is required.`;
       break;
     }
 
     // Check @context is an array and not empty
     if (isArrayEmpty(credential['@context'])) {
-      retObj.valStat = false;
+      retObj.valid = false;
       retObj.msg = `${invalidMsg} @context must be a non-empty array.`;
       break;
     }
 
     // Check CredentialStatus object has id and type elements.
     if (!credential.credentialStatus.id || !credential.credentialStatus.type) {
-      retObj.valStat = false;
+      retObj.valid = false;
       retObj.msg = `${invalidMsg} credentialStatus must contain id and type properties.`;
       break;
     }
 
     // Check credentialSubject object has id element.
     if (!credential.credentialSubject.id) {
-      retObj.valStat = false;
+      retObj.valid = false;
       retObj.msg = `${invalidMsg} credentialSubject must contain id property.`;
       break;
     }
 
     // Check type is an array and not empty
     if (isArrayEmpty(credential.type)) {
-      retObj.valStat = false;
+      retObj.valid = false;
       retObj.msg = `${invalidMsg} type must be a non-empty array.`;
       break;
     }
@@ -166,7 +166,7 @@ const validatePresentation = (presentation: Presentation): Presentation => {
   }
 
   retObj = validateCredentialInput(verifiableCredentials);
-  if (!retObj.valStat) {
+  if (!retObj.valid) {
     throw new CustError(400, retObj.msg);
   } else if (retObj.stringifiedCredentials) {
     // adding the "objectified" vc, which were sent in string format to appease iOS variable keyed object limitation: https://developer.apple.com/forums/thread/100417
