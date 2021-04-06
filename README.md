@@ -97,9 +97,9 @@ Response Body: [**Credential**](https://docs.unum.id/Server-SDK-Typescript/inter
 ### updateCredentialStatus
 Update a credential, i.e. make it invalid.
 
-You need to provide the credential `id` (created when you issued the credential) and a [CredentialStatusOptions](https://docs.unum.id/types/modules.html#credentialstatusoptions) `status`. Currently there are only two statuses:"valid" and "revoked".
+You need to provide the credential `id` (created when you issued the credential) and a [CredentialStatusOptions](https://docs.unum.id/types/modules.html#credentialstatusoptions) `status`. Currently the only valid status are: verified and revoked.
 
-```typescript title="CredentialStatusOptions"
+```typescript
 export type CredentialStatusOptions = 'valid' | 'revoked';
 ```
 
@@ -282,13 +282,18 @@ Response Body: **Empty**. If unsuccessful and exception will be thrown.
 ```
 
 ### checkCredentialStatus
-Used to check the status of a credential. Currently the only valid status are: verified and revoked.
+Used to check the status of a credential. 
+
+The `status` attribute of the response is of type [CredentialStatusOptions](https://docs.unum.id/types/modules.html#credentialstatusoptions). Currently the only valid status are: verified and revoked.
+
+```typescript
+export type CredentialStatusOptions = 'valid' | 'revoked';
+```
 
 Parameters
 ```typescript
 {
   "credentialId": string, // the id of the credential in question
-  "authorization": string // auth token
 }
 ```
 
@@ -298,7 +303,7 @@ Response Body: **CredentialStatusInfo**. If unsuccessful and exception will be t
   "createdAt": Date; // the time  the credential was recorded as created in the UnumID SaaS db
   "updatedAt": Date; // the time  the credential was recorded as updated in the UnumID SaaS db
   "credentialId": string; // the did (aka id) of the credential this status is in regard to
-  "status": 'valid' | 'revoked'; // the status
+  "status": CredentialStatusOptions; // a string literal type that currently only consists of 'valid' and 'revoked'
 }
 ```
 

@@ -270,7 +270,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
         break;
       }
 
-      const isStatusValidResponse: UnumDto<CredentialStatusInfo> = await checkCredentialStatus(credential.id, authToken);
+      const isStatusValidResponse: UnumDto<CredentialStatusInfo> = await checkCredentialStatus(authToken, credential.id);
       const isStatusValid = isStatusValidResponse.body.status === 'valid';
       authToken = isStatusValidResponse.authToken;
 
