@@ -41,6 +41,10 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
     // decrypt the presentation
     const presentation = <Presentation|NoPresentation> decrypt(encryptionPrivateKey, encryptedPresentation);
 
+    if (presentationRequest && presentationRequest.presentationRequest.uuid !== presentation.presentationRequestUuid) {
+      throw new CustError(400, `presentation request uuid provided, ${presentationRequest.presentationRequest.uuid}, does not match the presentationRequestUuid that the presentation was in response to, ${presentation.presentationRequestUuid}.`);
+    }
+
     if (!isPresentation(presentation)) {
       const verificationResult: UnumDto<VerifiedStatus> = await verifyNoPresentationHelper(authorization, presentation, verifierDid);
       const result: UnumDto<DecryptedPresentation> = {

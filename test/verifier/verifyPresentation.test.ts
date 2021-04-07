@@ -29,7 +29,7 @@ const mockGetDIDDoc = utilLib.getDIDDoc as jest.Mock;
 const mockDoVerify = utilLib.doVerify as jest.Mock;
 const mockMakeNetworkRequest = utilLib.makeNetworkRequest as jest.Mock;
 
-const callVerifyEncryptedPresentation = (context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, auth = ''): Promise<UnumDto<DecryptedPresentation>> => {
+const callVerifyEncryptedPresentation = (context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, auth = '', presentationRequest?): Promise<UnumDto<DecryptedPresentation>> => {
   const presentation: Presentation = {
     '@context': context,
     type,
@@ -40,7 +40,7 @@ const callVerifyEncryptedPresentation = (context, type, verifiableCredentials, p
   };
 
   const encryptedPresentation = encrypt(`did:unum:${utilLib.getUUID()}`, dummyRsaPublicKey, presentation, 'pem');
-  return verifyPresentation(auth, encryptedPresentation, verifier, dummyRsaPrivateKey);
+  return verifyPresentation(auth, encryptedPresentation, verifier, dummyRsaPrivateKey, presentationRequest);
 };
 
 const copyCredentialObj = (credential: utilLib.JSONObj, elemName: string, elemValue = ''): utilLib.JSONObj => {
@@ -95,13 +95,14 @@ const populateMockData = (): utilLib.JSONObj => {
     }
   ];
   const presentationRequestUuid = '0cebee3b-3295-4ef6-a4d6-7dfea413b3aa';
+  const verifier = 'did:unum:f2054199-1069-4337-a588-83d099e79d44';
   const presentationRequest: PresentationRequestDto = {
     presentationRequest: {
       uuid: presentationRequestUuid,
       createdAt: new Date('2021-04-07T01:21:41.059Z'),
       updatedAt: new Date('2021-04-07T01:21:41.059Z'),
       expiresAt: new Date('2021-04-07T01:31:41.059Z'),
-      verifier: 'did:unum:f2054199-1069-4337-a588-83d099e79d44',
+      verifier,
       credentialRequests: [
         {
           type: 'FirstNameCredential',
@@ -116,7 +117,7 @@ const populateMockData = (): utilLib.JSONObj => {
         signatureValue: 'AN1rKpweXKqdMBBkmGtbDRsZcKVopuurFjvwcTRzkE8r5wUD1ZXphVGZ3ZSTmjA8CKihvrX8wtyvn1uAykUvL36tobr4uvRGv',
         unsignedValue: '{"createdAt":"2021-04-07T01:21:41.059Z","credentialRequests":[{"issuers":["did:unum:512ff9b8-bdb4-4d38-ac7d-63086122f6ae"],"required":false,"type":"FirstNameCredential"}],"expiresAt":"2021-04-07T01:31:41.059Z","holderAppUuid":"91514d8e-b5b2-41d9-9744-3cbb2bb9a85d","metadata":{},"updatedAt":"2021-04-07T01:21:41.059Z","uuid":"da8edbfd-b630-4ea1-8267-ecc7b891fd34","verifier":"did:unum:f2054199-1069-4337-a588-83d099e79d44"}',
         type: 'secp256r1Signature2020',
-        verificationMethod: 'did:unum:f2054199-1069-4337-a588-83d099e79d44',
+        verificationMethod: verifier,
         proofPurpose: 'AssertionMethod'
       },
       metadata: {},
@@ -130,7 +131,7 @@ const populateMockData = (): utilLib.JSONObj => {
     },
     verifier: {
       name: 'demo acme verifier 1',
-      did: 'did:unum:f2054199-1069-4337-a588-83d099e79d44',
+      did: verifier,
       url: 'https://acme-verifier-api.demo.dev-unum.id/presentation'
     }
   };
@@ -142,7 +143,7 @@ const populateMockData = (): utilLib.JSONObj => {
     proofPurpose: 'AssertionMethod'
   };
   const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
-  const verifier = 'did:unum:dd407b1a-ee7f-46a2-af2a-ccbb48cbb0dc';
+
   return ({
     context,
     type,
@@ -287,7 +288,7 @@ describe('verifyEncryptedPresentation - Failure Scenarios', () => {
 });
 
 describe('verifyEncryptedPresentation - Validation Failures', () => {
-  const { authHeader, verifier, presentationRequest } = populateMockData();
+  const { context, type, verifiableCredentials, presentationRequestUuid, proof, authHeader, verifier, presentationRequest } = populateMockData();
 
   it('returns a 400 status code with a descriptive error message when encryptedPresentation is missing', async () => {
     try {
@@ -320,12 +321,23 @@ describe('verifyEncryptedPresentation - Validation Failures', () => {
   });
 
   it('returns a 400 status code with a descriptive error message when if presentationRequest is present, presentationRequest verifier did does not match supplied verifier did', async () => {
+    const fakeVerifierDid = 'did:1234';
     try {
-      await verifyPresentation(authHeader, {}, verifier, dummyRsaPrivateKey, presentationRequest);
+      await verifyPresentation(authHeader, {}, fakeVerifierDid, dummyRsaPrivateKey, presentationRequest);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe(`verifier provided, ${verifier}, does not match the presentation request verifier, did:unum:f2054199-1069-4337-a588-83d099e79d44.`);
+      expect(e.message).toBe(`verifier provided, ${fakeVerifierDid}, does not match the presentation request verifier, did:unum:f2054199-1069-4337-a588-83d099e79d44.`);
+    }
+  });
+
+  it('returns a 400 status code with a descriptive error message when if presentationRequest uuid provided does not match is the presentation presentationRequestUuid.', async () => {
+    try {
+      await callVerifyEncryptedPresentation(context, type, verifiableCredentials, 'uuid:123', proof, verifier, authHeader, presentationRequest);
+      fail();
+    } catch (e) {
+      expect(e.code).toBe(400);
+      expect(e.message).toBe(`presentation request uuid provided, ${presentationRequest.presentationRequest.uuid}, does not match the presentationRequestUuid that the presentation was in response to, uuid:123.`);
     }
   });
 });

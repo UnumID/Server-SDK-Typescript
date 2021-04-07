@@ -86,6 +86,9 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                     throw new library_issuer_verifier_utility_1.CustError(400, "verifier provided, " + verifierDid + ", does not match the presentation request verifier, " + presentationRequest.verifier.did + ".");
                 }
                 presentation = library_crypto_1.decrypt(encryptionPrivateKey, encryptedPresentation);
+                if (presentationRequest && presentationRequest.presentationRequest.uuid !== presentation.presentationRequestUuid) {
+                    throw new library_issuer_verifier_utility_1.CustError(400, "presentation request uuid provided, " + presentationRequest.presentationRequest.uuid + ", does not match the presentationRequestUuid that the presentation was in response to, " + presentation.presentationRequestUuid + ".");
+                }
                 if (!!isPresentation(presentation)) return [3 /*break*/, 2];
                 return [4 /*yield*/, verifyNoPresentationHelper_1.verifyNoPresentationHelper(authorization, presentation, verifierDid)];
             case 1:
