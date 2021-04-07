@@ -215,15 +215,27 @@ Response Body: [**PresentationRequestResponse**](https://docs.unum.id/Server-SDK
 ### verifyPresentation 
 Handles decrypting the encrypted presentation and verifies the signatures are valid.
 
-This is used in service behind the `/presentation` endpoint that needs to be defined according to [this](https://unumid.postman.co/workspace/Unum-ID-Team-Workspace~48b1f312-a6e6-4bcc-86a0-aa4bc37df9b4/api/09ad0ccd-c614-4d54-a1b4-ff9ae85b8449?version=c217a461-fc05-4476-a792-6c9163f2a198&tab=define) spec which UnumID's SaaS forwards encrypted Presentations to.  
+You need to be able to receive presentations from users and pass them to this function. To do this, you need to create a `/presentation` endpoint that conforms to our [OpenAPI specification](https://unumid.postman.co/workspace/Unum-ID-Team-Workspace~48b1f312-a6e6-4bcc-86a0-aa4bc37df9b4/api/09ad0ccd-c614-4d54-a1b4-ff9ae85b8449?version=c217a461-fc05-4476-a792-6c9163f2a198&tab=define). The Unum ID cloud sends encrypted presentations to this endpoint, which should pass those presentations to the `verifyPresentation` function to be decrypted and verified.
+
+You need to provide:
+
+1. your verifier did
+2. your verifier encryption private key
+3. encrypted presentation (received at `/presentation` endpoint)
+4. (optional, but recommended) presentation request (received at `/presentation` endpoint)
+
+The fist two are returned by [`registerVerifier`](#registerVerifier).
 
 **Important** Although the mobile SDK sends the presentations directly to UnumID's SaaS, UnumID never has access to the credentials within the presentation. The mobile SDK encrypts all presentations with the presentation requesting verifier's public key, to which the requestor is the only ones with necessary decryption private key, the Verifier's `encryptionPrivateKey`, an attribute created with the registerVerifier call.
+
+**Note** `presentationRequest` is optional in order for the server sdk can handle verifying presentations that may not have a corresponding request. However, if `presentationRequest` is supplied from UnumID's SaaS via the `/presentation` endpoint, it is strongly recommended that it is provided as it performs additional validation checks on your behalf.
 
 Parameters
 ```typescript
 "encryptedPresentation": EncryptedData, // encrypted presentation
 "verifierDid": string, // your verifier DID
 "encryptionPrivateKey": string // your verifier encryption private key
+"presentationRequest"?: PresentationRequestDto // (optional) presentation request dto object to verify presentation credentials meet request requirements. This is an optional param to support the future use case of handling verifying presentations that are not in response to PresentationRequest
 ```
 
 
