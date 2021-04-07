@@ -35,14 +35,11 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
     }
 
     if (presentationRequest && presentationRequest.verifier.did !== verifierDid) {
-      throw new CustError(400, 'verifier does not match presentation request.'); // TODO create test for this
+      throw new CustError(400, `verifier provided, ${verifierDid}, does not match the presentation request verifier, ${presentationRequest.verifier.did}.`);
     }
 
     // decrypt the presentation
     const presentation = <Presentation|NoPresentation> decrypt(encryptionPrivateKey, encryptedPresentation);
-
-    // fetch presentation request from saas
-    // const presentationRequest: PresentationRequestGetDto = getPresentationRequest(authorization, presentation.presentationRequestUuid);
 
     if (!isPresentation(presentation)) {
       const verificationResult: UnumDto<VerifiedStatus> = await verifyNoPresentationHelper(authorization, presentation, verifierDid);
