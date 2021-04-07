@@ -182,13 +182,11 @@ const validatePresentation = (presentation: Presentation): Presentation => {
 /**
  * Validates that:
  * a. all requested credentials types are present
- * b. the issuer is in the list of required issuers
+ * b. credentials are only from list of required issuers, if the list is present
  * @param presentation Presentation
  * @param credentialRequests CredentialRequest[]
  */
 function validatePresentationMeetsRequestedCredentials (presentation: Presentation, credentialRequests: CredentialRequest[]) {
-  // TODO filter for only the credentialRequests which are required True
-
   for (const requestedCred of credentialRequests) {
     if (requestedCred.required) {
       // check that the request credential is present in the presentation
@@ -226,7 +224,6 @@ function validatePresentationMeetsRequestedCredentials (presentation: Presentati
  * @param verifier
  */
 export const verifyPresentationHelper = async (authorization: string, presentation: Presentation, verifier: string, credentialRequests?: CredentialRequest[]): Promise<UnumDto<VerifiedStatus>> => {
-// export const verifyPresentationHelper = async (authorization: string, presentation: Presentation, presentationRequest?: PresentationRequestDto): Promise<UnumDto<VerifiedStatus>> => {
   try {
     requireAuth(authorization);
 

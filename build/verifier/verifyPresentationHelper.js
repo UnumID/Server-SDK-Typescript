@@ -190,12 +190,11 @@ var validatePresentation = function (presentation) {
 /**
  * Validates that:
  * a. all requested credentials types are present
- * b. the issuer is in the list of required issuers
+ * b. credentials are only from list of required issuers, if the list is present
  * @param presentation Presentation
  * @param credentialRequests CredentialRequest[]
  */
 function validatePresentationMeetsRequestedCredentials(presentation, credentialRequests) {
-    // TODO filter for only the credentialRequests which are required True
     for (var _i = 0, credentialRequests_1 = credentialRequests; _i < credentialRequests_1.length; _i++) {
         var requestedCred = credentialRequests_1[_i];
         if (requestedCred.required) {
