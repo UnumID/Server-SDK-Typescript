@@ -1,14 +1,14 @@
 import { omit } from 'lodash';
 
 import { configData } from '../config';
-import { CredentialStatus, CredentialStatusInfo, UnumDto, VerifiedStatus } from '../types';
-import { Presentation } from '@unumid/types';
+import { CredentialStatusInfo, UnumDto, VerifiedStatus } from '../types';
+import { Presentation, VerifiableCredential, CredentialRequest, PresentationRequestDto } from '@unumid/types';
 import { validateProof } from './validateProof';
 import { requireAuth } from '../requireAuth';
 import { verifyCredential } from './verifyCredential';
 import { isCredentialExpired } from './isCredentialExpired';
 import { checkCredentialStatus } from './checkCredentialStatus';
-import { JSONObj, CustError, Proof, getDIDDoc, PublicKeyInfo, getKeyFromDIDDoc, doVerify, RESTData, makeNetworkRequest, isArrayEmpty, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
+import { JSONObj, CustError, Proof, getDIDDoc, PublicKeyInfo, getKeyFromDIDDoc, doVerify, RESTData, makeNetworkRequest, isArrayEmpty, handleAuthToken, isArrayNotEmpty } from '@unumid/library-issuer-verifier-utility';
 import logger from '../logger';
 import { CryptoError } from '@unumid/library-crypto';
 
@@ -17,10 +17,10 @@ import { CryptoError } from '@unumid/library-crypto';
  * @param credentials JSONObj
  */
 const validateCredentialInput = (credentials: JSONObj): JSONObj => {
-  const retObj: JSONObj = { valStat: true, stringifiedCredentials: false, resultantCredentials: [] };
+  const retObj: JSONObj = { valid: true, stringifiedCredentials: false, resultantCredentials: [] };
 
   if (isArrayEmpty(credentials)) {
-    retObj.valStat = false;
+    retObj.valid = false;
     retObj.msg = 'Invalid Presentation: verifiableCredentials must be a non-empty array.';
 
     return (retObj);
@@ -39,77 +39,77 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
     // Validate the existence of elements in verifiableCredential object
     const invalidMsg = `Invalid verifiableCredentials${credPosStr}:`;
     if (!credential['@context']) {
-      retObj.valStat = false;
+      retObj.valid = false;
       retObj.msg = `${invalidMsg} @context is required.`;
       break;
     }
 
     if (!credential.credentialStatus) {
-      retObj.valStat = false;
+      retObj.valid = false;
       retObj.msg = `${invalidMsg} credentialStatus is required.`;
       break;
     }
 
     if (!credential.credentialSubject) {
-      retObj.valStat = false;
+      retObj.valid = false;
       retObj.msg = `${invalidMsg} credentialSubject is required.`;
       break;
     }
 
     if (!credential.issuer) {
-      retObj.valStat = false;
+      retObj.valid = false;
       retObj.msg = `${invalidMsg} issuer is required.`;
       break;
     }
 
     if (!credential.type) {
-      retObj.valStat = false;
+      retObj.valid = false;
       retObj.msg = `${invalidMsg} type is required.`;
       break;
     }
 
     if (!credential.id) {
-      retObj.valStat = false;
+      retObj.valid = false;
       retObj.msg = `${invalidMsg} id is required.`;
       break;
     }
 
     if (!credential.issuanceDate) {
-      retObj.valStat = false;
+      retObj.valid = false;
       retObj.msg = `${invalidMsg} issuanceDate is required.`;
       break;
     }
 
     if (!credential.proof) {
-      retObj.valStat = false;
+      retObj.valid = false;
       retObj.msg = `${invalidMsg} proof is required.`;
       break;
     }
 
     // Check @context is an array and not empty
     if (isArrayEmpty(credential['@context'])) {
-      retObj.valStat = false;
+      retObj.valid = false;
       retObj.msg = `${invalidMsg} @context must be a non-empty array.`;
       break;
     }
 
     // Check CredentialStatus object has id and type elements.
     if (!credential.credentialStatus.id || !credential.credentialStatus.type) {
-      retObj.valStat = false;
+      retObj.valid = false;
       retObj.msg = `${invalidMsg} credentialStatus must contain id and type properties.`;
       break;
     }
 
     // Check credentialSubject object has id element.
     if (!credential.credentialSubject.id) {
-      retObj.valStat = false;
+      retObj.valid = false;
       retObj.msg = `${invalidMsg} credentialSubject must contain id property.`;
       break;
     }
 
     // Check type is an array and not empty
     if (isArrayEmpty(credential.type)) {
-      retObj.valStat = false;
+      retObj.valid = false;
       retObj.msg = `${invalidMsg} type must be a non-empty array.`;
       break;
     }
@@ -166,7 +166,7 @@ const validatePresentation = (presentation: Presentation): Presentation => {
   }
 
   retObj = validateCredentialInput(verifiableCredentials);
-  if (!retObj.valStat) {
+  if (!retObj.valid) {
     throw new CustError(400, retObj.msg);
   } else if (retObj.stringifiedCredentials) {
     // adding the "objectified" vc, which were sent in string format to appease iOS variable keyed object limitation: https://developer.apple.com/forums/thread/100417
@@ -180,12 +180,50 @@ const validatePresentation = (presentation: Presentation): Presentation => {
 };
 
 /**
+ * Validates that:
+ * a. all requested credentials types are present
+ * b. credentials are only from list of required issuers, if the list is present
+ * @param presentation Presentation
+ * @param credentialRequests CredentialRequest[]
+ */
+function validatePresentationMeetsRequestedCredentials (presentation: Presentation, credentialRequests: CredentialRequest[]) {
+  for (const requestedCred of credentialRequests) {
+    if (requestedCred.required) {
+      // check that the request credential is present in the presentation
+      const presentationCreds:VerifiableCredential[] = presentation.verifiableCredentials;
+      let found = false;
+      for (const presentationCred of presentationCreds) {
+        // checking required credential types are presents
+        if (presentationCred.type.includes(requestedCred.type)) {
+          found = true;
+        }
+
+        if (found) {
+          // checking required issuers are present
+          if (isArrayNotEmpty(requestedCred.issuers) && !requestedCred.issuers.includes(presentationCred.issuer)) {
+            const errMessage = `Invalid Presentation: credentials provided did not meet issuer requirements, [${presentationCred.issuer}], per the presentation request, [${requestedCred.issuers}].`;
+            logger.warn(errMessage);
+            throw new CustError(400, errMessage);
+          }
+        }
+      }
+
+      if (!found) {
+        const errMessage = `Invalid Presentation: credentials provided did not meet type requirements, [${presentationCreds.map(pc => pc.type.filter(t => t !== 'VerifiableCredential'))}], per the presentation request, [${credentialRequests.map(cr => cr.type)}].`;
+        logger.warn(errMessage);
+        throw new CustError(400, errMessage);
+      }
+    }
+  }
+}
+
+/**
  * Handler to send information regarding the user agreeing to share a credential Presentation.
  * @param authorization
  * @param presentation
  * @param verifier
  */
-export const verifyPresentationHelper = async (authorization: string, presentation: Presentation, verifier: string): Promise<UnumDto<VerifiedStatus>> => {
+export const verifyPresentationHelper = async (authorization: string, presentation: Presentation, verifier: string, credentialRequests?: CredentialRequest[]): Promise<UnumDto<VerifiedStatus>> => {
   try {
     requireAuth(authorization);
 
@@ -199,6 +237,11 @@ export const verifyPresentationHelper = async (authorization: string, presentati
 
     const data = omit(presentation, 'proof'); // Note: important that this data variable is created prior to the validation thanks to validatePresentation taking potentially stringified VerifiableCredentials objects array and converting them to proper objects.
     presentation = validatePresentation(presentation);
+
+    // if specific credential requests, then need to confirm the presentation provided meets the requirements
+    if (isArrayNotEmpty(credentialRequests)) {
+      validatePresentationMeetsRequestedCredentials(presentation, credentialRequests as CredentialRequest[]);
+    }
 
     const proof: Proof = presentation.proof;
 
@@ -270,7 +313,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
         break;
       }
 
-      const isStatusValidResponse: UnumDto<CredentialStatusInfo> = await checkCredentialStatus(credential.id, authToken);
+      const isStatusValidResponse: UnumDto<CredentialStatusInfo> = await checkCredentialStatus(authToken, credential.id);
       const isStatusValid = isStatusValidResponse.body.status === 'valid';
       authToken = isStatusValidResponse.authToken;
 

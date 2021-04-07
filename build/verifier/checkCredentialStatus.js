@@ -44,7 +44,7 @@ var config_1 = require("../config");
  * @param credential
  * @param authorization
  */
-exports.checkCredentialStatus = function (credentialId, authorization) { return __awaiter(void 0, void 0, void 0, function () {
+exports.checkCredentialStatus = function (authorization, credentialId) { return __awaiter(void 0, void 0, void 0, function () {
     var options, credentialStatusResponse, credentialStatus, authToken, result;
     return __generator(this, function (_a) {
         switch (_a.label) {

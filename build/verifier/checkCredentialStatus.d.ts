@@ -4,5 +4,5 @@ import { CredentialStatusInfo, UnumDto } from '../types';
  * @param credential
  * @param authorization
  */
-export declare const checkCredentialStatus: (credentialId: string, authorization: string) => Promise<UnumDto<CredentialStatusInfo>>;
+export declare const checkCredentialStatus: (authorization: string, credentialId: string) => Promise<UnumDto<CredentialStatusInfo>>;
 //# sourceMappingURL=checkCredentialStatus.d.ts.map

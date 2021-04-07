@@ -8,7 +8,7 @@ import { configData } from '../config';
  * @param credential
  * @param authorization
  */
-export const checkCredentialStatus = async (credentialId: string, authorization: string): Promise<UnumDto<CredentialStatusInfo>> => {
+export const checkCredentialStatus = async (authorization: string, credentialId: string): Promise<UnumDto<CredentialStatusInfo>> => {
   const options = {
     baseUrl: configData.SaaSUrl,
     endPoint: `credentialStatus/${credentialId}`,

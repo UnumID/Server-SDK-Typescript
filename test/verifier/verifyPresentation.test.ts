@@ -9,6 +9,7 @@ import { omit } from 'lodash';
 import { DecryptedPresentation } from '../../src/types';
 import { verifyPresentation } from '../../src/verifier/verifyPresentation';
 import { verifyNoPresentationHelper } from '../../src/verifier/verifyNoPresentationHelper';
+import { PresentationRequestDto } from '@unumid/types';
 
 jest.mock('@unumid/library-issuer-verifier-utility', () => ({
   ...jest.requireActual('@unumid/library-issuer-verifier-utility'),
@@ -94,6 +95,45 @@ const populateMockData = (): utilLib.JSONObj => {
     }
   ];
   const presentationRequestUuid = '0cebee3b-3295-4ef6-a4d6-7dfea413b3aa';
+  const presentationRequest: PresentationRequestDto = {
+    presentationRequest: {
+      uuid: presentationRequestUuid,
+      createdAt: new Date('2021-04-07T01:21:41.059Z'),
+      updatedAt: new Date('2021-04-07T01:21:41.059Z'),
+      expiresAt: new Date('2021-04-07T01:31:41.059Z'),
+      verifier: 'did:unum:f2054199-1069-4337-a588-83d099e79d44',
+      credentialRequests: [
+        {
+          type: 'FirstNameCredential',
+          issuers: [
+            'did:unum:512ff9b8-bdb4-4d38-ac7d-63086122f6ae'
+          ],
+          required: false
+        }
+      ],
+      proof: {
+        created: '2021-04-07T01:21:41.059Z',
+        signatureValue: 'AN1rKpweXKqdMBBkmGtbDRsZcKVopuurFjvwcTRzkE8r5wUD1ZXphVGZ3ZSTmjA8CKihvrX8wtyvn1uAykUvL36tobr4uvRGv',
+        unsignedValue: '{"createdAt":"2021-04-07T01:21:41.059Z","credentialRequests":[{"issuers":["did:unum:512ff9b8-bdb4-4d38-ac7d-63086122f6ae"],"required":false,"type":"FirstNameCredential"}],"expiresAt":"2021-04-07T01:31:41.059Z","holderAppUuid":"91514d8e-b5b2-41d9-9744-3cbb2bb9a85d","metadata":{},"updatedAt":"2021-04-07T01:21:41.059Z","uuid":"da8edbfd-b630-4ea1-8267-ecc7b891fd34","verifier":"did:unum:f2054199-1069-4337-a588-83d099e79d44"}',
+        type: 'secp256r1Signature2020',
+        verificationMethod: 'did:unum:f2054199-1069-4337-a588-83d099e79d44',
+        proofPurpose: 'AssertionMethod'
+      },
+      metadata: {},
+      holderAppUuid: '91514d8e-b5b2-41d9-9744-3cbb2bb9a85d'
+    },
+    issuers: {
+      'did:unum:512ff9b8-bdb4-4d38-ac7d-63086122f6ae': {
+        name: 'Acme Co Issuer',
+        did: 'did:unum:512ff9b8-bdb4-4d38-ac7d-63086122f6ae'
+      }
+    },
+    verifier: {
+      name: 'demo acme verifier 1',
+      did: 'did:unum:f2054199-1069-4337-a588-83d099e79d44',
+      url: 'https://acme-verifier-api.demo.dev-unum.id/presentation'
+    }
+  };
   const proof: utilLib.JSONObj = {
     created: '2020-09-03T18:50:52.105Z',
     signatureValue: 'iKx1CJLYue7vopUo2fqGps3TWmxqRxoBDTupumLkaNp2W3UeAjwLUf5WxLRCRkDzEFeKCgT7JdF5fqbpvqnBZoHyYzWYbmW4YQ',
@@ -108,6 +148,7 @@ const populateMockData = (): utilLib.JSONObj => {
     type,
     verifiableCredentials,
     presentationRequestUuid,
+    presentationRequest,
     proof,
     authHeader,
     verifier
@@ -160,7 +201,7 @@ describe('verifyEncryptedPresentation - Success Scenario', () => {
 
   it('checks the status of each credential', () => {
     verifiableCredentials.forEach((vc) => {
-      expect(mockCheckCredentialStatus).toBeCalledWith(vc.id, authHeader);
+      expect(mockCheckCredentialStatus).toBeCalledWith(authHeader, vc.id);
     });
   });
 
@@ -246,6 +287,50 @@ describe('verifyEncryptedPresentation - Failure Scenarios', () => {
 });
 
 describe('verifyEncryptedPresentation - Validation Failures', () => {
+  const { authHeader, verifier, presentationRequest } = populateMockData();
+
+  it('returns a 400 status code with a descriptive error message when encryptedPresentation is missing', async () => {
+    try {
+      await verifyPresentation(authHeader, undefined, verifier, dummyRsaPrivateKey);
+      fail();
+    } catch (e) {
+      expect(e.code).toBe(400);
+      expect(e.message).toBe('encryptedPresentation is required.');
+    }
+  });
+
+  it('returns a 400 status code with a descriptive error message when encryptionPrivateKey is missing', async () => {
+    try {
+      await verifyPresentation(authHeader, {}, verifier, undefined);
+      fail();
+    } catch (e) {
+      expect(e.code).toBe(400);
+      expect(e.message).toBe('verifier encryptionPrivateKey is required.');
+    }
+  });
+
+  it('returns a 400 status code with a descriptive error message when verifierDid is missing', async () => {
+    try {
+      await verifyPresentation(authHeader, {}, undefined, dummyRsaPrivateKey);
+      fail();
+    } catch (e) {
+      expect(e.code).toBe(400);
+      expect(e.message).toBe('verifier is required.');
+    }
+  });
+
+  it('returns a 400 status code with a descriptive error message when if presentationRequest is present, presentationRequest verifier did does not match supplied verifier did', async () => {
+    try {
+      await verifyPresentation(authHeader, {}, verifier, dummyRsaPrivateKey, presentationRequest);
+      fail();
+    } catch (e) {
+      expect(e.code).toBe(400);
+      expect(e.message).toBe(`verifier provided, ${verifier}, does not match the presentation request verifier, did:unum:f2054199-1069-4337-a588-83d099e79d44.`);
+    }
+  });
+});
+
+describe('verifyEncryptedPresentation - Decrypted presentation validation Failures', () => {
   const { context, type, verifiableCredentials, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
   it('returns a 400 status code with a descriptive error message when @context is missing', async () => {
