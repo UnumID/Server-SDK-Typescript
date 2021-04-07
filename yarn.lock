@@ -798,7 +798,7 @@
     bs58 "^4.0.1"
     fast-json-stable-stringify "^2.1.0"
 
-"@unumid/library-issuer-verifier-utility@git+ssh://git@github.com/UnumID/library-issuer-verifier-utility.git#v0.9.0":
+"@unumid/library-issuer-verifier-utility@git+ssh://git@github.com/UnumID/library-issuer-verifier-utility.git#info":
   version "1.0.0"
   resolved "git+ssh://git@github.com/UnumID/library-issuer-verifier-utility.git#f0d78a94c4e6a93757ce591d36aa7bfaca2dd1d4"
   dependencies:
@@ -811,6 +811,12 @@
     node-fetch "^2.6.1"
     uuid "^8.2.0"
     winston "^3.3.3"
+
+"@unumid/types@git+ssh://git@github.com/UnumID/types.git#info":
+  version "0.0.1"
+  resolved "git+ssh://git@github.com/UnumID/types.git#7a202845b8437a3080766d824892ee28e08fec64"
+  dependencies:
+    runtypes "^6.0.0"
 
 "@unumid/types@git+ssh://git@github.com/UnumID/types.git#v1.2.0":
   version "0.0.1"
