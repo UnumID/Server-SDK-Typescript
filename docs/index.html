@@ -146,7 +146,7 @@
 					<h3>updateCredentialStatus</h3>
 				</a>
 				<p>Update a credential, i.e. make it invalid.</p>
-				<p>You need to provide the credential <code>id</code> (created when you issued the credential) and a <a href="https://docs.unum.id/types/modules.html#credentialstatusoptions">CredentialStatusOptions</a> <code>status</code>. Currently there are only two statuses:&quot;valid&quot; and &quot;revoked&quot;.</p>
+				<p>You need to provide the credential <code>id</code> (created when you issued the credential) and a <a href="https://docs.unum.id/types/modules.html#credentialstatusoptions">CredentialStatusOptions</a> <code>status</code>. Currently the only valid status are: verified and revoked.</p>
 				<pre><code class="language-typescript"><span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">type</span><span style="color: #000000"> </span><span style="color: #267F99">CredentialStatusOptions</span><span style="color: #000000"> = </span><span style="color: #A31515">&#039;valid&#039;</span><span style="color: #000000"> | </span><span style="color: #A31515">&#039;revoked&#039;</span><span style="color: #000000">;</span>
 </code></pre>
 				<p>Parameters</p>
@@ -246,12 +246,22 @@
 					<h3>verifyPresentation</h3>
 				</a>
 				<p>Handles decrypting the encrypted presentation and verifies the signatures are valid.</p>
-				<p>This is used in service behind the <code>/presentation</code> endpoint that needs to be defined according to <a href="https://unumid.postman.co/workspace/Unum-ID-Team-Workspace~48b1f312-a6e6-4bcc-86a0-aa4bc37df9b4/api/09ad0ccd-c614-4d54-a1b4-ff9ae85b8449?version=c217a461-fc05-4476-a792-6c9163f2a198&amp;tab=define">this</a> spec which UnumID&#39;s SaaS forwards encrypted Presentations to.  </p>
+				<p>You need to be able to receive presentations from users and pass them to this function. To do this, you need to create a <code>/presentation</code> endpoint that conforms to our <a href="https://unumid.postman.co/workspace/Unum-ID-Team-Workspace~48b1f312-a6e6-4bcc-86a0-aa4bc37df9b4/api/09ad0ccd-c614-4d54-a1b4-ff9ae85b8449?version=c217a461-fc05-4476-a792-6c9163f2a198&amp;tab=define">OpenAPI specification</a>. The Unum ID cloud sends encrypted presentations to this endpoint, which should pass those presentations to the <code>verifyPresentation</code> function to be decrypted and verified.</p>
+				<p>You need to provide:</p>
+				<ol>
+					<li>your verifier did</li>
+					<li>your verifier encryption private key</li>
+					<li>encrypted presentation (received at <code>/presentation</code> endpoint)</li>
+					<li>(optional, but recommended) presentation request (received at <code>/presentation</code> endpoint)</li>
+				</ol>
+				<p>The fist two are returned by <a href="#registerVerifier"><code>registerVerifier</code></a>.</p>
 				<p><strong>Important</strong> Although the mobile SDK sends the presentations directly to UnumID&#39;s SaaS, UnumID never has access to the credentials within the presentation. The mobile SDK encrypts all presentations with the presentation requesting verifier&#39;s public key, to which the requestor is the only ones with necessary decryption private key, the Verifier&#39;s <code>encryptionPrivateKey</code>, an attribute created with the registerVerifier call.</p>
+				<p><strong>Note</strong> <code>presentationRequest</code> is optional in order for the server sdk can handle verifying presentations that may not have a corresponding request. However, if <code>presentationRequest</code> is supplied from UnumID&#39;s SaaS via the <code>/presentation</code> endpoint, it is strongly recommended that it is provided as it performs additional validation checks on your behalf.</p>
 				<p>Parameters</p>
 				<pre><code class="language-typescript"><span style="color: #A31515">&quot;encryptedPresentation&quot;</span><span style="color: #000000">: </span><span style="color: #001080">EncryptedData</span><span style="color: #000000">, </span><span style="color: #008000">// encrypted presentation</span>
 <span style="color: #A31515">&quot;verifierDid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// your verifier DID</span>
 <span style="color: #A31515">&quot;encryptionPrivateKey&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// your verifier encryption private key</span>
+<span style="color: #A31515">&quot;presentationRequest&quot;</span><span style="color: #000000">?: </span><span style="color: #001080">PresentationRequestDto</span><span style="color: #000000"> </span><span style="color: #008000">// (optional) presentation request dto object to verify presentation credentials meet request requirements. This is an optional param to support the future use case of handling verifying presentations that are not in response to PresentationRequest</span>
 </code></pre>
 				<p>Response Body: <a href="https://docs.unum.id/Server-SDK-Typescript/interfaces/decryptedpresentation.html"><strong>DecryptedPresentation</strong></a></p>
 				<pre><code class="language-typescript"><span style="color: #000000">{</span>
@@ -297,11 +307,13 @@
 				<a href="#checkcredentialstatus" id="checkcredentialstatus" style="color: inherit; text-decoration: none;">
 					<h3>checkCredentialStatus</h3>
 				</a>
-				<p>Used to check the status of a credential. Currently the only valid status are: verified and revoked.</p>
+				<p>Used to check the status of a credential. </p>
+				<p>The <code>status</code> attribute of the response is of type <a href="https://docs.unum.id/types/modules.html#credentialstatusoptions">CredentialStatusOptions</a>. Currently the only valid status are: verified and revoked.</p>
+				<pre><code class="language-typescript"><span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">type</span><span style="color: #000000"> </span><span style="color: #267F99">CredentialStatusOptions</span><span style="color: #000000"> = </span><span style="color: #A31515">&#039;valid&#039;</span><span style="color: #000000"> | </span><span style="color: #A31515">&#039;revoked&#039;</span><span style="color: #000000">;</span>
+</code></pre>
 				<p>Parameters</p>
 				<pre><code class="language-typescript"><span style="color: #000000">{</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;credentialId&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// the id of the credential in question</span>
-<span style="color: #000000">  </span><span style="color: #A31515">&quot;authorization&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// auth token</span>
 <span style="color: #000000">}</span>
 </code></pre>
 				<p>Response Body: <strong>CredentialStatusInfo</strong>. If unsuccessful and exception will be thrown.</p>
@@ -309,7 +321,7 @@
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;createdAt&quot;</span><span style="color: #000000">: </span><span style="color: #267F99">Date</span><span style="color: #000000">; </span><span style="color: #008000">// the time  the credential was recorded as created in the UnumID SaaS db</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;updatedAt&quot;</span><span style="color: #000000">: </span><span style="color: #267F99">Date</span><span style="color: #000000">; </span><span style="color: #008000">// the time  the credential was recorded as updated in the UnumID SaaS db</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;credentialId&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">; </span><span style="color: #008000">// the did (aka id) of the credential this status is in regard to</span>
-<span style="color: #000000">  </span><span style="color: #A31515">&quot;status&quot;</span><span style="color: #000000">: </span><span style="color: #A31515">&#039;valid&#039;</span><span style="color: #000000"> | </span><span style="color: #A31515">&#039;revoked&#039;</span><span style="color: #000000">; </span><span style="color: #008000">// the status</span>
+<span style="color: #000000">  </span><span style="color: #A31515">&quot;status&quot;</span><span style="color: #000000">: </span><span style="color: #001080">CredentialStatusOptions</span><span style="color: #000000">; </span><span style="color: #008000">// a string literal type that currently only consists of &#039;valid&#039; and &#039;revoked&#039;</span>
 <span style="color: #000000">}</span>
 </code></pre>
 				<a href="#other-information" id="other-information" style="color: inherit; text-decoration: none;">
