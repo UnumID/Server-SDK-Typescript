@@ -66,8 +66,8 @@ function isPresentation(presentation) {
  * @param encryptedPresentation: EncryptedData
  * @param verifierDid: string
  */
-exports.verifyPresentation = function (authorization, encryptedPresentation, verifierDid, encryptionPrivateKey) { return __awaiter(void 0, void 0, void 0, function () {
-    var presentation, verificationResult_1, result_1, verificationResult, result, error_1;
+exports.verifyPresentation = function (authorization, encryptedPresentation, verifierDid, encryptionPrivateKey, presentationRequest) { return __awaiter(void 0, void 0, void 0, function () {
+    var presentation, verificationResult_1, result_1, credentialRequests, verificationResult, result, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -82,6 +82,9 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                 if (!encryptionPrivateKey) {
                     throw new library_issuer_verifier_utility_1.CustError(400, 'verifier encryptionPrivateKey is required.');
                 }
+                if (presentationRequest && presentationRequest.verifier.did !== verifierDid) {
+                    throw new library_issuer_verifier_utility_1.CustError(400, 'verifier does not match presentation request.'); // TODO create test for this
+                }
                 presentation = library_crypto_1.decrypt(encryptionPrivateKey, encryptedPresentation);
                 if (!!isPresentation(presentation)) return [3 /*break*/, 2];
                 return [4 /*yield*/, verifyNoPresentationHelper_1.verifyNoPresentationHelper(authorization, presentation, verifierDid)];
@@ -92,7 +95,9 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                     body: __assign(__assign({}, verificationResult_1.body), { type: 'NoPresentation', presentation: presentation })
                 };
                 return [2 /*return*/, result_1];
-            case 2: return [4 /*yield*/, verifyPresentationHelper_1.verifyPresentationHelper(authorization, presentation, verifierDid)];
+            case 2:
+                credentialRequests = presentationRequest === null || presentationRequest === void 0 ? void 0 : presentationRequest.presentationRequest.credentialRequests;
+                return [4 /*yield*/, verifyPresentationHelper_1.verifyPresentationHelper(authorization, presentation, verifierDid, credentialRequests)];
             case 3:
                 verificationResult = _a.sent();
                 result = {

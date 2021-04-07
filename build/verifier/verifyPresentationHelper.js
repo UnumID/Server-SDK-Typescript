@@ -188,12 +188,50 @@ var validatePresentation = function (presentation) {
     return presentation;
 };
 /**
+ * Validates that:
+ * a. all requested credentials types are present
+ * b. the issuer is in the list of required issuers
+ * @param presentation Presentation
+ * @param credentialRequests CredentialRequest[]
+ */
+function validatePresentationMeetsRequestedCredentials(presentation, credentialRequests) {
+    // TODO filter for only the credentialRequests which are required True
+    for (var _i = 0, credentialRequests_1 = credentialRequests; _i < credentialRequests_1.length; _i++) {
+        var requestedCred = credentialRequests_1[_i];
+        if (requestedCred.required) {
+            // check that the request credential is present in the presentation
+            var presentationCreds = presentation.verifiableCredentials;
+            var found = false;
+            for (var _a = 0, presentationCreds_1 = presentationCreds; _a < presentationCreds_1.length; _a++) {
+                var presentationCred = presentationCreds_1[_a];
+                // checking required credential types are presents
+                if (presentationCred.type.includes(requestedCred.type)) {
+                    found = true;
+                }
+                if (found) {
+                    // checking required issuers are present
+                    if (library_issuer_verifier_utility_1.isArrayNotEmpty(requestedCred.issuers) && !requestedCred.issuers.includes(presentationCred.issuer)) {
+                        var errMessage = "Invalid Presentation: credentials provided did not meet issuer requirements, [" + presentationCred.issuer + "], per the presentation request, [" + requestedCred.issuers + "].";
+                        logger_1.default.warn(errMessage);
+                        throw new library_issuer_verifier_utility_1.CustError(400, errMessage);
+                    }
+                }
+            }
+            if (!found) {
+                var errMessage = "Invalid Presentation: credentials provided did not meet type requirements, [" + presentationCreds.map(function (pc) { return pc.type.filter(function (t) { return t !== 'VerifiableCredential'; }); }) + "], per the presentation request, [" + credentialRequests.map(function (cr) { return cr.type; }) + "].";
+                logger_1.default.warn(errMessage);
+                throw new library_issuer_verifier_utility_1.CustError(400, errMessage);
+            }
+        }
+    }
+}
+/**
  * Handler to send information regarding the user agreeing to share a credential Presentation.
  * @param authorization
  * @param presentation
  * @param verifier
  */
-exports.verifyPresentationHelper = function (authorization, presentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
+exports.verifyPresentationHelper = function (authorization, presentation, verifier, credentialRequests) { return __awaiter(void 0, void 0, void 0, function () {
     var data, proof, didDocumentResponse, authToken, pubKeyObj, result_1, isPresentationVerified, result_2, result_3, areCredentialsValid, _i, _a, credential, isExpired, isStatusValidResponse, isStatusValid, isVerifiedResponse, isVerified_1, result_4, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, result, error_1;
     return __generator(this, function (_b) {
         switch (_b.label) {
@@ -208,6 +246,10 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 }
                 data = lodash_1.omit(presentation, 'proof');
                 presentation = validatePresentation(presentation);
+                // if specific credential requests, then need to confirm the presentation provided meets the requirements
+                if (library_issuer_verifier_utility_1.isArrayNotEmpty(credentialRequests)) {
+                    validatePresentationMeetsRequestedCredentials(presentation, credentialRequests);
+                }
                 proof = presentation.proof;
                 return [4 /*yield*/, library_issuer_verifier_utility_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, proof.verificationMethod)];
             case 1:
@@ -268,7 +310,7 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                     areCredentialsValid = false;
                     return [3 /*break*/, 6];
                 }
-                return [4 /*yield*/, checkCredentialStatus_1.checkCredentialStatus(credential.id, authToken)];
+                return [4 /*yield*/, checkCredentialStatus_1.checkCredentialStatus(authToken, credential.id)];
             case 3:
                 isStatusValidResponse = _b.sent();
                 isStatusValid = isStatusValidResponse.body.status === 'valid';

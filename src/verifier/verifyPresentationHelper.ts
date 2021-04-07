@@ -1,14 +1,14 @@
 import { omit } from 'lodash';
 
 import { configData } from '../config';
-import { CredentialStatus, CredentialStatusInfo, UnumDto, VerifiedStatus } from '../types';
-import { Presentation } from '@unumid/types';
+import { CredentialStatusInfo, UnumDto, VerifiedStatus } from '../types';
+import { Presentation, VerifiableCredential, CredentialRequest, PresentationRequestDto } from '@unumid/types';
 import { validateProof } from './validateProof';
 import { requireAuth } from '../requireAuth';
 import { verifyCredential } from './verifyCredential';
 import { isCredentialExpired } from './isCredentialExpired';
 import { checkCredentialStatus } from './checkCredentialStatus';
-import { JSONObj, CustError, Proof, getDIDDoc, PublicKeyInfo, getKeyFromDIDDoc, doVerify, RESTData, makeNetworkRequest, isArrayEmpty, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
+import { JSONObj, CustError, Proof, getDIDDoc, PublicKeyInfo, getKeyFromDIDDoc, doVerify, RESTData, makeNetworkRequest, isArrayEmpty, handleAuthToken, isArrayNotEmpty } from '@unumid/library-issuer-verifier-utility';
 import logger from '../logger';
 import { CryptoError } from '@unumid/library-crypto';
 
@@ -180,12 +180,53 @@ const validatePresentation = (presentation: Presentation): Presentation => {
 };
 
 /**
+ * Validates that:
+ * a. all requested credentials types are present
+ * b. the issuer is in the list of required issuers
+ * @param presentation Presentation
+ * @param credentialRequests CredentialRequest[]
+ */
+function validatePresentationMeetsRequestedCredentials (presentation: Presentation, credentialRequests: CredentialRequest[]) {
+  // TODO filter for only the credentialRequests which are required True
+
+  for (const requestedCred of credentialRequests) {
+    if (requestedCred.required) {
+      // check that the request credential is present in the presentation
+      const presentationCreds:VerifiableCredential[] = presentation.verifiableCredentials;
+      let found = false;
+      for (const presentationCred of presentationCreds) {
+        // checking required credential types are presents
+        if (presentationCred.type.includes(requestedCred.type)) {
+          found = true;
+        }
+
+        if (found) {
+          // checking required issuers are present
+          if (isArrayNotEmpty(requestedCred.issuers) && !requestedCred.issuers.includes(presentationCred.issuer)) {
+            const errMessage = `Invalid Presentation: credentials provided did not meet issuer requirements, [${presentationCred.issuer}], per the presentation request, [${requestedCred.issuers}].`;
+            logger.warn(errMessage);
+            throw new CustError(400, errMessage);
+          }
+        }
+      }
+
+      if (!found) {
+        const errMessage = `Invalid Presentation: credentials provided did not meet type requirements, [${presentationCreds.map(pc => pc.type.filter(t => t !== 'VerifiableCredential'))}], per the presentation request, [${credentialRequests.map(cr => cr.type)}].`;
+        logger.warn(errMessage);
+        throw new CustError(400, errMessage);
+      }
+    }
+  }
+}
+
+/**
  * Handler to send information regarding the user agreeing to share a credential Presentation.
  * @param authorization
  * @param presentation
  * @param verifier
  */
-export const verifyPresentationHelper = async (authorization: string, presentation: Presentation, verifier: string): Promise<UnumDto<VerifiedStatus>> => {
+export const verifyPresentationHelper = async (authorization: string, presentation: Presentation, verifier: string, credentialRequests?: CredentialRequest[]): Promise<UnumDto<VerifiedStatus>> => {
+// export const verifyPresentationHelper = async (authorization: string, presentation: Presentation, presentationRequest?: PresentationRequestDto): Promise<UnumDto<VerifiedStatus>> => {
   try {
     requireAuth(authorization);
 
@@ -199,6 +240,11 @@ export const verifyPresentationHelper = async (authorization: string, presentati
 
     const data = omit(presentation, 'proof'); // Note: important that this data variable is created prior to the validation thanks to validatePresentation taking potentially stringified VerifiableCredentials objects array and converting them to proper objects.
     presentation = validatePresentation(presentation);
+
+    // if specific credential requests, then need to confirm the presentation provided meets the requirements
+    if (isArrayNotEmpty(credentialRequests)) {
+      validatePresentationMeetsRequestedCredentials(presentation, credentialRequests as CredentialRequest[]);
+    }
 
     const proof: Proof = presentation.proof;
 

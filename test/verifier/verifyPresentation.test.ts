@@ -160,7 +160,7 @@ describe('verifyEncryptedPresentation - Success Scenario', () => {
 
   it('checks the status of each credential', () => {
     verifiableCredentials.forEach((vc) => {
-      expect(mockCheckCredentialStatus).toBeCalledWith(vc.id, authHeader);
+      expect(mockCheckCredentialStatus).toBeCalledWith(authHeader, vc.id);
     });
   });
 

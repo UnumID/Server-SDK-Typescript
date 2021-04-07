@@ -43,8 +43,8 @@
     "typescript": "^3.9.7"
   },
   "dependencies": {
-    "@unumid/library-issuer-verifier-utility": "git+ssh://git@github.com/UnumID/library-issuer-verifier-utility.git#v0.8.0",
-    "@unumid/types": "git+ssh://git@github.com/UnumID/types.git#v1.1.0",
+    "@unumid/library-issuer-verifier-utility": "git+ssh://git@github.com/UnumID/library-issuer-verifier-utility.git#encP",
+    "@unumid/types": "git+ssh://git@github.com/UnumID/types.git#encP",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "fast-json-stable-stringify": "^2.1.0",
