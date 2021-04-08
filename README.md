@@ -322,11 +322,7 @@ Response Body: **CredentialStatusInfo**. If unsuccessful and exception will be t
 ## Other Information
 ### Distribution
 
-Currently this project is still closed source, so standard distribution options via public source code or NPM repository are not viable. Downstream projects are leveraging this project via it's git url using Docker Buildkit to provide SSH credentials for access to this Github source code repo. An example of such a buildkit configuration can be found in the [hooli-demo-server](https://github.com/UnumID/hooli-demo-server) `Dockerfile` and `.circleci/config.yaml`.
-
-We considered opting to build and push as a private module through a private Github NPM repo. However due to the complexities of configuring a downstream project to have rights to pull from the private NPM repo we have opted to not add pushing a private package to our CI job. 
-
-Soon, we hope to open source this project and uploaded the package as public NPM module.  
+This project is publicly published on the official npm [registry](https://www.npmjs.com/package/@unumid/server-sdk). For example it can be pulled with, `npm i @unumid/server-sdk` or `yarn add @unumid/server-sdk`.
 ### Global Dependencies
 - NodeJS v14.0.0 or higher, preferably v14.15.0 or higher
 - yarn
