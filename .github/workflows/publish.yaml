@@ -73,6 +73,7 @@ jobs:
       - name: Create type docs
         run: |
           npm i -g typedoc
+          npm i typescript
           npx typedoc src/index.ts
           
         #- npm publish
