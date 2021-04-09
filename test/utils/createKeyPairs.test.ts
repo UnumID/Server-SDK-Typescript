@@ -1,5 +1,6 @@
 import * as cryptoLib from '@unumid/library-crypto';
 import { KeyPairSet } from '../../src/types';
+import { createKeyPairSet } from '../../src/utils/createKeyPairs';
 
 describe('Generate Key Pairs', () => {
   let kpSet: KeyPairSet;
@@ -32,6 +33,3 @@ describe('Generate Key Pairs', () => {
     expect(kpSet.encryption.publicKey).toBeDefined();
   });
 });
-function createKeyPairSet (): KeyPairSet | PromiseLike<KeyPairSet> {
-  throw new Error('Function not implemented.');
-}

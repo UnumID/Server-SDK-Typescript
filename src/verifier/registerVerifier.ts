@@ -3,7 +3,7 @@ import { JSONObj, KeyPairSet, RegisteredVerifier, RESTData, UnumDto } from '../t
 import logger from '../logger';
 import { DidKeyType, KeyPair, PublicKeyInfo, VerifierOptions } from '@unumid/types';
 import { CustError } from '..';
-import { createKeyPairSet } from '../utils/createKeyPair';
+import { createKeyPairSet } from '../utils/createKeyPairs';
 import { getUUID } from '../utils/helpers';
 import { makeNetworkRequest, handleAuthToken } from '../utils/networkRequestHelper';
 

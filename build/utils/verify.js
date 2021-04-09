@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.doVerify = void 0;
 var logger_1 = __importDefault(require("../logger"));
 var library_crypto_1 = require("@unumid/library-crypto");
-var lodash_1 = __importDefault(require("lodash"));
+var lodash_1 = require("lodash");
 /**
  * Verify the signature on the provided data object.
  * @param signature
@@ -58,7 +58,7 @@ var doVerifyString = function (signature, data, publicKey, dataString, encoding)
     var finalResult = false;
     if (result) {
         // need to also verify that the stringData converted to an object matches the data object
-        finalResult = lodash_1.default.isEqual(data, JSON.parse(dataString));
+        finalResult = lodash_1.isEqual(data, JSON.parse(dataString));
     }
     logger_1.default.debug("Signature unsignedString is valid and matches data object: " + finalResult + ".");
     return finalResult;

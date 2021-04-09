@@ -43,7 +43,7 @@ exports.registerVerifier = void 0;
 var config_1 = require("../config");
 var logger_1 = __importDefault(require("../logger"));
 var __1 = require("..");
-var createKeyPair_1 = require("../utils/createKeyPair");
+var createKeyPairs_1 = require("../utils/createKeyPairs");
 var helpers_1 = require("../utils/helpers");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 /**
@@ -102,7 +102,7 @@ exports.registerVerifier = function (name, customerUuid, url, apiKey) { return _
             case 0:
                 _a.trys.push([0, 3, , 4]);
                 validateInParams(name, customerUuid, url, apiKey);
-                return [4 /*yield*/, createKeyPair_1.createKeyPairSet()];
+                return [4 /*yield*/, createKeyPairs_1.createKeyPairSet()];
             case 1:
                 kpSet = _a.sent();
                 verifierOpt = { name: name, customerUuid: customerUuid, url: url, publicKeyInfo: constructKeyObjs(kpSet) };

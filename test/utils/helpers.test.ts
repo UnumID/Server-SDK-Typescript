@@ -1,11 +1,9 @@
 import * as cryptoLib from '@unumid/library-crypto';
 import { PublicKeyInfo, EncryptedData, KeyPair } from '@unumid/types';
 import { getDIDDoc, getKeyFromDIDDoc } from '../../src/utils/didHandler';
-
+import { doEncrypt } from '../../src/utils/encrypt';
+import { doVerify } from '../../src/utils/verify';
 import { getUUID } from '../../src/utils/helpers';
-// import { getKeyFromDIDDoc } from '../src/getKeyFromDIDDoc';
-// import { PublicKeyInfo, EncryptedData, KeyPair } from '../src/types';
-// import { getDIDDoc } from '../src/getDIDDoc';
 
 describe('UUID generation', () => {
   it('Generate UUID', () => {

@@ -4,4 +4,4 @@ import { KeyPairSet } from '../types';
  * @param encoding
  */
 export declare const createKeyPairSet: (encoding?: 'base58' | 'pem') => Promise<KeyPairSet>;
-//# sourceMappingURL=createKeyPair.d.ts.map
+//# sourceMappingURL=createKeyPairs.d.ts.map

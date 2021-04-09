@@ -1,13 +1,35 @@
 import express from 'express';
-import { CustError } from '../../src';
+import { CustError } from '../../src/utils/error';
 import { RESTData, JSONObj } from '../../src/types';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
-// import { CustError } from '../../src/utils/error';
+import bodyParser from 'body-parser';
 
-// import { JSONObj, RESTData } from '../src/types';
-// import { initServer, startServer } from '../src/server';
-// import { makeNetworkRequest } from '../src/networkRequestHelper';
-// import { CustError, customErrFormatter } from '../src/error';
+const initServer = (): express.Application => {
+  const app = express();
+
+  app.use(bodyParser.json()); // support json encoded bodies
+  app.use(express.urlencoded({ extended: true }));
+
+  // Create a simple health endpoint to use for application "heartbeat" monitoring
+  app.get('/health/alive', (req, res) => {
+    res.status(200).send();
+  });
+
+  return (app);
+};
+
+/**
+ * Starts the express app server listening on the provided port.
+ * @param port
+ * @param app
+ */
+const startServer = (port: string, app: express.Application): any => {
+  const server: any = app.listen(port, (): void => {
+    console.log(`server started at http://localhost:${port}`);
+  });
+
+  return (server);
+};
 
 const portNum = '8080';
 
@@ -57,17 +79,17 @@ describe('Rest type Call - Success Scenario', () => {
 });
 
 describe('Rest type Call - Failure Scenario', () => {
-  const app, server;
+  // const app, server;
 
-  beforeAll(async () => {
-    app = initServer();
-    mockAPIDefs(app);
-    server = startServer(portNum, app);
-  });
+  // beforeAll(async () => {
+  //   app = initServer();
+  //   mockAPIDefs(app);
+  //   server = startServer(portNum, app);
+  // });
 
-  afterAll(() => {
-    server.close();
-  });
+  // afterAll(() => {
+  //   server.close();
+  // });
 
   it('Check the rest end point /api/error to get the error response', async () => {
     const url = 'http://localhost:' + portNum + '/';

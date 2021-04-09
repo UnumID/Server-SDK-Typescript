@@ -1,6 +1,4 @@
-// import { getDIDDoc } from '../src/getDIDDoc';
 import * as restHlpr from '../../src/utils/networkRequestHelper';
-// import { DidDocument, RESTResponse } from '../src/types';
 
 import { DidDocument } from '@unumid/types';
 import { RESTResponse } from '../../src/types';

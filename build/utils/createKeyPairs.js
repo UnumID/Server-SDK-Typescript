@@ -67,4 +67,4 @@ exports.createKeyPairSet = function (encoding) {
         });
     });
 };
-//# sourceMappingURL=createKeyPair.js.map
+//# sourceMappingURL=createKeyPairs.js.map

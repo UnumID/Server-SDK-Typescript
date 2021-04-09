@@ -44,7 +44,7 @@ var config_1 = require("../config");
 var logger_1 = __importDefault(require("../logger"));
 var helpers_1 = require("../utils/helpers");
 var error_1 = require("../utils/error");
-var createKeyPair_1 = require("../utils/createKeyPair");
+var createKeyPairs_1 = require("../utils/createKeyPairs");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 /**
  * Creates an object to encapsulate key information.
@@ -99,7 +99,7 @@ exports.registerIssuer = function (name, customerUuid, apiKey) { return __awaite
             case 0:
                 _a.trys.push([0, 3, , 4]);
                 validateInParams(name, customerUuid, apiKey);
-                return [4 /*yield*/, createKeyPair_1.createKeyPairSet()];
+                return [4 /*yield*/, createKeyPairs_1.createKeyPairSet()];
             case 1:
                 kpSet = _a.sent();
                 issuerOpt = {

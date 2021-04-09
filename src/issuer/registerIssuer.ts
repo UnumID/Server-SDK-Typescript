@@ -5,7 +5,7 @@ import logger from '../logger';
 import { DidKeyType, KeyPair, PublicKeyInfo } from '@unumid/types';
 import { getUUID } from '../utils/helpers';
 import { CustError } from '../utils/error';
-import { createKeyPairSet } from '../utils/createKeyPair';
+import { createKeyPairSet } from '../utils/createKeyPairs';
 import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
 
 /**
