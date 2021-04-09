@@ -1,5 +1,5 @@
-import { CredentialRequest, SignedPresentationRequest, UnsignedPresentationRequest } from '@unumid/types';
-import { PresentationRequestResponse, SendRequestReqBody, UnumDto } from '../types';
+import { CredentialRequest, PresentationRequestPostDto, SignedPresentationRequest, UnsignedPresentationRequest } from '@unumid/types';
+import { SendRequestReqBody, UnumDto } from '../types';
 /**
  * Constructs an unsigned PresentationRequest from the incoming request body.
  * @param reqBody SendRequestReqBody
@@ -19,5 +19,5 @@ export declare const constructSignedPresentationRequest: (unsignedPresentationRe
  * @param eccPrivateKey
  * @param holderAppUuid
  */
-export declare const sendRequest: (authorization: string, verifier: string, credentialRequests: CredentialRequest[], eccPrivateKey: string, holderAppUuid: string, expirationDate?: Date | undefined, metadata?: Record<string, unknown> | undefined) => Promise<UnumDto<PresentationRequestResponse>>;
+export declare const sendRequest: (authorization: string, verifier: string, credentialRequests: CredentialRequest[], eccPrivateKey: string, holderAppUuid: string, expirationDate?: Date | undefined, metadata?: Record<string, unknown> | undefined) => Promise<UnumDto<PresentationRequestPostDto>>;
 //# sourceMappingURL=sendRequest.d.ts.map
