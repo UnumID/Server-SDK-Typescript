@@ -72,7 +72,8 @@ jobs:
 
       - name: Create type docs
         run: |
-          ./createTypedocs.sh
+          npm i -g typedoc
+          npx typedoc src/index.ts
           
         #- npm publish
 
