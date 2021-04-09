@@ -61,7 +61,6 @@ jobs:
 
       - name: Update source code
         run: |
-          yarn
           npm --no-git-tag-version version ${{ env.RELEASE_VERSION }}
           npm publish
 
