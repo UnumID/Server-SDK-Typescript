@@ -79,6 +79,7 @@ jobs:
           author_email: admin@unum.id
           message: '[Release] ${{ env.RELEASE_VERSION }}'
           add: 'package.json'
+          branch: actions
 
   # checks:
   #   if: github.event_name != 'push'
