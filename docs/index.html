@@ -213,7 +213,7 @@
 <span style="color: #A31515">&quot;expiresAt&quot;</span><span style="color: #000000">?: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// (optional) when PresentationRequest will no longer be valid (ISO 8601 date/time). Default is 10 minutes after creation.</span>
 <span style="color: #A31515">&quot;metadata&quot;</span><span style="color: #000000">?: </span><span style="color: #001080">object</span><span style="color: #000000"> </span><span style="color: #008000">// (optional) any additional data to include in PresentationRequest</span>
 </code></pre>
-				<p>Response Body: <a href="https://docs.unum.id/Server-SDK-Typescript/interfaces/presentationrequestresponse.html"><strong>PresentationRequestResponse</strong></a></p>
+				<p>Response Body: <a href="https://docs.unum.id/types/interfaces/presentationrequestpostdto.html"><strong>PresentationRequestPostDto</strong></a></p>
 				<pre><code class="language-typescript"><span style="color: #000000">{</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;presentationRequest&quot;</span><span style="color: #000000">: {</span>
 <span style="color: #000000">    </span><span style="color: #A31515">&quot;uuid&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// identifies PresentationRequest in Unum ID database</span>
@@ -235,6 +235,11 @@
 <span style="color: #000000">        </span><span style="color: #A31515">&quot;name&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// human readable name for issuer</span>
 <span style="color: #000000">        </span><span style="color: #A31515">&quot;did&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// issuer DID</span>
 <span style="color: #000000">      }</span>
+<span style="color: #000000">  },</span>
+<span style="color: #000000">  </span><span style="color: #A31515">&quot;holderApp&quot;</span><span style="color: #000000">: {</span>
+<span style="color: #000000">    </span><span style="color: #A31515">&quot;name&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// human readable name for holder app. Displayed to users in the Web SDK.</span>
+<span style="color: #000000">    </span><span style="color: #A31515">&quot;uriScheme&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// uri scheme to create deep links to the holder app.</span>
+<span style="color: #000000">    </span><span style="color: #A31515">&quot;deeplinkButtonImg&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// image for the Web SDK to display as a button, encoded as a data uri</span>
 <span style="color: #000000">  },</span>
 <span style="color: #000000">  </span><span style="color: #008000">/* You send this to a user with the Web SDK: */</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;deeplink&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// deep link (URL) that can be used to trigger intended mobile app to load PresentationRequest</span>
@@ -330,9 +335,7 @@
 				<a href="#distribution" id="distribution" style="color: inherit; text-decoration: none;">
 					<h3>Distribution</h3>
 				</a>
-				<p>Currently this project is still closed source, so standard distribution options via public source code or NPM repository are not viable. Downstream projects are leveraging this project via it&#39;s git url using Docker Buildkit to provide SSH credentials for access to this Github source code repo. An example of such a buildkit configuration can be found in the <a href="https://github.com/UnumID/hooli-demo-server">hooli-demo-server</a> <code>Dockerfile</code> and <code>.circleci/config.yaml</code>.</p>
-				<p>We considered opting to build and push as a private module through a private Github NPM repo. However due to the complexities of configuring a downstream project to have rights to pull from the private NPM repo we have opted to not add pushing a private package to our CI job. </p>
-				<p>Soon, we hope to open source this project and uploaded the package as public NPM module.  </p>
+				<p>This project is publicly published on the official npm <a href="https://www.npmjs.com/package/@unumid/server-sdk">registry</a>. For example it can be pulled with, <code>npm i @unumid/server-sdk</code> or <code>yarn add @unumid/server-sdk</code>.</p>
 				<a href="#global-dependencies" id="global-dependencies" style="color: inherit; text-decoration: none;">
 					<h3>Global Dependencies</h3>
 				</a>
@@ -385,9 +388,6 @@
 					</li>
 					<li class=" tsd-kind-interface tsd-is-external">
 						<a href="interfaces/presentation.html" class="tsd-kind-icon">Presentation</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/presentationrequestresponse.html" class="tsd-kind-icon">Presentation<wbr>Request<wbr>Response</a>
 					</li>
 					<li class=" tsd-kind-interface tsd-is-external">
 						<a href="interfaces/proof.html" class="tsd-kind-icon">Proof</a>
