@@ -69,6 +69,10 @@ jobs:
       - name: Update source code
         run: |
           npm --no-git-tag-version version ${{ env.RELEASE_VERSION }}
+
+      - name: Create type docs
+        run: |
+          ./createTypedocs.sh
           
         #- npm publish
 
