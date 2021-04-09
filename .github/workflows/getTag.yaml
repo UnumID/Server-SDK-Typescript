@@ -1,19 +1,19 @@
 
-on:
-  push:
-    tags:
-      - 'v*.*.*'
-jobs:
-# from https://stackoverflow.com/questions/58177786/get-the-current-pushed-tag-in-github-actions
-  getVersion:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set env
-        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-      - name: Test
-        run: |
-          echo $RELEASE_VERSION
-          echo ${{ env.RELEASE_VERSION }}
+# on:
+#   push:
+#     tags:
+#       - 'v*.*.*'
+# jobs:
+# # from https://stackoverflow.com/questions/58177786/get-the-current-pushed-tag-in-github-actions
+#   getVersion:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: Set env
+#         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+#       - name: Test
+#         run: |
+#           echo $RELEASE_VERSION
+#           echo ${{ env.RELEASE_VERSION }}
 
 

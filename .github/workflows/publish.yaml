@@ -62,7 +62,8 @@ jobs:
       - name: Update source code
         run: |
           npm --no-git-tag-version version ${{ env.RELEASE_VERSION }}
-          npm publish
+          
+        #- npm publish
 
       - name: Commit changes
         uses: EndBug/add-and-commit@v7
