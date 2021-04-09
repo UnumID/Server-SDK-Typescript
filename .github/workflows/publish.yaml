@@ -45,7 +45,7 @@ jobs:
   #         #git add package.json && git commit -m "[Release] ${{ env.RELEASE_VERSION }}" && git push origin master
 
   commitUpdate:
-    name: Lint with ESLint
+    name: Update version & deploy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -56,8 +56,8 @@ jobs:
         with:
           node-version: 12.x
 
-      - name: Install dependencies
-        run: npm install
+      # - name: Install dependencies
+      #   run: npm install
 
       - name: Update source code
         run: |
