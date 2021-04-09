@@ -72,17 +72,6 @@ export interface VerifierApiKey {
 }
 
 /**
- * Encapsulates the response attributes of a PresentationRequest.
- */
-export interface PresentationRequestResponse {
-  presentationRequest: PresentationRequest;
-  verifier: VerifierInfo;
-  issuers: IssuerInfoMap;
-  deeplink: string;
-  qrCode: string;
-}
-
-/**
  * Encapsulates the statues of a Credential with the internal uuid.
  */
 export interface CredentialStatus extends CredentialStatusInfo {

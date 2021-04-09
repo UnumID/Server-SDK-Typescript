@@ -1,18 +1,11 @@
-import * as express from 'express';
 import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
 import { getUUID, createProof, CustError, RESTData, makeNetworkRequest, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
 import { CryptoError } from '@unumid/library-crypto';
-import { CredentialRequest, SignedPresentationRequest, UnsignedPresentationRequest } from '@unumid/types';
+import { CredentialRequest, PresentationRequestPostDto, SignedPresentationRequest, UnsignedPresentationRequest } from '@unumid/types';
 
-import {
-  PresentationRequestResponse,
-  SendRequestReqBody,
-  UnumDto
-} from '../types';
+import { SendRequestReqBody, UnumDto } from '../types';
 import logger from '../logger';
-
-type SendRequestReqType = express.Request<Record<string, unknown>, PresentationRequestResponse, SendRequestReqBody>
 
 /**
  * Constructs an unsigned PresentationRequest from the incoming request body.
@@ -166,7 +159,15 @@ const validateSendRequestBody = (sendRequestBody: SendRequestReqBody): void => {
  * @param eccPrivateKey
  * @param holderAppUuid
  */
-export const sendRequest = async (authorization:string, verifier: string, credentialRequests: CredentialRequest[], eccPrivateKey: string, holderAppUuid: string, expirationDate?: Date, metadata?: Record<string, unknown>): Promise<UnumDto<PresentationRequestResponse>> => {
+export const sendRequest = async (
+  authorization:string,
+  verifier: string,
+  credentialRequests: CredentialRequest[],
+  eccPrivateKey: string,
+  holderAppUuid: string,
+  expirationDate?: Date,
+  metadata?: Record<string, unknown>
+): Promise<UnumDto<PresentationRequestPostDto>> => {
   try {
     requireAuth(authorization);
 
@@ -188,11 +189,11 @@ export const sendRequest = async (authorization:string, verifier: string, creden
       data: signedPR
     };
 
-    const restResp = await makeNetworkRequest<PresentationRequestResponse>(restData);
+    const restResp = await makeNetworkRequest<PresentationRequestPostDto>(restData);
 
     const authToken: string = handleAuthToken(restResp);
 
-    const presentationRequestResponse: UnumDto<PresentationRequestResponse> = { body: { ...restResp.body }, authToken };
+    const presentationRequestResponse: UnumDto<PresentationRequestPostDto> = { body: { ...restResp.body }, authToken };
 
     return presentationRequestResponse;
   } catch (error) {

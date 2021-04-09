@@ -181,8 +181,8 @@ Parameters
 "metadata"?: object // (optional) any additional data to include in PresentationRequest
 ```
 
-Response Body: [**PresentationRequestResponse**](https://docs.unum.id/Server-SDK-Typescript/interfaces/presentationrequestresponse.html)
-```typescript title="PresentationRequestResponse"
+Response Body: [**PresentationRequestPostDto**](https://docs.unum.id/types/interfaces/presentationrequestpostdto.html)
+```typescript title="PresentationRequestPostDto"
 {
   "presentationRequest": {
     "uuid": string, // identifies PresentationRequest in Unum ID database
@@ -204,6 +204,11 @@ Response Body: [**PresentationRequestResponse**](https://docs.unum.id/Server-SDK
         "name": string, // human readable name for issuer
         "did": string // issuer DID
       }
+  },
+  "holderApp": {
+    "name": string, // human readable name for holder app. Displayed to users in the Web SDK.
+    "uriScheme": string, // uri scheme to create deep links to the holder app.
+    "deeplinkButtonImg": string // image for the Web SDK to display as a button, encoded as a data uri
   },
   /* You send this to a user with the Web SDK: */
   "deeplink": string, // deep link (URL) that can be used to trigger intended mobile app to load PresentationRequest
