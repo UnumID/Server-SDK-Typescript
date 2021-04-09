@@ -40,10 +40,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendEmail = void 0;
-var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var config_1 = require("../config");
 var logger_1 = __importDefault(require("../logger"));
 var requireAuth_1 = require("../requireAuth");
+var error_1 = require("../utils/error");
+var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 /**
  * Validates the EmailRequestBody attributes.
  * @param body EmailRequestBody
@@ -51,28 +52,28 @@ var requireAuth_1 = require("../requireAuth");
 var validateEmailRequestBody = function (body) {
     var to = body.to, subject = body.subject, textBody = body.textBody, htmlBody = body.htmlBody;
     if (!to) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'to is required.');
+        throw new error_1.CustError(400, 'to is required.');
     }
     if (!subject) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'subject is required.');
+        throw new error_1.CustError(400, 'subject is required.');
     }
     if (!textBody && !htmlBody) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Either textBody or htmlBody is required.');
+        throw new error_1.CustError(400, 'Either textBody or htmlBody is required.');
     }
     if (textBody && htmlBody) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Either textBody or htmlBody is required, not both.');
+        throw new error_1.CustError(400, 'Either textBody or htmlBody is required, not both.');
     }
     if (typeof to !== 'string') {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid to: expected string.');
+        throw new error_1.CustError(400, 'Invalid to: expected string.');
     }
     if (typeof subject !== 'string') {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid subject: expected string.');
+        throw new error_1.CustError(400, 'Invalid subject: expected string.');
     }
     if (textBody && (typeof textBody !== 'string')) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid textBody: expected string.');
+        throw new error_1.CustError(400, 'Invalid textBody: expected string.');
     }
     if (htmlBody && (typeof htmlBody !== 'string')) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid htmlBody: expected string.');
+        throw new error_1.CustError(400, 'Invalid htmlBody: expected string.');
     }
 };
 /**
@@ -99,10 +100,10 @@ exports.sendEmail = function (authorization, to, subject, textBody, htmlBody) { 
                     header: { Authorization: authorization },
                     data: body
                 };
-                return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(data)];
+                return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(data)];
             case 1:
                 apiResponse = _a.sent();
-                authToken = library_issuer_verifier_utility_1.handleAuthToken(apiResponse);
+                authToken = networkRequestHelper_1.handleAuthToken(apiResponse);
                 result = {
                     authToken: authToken,
                     body: undefined

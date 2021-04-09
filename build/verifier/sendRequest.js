@@ -53,16 +53,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendRequest = exports.constructSignedPresentationRequest = exports.constructUnsignedPresentationRequest = void 0;
 var config_1 = require("../config");
 var requireAuth_1 = require("../requireAuth");
-var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var library_crypto_1 = require("@unumid/library-crypto");
 var logger_1 = __importDefault(require("../logger"));
+var createProof_1 = require("../utils/createProof");
+var helpers_1 = require("../utils/helpers");
+var networkRequestHelper_1 = require("../utils/networkRequestHelper");
+var error_1 = require("../utils/error");
 /**
  * Constructs an unsigned PresentationRequest from the incoming request body.
  * @param reqBody SendRequestReqBody
  */
 exports.constructUnsignedPresentationRequest = function (reqBody) {
     var verifier = reqBody.verifier, holderAppUuid = reqBody.holderAppUuid, credentialRequests = reqBody.credentialRequests, metadata = reqBody.metadata, expiresAt = reqBody.expiresAt, createdAt = reqBody.createdAt, updatedAt = reqBody.updatedAt;
-    var uuid = library_issuer_verifier_utility_1.getUUID();
+    var uuid = helpers_1.getUUID();
     // any/all default values must be set before signing, or signature will always fail to verify
     var now = new Date();
     var tenMinutesFromNow = new Date(now.getTime() + 10 * 60 * 1000);
@@ -90,7 +93,7 @@ exports.constructUnsignedPresentationRequest = function (reqBody) {
  */
 exports.constructSignedPresentationRequest = function (unsignedPresentationRequest, privateKey) {
     try {
-        var proof = library_issuer_verifier_utility_1.createProof(unsignedPresentationRequest, privateKey, unsignedPresentationRequest.verifier, 'pem');
+        var proof = createProof_1.createProof(unsignedPresentationRequest, privateKey, unsignedPresentationRequest.verifier, 'pem');
         var signedPresentationRequest = __assign(__assign({}, unsignedPresentationRequest), { proof: proof });
         return signedPresentationRequest;
     }
@@ -108,55 +111,55 @@ exports.constructSignedPresentationRequest = function (unsignedPresentationReque
 var validateSendRequestBody = function (sendRequestBody) {
     var verifier = sendRequestBody.verifier, credentialRequests = sendRequestBody.credentialRequests, eccPrivateKey = sendRequestBody.eccPrivateKey, holderAppUuid = sendRequestBody.holderAppUuid;
     if (!verifier) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid PresentationRequest options: verifier is required.');
+        throw new error_1.CustError(400, 'Invalid PresentationRequest options: verifier is required.');
     }
     if (typeof verifier !== 'string') {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid PresentationRequest options: verifier must be a string.');
+        throw new error_1.CustError(400, 'Invalid PresentationRequest options: verifier must be a string.');
     }
     if (!holderAppUuid) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid PresentationRequest options: holderAppUuid is required.');
+        throw new error_1.CustError(400, 'Invalid PresentationRequest options: holderAppUuid is required.');
     }
     if (typeof holderAppUuid !== 'string') {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid PresentationRequest options: holderAppUuid must be a string.');
+        throw new error_1.CustError(400, 'Invalid PresentationRequest options: holderAppUuid must be a string.');
     }
     if (!credentialRequests) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid PresentationRequest options: credentialRequests is required.');
+        throw new error_1.CustError(400, 'Invalid PresentationRequest options: credentialRequests is required.');
     }
     // credentialRequests input element must be an array
     if (!Array.isArray(credentialRequests)) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid PresentationRequest options: credentialRequests must be an array.');
+        throw new error_1.CustError(400, 'Invalid PresentationRequest options: credentialRequests must be an array.');
     }
     var totCredReqs = credentialRequests.length;
     if (totCredReqs === 0) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid PresentationRequest options: credentialRequests array must not be empty.');
+        throw new error_1.CustError(400, 'Invalid PresentationRequest options: credentialRequests array must not be empty.');
     }
     // credentialRequests input element should have type and issuer elements
     for (var i = 0; i < totCredReqs; i++) {
         var credentialRequest = credentialRequests[i];
         if (!credentialRequest.type) {
-            throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid credentialRequest: type is required.');
+            throw new error_1.CustError(400, 'Invalid credentialRequest: type is required.');
         }
         if (!credentialRequest.issuers) {
-            throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid credentialRequest: issuers is required.');
+            throw new error_1.CustError(400, 'Invalid credentialRequest: issuers is required.');
         }
         // credentialRequests.issuers input element must be an array
         if (!Array.isArray(credentialRequest.issuers)) {
-            throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid credentialRequest: issuers must be an array.');
+            throw new error_1.CustError(400, 'Invalid credentialRequest: issuers must be an array.');
         }
         var totIssuers = credentialRequest.issuers.length;
         if (totIssuers === 0) {
-            throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid credentialRequest: issuers array must not be empty.');
+            throw new error_1.CustError(400, 'Invalid credentialRequest: issuers array must not be empty.');
         }
         for (var _i = 0, _a = credentialRequest.issuers; _i < _a.length; _i++) {
             var issuer = _a[_i];
             if (typeof issuer !== 'string') {
-                throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid credentialRequest: issuers array element must be a string.');
+                throw new error_1.CustError(400, 'Invalid credentialRequest: issuers array element must be a string.');
             }
         }
     }
     // ECC Private Key is mandatory input parameter
     if (!eccPrivateKey) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid PresentationRequest options: signingPrivateKey is required.');
+        throw new error_1.CustError(400, 'Invalid PresentationRequest options: signingPrivateKey is required.');
     }
 };
 /**
@@ -168,7 +171,7 @@ var validateSendRequestBody = function (sendRequestBody) {
  * @param holderAppUuid
  */
 exports.sendRequest = function (authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata) { return __awaiter(void 0, void 0, void 0, function () {
-    var body, unsignedPresentationRequest, signedPR, restData, restResp, authToken, presentationRequestResponse, error_1;
+    var body, unsignedPresentationRequest, signedPR, restData, restResp, authToken, presentationRequestResponse, error_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -186,16 +189,16 @@ exports.sendRequest = function (authorization, verifier, credentialRequests, ecc
                     header: { Authorization: authorization },
                     data: signedPR
                 };
-                return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(restData)];
+                return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];
             case 1:
                 restResp = _a.sent();
-                authToken = library_issuer_verifier_utility_1.handleAuthToken(restResp);
+                authToken = networkRequestHelper_1.handleAuthToken(restResp);
                 presentationRequestResponse = { body: __assign({}, restResp.body), authToken: authToken };
                 return [2 /*return*/, presentationRequestResponse];
             case 2:
-                error_1 = _a.sent();
-                logger_1.default.error("Error sending request to use UnumID Saas. " + error_1);
-                throw error_1;
+                error_2 = _a.sent();
+                logger_1.default.error("Error sending request to use UnumID Saas. " + error_2);
+                throw error_2;
             case 3: return [2 /*return*/];
         }
     });

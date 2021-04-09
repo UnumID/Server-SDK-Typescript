@@ -40,10 +40,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendSms = void 0;
-var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var config_1 = require("../config");
 var logger_1 = __importDefault(require("../logger"));
 var requireAuth_1 = require("../requireAuth");
+var error_1 = require("../utils/error");
+var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 /**
  * Validates the SmsRequestBody attributes.
  * @param body SmsRequestBody
@@ -51,16 +52,16 @@ var requireAuth_1 = require("../requireAuth");
 var validateSmsRequestBody = function (body) {
     var to = body.to, msg = body.msg;
     if (!to) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'to is required.');
+        throw new error_1.CustError(400, 'to is required.');
     }
     if (!msg) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'msg is required.');
+        throw new error_1.CustError(400, 'msg is required.');
     }
     if (typeof to !== 'string') {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid to: expected string.');
+        throw new error_1.CustError(400, 'Invalid to: expected string.');
     }
     if (typeof msg !== 'string') {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid msg: expected string.');
+        throw new error_1.CustError(400, 'Invalid msg: expected string.');
     }
 };
 /**
@@ -87,13 +88,13 @@ exports.sendSms = function (authorization, to, msg) { return __awaiter(void 0, v
                     header: { Authorization: authorization },
                     data: body
                 };
-                return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(data)];
+                return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(data)];
             case 1:
                 apiResponse = _a.sent();
                 if (!apiResponse.body.success) {
-                    throw new library_issuer_verifier_utility_1.CustError(500, 'Unknown error during sendSms');
+                    throw new error_1.CustError(500, 'Unknown error during sendSms');
                 }
-                authToken = library_issuer_verifier_utility_1.handleAuthToken(apiResponse);
+                authToken = networkRequestHelper_1.handleAuthToken(apiResponse);
                 result = {
                     authToken: authToken,
                     body: undefined

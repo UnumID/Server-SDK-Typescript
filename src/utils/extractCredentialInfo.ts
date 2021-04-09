@@ -1,6 +1,7 @@
-import { isArrayNotEmpty } from '@unumid/library-issuer-verifier-utility';
+
 import { CredentialInfo } from '../types';
 import { Presentation } from '@unumid/types';
+import { isArrayNotEmpty } from './helpers';
 
 /**
  * Handler to extract credential reporting information meant to be relied to UnumID's SaaS for the enhanced analytics dashboard.

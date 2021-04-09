@@ -17,10 +17,10 @@ var issueCredentials_1 = require("./issuer/issueCredentials");
 Object.defineProperty(exports, "issueCredential", { enumerable: true, get: function () { return issueCredentials_1.issueCredential; } });
 var updateCredentialStatus_1 = require("./issuer/updateCredentialStatus");
 Object.defineProperty(exports, "updateCredentialStatus", { enumerable: true, get: function () { return updateCredentialStatus_1.updateCredentialStatus; } });
-var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
-Object.defineProperty(exports, "CustError", { enumerable: true, get: function () { return library_issuer_verifier_utility_1.CustError; } });
 var extractCredentialInfo_1 = require("./utils/extractCredentialInfo");
 Object.defineProperty(exports, "extractCredentialInfo", { enumerable: true, get: function () { return extractCredentialInfo_1.extractCredentialInfo; } });
 var checkCredentialStatus_1 = require("./verifier/checkCredentialStatus");
 Object.defineProperty(exports, "checkCredentialStatus", { enumerable: true, get: function () { return checkCredentialStatus_1.checkCredentialStatus; } });
+var error_1 = require("./utils/error");
+Object.defineProperty(exports, "CustError", { enumerable: true, get: function () { return error_1.CustError; } });
 //# sourceMappingURL=index.js.map

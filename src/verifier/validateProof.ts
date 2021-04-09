@@ -1,4 +1,5 @@
-import { JSONObj, CustError } from '@unumid/library-issuer-verifier-utility';
+import { JSONObj } from '../types';
+import { CustError } from '../utils/error';
 
 /**
  * Helper to validate a proof has the required attributes.

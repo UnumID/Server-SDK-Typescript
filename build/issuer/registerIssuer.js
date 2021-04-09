@@ -41,8 +41,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerIssuer = void 0;
 var config_1 = require("../config");
-var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var logger_1 = __importDefault(require("../logger"));
+var helpers_1 = require("../utils/helpers");
+var error_1 = require("../utils/error");
+var createKeyPair_1 = require("../utils/createKeyPair");
+var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 /**
  * Creates an object to encapsulate key information.
  * @param kp KeyPair
@@ -50,7 +53,7 @@ var logger_1 = __importDefault(require("../logger"));
  */
 var constructKeyObj = function (kp, type) {
     return {
-        id: library_issuer_verifier_utility_1.getUUID(),
+        id: helpers_1.getUUID(),
         encoding: 'pem',
         type: type,
         status: 'valid',
@@ -74,13 +77,13 @@ var constructKeyObjs = function (kpSet) {
  */
 var validateInParams = function (name, customerUuid, apiKey) {
     if (!name) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Issuer: name is required.');
+        throw new error_1.CustError(400, 'Invalid Issuer: name is required.');
     }
     if (!customerUuid) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Issuer: customerUuid is required.');
+        throw new error_1.CustError(400, 'Invalid Issuer: customerUuid is required.');
     }
     if (!apiKey) {
-        throw new library_issuer_verifier_utility_1.CustError(401, 'Not authenticated: apiKey is required');
+        throw new error_1.CustError(401, 'Not authenticated: apiKey is required');
     }
 };
 /**
@@ -90,13 +93,13 @@ var validateInParams = function (name, customerUuid, apiKey) {
  * @param apiKey
  */
 exports.registerIssuer = function (name, customerUuid, apiKey) { return __awaiter(void 0, void 0, void 0, function () {
-    var kpSet, issuerOpt, restData, restResp, authToken, issuerResp, error_1;
+    var kpSet, issuerOpt, restData, restResp, authToken, issuerResp, error_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 3, , 4]);
                 validateInParams(name, customerUuid, apiKey);
-                return [4 /*yield*/, library_issuer_verifier_utility_1.createKeyPairSet()];
+                return [4 /*yield*/, createKeyPair_1.createKeyPairSet()];
             case 1:
                 kpSet = _a.sent();
                 issuerOpt = {
@@ -111,10 +114,10 @@ exports.registerIssuer = function (name, customerUuid, apiKey) { return __awaite
                     header: { Authorization: 'Bearer ' + apiKey },
                     data: issuerOpt
                 };
-                return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(restData)];
+                return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];
             case 2:
                 restResp = _a.sent();
-                authToken = library_issuer_verifier_utility_1.handleAuthToken(restResp);
+                authToken = networkRequestHelper_1.handleAuthToken(restResp);
                 issuerResp = {
                     authToken: authToken,
                     body: {
@@ -130,9 +133,9 @@ exports.registerIssuer = function (name, customerUuid, apiKey) { return __awaite
                 };
                 return [2 /*return*/, issuerResp];
             case 3:
-                error_1 = _a.sent();
-                logger_1.default.error("Error registering an Issuer with UnumID SaaS. " + error_1);
-                throw error_1;
+                error_2 = _a.sent();
+                logger_1.default.error("Error registering an Issuer with UnumID SaaS. " + error_2);
+                throw error_2;
             case 4: return [2 /*return*/];
         }
     });

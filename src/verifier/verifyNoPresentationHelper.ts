@@ -1,22 +1,17 @@
-import {
-  CustError,
-  getKeyFromDIDDoc,
-  doVerify,
-  getDIDDoc,
-  makeNetworkRequest,
-  RESTData,
-  JSONObj,
-  isArrayEmpty,
-  handleAuthToken
-} from '@unumid/library-issuer-verifier-utility';
+
 import { omit } from 'lodash';
 
-import { UnumDto, VerifiedStatus } from '../types';
+import { JSONObj, RESTData, UnumDto, VerifiedStatus } from '../types';
 import { validateProof } from './validateProof';
 import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
 import logger from '../logger';
 import { NoPresentation } from '@unumid/types';
+import { CustError } from '../utils/error';
+import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHandler';
+import { isArrayEmpty } from '../utils/helpers';
+import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
+import { doVerify } from '../utils/verify';
 
 /**
  * Validates the NoPresentation type to ensure the necessary attributes.

@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
-import { CustError, handleAuthToken, makeNetworkRequest } from '@unumid/library-issuer-verifier-utility';
 
 import { configData } from '../config';
 import logger from '../logger';
 import { requireAuth } from '../requireAuth';
 import { UnumDto } from '../types';
+import { CustError } from '../utils/error';
+import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
 
 interface SmsRequestBody {
   to: string;

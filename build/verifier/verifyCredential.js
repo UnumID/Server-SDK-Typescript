@@ -40,11 +40,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyCredential = void 0;
-var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var library_crypto_1 = require("@unumid/library-crypto");
 var lodash_1 = require("lodash");
 var config_1 = require("../config");
 var logger_1 = __importDefault(require("../logger"));
+var didHandler_1 = require("../utils/didHandler");
+var networkRequestHelper_1 = require("../utils/networkRequestHelper");
+var verify_1 = require("../utils/verify");
 /**
  * Used to verify the credential signature given the corresponding Did document's public key.
  * @param credential
@@ -56,17 +58,17 @@ exports.verifyCredential = function (credential, authorization) { return __await
         switch (_a.label) {
             case 0:
                 proof = credential.proof;
-                return [4 /*yield*/, library_issuer_verifier_utility_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, proof.verificationMethod)];
+                return [4 /*yield*/, didHandler_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, proof.verificationMethod)];
             case 1:
                 didDocumentResponse = _a.sent();
                 if (didDocumentResponse instanceof Error) {
                     throw didDocumentResponse;
                 }
-                authToken = library_issuer_verifier_utility_1.handleAuthToken(didDocumentResponse);
-                publicKeyObject = library_issuer_verifier_utility_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
+                authToken = networkRequestHelper_1.handleAuthToken(didDocumentResponse);
+                publicKeyObject = didHandler_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 data = lodash_1.omit(credential, 'proof');
                 try {
-                    isVerified = library_issuer_verifier_utility_1.doVerify(proof.signatureValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding, proof.unsignedValue);
+                    isVerified = verify_1.doVerify(proof.signatureValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding, proof.unsignedValue);
                     result = {
                         authToken: authToken,
                         body: isVerified

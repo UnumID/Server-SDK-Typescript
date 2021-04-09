@@ -42,9 +42,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateCredentialStatus = void 0;
 var config_1 = require("../config");
 var requireAuth_1 = require("../requireAuth");
-var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var logger_1 = __importDefault(require("../logger"));
 var types_1 = require("@unumid/types");
+var error_1 = require("../utils/error");
+var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 /**
  * Helper to validate request inputs.
  * @param req Request
@@ -52,13 +53,13 @@ var types_1 = require("@unumid/types");
 var validateInputs = function (credentialId, status) {
     // Credential ID is mandatory.
     if (!credentialId) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'credentialId is required.');
+        throw new error_1.CustError(400, 'credentialId is required.');
     }
     try {
         types_1._CredentialStatusOptions.check(status);
     }
     catch (e) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'status does not match a valid CredentialStatusOptions string literal.');
+        throw new error_1.CustError(400, 'status does not match a valid CredentialStatusOptions string literal.');
     }
 };
 /**
@@ -70,7 +71,7 @@ var validateInputs = function (credentialId, status) {
 exports.updateCredentialStatus = function (authorization, credentialId, status) {
     if (status === void 0) { status = 'revoked'; }
     return __awaiter(void 0, void 0, void 0, function () {
-        var restData, response, authToken, revokedCredential, error_1;
+        var restData, response, authToken, revokedCredential, error_2;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -84,19 +85,19 @@ exports.updateCredentialStatus = function (authorization, credentialId, status) 
                         header: { Authorization: authorization },
                         data: { status: status }
                     };
-                    return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(restData)];
+                    return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];
                 case 1:
                     response = _a.sent();
-                    authToken = library_issuer_verifier_utility_1.handleAuthToken(response);
+                    authToken = networkRequestHelper_1.handleAuthToken(response);
                     revokedCredential = {
                         authToken: authToken,
                         body: undefined
                     };
                     return [2 /*return*/, revokedCredential];
                 case 2:
-                    error_1 = _a.sent();
-                    logger_1.default.error("Error revoking a credential with UnumID SaaS. " + error_1);
-                    throw error_1;
+                    error_2 = _a.sent();
+                    logger_1.default.error("Error revoking a credential with UnumID SaaS. " + error_2);
+                    throw error_2;
                 case 3: return [2 /*return*/];
             }
         });

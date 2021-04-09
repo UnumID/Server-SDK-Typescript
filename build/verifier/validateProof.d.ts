@@ -1,4 +1,4 @@
-import { JSONObj } from '@unumid/library-issuer-verifier-utility';
+import { JSONObj } from '../types';
 /**
  * Helper to validate a proof has the required attributes.
  * @param proof JSONObj

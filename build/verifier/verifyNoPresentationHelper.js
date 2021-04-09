@@ -40,12 +40,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyNoPresentationHelper = exports.validateNoPresentationParams = void 0;
-var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var lodash_1 = require("lodash");
 var validateProof_1 = require("./validateProof");
 var config_1 = require("../config");
 var requireAuth_1 = require("../requireAuth");
 var logger_1 = __importDefault(require("../logger"));
+var error_1 = require("../utils/error");
+var didHandler_1 = require("../utils/didHandler");
+var helpers_1 = require("../utils/helpers");
+var networkRequestHelper_1 = require("../utils/networkRequestHelper");
+var verify_1 = require("../utils/verify");
 /**
  * Validates the NoPresentation type to ensure the necessary attributes.
  * @param noPresentation NoPresentation
@@ -53,28 +57,28 @@ var logger_1 = __importDefault(require("../logger"));
 exports.validateNoPresentationParams = function (noPresentation) {
     var type = noPresentation.type, holder = noPresentation.holder, proof = noPresentation.proof, presentationRequestUuid = noPresentation.presentationRequestUuid;
     if (!type) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: type is required.');
+        throw new error_1.CustError(400, 'Invalid Presentation: type is required.');
     }
-    if (library_issuer_verifier_utility_1.isArrayEmpty(type)) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: type must be a non-empty array.');
+    if (helpers_1.isArrayEmpty(type)) {
+        throw new error_1.CustError(400, 'Invalid Presentation: type must be a non-empty array.');
     }
     if (!proof) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: proof is required.');
+        throw new error_1.CustError(400, 'Invalid Presentation: proof is required.');
     }
     if (!holder) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: holder is required.');
+        throw new error_1.CustError(400, 'Invalid Presentation: holder is required.');
     }
     if (!presentationRequestUuid) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
+        throw new error_1.CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
     }
     if (type[0] !== 'NoPresentation') {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid type: first element must be \'NoPresentation\'.');
+        throw new error_1.CustError(400, 'Invalid type: first element must be \'NoPresentation\'.');
     }
     if (typeof holder !== 'string') {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid holder: must be a string.');
+        throw new error_1.CustError(400, 'Invalid holder: must be a string.');
     }
     if (typeof presentationRequestUuid !== 'string') {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid presentationRequestUuid: must be a string.');
+        throw new error_1.CustError(400, 'Invalid presentationRequestUuid: must be a string.');
     }
     validateProof_1.validateProof(proof);
 };
@@ -93,17 +97,17 @@ exports.verifyNoPresentationHelper = function (authorization, noPresentation, ve
                 requireAuth_1.requireAuth(authorization);
                 exports.validateNoPresentationParams(noPresentation);
                 _a = noPresentation.proof, verificationMethod = _a.verificationMethod, signatureValue = _a.signatureValue, unsignedValue = _a.unsignedValue;
-                return [4 /*yield*/, library_issuer_verifier_utility_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, verificationMethod)];
+                return [4 /*yield*/, didHandler_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, verificationMethod)];
             case 1:
                 didDocumentResponse = _c.sent();
                 if (didDocumentResponse instanceof Error) {
                     throw didDocumentResponse;
                 }
-                authToken = library_issuer_verifier_utility_1.handleAuthToken(didDocumentResponse);
-                publicKeyInfos = library_issuer_verifier_utility_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
+                authToken = networkRequestHelper_1.handleAuthToken(didDocumentResponse);
+                publicKeyInfos = didHandler_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 _b = publicKeyInfos[0], publicKey = _b.publicKey, encoding = _b.encoding;
                 unsignedNoPresentation = lodash_1.omit(noPresentation, 'proof');
-                isVerified = library_issuer_verifier_utility_1.doVerify(signatureValue, unsignedNoPresentation, publicKey, encoding, unsignedValue);
+                isVerified = verify_1.doVerify(signatureValue, unsignedNoPresentation, publicKey, encoding, unsignedValue);
                 if (!isVerified) {
                     result_1 = {
                         authToken: authToken,
@@ -129,10 +133,10 @@ exports.verifyNoPresentationHelper = function (authorization, noPresentation, ve
                     header: { Authorization: authorization },
                     data: receiptOptions
                 };
-                return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(receiptCallOptions)];
+                return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(receiptCallOptions)];
             case 2:
                 resp = _c.sent();
-                authToken = library_issuer_verifier_utility_1.handleAuthToken(resp);
+                authToken = networkRequestHelper_1.handleAuthToken(resp);
                 result = {
                     authToken: authToken,
                     body: {
