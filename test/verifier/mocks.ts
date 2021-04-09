@@ -7,12 +7,12 @@ import {
   RESTResponse,
   DidDocument
 } from '@unumid/library-issuer-verifier-utility';
+import { HolderApp, PresentationRequestPostDto } from '@unumid/types';
 
 import { configData } from '../../src/config';
 import {
   UnsignedPresentationRequest,
   Verifier,
-  PresentationRequestResponse,
   VerifierInfo,
   IssuerInfoMap,
   IssuerInfo,
@@ -202,6 +202,7 @@ export interface MakeDummyPresentationRequestOptions {
   deeplink?: string;
   verifier?: VerifierInfo;
   issuers?: IssuerInfoMap;
+  holderApp?: HolderAppInfo;
 }
 
 export const makeDummyVerifierInfo = (options: Partial<VerifierInfo>): VerifierInfo => {
@@ -226,7 +227,16 @@ export const makeDummyIssuerInfoMap = (options: Partial<IssuerInfo>[] = [{}]): I
     };
   }, {});
 
-export const makeDummyPresentationRequestResponse = async (options: MakeDummyPresentationRequestOptions = {}): Promise<PresentationRequestResponse> => {
+type HolderAppInfo = Pick<HolderApp, 'name' | 'uriScheme' | 'deeplinkButtonImg'>
+export const makeDummyHolderAppInfo = (options: Partial<HolderAppInfo> = {}): HolderAppInfo => {
+  return {
+    name: options.name || 'Dummy HolderApp',
+    uriScheme: options.uriScheme || 'acme://',
+    deeplinkButtonImg: options.deeplinkButtonImg || 'data:image/png;base64,dummydeeplinkButtonImg'
+  };
+};
+
+export const makeDummyPresentationRequestResponse = async (options: MakeDummyPresentationRequestOptions = {}): Promise<PresentationRequestPostDto> => {
   const unsignedPresentationRequest = options.unsignedPresentationRequest || makeDummyUnsignedPresentationRequest();
   const privateKeyId = options.privateKeyId || getUUID();
   const encoding = options.encoding || 'pem';
@@ -239,6 +249,7 @@ export const makeDummyPresentationRequestResponse = async (options: MakeDummyPre
   const verifier = options.verifier || makeDummyVerifierInfo({ did: unsignedPresentationRequest.verifier });
 
   const issuers = options.issuers || makeDummyIssuerInfoMap();
+  const holderApp = makeDummyHolderAppInfo(options.holderApp);
 
   let { privateKey } = options;
 
@@ -259,7 +270,8 @@ export const makeDummyPresentationRequestResponse = async (options: MakeDummyPre
     qrCode,
     deeplink,
     verifier,
-    issuers
+    issuers,
+    holderApp
   };
 };
 
