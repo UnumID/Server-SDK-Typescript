@@ -44,6 +44,37 @@ jobs:
   #         NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
   #         #git add package.json && git commit -m "[Release] ${{ env.RELEASE_VERSION }}" && git push origin master
 
+  # https://github.com/marketplace/actions/delete-tag-and-release
+  # - uses: dev-drprasad/delete-tag-and-release@v0.2.0
+  # with:
+  #   delete_release: true # default: false
+  #   tag_name: v0.1.0 # tag name to delete
+  #   repo: <owner>/<repoName> # target repo (optional). defaults to repo running this action
+  # env:
+  #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  ghRelease:
+    #https://github.com/actions/create-release
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            Changes in this Release
+            - First Change
+            - Second Change
+          draft: false
+          prerelease: false
+
   commitUpdate:
     name: Update version & deploy
     runs-on: ubuntu-latest
