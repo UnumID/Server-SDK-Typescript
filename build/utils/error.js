@@ -1,5 +1,8 @@
 "use strict";
+<<<<<<< Updated upstream
 // import express from 'express';
+=======
+>>>>>>> Stashed changes
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -32,6 +35,7 @@ var CustError = /** @class */ (function (_super) {
     return CustError;
 }(Error));
 exports.CustError = CustError;
+<<<<<<< Updated upstream
 // /**
 //  * Handle formatting the error response.
 //  * Note: `statusCode` attribute is similar to `status` but leveraged in a secondary manner as it is currently only used for request error handling.
@@ -55,4 +59,6 @@ exports.CustError = CustError;
 //     });
 //   }
 // };
+=======
+>>>>>>> Stashed changes
 //# sourceMappingURL=error.js.map
