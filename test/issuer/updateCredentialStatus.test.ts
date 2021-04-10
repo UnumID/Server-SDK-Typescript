@@ -1,17 +1,18 @@
-import * as utilLib from '@unumid/library-issuer-verifier-utility';
 import { dummyAuthToken, dummyAdminKey } from './mocks';
 import { UnumDto } from '../../src/types';
 import { updateCredentialStatus } from '../../src/issuer/updateCredentialStatus';
+import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
+import { CustError } from '../../src/utils/error';
 
-jest.mock('@unumid/library-issuer-verifier-utility', () => {
-  const actual = jest.requireActual('@unumid/library-issuer-verifier-utility');
+jest.mock('../../src/utils/networkRequestHelper', () => {
+  const actual = jest.requireActual('../../src/utils/networkRequestHelper');
   return {
     ...actual,
     makeNetworkRequest: jest.fn()
   };
 });
 
-const mockMakeNetworkRequest = utilLib.makeNetworkRequest as jest.Mock;
+const mockMakeNetworkRequest = makeNetworkRequest as jest.Mock;
 
 describe('updateCredentialStatus', () => {
   let response: UnumDto, responseAuthToken: string;
@@ -54,7 +55,7 @@ describe('updateCredentialStatus - Failure cases', () => {
       await updateCredentialStatus(authHeader, '');
       fail();
     } catch (e) {
-      expect(e).toEqual(new utilLib.CustError(400, 'credentialId is required.'));
+      expect(e).toEqual(new CustError(400, 'credentialId is required.'));
       expect(e.code).toEqual(400);
       expect(e.message).toEqual('credentialId is required.');
     }
@@ -65,7 +66,7 @@ describe('updateCredentialStatus - Failure cases', () => {
       await updateCredentialStatus('', credentialId);
       fail();
     } catch (e) {
-      expect(e).toEqual(new utilLib.CustError(401, 'No authentication string. Not authenticated.'));
+      expect(e).toEqual(new CustError(401, 'No authentication string. Not authenticated.'));
       expect(e.code).toEqual(401);
       expect(e.message).toEqual('No authentication string. Not authenticated.');
     }
@@ -76,7 +77,7 @@ describe('updateCredentialStatus - Failure cases', () => {
       await updateCredentialStatus(authHeader, credentialId, 'fake');
       fail();
     } catch (e) {
-      expect(e).toEqual(new utilLib.CustError(400, 'status does not match a valid CredentialStatusOptions string literal.'));
+      expect(e).toEqual(new CustError(400, 'status does not match a valid CredentialStatusOptions string literal.'));
       expect(e.code).toEqual(400);
       expect(e.message).toEqual('status does not match a valid CredentialStatusOptions string literal.');
     }

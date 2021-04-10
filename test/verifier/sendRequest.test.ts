@@ -4,19 +4,20 @@ import { JSONObj, UnumDto } from '../../src/types';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { dummyAuthToken, makeDummyPresentationRequestResponse } from './mocks';
 import { CustError } from '../../src/utils/error';
-import { createProof } from '../../src/utils/createProof';
+// import { createProof } from '../../src/utils/createProof';
+import * as createKeyPairs from '../../src/utils/createKeyPairs';
 
 jest.mock('../../src/utils/networkRequestHelper', () => {
   const actual = jest.requireActual('../../src/utils/networkRequestHelper');
 
   return {
     ...actual,
-    makeNetworkRequest: jest.fn(),
-    createProof: jest.fn(() => actual.createProof)
+    makeNetworkRequest: jest.fn()
   };
 });
 
 const mockMakeNetworkRequest = makeNetworkRequest as jest.Mock;
+const createKeyPairSetSpy = jest.spyOn(createKeyPairs, 'createKeyPairSet');
 
 const callSendRequests = (
   verifier: string,
@@ -80,7 +81,7 @@ describe('sendRequest', () => {
   });
 
   it('signs the request', () => {
-    expect(createProof).toBeCalled();
+    expect(createKeyPairSetSpy).toBeCalled();
   });
 
   it('sends the request to the saas', () => {

@@ -4,7 +4,8 @@ import { issueCredential } from '../../src/issuer/issueCredentials';
 import { UnumDto } from '../../src/types';
 import { CredentialSubject } from '@unumid/types';
 import { CustError } from '../../src/utils/error';
-import { createProof } from '../../src/utils/createProof';
+// import { createProof } from '../../src/utils/createProof';
+import * as createKeyPairs from '../../src/utils/createKeyPairs';
 import { getDIDDoc } from '../../src/utils/didHandler';
 import { doEncrypt } from '../../src/utils/encrypt';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
@@ -52,11 +53,12 @@ jest.mock('../../src/utils/createProof', () => {
 });
 
 jest.mock('../../src/utils/encrypt');
+const createKeyPairSetSpy = jest.spyOn(createKeyPairs, 'createKeyPairSet');
 
 const mockMakeNetworkRequest = makeNetworkRequest as jest.Mock;
 const mockGetDIDDoc = getDIDDoc as jest.Mock;
 const mockDoEncrypt = doEncrypt as jest.Mock;
-const mockCreateProof = createProof as jest.Mock;
+// const mockCreateProof = createProof as jest.Mock;
 
 function callIssueCreds (credentialSubject: CredentialSubject, type: string[], issuer: string, expirationDate: Date, eccPrivateKey: string, auth: string): Promise<UnumDto<Credential>> {
   return issueCredential(auth, type, issuer, credentialSubject, eccPrivateKey, expirationDate);
@@ -93,10 +95,9 @@ describe('issueCredential', () => {
     expect(mockGetDIDDoc).toBeCalled();
   });
 
-  // This is tested in 'returns the credential'
-  // it('signs the credential', () => {
-  //   expect(mockCreateProof).toHaveBeenCalled();
-  // });
+  it('signs the credential', () => {
+    expect(createKeyPairSetSpy).toHaveBeenCalled();
+  });
 
   it('encrypts the credential for each public key', () => {
     expect(mockDoEncrypt).toBeCalledTimes(2);
