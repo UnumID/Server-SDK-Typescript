@@ -6,160 +6,100 @@ on:
       - 'v*.*.*'
 
 jobs:
-  # getVersion:
-  # # from https://stackoverflow.com/questions/58177786/get-the-current-pushed-tag-in-github-actions
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Set env
-  #       run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-  #     - name: Test
-  #       run: |
-  #         echo $RELEASE_VERSION
-  #         echo ${{ env.RELEASE_VERSION }}
-
-  # updatePackage:
-  # #from https://github.community/t/auto-update-package-json-on-publishing/16894
-  #   runs-on: ubuntu-latest
-  #   # if: github.ref == 'refs/heads/master'
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - uses: actions/setup-node@v1
-  #       with:
-  #         node-version: 12
-  #         registry-url: https://npm.pkg.github.com/
-  #         scope: '@something'
-  #     - name: Setup GIT
-  #       run: |
-  #         git switch -c master
-  #         git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-  #         git config user.name "$GITHUB_ACTOR"
-  #     - name: Install and Publish
-  #       run: |
-  #         yarn
-  #         npm --no-git-tag-version version ${{ env.RELEASE_VERSION }}
-          
-  #         npm publish
-  #       env:
-  #         NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
-  #         #git add package.json && git commit -m "[Release] ${{ env.RELEASE_VERSION }}" && git push origin master
-
-  # https://github.com/marketplace/actions/delete-tag-and-release
-  # - uses: dev-drprasad/delete-tag-and-release@v0.2.0
-  # with:
-  #   delete_release: true # default: false
-  #   tag_name: v0.1.0 # tag name to delete
-  #   repo: <owner>/<repoName> # target repo (optional). defaults to repo running this action
-  # env:
-  #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  ghRelease:
-    #https://github.com/actions/create-release
-    name: Create Release
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body: |
-            Changes in this Release
-            - First Change
-            - Second Change
-          draft: false
-          prerelease: false
-
-  commitUpdate:
+  releaseJob:
     name: Update version & deploy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
 
+      # ref: https://stackoverflow.com/questions/58177786/get-the-current-pushed-tag-in-github-actions
       - name: Set version env
-        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+        run: |
+          echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+          echo "TAG_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+      
+      # ref: https://stackoverflow.com/questions/65606498/how-to-access-github-tag-message-in-github-actions
+      - name: Get and set tag message
+        run: |
+          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+          git tag -l --format='%(contents:subject)' ${GITHUB_REF#refs/*/}
+          echo "TAG_MESSAGE=$(git tag -l --format='%(contents:subject)' ${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
+      
       - name: Test env
         run: |
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
+          echo $TAG_VERSION
+          echo ${{ env.TAG_VERSION }}
+          echo ${{ env.TAG_MESSAGE }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v1
         with:
           node-version: 12.x
 
-      # - name: Install dependencies
-      #   run: npm install
+      - name: Install dependencies
+        run: yarn
 
+      # ref: https://github.community/t/auto-update-package-json-on-publishing/16894
       - name: Update source code
         run: |
           npm --no-git-tag-version version ${{ env.RELEASE_VERSION }}
 
       - name: Create type docs
         run: |
-          npm i -g typedoc
-          npm i -g typescript
           npx typedoc src/index.ts
           
-        #- npm publish
+      # ref: https://github.com/marketplace/actions/npm-publish
+      - name: NPM package publish
+        uses: JS-DevTools/npm-publish@v1
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+          access: public
+          registry: https://registry.npmjs.org/
 
+      - name: Github package publish
+        uses: JS-DevTools/npm-publish@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          access: public
+          registry: https://npm.pkg.github.com
+
+      # ref: https://github.com/marketplace/actions/delete-tag-and-release
+      - name: Delete the v tag
+        uses: dev-drprasad/delete-tag-and-release@v0.2.0
+        with:
+          delete_release: true # default: false
+          tag_name: ${{ env.TAG_VERSION }} # tag name to delete
+          # repo: <owner>/<repoName> # target repo (optional). defaults to repo running this action
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ref: https://github.com/marketplace/actions/add-commit
       - name: Commit changes
         uses: EndBug/add-and-commit@v7
         with:
           author_name: UnumID Admin
           author_email: admin@unum.id
           message: '[Release] ${{ env.RELEASE_VERSION }}'
-          add: 'package.json'
-          branch: actions
+          add: '["package.json", "docs/"]'
+          branch: main
 
-  # checks:
-  #   if: github.event_name != 'push'
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v1
-  #     - uses: actions/setup-node@v1
-  #       with:
-  #         node-version: '12.x'
-  #     - name: Test Build
-  #       run: |
-  #         if [ -e yarn.lock ]; then
-  #         yarn install --frozen-lockfile
-  #         elif [ -e package-lock.json ]; then
-  #         npm ci
-  #         else
-  #         npm i
-  #         fi
-  #         npm run build
-
-  # gh-release:
-  #   if: github.event_name != 'pull_request'
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v1
-  #     - uses: actions/setup-node@v1
-  #       with:
-  #         node-version: '12.x'
-  #     - uses: webfactory/ssh-agent@v0.5.0
-  #       with:
-  #         ssh-private-key: ${{ secrets.GH_PAGES_DEPLOY }}
-  #     - name: Release to GitHub Pages
-  #       env:
-  #         USE_SSH: true
-  #         GIT_USER: git
-  #       run: |
-  #         git config --global user.email "actions@github.com"
-  #         git config --global user.name "gh-actions"
-  #         if [ -e yarn.lock ]; then
-  #         yarn install --frozen-lockfile
-  #         elif [ -e package-lock.json ]; then
-  #         npm ci
-  #         else
-  #         npm i
-  #         fi
-  #         npm run deploy
+      # ref: https://github.com/actions/create-release
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ env.RELEASE_VERSION }}
+          release_name: ${{ env.RELEASE_VERSION }}
+          body: ${{ env.TAG_MESSAGE }}
+          # body: |
+          #   Changes in this Release
+          #   - First Change
+          #   - Second Change
+          draft: false
+          prerelease: false
+          commitish: main
