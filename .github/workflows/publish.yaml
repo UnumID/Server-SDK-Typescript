@@ -51,28 +51,28 @@ jobs:
         run: |
           npx typedoc src/index.ts
           
-      # ref: https://github.com/marketplace/actions/npm-publish
-      - name: NPM package publish
-        uses: JS-DevTools/npm-publish@v1
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
-          access: public
-          registry: https://registry.npmjs.org/
+      # # ref: https://github.com/marketplace/actions/npm-publish
+      # - name: NPM package publish
+      #   uses: JS-DevTools/npm-publish@v1
+      #   with:
+      #     token: ${{ secrets.NPM_TOKEN }}
+      #     access: public
+      #     registry: https://registry.npmjs.org/
 
-      - name: Github package publish
-        uses: JS-DevTools/npm-publish@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          access: public
-          registry: https://npm.pkg.github.com
+      # - name: Github package publish
+      #   uses: JS-DevTools/npm-publish@v1
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     access: public
+      #     registry: https://npm.pkg.github.com
 
-      # ref: https://github.com/marketplace/actions/delete-tag-and-release
-      - name: Delete the v tag
-        uses: dev-drprasad/delete-tag-and-release@v0.2.0
-        with:
-          delete_release: true # default: false
-          tag_name: ${{ env.TAG_VERSION }} # tag name to delete
-          # repo: <owner>/<repoName> # target repo (optional). defaults to repo running this action
+      # # ref: https://github.com/marketplace/actions/delete-tag-and-release
+      # - name: Delete the v tag
+      #   uses: dev-drprasad/delete-tag-and-release@v0.2.0
+      #   with:
+      #     delete_release: true # default: false
+      #     tag_name: ${{ env.TAG_VERSION }} # tag name to delete
+      #     # repo: <owner>/<repoName> # target repo (optional). defaults to repo running this action
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -86,20 +86,20 @@ jobs:
           add: '["package.json", "docs/"]'
           branch: main
 
-      # ref: https://github.com/actions/create-release
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-        with:
-          tag_name: ${{ env.RELEASE_VERSION }}
-          release_name: ${{ env.RELEASE_VERSION }}
-          body: ${{ env.TAG_MESSAGE }}
-          # body: |
-          #   Changes in this Release
-          #   - First Change
-          #   - Second Change
-          draft: false
-          prerelease: false
-          commitish: main
+      # # ref: https://github.com/actions/create-release
+      # - name: Create Release
+      #   id: create_release
+      #   uses: actions/create-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      #   with:
+      #     tag_name: ${{ env.RELEASE_VERSION }}
+      #     release_name: ${{ env.RELEASE_VERSION }}
+      #     body: ${{ env.TAG_MESSAGE }}
+      #     # body: |
+      #     #   Changes in this Release
+      #     #   - First Change
+      #     #   - Second Change
+      #     draft: false
+      #     prerelease: false
+      #     commitish: main
