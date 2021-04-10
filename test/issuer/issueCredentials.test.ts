@@ -4,23 +4,10 @@ import { issueCredential } from '../../src/issuer/issueCredentials';
 import { UnumDto } from '../../src/types';
 import { CredentialSubject } from '@unumid/types';
 import { CustError } from '../../src/utils/error';
-// import { createProof } from '../../src/utils/createProof';
 import * as createKeyPairs from '../../src/utils/createKeyPairs';
 import { getDIDDoc } from '../../src/utils/didHandler';
 import { doEncrypt } from '../../src/utils/encrypt';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
-
-// jest.mock('@unumid/library-issuer-verifier-utility', () => {
-//   const actual = jest.requireActual('@unumid/library-issuer-verifier-utility');
-
-//   return {
-//     ...actual,
-//     makeNetworkRequest: jest.fn(),
-//     getDIDDoc: jest.fn(),
-//     doEncrypt: jest.fn(actual.doEncrypt),
-//     createProof: jest.fn(actual.createProof)
-//   };
-// });
 
 jest.mock('../../src/utils/didHandler', () => {
   const actual = jest.requireActual('../../src/utils/didHandler');
@@ -43,7 +30,6 @@ jest.mock('../../src/utils/networkRequestHelper', () => ({
   makeNetworkRequest: jest.fn()
 }));
 
-// jest.mock('../../src/utils/createProof');
 jest.mock('../../src/utils/createProof', () => {
   const actual = jest.requireActual('../../src/utils/createProof');
   return {
@@ -58,7 +44,6 @@ const createKeyPairSetSpy = jest.spyOn(createKeyPairs, 'createKeyPairSet');
 const mockMakeNetworkRequest = makeNetworkRequest as jest.Mock;
 const mockGetDIDDoc = getDIDDoc as jest.Mock;
 const mockDoEncrypt = doEncrypt as jest.Mock;
-// const mockCreateProof = createProof as jest.Mock;
 
 function callIssueCreds (credentialSubject: CredentialSubject, type: string[], issuer: string, expirationDate: Date, eccPrivateKey: string, auth: string): Promise<UnumDto<Credential>> {
   return issueCredential(auth, type, issuer, credentialSubject, eccPrivateKey, expirationDate);

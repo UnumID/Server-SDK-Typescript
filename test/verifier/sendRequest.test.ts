@@ -4,7 +4,6 @@ import { JSONObj, UnumDto } from '../../src/types';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { dummyAuthToken, makeDummyPresentationRequestResponse } from './mocks';
 import { CustError } from '../../src/utils/error';
-// import { createProof } from '../../src/utils/createProof';
 import * as createKeyPairs from '../../src/utils/createKeyPairs';
 
 jest.mock('../../src/utils/networkRequestHelper', () => {

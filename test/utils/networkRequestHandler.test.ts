@@ -79,18 +79,6 @@ describe('Rest type Call - Success Scenario', () => {
 });
 
 describe('Rest type Call - Failure Scenario', () => {
-  // const app, server;
-
-  // beforeAll(async () => {
-  //   app = initServer();
-  //   mockAPIDefs(app);
-  //   server = startServer(portNum, app);
-  // });
-
-  // afterAll(() => {
-  //   server.close();
-  // });
-
   it('Check the rest end point /api/error to get the error response', async () => {
     const url = 'http://localhost:' + portNum + '/';
     const restData: RESTData = { method: 'GET', baseUrl: url, endPoint: 'api/error' };
