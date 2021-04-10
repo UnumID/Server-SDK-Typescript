@@ -1,5 +1,4 @@
 "use strict";
-// import express from 'express';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -32,27 +31,4 @@ var CustError = /** @class */ (function (_super) {
     return CustError;
 }(Error));
 exports.CustError = CustError;
-// /**
-//  * Handle formatting the error response.
-//  * Note: `statusCode` attribute is similar to `status` but leveraged in a secondary manner as it is currently only used for request error handling.
-//  * DEPRECATED: now that this library is being used in a SDK fashion.
-//  * @param err
-//  * @param res
-//  */
-// export const customErrFormatter = (err: CustError, res: express.Response): void => {
-//   const { code, message } = err;
-//   if (code) {
-//     res.status(code).json({
-//       status: 'error',
-//       code,
-//       message
-//     });
-//   } else {
-//     res.status(400).json({
-//       status: 'external error',
-//       code: 400,
-//       message
-//     });
-//   }
-// };
 //# sourceMappingURL=error.js.map

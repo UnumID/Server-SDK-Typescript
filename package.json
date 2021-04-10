@@ -3,6 +3,7 @@
   "version": "1.1.2",
   "main": "build/index.js",
   "repository": "git@github.com:UnumID/Server-SDK-TypeScript.git",
+  "homepage": "https://docs.unum.id/server-sdk/",
   "author": "UnumID <admin@unumid.org>",
   "license": "MIT",
   "private": false,
@@ -45,7 +46,7 @@
   "dependencies": {
     "@types/uuid": "^8.3.0",
     "@unumid/library-crypto": "https://github.com/UnumID/Library-Crypto-TypeScript.git#v1.2.0",
-    "@unumid/types": "git+ssh://git@github.com/UnumID/types.git#v1.3.0",
+    "@unumid/types": "https://github.com/UnumID/types.git#v1.3.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "fast-json-stable-stringify": "^2.1.0",
