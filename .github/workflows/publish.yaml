@@ -84,7 +84,7 @@ jobs:
           author_email: admin@unum.id
           message: '[Release] ${{ env.RELEASE_VERSION }}'
           add: '["package.json", "docs/"]'
-          branch: main
+          branch: actions
 
       # # ref: https://github.com/actions/create-release
       # - name: Create Release
