@@ -1,20 +1,18 @@
-import * as utilLib from '@unumid/library-issuer-verifier-utility';
-import { RegisteredIssuer, UnumDto } from '../../src/types';
+import { JSONObj, RegisteredIssuer, UnumDto } from '../../src/types';
 import { makeDummyIssuerResponse, dummyIssuerApiKey, makeDummyIssuer, dummyAuthToken } from './mocks';
 import { registerIssuer } from '../../src/issuer/registerIssuer';
+import { CustError } from '../../src/utils/error';
+import * as createKeyPairs from '../../src/utils/createKeyPairs';
+import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 
-jest.mock('@unumid/library-issuer-verifier-utility', () => {
-  const actual = jest.requireActual('@unumid/library-issuer-verifier-utility');
+jest.mock('../../src/utils/networkRequestHelper', () => ({
+  ...jest.requireActual('../../src/utils/networkRequestHelper'),
+  makeNetworkRequest: jest.fn()
+}));
 
-  return {
-    ...actual,
-    makeNetworkRequest: jest.fn(),
-    createKeyPairSet: jest.fn(actual.createKeyPairSet)
-  };
-});
+const createKeyPairSetSpy = jest.spyOn(createKeyPairs, 'createKeyPairSet');
 
-const mockMakeNetworkRequest = utilLib.makeNetworkRequest as jest.Mock;
-const mockCreateKeyPairSet = utilLib.createKeyPairSet as jest.Mock;
+const mockMakeNetworkRequest = makeNetworkRequest as jest.Mock;
 
 describe('registerIssuer', () => {
   let response: RegisteredIssuer, responseAuthToken: string, responseDto: UnumDto<RegisteredIssuer>;
@@ -36,7 +34,7 @@ describe('registerIssuer', () => {
   });
 
   it('creates keypairs', () => {
-    expect(mockCreateKeyPairSet).toBeCalled();
+    expect(createKeyPairSetSpy).toBeCalled();
   });
 
   it('calls the saas to register the issuer', () => {
@@ -60,8 +58,8 @@ describe('registerIssuer', () => {
 });
 
 describe('registerIssuer - Failure cases', () => {
-  let newIssuer: utilLib.JSONObj;
-  let reqBody: utilLib.JSONObj;
+  let newIssuer: JSONObj;
+  let reqBody: JSONObj;
   const name = 'First Unumid Issuer';
   const customerUuid = '5e46f1ba-4c82-471d-bbc7-251924a90532';
 
@@ -70,7 +68,7 @@ describe('registerIssuer - Failure cases', () => {
       await registerIssuer('', customerUuid, dummyIssuerApiKey);
       fail();
     } catch (e) {
-      expect(e).toEqual(new utilLib.CustError(400, 'Invalid Issuer: name is required.'));
+      expect(e).toEqual(new CustError(400, 'Invalid Issuer: name is required.'));
       expect(e.code).toEqual(400);
       expect(e.message).toEqual('Invalid Issuer: name is required.');
     }
@@ -81,7 +79,7 @@ describe('registerIssuer - Failure cases', () => {
       await registerIssuer(name, '', dummyIssuerApiKey);
       fail();
     } catch (e) {
-      expect(e).toEqual(new utilLib.CustError(400, 'Invalid Issuer: customerUuid is required.'));
+      expect(e).toEqual(new CustError(400, 'Invalid Issuer: customerUuid is required.'));
       expect(e.code).toEqual(400);
       expect(e.message).toEqual('Invalid Issuer: customerUuid is required.');
     }
@@ -92,7 +90,7 @@ describe('registerIssuer - Failure cases', () => {
       await registerIssuer(name, customerUuid, '');
       fail();
     } catch (e) {
-      expect(e).toEqual(new utilLib.CustError(401, 'Not authenticated: apiKey is required'));
+      expect(e).toEqual(new CustError(401, 'Not authenticated: apiKey is required'));
       expect(e.code).toEqual(401);
       expect(e.message).toEqual('Not authenticated: apiKey is required');
     }
@@ -104,7 +102,7 @@ describe('registerIssuer - Failure cases - SaaS Errors', () => {
   const customerUuid = '5e46f1ba-4c82-471d-bbc7-251924a90532';
 
   it('Response code should be 403 when uuid is not valid', async () => {
-    mockMakeNetworkRequest.mockRejectedValueOnce(new utilLib.CustError(403, 'Forbidden'));
+    mockMakeNetworkRequest.mockRejectedValueOnce(new CustError(403, 'Forbidden'));
     try {
       await registerIssuer(name, '123', dummyIssuerApiKey);
     } catch (e) {
@@ -113,7 +111,7 @@ describe('registerIssuer - Failure cases - SaaS Errors', () => {
   });
 
   it('Response code should be 403 when API Key is not valid', async () => {
-    mockMakeNetworkRequest.mockRejectedValueOnce(new utilLib.CustError(403, 'Forbidden'));
+    mockMakeNetworkRequest.mockRejectedValueOnce(new CustError(403, 'Forbidden'));
 
     try {
       await registerIssuer(name, customerUuid, 'abc');
