@@ -1,11 +1,14 @@
 import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
-import { getUUID, createProof, CustError, RESTData, makeNetworkRequest, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
 import { CryptoError } from '@unumid/library-crypto';
 import { CredentialRequest, PresentationRequestPostDto, SignedPresentationRequest, UnsignedPresentationRequest } from '@unumid/types';
 
-import { SendRequestReqBody, UnumDto } from '../types';
+import { RESTData, SendRequestReqBody, UnumDto } from '../types';
 import logger from '../logger';
+import { createProof } from '../utils/createProof';
+import { getUUID } from '../utils/helpers';
+import { makeNetworkRequest, handleAuthToken } from '../utils/networkRequestHelper';
+import { CustError } from '../utils/error';
 
 /**
  * Constructs an unsigned PresentationRequest from the incoming request body.

@@ -41,8 +41,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerVerifier = void 0;
 var config_1 = require("../config");
-var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var logger_1 = __importDefault(require("../logger"));
+var __1 = require("..");
+var createKeyPairs_1 = require("../utils/createKeyPairs");
+var helpers_1 = require("../utils/helpers");
+var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 /**
  * Creates an object to encapsulate key information.
  * @param kp KeyPair
@@ -50,7 +53,7 @@ var logger_1 = __importDefault(require("../logger"));
  */
 var constructKeyObj = function (kp, type) {
     return {
-        id: library_issuer_verifier_utility_1.getUUID(),
+        id: helpers_1.getUUID(),
         encoding: 'pem',
         type: type,
         status: 'valid',
@@ -73,16 +76,16 @@ var constructKeyObjs = function (kpSet) {
  */
 var validateInParams = function (name, customerUuid, url, apiKey) {
     if (!name) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Verifier Options: name is required.');
+        throw new __1.CustError(400, 'Invalid Verifier Options: name is required.');
     }
     if (!customerUuid) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Verifier Options: customerUuid is required.');
+        throw new __1.CustError(400, 'Invalid Verifier Options: customerUuid is required.');
     }
     if (!url) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Verifier Options: url is required.');
+        throw new __1.CustError(400, 'Invalid Verifier Options: url is required.');
     }
     if (!apiKey) {
-        throw new library_issuer_verifier_utility_1.CustError(401, 'Not authenticated: apiKey is required.');
+        throw new __1.CustError(401, 'Not authenticated: apiKey is required.');
     }
 };
 /**
@@ -99,7 +102,7 @@ exports.registerVerifier = function (name, customerUuid, url, apiKey) { return _
             case 0:
                 _a.trys.push([0, 3, , 4]);
                 validateInParams(name, customerUuid, url, apiKey);
-                return [4 /*yield*/, library_issuer_verifier_utility_1.createKeyPairSet()];
+                return [4 /*yield*/, createKeyPairs_1.createKeyPairSet()];
             case 1:
                 kpSet = _a.sent();
                 verifierOpt = { name: name, customerUuid: customerUuid, url: url, publicKeyInfo: constructKeyObjs(kpSet) };
@@ -110,10 +113,10 @@ exports.registerVerifier = function (name, customerUuid, url, apiKey) { return _
                     header: { Authorization: 'Bearer ' + apiKey },
                     data: verifierOpt
                 };
-                return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(restData)];
+                return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];
             case 2:
                 restResp = _a.sent();
-                authToken = library_issuer_verifier_utility_1.handleAuthToken(restResp);
+                authToken = networkRequestHelper_1.handleAuthToken(restResp);
                 verifierResp = {
                     authToken: authToken,
                     body: {

@@ -1,4 +1,4 @@
-import { getDIDDoc, getKeyFromDIDDoc, doVerify, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
+
 import { CryptoError } from '@unumid/library-crypto';
 import { omit } from 'lodash';
 
@@ -6,6 +6,9 @@ import { UnumDto } from '../types';
 import { configData } from '../config';
 import logger from '../logger';
 import { VerifiableCredential } from '@unumid/types';
+import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHandler';
+import { handleAuthToken } from '../utils/networkRequestHelper';
+import { doVerify } from '../utils/verify';
 
 /**
  * Used to verify the credential signature given the corresponding Did document's public key.

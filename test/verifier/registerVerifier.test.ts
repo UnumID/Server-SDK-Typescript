@@ -1,6 +1,3 @@
-import request from 'supertest';
-
-import * as utilLib from '@unumid/library-issuer-verifier-utility';
 import {
   dummyAuthToken,
   dummyVerifierApiKey,
@@ -9,24 +6,33 @@ import {
 } from './mocks';
 import { registerVerifier } from '../../src/verifier/registerVerifier';
 import { UnumDto, RegisteredVerifier } from '../../src/types';
+import { CustError } from '../../src/utils/error';
+import { mocked } from 'ts-jest/utils';
+import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 
-jest.mock('@unumid/library-issuer-verifier-utility', () => ({
-  ...jest.requireActual('@unumid/library-issuer-verifier-utility'),
+jest.mock('../../src/utils/networkRequestHelper', () => ({
+  ...jest.requireActual('../../src/utils/networkRequestHelper'),
   makeNetworkRequest: jest.fn()
 }));
 
-const mockMakeNetworkRequest = utilLib.makeNetworkRequest as jest.Mock;
+/**
+ * Mocking only makeNetworkRequest from the the file. Can do that either way with mocked or as jest.Mock
+ */
+const mockMakeNetworkRequest = mocked(makeNetworkRequest, true);
+// const mockMakeNetworkRequest = makeNetworkRequest as jest.Mock;
 
 describe('registerVerifier', () => {
   const name = 'First Unumid Verifier';
   const customerUuid = '5e46f1ba-4c82-471d-bbc7-251924a90532';
   const url = 'https://customer-api.dev-unumid.org/presentation';
+
   let responseDto: UnumDto<RegisteredVerifier>, responseAuthToken: string, response: RegisteredVerifier;
 
   beforeEach(async () => {
     const dummyVerifier = makeDummyVerifier({ name, customerUuid, url });
     const dummyVerifierResponse = makeDummyVerifierResponse({ verifier: dummyVerifier, authToken: dummyAuthToken });
     mockMakeNetworkRequest.mockResolvedValueOnce(dummyVerifierResponse);
+
     responseDto = await registerVerifier(name, customerUuid, url, dummyVerifierApiKey);
     response = responseDto.body;
     responseAuthToken = responseDto.authToken;
@@ -63,7 +69,7 @@ describe('registerVerifier - Failure cases', () => {
       await registerVerifier('', customerUuid, url, dummyVerifierApiKey);
       fail();
     } catch (e) {
-      expect(e).toEqual(new utilLib.CustError(400, 'Invalid Verifier Options: name is required.'));
+      expect(e).toEqual(new CustError(400, 'Invalid Verifier Options: name is required.'));
       expect(e.code).toEqual(400);
       expect(e.message).toEqual('Invalid Verifier Options: name is required.');
     }
@@ -74,7 +80,7 @@ describe('registerVerifier - Failure cases', () => {
       await registerVerifier(name, '', url, dummyVerifierApiKey);
       fail();
     } catch (e) {
-      expect(e).toEqual(new utilLib.CustError(400, 'Invalid Verifier Options: customerUuid is required.'));
+      expect(e).toEqual(new CustError(400, 'Invalid Verifier Options: customerUuid is required.'));
       expect(e.code).toEqual(400);
       expect(e.message).toEqual('Invalid Verifier Options: customerUuid is required.');
     }
@@ -85,7 +91,7 @@ describe('registerVerifier - Failure cases', () => {
       await registerVerifier(name, customerUuid, '', dummyVerifierApiKey);
       fail();
     } catch (e) {
-      expect(e).toEqual(new utilLib.CustError(400, 'Invalid Verifier Options: url is required.'));
+      expect(e).toEqual(new CustError(400, 'Invalid Verifier Options: url is required.'));
       expect(e.code).toEqual(400);
       expect(e.message).toEqual('Invalid Verifier Options: url is required.');
     }
@@ -96,7 +102,7 @@ describe('registerVerifier - Failure cases', () => {
       await registerVerifier(name, customerUuid, url, '');
       fail();
     } catch (e) {
-      expect(e).toEqual(new utilLib.CustError(401, 'Not authenticated: apiKey is required.'));
+      expect(e).toEqual(new CustError(401, 'Not authenticated: apiKey is required.'));
       expect(e.code).toEqual(401);
       expect(e.message).toEqual('Not authenticated: apiKey is required.');
     }
@@ -109,7 +115,7 @@ describe('registerVerifier - Failure cases - SaaS Errors', () => {
   const url = 'https://customer-api.dev-unumid.org/presentation';
 
   it('Response code should be 403 when uuid is not valid', async () => {
-    mockMakeNetworkRequest.mockRejectedValueOnce(new utilLib.CustError(403, 'Forbidden'));
+    mockMakeNetworkRequest.mockRejectedValueOnce(new CustError(403, 'Forbidden'));
     try {
       await registerVerifier(name, '123', url, dummyVerifierApiKey);
     } catch (e) {
@@ -118,7 +124,7 @@ describe('registerVerifier - Failure cases - SaaS Errors', () => {
   });
 
   it('Response code should be 403 when API Key is not valid', async () => {
-    mockMakeNetworkRequest.mockRejectedValueOnce(new utilLib.CustError(403, 'Forbidden'));
+    mockMakeNetworkRequest.mockRejectedValueOnce(new CustError(403, 'Forbidden'));
 
     try {
       await registerVerifier(name, customerUuid, url, 'abc');

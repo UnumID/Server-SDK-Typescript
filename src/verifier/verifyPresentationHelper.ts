@@ -1,16 +1,20 @@
 import { omit } from 'lodash';
 
 import { configData } from '../config';
-import { CredentialStatusInfo, UnumDto, VerifiedStatus } from '../types';
-import { Presentation, VerifiableCredential, CredentialRequest, PresentationRequestDto } from '@unumid/types';
+import { CredentialStatusInfo, JSONObj, RESTData, UnumDto, VerifiedStatus } from '../types';
+import { Presentation, VerifiableCredential, CredentialRequest, Proof, PublicKeyInfo } from '@unumid/types';
 import { validateProof } from './validateProof';
 import { requireAuth } from '../requireAuth';
 import { verifyCredential } from './verifyCredential';
 import { isCredentialExpired } from './isCredentialExpired';
 import { checkCredentialStatus } from './checkCredentialStatus';
-import { JSONObj, CustError, Proof, getDIDDoc, PublicKeyInfo, getKeyFromDIDDoc, doVerify, RESTData, makeNetworkRequest, isArrayEmpty, handleAuthToken, isArrayNotEmpty } from '@unumid/library-issuer-verifier-utility';
 import logger from '../logger';
 import { CryptoError } from '@unumid/library-crypto';
+import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
+import { CustError } from '../utils/error';
+import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHandler';
+import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
+import { doVerify } from '../utils/verify';
 
 /**
  * Validates the attributes for a credential request to UnumID's SaaS.

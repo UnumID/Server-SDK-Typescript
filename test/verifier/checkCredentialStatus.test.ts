@@ -1,11 +1,11 @@
-import { makeNetworkRequest } from '@unumid/library-issuer-verifier-utility';
+import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 
 import { checkCredentialStatus } from '../../src/verifier/checkCredentialStatus';
 import { configData } from '../../src/config';
 import { makeDummyUnsignedCredential, makeDummyCredential, dummyAuthToken } from './mocks';
 
-jest.mock('@unumid/library-issuer-verifier-utility', () => ({
-  ...jest.requireActual('@unumid/library-issuer-verifier-utility'),
+jest.mock('../../src/utils/networkRequestHelper', () => ({
+  ...jest.requireActual('../../src/utils/networkRequestHelper'),
   makeNetworkRequest: jest.fn()
 }));
 

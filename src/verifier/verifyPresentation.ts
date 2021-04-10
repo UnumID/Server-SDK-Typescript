@@ -1,12 +1,12 @@
 
 import { DecryptedPresentation, PresentationOrNoPresentation, UnumDto, VerifiedStatus } from '../types';
-import { Presentation, CredentialRequest, NoPresentation, PresentationRequestDto } from '@unumid/types';
+import { Presentation, CredentialRequest, NoPresentation, PresentationRequestDto, EncryptedData } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
 import { CryptoError, decrypt } from '@unumid/library-crypto';
-import { CustError, EncryptedData } from '@unumid/library-issuer-verifier-utility';
 import logger from '../logger';
 import { verifyNoPresentationHelper } from './verifyNoPresentationHelper';
 import { verifyPresentationHelper } from './verifyPresentationHelper';
+import { CustError } from '../utils/error';
 
 function isPresentation (presentation: PresentationOrNoPresentation): presentation is Presentation {
   return presentation.type[0] === 'VerifiablePresentation';

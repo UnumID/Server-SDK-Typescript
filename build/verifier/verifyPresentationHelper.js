@@ -47,16 +47,20 @@ var requireAuth_1 = require("../requireAuth");
 var verifyCredential_1 = require("./verifyCredential");
 var isCredentialExpired_1 = require("./isCredentialExpired");
 var checkCredentialStatus_1 = require("./checkCredentialStatus");
-var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var logger_1 = __importDefault(require("../logger"));
 var library_crypto_1 = require("@unumid/library-crypto");
+var helpers_1 = require("../utils/helpers");
+var error_1 = require("../utils/error");
+var didHandler_1 = require("../utils/didHandler");
+var networkRequestHelper_1 = require("../utils/networkRequestHelper");
+var verify_1 = require("../utils/verify");
 /**
  * Validates the attributes for a credential request to UnumID's SaaS.
  * @param credentials JSONObj
  */
 var validateCredentialInput = function (credentials) {
     var retObj = { valid: true, stringifiedCredentials: false, resultantCredentials: [] };
-    if (library_issuer_verifier_utility_1.isArrayEmpty(credentials)) {
+    if (helpers_1.isArrayEmpty(credentials)) {
         retObj.valid = false;
         retObj.msg = 'Invalid Presentation: verifiableCredentials must be a non-empty array.';
         return (retObj);
@@ -112,7 +116,7 @@ var validateCredentialInput = function (credentials) {
             break;
         }
         // Check @context is an array and not empty
-        if (library_issuer_verifier_utility_1.isArrayEmpty(credential['@context'])) {
+        if (helpers_1.isArrayEmpty(credential['@context'])) {
             retObj.valid = false;
             retObj.msg = invalidMsg + " @context must be a non-empty array.";
             break;
@@ -130,7 +134,7 @@ var validateCredentialInput = function (credentials) {
             break;
         }
         // Check type is an array and not empty
-        if (library_issuer_verifier_utility_1.isArrayEmpty(credential.type)) {
+        if (helpers_1.isArrayEmpty(credential.type)) {
             retObj.valid = false;
             retObj.msg = invalidMsg + " type must be a non-empty array.";
             break;
@@ -155,29 +159,29 @@ var validatePresentation = function (presentation) {
     var retObj = {};
     // validate required fields
     if (!context) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: @context is required.');
+        throw new error_1.CustError(400, 'Invalid Presentation: @context is required.');
     }
     if (!type) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: type is required.');
+        throw new error_1.CustError(400, 'Invalid Presentation: type is required.');
     }
     if (!verifiableCredentials) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: verifiableCredentials is required.');
+        throw new error_1.CustError(400, 'Invalid Presentation: verifiableCredentials is required.');
     }
     if (!proof) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: proof is required.');
+        throw new error_1.CustError(400, 'Invalid Presentation: proof is required.');
     }
     if (!presentationRequestUuid) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
+        throw new error_1.CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
     }
-    if (library_issuer_verifier_utility_1.isArrayEmpty(context)) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: @context must be a non-empty array.');
+    if (helpers_1.isArrayEmpty(context)) {
+        throw new error_1.CustError(400, 'Invalid Presentation: @context must be a non-empty array.');
     }
-    if (library_issuer_verifier_utility_1.isArrayEmpty(type)) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid Presentation: type must be a non-empty array.');
+    if (helpers_1.isArrayEmpty(type)) {
+        throw new error_1.CustError(400, 'Invalid Presentation: type must be a non-empty array.');
     }
     retObj = validateCredentialInput(verifiableCredentials);
     if (!retObj.valid) {
-        throw new library_issuer_verifier_utility_1.CustError(400, retObj.msg);
+        throw new error_1.CustError(400, retObj.msg);
     }
     else if (retObj.stringifiedCredentials) {
         // adding the "objectified" vc, which were sent in string format to appease iOS variable keyed object limitation: https://developer.apple.com/forums/thread/100417
@@ -209,17 +213,17 @@ function validatePresentationMeetsRequestedCredentials(presentation, credentialR
                 }
                 if (found) {
                     // checking required issuers are present
-                    if (library_issuer_verifier_utility_1.isArrayNotEmpty(requestedCred.issuers) && !requestedCred.issuers.includes(presentationCred.issuer)) {
+                    if (helpers_1.isArrayNotEmpty(requestedCred.issuers) && !requestedCred.issuers.includes(presentationCred.issuer)) {
                         var errMessage = "Invalid Presentation: credentials provided did not meet issuer requirements, [" + presentationCred.issuer + "], per the presentation request, [" + requestedCred.issuers + "].";
                         logger_1.default.warn(errMessage);
-                        throw new library_issuer_verifier_utility_1.CustError(400, errMessage);
+                        throw new error_1.CustError(400, errMessage);
                     }
                 }
             }
             if (!found) {
                 var errMessage = "Invalid Presentation: credentials provided did not meet type requirements, [" + presentationCreds.map(function (pc) { return pc.type.filter(function (t) { return t !== 'VerifiableCredential'; }); }) + "], per the presentation request, [" + credentialRequests.map(function (cr) { return cr.type; }) + "].";
                 logger_1.default.warn(errMessage);
-                throw new library_issuer_verifier_utility_1.CustError(400, errMessage);
+                throw new error_1.CustError(400, errMessage);
             }
         }
     }
@@ -231,33 +235,33 @@ function validatePresentationMeetsRequestedCredentials(presentation, credentialR
  * @param verifier
  */
 exports.verifyPresentationHelper = function (authorization, presentation, verifier, credentialRequests) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, proof, didDocumentResponse, authToken, pubKeyObj, result_1, isPresentationVerified, result_2, result_3, areCredentialsValid, _i, _a, credential, isExpired, isStatusValidResponse, isStatusValid, isVerifiedResponse, isVerified_1, result_4, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, result, error_1;
+    var data, proof, didDocumentResponse, authToken, pubKeyObj, result_1, isPresentationVerified, result_2, result_3, areCredentialsValid, _i, _a, credential, isExpired, isStatusValidResponse, isStatusValid, isVerifiedResponse, isVerified_1, result_4, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, result, error_2;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
                 _b.trys.push([0, 8, , 9]);
                 requireAuth_1.requireAuth(authorization);
                 if (!presentation) {
-                    throw new library_issuer_verifier_utility_1.CustError(400, 'presentation is required.');
+                    throw new error_1.CustError(400, 'presentation is required.');
                 }
                 if (!verifier) {
-                    throw new library_issuer_verifier_utility_1.CustError(400, 'verifier is required.');
+                    throw new error_1.CustError(400, 'verifier is required.');
                 }
                 data = lodash_1.omit(presentation, 'proof');
                 presentation = validatePresentation(presentation);
                 // if specific credential requests, then need to confirm the presentation provided meets the requirements
-                if (library_issuer_verifier_utility_1.isArrayNotEmpty(credentialRequests)) {
+                if (helpers_1.isArrayNotEmpty(credentialRequests)) {
                     validatePresentationMeetsRequestedCredentials(presentation, credentialRequests);
                 }
                 proof = presentation.proof;
-                return [4 /*yield*/, library_issuer_verifier_utility_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, proof.verificationMethod)];
+                return [4 /*yield*/, didHandler_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, proof.verificationMethod)];
             case 1:
                 didDocumentResponse = _b.sent();
                 if (didDocumentResponse instanceof Error) {
                     throw didDocumentResponse;
                 }
-                authToken = library_issuer_verifier_utility_1.handleAuthToken(didDocumentResponse);
-                pubKeyObj = library_issuer_verifier_utility_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
+                authToken = networkRequestHelper_1.handleAuthToken(didDocumentResponse);
+                pubKeyObj = didHandler_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 if (pubKeyObj.length === 0) {
                     result_1 = {
                         authToken: authToken,
@@ -270,7 +274,7 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 }
                 isPresentationVerified = false;
                 try {
-                    isPresentationVerified = library_issuer_verifier_utility_1.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding, proof.unsignedValue);
+                    isPresentationVerified = verify_1.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding, proof.unsignedValue);
                 }
                 catch (e) {
                     if (e instanceof library_crypto_1.CryptoError) {
@@ -363,10 +367,10 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                     header: { Authorization: authToken },
                     data: receiptOptions
                 };
-                return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(receiptCallOptions)];
+                return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(receiptCallOptions)];
             case 7:
                 resp = _b.sent();
-                authToken = library_issuer_verifier_utility_1.handleAuthToken(resp);
+                authToken = networkRequestHelper_1.handleAuthToken(resp);
                 result = {
                     authToken: authToken,
                     body: {
@@ -375,9 +379,9 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 };
                 return [2 /*return*/, result];
             case 8:
-                error_1 = _b.sent();
-                logger_1.default.error('Error sending a verifyPresentation request to UnumID Saas.', error_1);
-                throw error_1;
+                error_2 = _b.sent();
+                logger_1.default.error('Error sending a verifyPresentation request to UnumID Saas.', error_2);
+                throw error_2;
             case 9: return [2 /*return*/];
         }
     });

@@ -53,10 +53,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyPresentation = void 0;
 var requireAuth_1 = require("../requireAuth");
 var library_crypto_1 = require("@unumid/library-crypto");
-var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var logger_1 = __importDefault(require("../logger"));
 var verifyNoPresentationHelper_1 = require("./verifyNoPresentationHelper");
 var verifyPresentationHelper_1 = require("./verifyPresentationHelper");
+var error_1 = require("../utils/error");
 function isPresentation(presentation) {
     return presentation.type[0] === 'VerifiablePresentation';
 }
@@ -67,27 +67,27 @@ function isPresentation(presentation) {
  * @param verifierDid: string
  */
 exports.verifyPresentation = function (authorization, encryptedPresentation, verifierDid, encryptionPrivateKey, presentationRequest) { return __awaiter(void 0, void 0, void 0, function () {
-    var presentation, verificationResult_1, result_1, credentialRequests, verificationResult, result, error_1;
+    var presentation, verificationResult_1, result_1, credentialRequests, verificationResult, result, error_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 4, , 5]);
                 requireAuth_1.requireAuth(authorization);
                 if (!encryptedPresentation) {
-                    throw new library_issuer_verifier_utility_1.CustError(400, 'encryptedPresentation is required.');
+                    throw new error_1.CustError(400, 'encryptedPresentation is required.');
                 }
                 if (!verifierDid) { // verifier did
-                    throw new library_issuer_verifier_utility_1.CustError(400, 'verifier is required.');
+                    throw new error_1.CustError(400, 'verifier is required.');
                 }
                 if (!encryptionPrivateKey) {
-                    throw new library_issuer_verifier_utility_1.CustError(400, 'verifier encryptionPrivateKey is required.');
+                    throw new error_1.CustError(400, 'verifier encryptionPrivateKey is required.');
                 }
                 if (presentationRequest && presentationRequest.verifier.did !== verifierDid) {
-                    throw new library_issuer_verifier_utility_1.CustError(400, "verifier provided, " + verifierDid + ", does not match the presentation request verifier, " + presentationRequest.verifier.did + ".");
+                    throw new error_1.CustError(400, "verifier provided, " + verifierDid + ", does not match the presentation request verifier, " + presentationRequest.verifier.did + ".");
                 }
                 presentation = library_crypto_1.decrypt(encryptionPrivateKey, encryptedPresentation);
                 if (presentationRequest && presentationRequest.presentationRequest.uuid !== presentation.presentationRequestUuid) {
-                    throw new library_issuer_verifier_utility_1.CustError(400, "presentation request uuid provided, " + presentationRequest.presentationRequest.uuid + ", does not match the presentationRequestUuid that the presentation was in response to, " + presentation.presentationRequestUuid + ".");
+                    throw new error_1.CustError(400, "presentation request uuid provided, " + presentationRequest.presentationRequest.uuid + ", does not match the presentationRequestUuid that the presentation was in response to, " + presentation.presentationRequestUuid + ".");
                 }
                 if (!!isPresentation(presentation)) return [3 /*break*/, 2];
                 return [4 /*yield*/, verifyNoPresentationHelper_1.verifyNoPresentationHelper(authorization, presentation, verifierDid)];
@@ -109,14 +109,14 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                 };
                 return [2 /*return*/, result];
             case 4:
-                error_1 = _a.sent();
-                if (error_1 instanceof library_crypto_1.CryptoError) {
-                    logger_1.default.error('Crypto error handling encrypted presentation', error_1);
+                error_2 = _a.sent();
+                if (error_2 instanceof library_crypto_1.CryptoError) {
+                    logger_1.default.error('Crypto error handling encrypted presentation', error_2);
                 }
                 else {
-                    logger_1.default.error('Error handling encrypted presentation request to UnumID Saas.', error_1);
+                    logger_1.default.error('Error handling encrypted presentation request to UnumID Saas.', error_2);
                 }
-                throw error_1;
+                throw error_2;
             case 5: return [2 /*return*/];
         }
     });

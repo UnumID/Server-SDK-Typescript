@@ -1,7 +1,6 @@
-import { handleAuthToken, makeNetworkRequest } from '@unumid/library-issuer-verifier-utility';
-
 import { CredentialStatus, CredentialStatusInfo, UnumDto } from '../types';
 import { configData } from '../config';
+import { makeNetworkRequest, handleAuthToken } from '../utils/networkRequestHelper';
 
 /**
  * Helper to check the status of a credential: verified, revoked, etc.

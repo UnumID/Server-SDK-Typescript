@@ -1,24 +1,37 @@
 import { omit } from 'lodash';
 
 import { VerifiedStatus, UnumDto } from '../../src/types';
-import * as utilLib from '@unumid/library-issuer-verifier-utility';
 import { dummyAuthToken, makeDummyDidDocument } from './mocks';
 import { NoPresentation } from '@unumid/types';
 import { verifyNoPresentationHelper as verifyNoPresentation } from '../../src/verifier/verifyNoPresentationHelper';
+import { getDIDDoc } from '../../src/utils/didHandler';
+import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
+import { doVerify } from '../../src/utils/verify';
 
-jest.mock('@unumid/library-issuer-verifier-utility', () => {
-  const actual = jest.requireActual('@unumid/library-issuer-verifier-utility');
+jest.mock('../../src/utils/didHandler', () => {
+  const actual = jest.requireActual('../../src/utils/didHandler');
   return {
     ...actual,
-    getDIDDoc: jest.fn(),
-    doVerify: jest.fn(() => actual.doVerify),
-    makeNetworkRequest: jest.fn()
+    getDIDDoc: jest.fn()
   };
 });
 
-const mockGetDIDDoc = utilLib.getDIDDoc as jest.Mock;
-const mockDoVerify = utilLib.doVerify as jest.Mock;
-const mockMakeNetworkRequest = utilLib.makeNetworkRequest as jest.Mock;
+jest.mock('../../src/utils/verify', () => {
+  const actual = jest.requireActual('../../src/utils/verify');
+  return {
+    ...actual,
+    doVerify: jest.fn(() => actual.doVerify)
+  };
+});
+
+jest.mock('../../src/utils/networkRequestHelper', () => ({
+  ...jest.requireActual('../../src/utils/networkRequestHelper'),
+  makeNetworkRequest: jest.fn()
+}));
+
+const mockGetDIDDoc = getDIDDoc as jest.Mock;
+const mockDoVerify = doVerify as jest.Mock;
+const mockMakeNetworkRequest = makeNetworkRequest as jest.Mock;
 
 const callVerifyNoPresentation = (
   noPresentation: NoPresentation,

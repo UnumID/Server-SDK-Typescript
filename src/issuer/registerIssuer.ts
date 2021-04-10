@@ -1,8 +1,12 @@
 import { configData } from '../config';
-import { IssuerOptions, RegisteredIssuer, UnumDto } from '../types';
+import { IssuerOptions, JSONObj, KeyPairSet, RegisteredIssuer, RESTData, UnumDto } from '../types';
 
-import { KeyPair, PublicKeyInfo, getUUID, KeyPairSet, CustError, createKeyPairSet, RESTData, JSONObj, makeNetworkRequest, DidKeyType, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
 import logger from '../logger';
+import { DidKeyType, KeyPair, PublicKeyInfo } from '@unumid/types';
+import { getUUID } from '../utils/helpers';
+import { CustError } from '../utils/error';
+import { createKeyPairSet } from '../utils/createKeyPairs';
+import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
 
 /**
  * Creates an object to encapsulate key information.

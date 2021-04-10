@@ -49,8 +49,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.issueCredential = void 0;
 var config_1 = require("../config");
 var requireAuth_1 = require("../requireAuth");
-var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var logger_1 = __importDefault(require("../logger"));
+var didHandler_1 = require("../utils/didHandler");
+var encrypt_1 = require("../utils/encrypt");
+var createProof_1 = require("../utils/createProof");
+var helpers_1 = require("../utils/helpers");
+var error_1 = require("../utils/error");
+var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 /**
  * Creates an object of type EncryptedCredentialOptions which encapsulates information relating to the encrypted credential data
  * @param cred Credential
@@ -62,20 +67,20 @@ var constructEncryptedCredentialOpts = function (cred, authorization) { return _
         switch (_a.label) {
             case 0:
                 subjectDid = cred.credentialSubject.id;
-                return [4 /*yield*/, library_issuer_verifier_utility_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, subjectDid)];
+                return [4 /*yield*/, didHandler_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, subjectDid)];
             case 1:
                 didDocResponse = _a.sent();
                 if (didDocResponse instanceof Error) {
                     throw didDocResponse;
                 }
-                publicKeyInfos = library_issuer_verifier_utility_1.getKeyFromDIDDoc(didDocResponse.body, 'RSA');
+                publicKeyInfos = didHandler_1.getKeyFromDIDDoc(didDocResponse.body, 'RSA');
                 if (publicKeyInfos.length === 0) {
-                    throw new library_issuer_verifier_utility_1.CustError(404, 'Public key not found for the DID');
+                    throw new error_1.CustError(404, 'Public key not found for the DID');
                 }
                 // create an encrypted copy of the credential with each RSA public key
                 return [2 /*return*/, publicKeyInfos.map(function (publicKeyInfo) {
                         var subjectDidWithKeyFragment = subjectDid + "#" + publicKeyInfo.id;
-                        var encryptedData = library_issuer_verifier_utility_1.doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, cred);
+                        var encryptedData = encrypt_1.doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, cred);
                         var encryptedCredentialOptions = {
                             credentialId: cred.id,
                             subject: subjectDidWithKeyFragment,
@@ -94,7 +99,7 @@ var constructEncryptedCredentialOpts = function (cred, authorization) { return _
  * @param privateKey String
  */
 var constructSignedCredentialObj = function (usCred, privateKey) {
-    var proof = library_issuer_verifier_utility_1.createProof(usCred, privateKey, usCred.issuer, 'pem');
+    var proof = createProof_1.createProof(usCred, privateKey, usCred.issuer, 'pem');
     var credential = {
         '@context': usCred['@context'],
         credentialStatus: usCred.credentialStatus,
@@ -113,7 +118,7 @@ var constructSignedCredentialObj = function (usCred, privateKey) {
  * @param credOpts CredentialOptions
  */
 var constructUnsignedCredentialObj = function (credOpts) {
-    var credentialId = library_issuer_verifier_utility_1.getUUID();
+    var credentialId = helpers_1.getUUID();
     var unsCredObj = {
         '@context': ['https://www.w3.org/2018/credentials/v1'],
         credentialStatus: {
@@ -139,36 +144,36 @@ var constructUnsignedCredentialObj = function (credOpts) {
 var validateInputs = function (type, issuer, credentialSubject, signingPrivateKey, expirationDate) {
     if (!type) {
         // type element is mandatory, and it can be either string or an array
-        throw new library_issuer_verifier_utility_1.CustError(400, 'type is required.');
+        throw new error_1.CustError(400, 'type is required.');
     }
     if (!issuer) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'issuer is required.');
+        throw new error_1.CustError(400, 'issuer is required.');
     }
     if (!credentialSubject) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'credentialSubject is required.');
+        throw new error_1.CustError(400, 'credentialSubject is required.');
     }
     if (!signingPrivateKey) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'signingPrivateKey is required.');
+        throw new error_1.CustError(400, 'signingPrivateKey is required.');
     }
     // id must be present in credentialSubject input parameter
     if (!credentialSubject.id) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'Invalid credentialSubject: id is required.');
+        throw new error_1.CustError(400, 'Invalid credentialSubject: id is required.');
     }
     if (!Array.isArray(type) && typeof type !== 'string') {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'type must be an array or a string.');
+        throw new error_1.CustError(400, 'type must be an array or a string.');
     }
     if (typeof issuer !== 'string') {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'issuer must be a string.');
+        throw new error_1.CustError(400, 'issuer must be a string.');
     }
     if (typeof signingPrivateKey !== 'string') {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'signingPrivateKey must be a string.');
+        throw new error_1.CustError(400, 'signingPrivateKey must be a string.');
     }
     // expirationDate must be a Date object and return a properly formed time. Invalid Date.getTime() will produce NaN
     if (expirationDate && (!(expirationDate instanceof Date) || isNaN(expirationDate.getTime()))) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'expirationDate must be a valid Date object.');
+        throw new error_1.CustError(400, 'expirationDate must be a valid Date object.');
     }
     if (expirationDate && expirationDate < new Date()) {
-        throw new library_issuer_verifier_utility_1.CustError(400, 'expirationDate must be in the future.');
+        throw new error_1.CustError(400, 'expirationDate must be in the future.');
     }
 };
 var constructCredentialOptions = function (type, issuer, credentialSubject, signingPrivateKey, expirationDate) {
@@ -194,7 +199,7 @@ var constructCredentialOptions = function (type, issuer, credentialSubject, sign
  * @param expirationDate
  */
 exports.issueCredential = function (authorization, type, issuer, credentialSubject, signingPrivateKey, expirationDate) { return __awaiter(void 0, void 0, void 0, function () {
-    var credentialOptions, unsignedCredential, credential, encryptedCredentialOptions, encryptedCredentialUploadOptions, restData, restResp, authToken, issuedCredential, error_1;
+    var credentialOptions, unsignedCredential, credential, encryptedCredentialOptions, encryptedCredentialUploadOptions, restData, restResp, authToken, issuedCredential, error_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -223,16 +228,16 @@ exports.issueCredential = function (authorization, type, issuer, credentialSubje
                     header: { Authorization: authorization },
                     data: encryptedCredentialUploadOptions
                 };
-                return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(restData)];
+                return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];
             case 2:
                 restResp = _a.sent();
-                authToken = library_issuer_verifier_utility_1.handleAuthToken(restResp);
+                authToken = networkRequestHelper_1.handleAuthToken(restResp);
                 issuedCredential = { body: credential, authToken: authToken };
                 return [2 /*return*/, issuedCredential];
             case 3:
-                error_1 = _a.sent();
-                logger_1.default.error("Error issuing a credential with UnumID SaaS. " + error_1);
-                throw error_1;
+                error_2 = _a.sent();
+                logger_1.default.error("Error issuing a credential with UnumID SaaS. " + error_2);
+                throw error_2;
             case 4: return [2 /*return*/];
         }
     });

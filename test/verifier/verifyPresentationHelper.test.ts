@@ -1,5 +1,5 @@
-import * as utilLib from '@unumid/library-issuer-verifier-utility';
-import { Presentation, VerifiedStatus, UnumDto, Proof } from '../../src/index';
+// import * as utilLib from '../../src/utils';
+import { Presentation, VerifiedStatus, UnumDto, Proof, CustError } from '../../src/index';
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { isCredentialExpired } from '../../src/verifier/isCredentialExpired';
 import { checkCredentialStatus } from '../../src/verifier/checkCredentialStatus';
@@ -8,11 +8,29 @@ import { sign } from '@unumid/library-crypto';
 import stringify from 'fast-json-stable-stringify';
 import { verifyPresentationHelper as verifyPresentation } from '../../src/verifier/verifyPresentationHelper';
 import { CredentialRequest } from '@unumid/types';
+import { JSONObj } from '../../src/types';
+import { getDIDDoc } from '../../src/utils/didHandler';
+import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
+import { doVerify } from '../../src/utils/verify';
 
-jest.mock('@unumid/library-issuer-verifier-utility', () => ({
-  ...jest.requireActual('@unumid/library-issuer-verifier-utility'),
-  getDIDDoc: jest.fn(),
-  doVerify: jest.fn(),
+jest.mock('../../src/utils/didHandler', () => {
+  const actual = jest.requireActual('../../src/utils/didHandler');
+  return {
+    ...actual,
+    getDIDDoc: jest.fn()
+  };
+});
+
+jest.mock('../../src/utils/verify', () => {
+  const actual = jest.requireActual('../../src/utils/verify');
+  return {
+    ...actual,
+    doVerify: jest.fn(() => actual.doVerify)
+  };
+});
+
+jest.mock('../../src/utils/networkRequestHelper', () => ({
+  ...jest.requireActual('../../src/utils/networkRequestHelper'),
   makeNetworkRequest: jest.fn()
 }));
 
@@ -23,9 +41,9 @@ jest.mock('../../src/verifier/checkCredentialStatus');
 const mockVerifyCredential = verifyCredential as jest.Mock;
 const mockIsCredentialExpired = isCredentialExpired as jest.Mock;
 const mockCheckCredentialStatus = checkCredentialStatus as jest.Mock;
-const mockGetDIDDoc = utilLib.getDIDDoc as jest.Mock;
-const mockDoVerify = utilLib.doVerify as jest.Mock;
-const mockMakeNetworkRequest = utilLib.makeNetworkRequest as jest.Mock;
+const mockGetDIDDoc = getDIDDoc as jest.Mock;
+const mockDoVerify = doVerify as jest.Mock;
+const mockMakeNetworkRequest = makeNetworkRequest as jest.Mock;
 
 const callVerifyPresentation = (context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, auth = '', credentialRequests): Promise<UnumDto<VerifiedStatus>> => {
   const presentation: Presentation = {
@@ -39,8 +57,8 @@ const callVerifyPresentation = (context, type, verifiableCredentials, presentati
   return verifyPresentation(auth, presentation, verifier, credentialRequests);
 };
 
-const copyCredentialObj = (credential: utilLib.JSONObj, elemName: string, elemValue = ''): utilLib.JSONObj => {
-  const newCred: utilLib.JSONObj = [
+const copyCredentialObj = (credential: JSONObj, elemName: string, elemValue = ''): JSONObj => {
+  const newCred: JSONObj = [
     {
       '@context': credential['@context'],
       credentialStatus: credential.credentialStatus,
@@ -57,7 +75,7 @@ const copyCredentialObj = (credential: utilLib.JSONObj, elemName: string, elemVa
   return (newCred);
 };
 
-const populateMockData = (): utilLib.JSONObj => {
+const populateMockData = (): JSONObj => {
   const context: string[] = ['https://www.w3.org/2018/credentials/v1'];
   const type: string[] = ['VerifiablePresentation'];
 
@@ -96,7 +114,7 @@ const populateMockData = (): utilLib.JSONObj => {
   const verifiableCredentialString = [stringify(verifiableCredentialObj)];
 
   const presentationRequestUuid = '0cebee3b-3295-4ef6-a4d6-7dfea413b3aa';
-  const invalidProof: utilLib.JSONObj = {
+  const invalidProof: JSONObj = {
     created: '2020-09-03T18:50:52.105Z',
     signatureValue: 'iTx1CJLYue7vopUo2fqGps3TWmxqRxoBDTupumLkaNp2W3UeAjwLUf5WxLRCRkDzEFeKCgT7JdF5fqbpvqnBZoHyYzWYbmW4YQ',
     unsignedValue: stringify({}),
@@ -276,7 +294,7 @@ describe('verifyPresentation - Failure Scenarios', () => {
   });
 
   it('returns a 404 status code if the did document is not found', async () => {
-    mockGetDIDDoc.mockResolvedValueOnce(new utilLib.CustError(404, 'DID Document not found.'));
+    mockGetDIDDoc.mockResolvedValueOnce(new CustError(404, 'DID Document not found.'));
 
     try {
       await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
@@ -483,7 +501,7 @@ describe('verifyPresentation - Validation Failures', () => {
 });
 
 describe('verifyPresentation - Validation for verifiableCredential object', () => {
-  let response: utilLib.JSONObj, preReq: utilLib.JSONObj;
+  let response: JSONObj, preReq: JSONObj;
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier, credentialRequests } = populateMockData();
 
   let cred;

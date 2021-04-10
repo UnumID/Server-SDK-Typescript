@@ -1,11 +1,15 @@
 import { configData } from '../config';
-import { CredentialOptions, UnumDto } from '../types';
+import { CredentialOptions, JSONObj, RESTData, UnumDto } from '../types';
 import { requireAuth } from '../requireAuth';
-import { EncryptedCredentialOptions } from '@unumid/types';
+import { CredentialSubject, EncryptedCredentialOptions, EncryptedData, Proof, UnsignedCredential, Credential } from '@unumid/types';
 
-import { Credential, getDIDDoc, getKeyFromDIDDoc, CustError, EncryptedData, doEncrypt, UnsignedCredential, Proof, createProof, getUUID, RESTData, makeNetworkRequest, handleAuthToken, CredentialSubject } from '@unumid/library-issuer-verifier-utility';
-import { JSONObj } from '@unumid/library-issuer-verifier-utility/build/types';
 import logger from '../logger';
+import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHandler';
+import { doEncrypt } from '../utils/encrypt';
+import { createProof } from '../utils/createProof';
+import { getUUID } from '../utils/helpers';
+import { CustError } from '../utils/error';
+import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
 
 /**
  * Creates an object of type EncryptedCredentialOptions which encapsulates information relating to the encrypted credential data

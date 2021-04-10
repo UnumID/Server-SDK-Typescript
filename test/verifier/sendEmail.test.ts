@@ -3,7 +3,7 @@ import fetch from 'node-fetch';
 import { sendEmail } from '../../src/verifier/sendEmail';
 import { configData } from '../../src/config';
 import { ErrorResponseBody, UnumDto } from '../../src/types';
-import * as utilLib from '@unumid/library-issuer-verifier-utility';
+import { CustError } from '../../src/utils/error';
 
 jest.mock('node-fetch');
 const mockFetch = fetch as unknown as jest.Mock;
@@ -91,7 +91,7 @@ describe('sendEmail', () => {
         await makeApiCall<ErrorResponseBody>('', subject, textBody, undefined, auth);
         fail();
       } catch (e) {
-        expect(e).toEqual(new utilLib.CustError(400, 'to is required.'));
+        expect(e).toEqual(new CustError(400, 'to is required.'));
         expect(e.code).toEqual(400);
         expect(e.message).toEqual('to is required.');
       }
@@ -102,7 +102,7 @@ describe('sendEmail', () => {
         await makeApiCall<ErrorResponseBody>(to, '', textBody, undefined, auth);
         fail();
       } catch (e) {
-        expect(e).toEqual(new utilLib.CustError(400, 'subject is required.'));
+        expect(e).toEqual(new CustError(400, 'subject is required.'));
         expect(e.code).toEqual(400);
         expect(e.message).toEqual('subject is required.');
       }
@@ -113,7 +113,7 @@ describe('sendEmail', () => {
         await makeApiCall<ErrorResponseBody>(to, subject, undefined, undefined, auth);
         fail();
       } catch (e) {
-        expect(e).toEqual(new utilLib.CustError(400, 'Either textBody or htmlBody is required.'));
+        expect(e).toEqual(new CustError(400, 'Either textBody or htmlBody is required.'));
         expect(e.code).toEqual(400);
         expect(e.message).toEqual('Either textBody or htmlBody is required.');
       }
@@ -125,7 +125,7 @@ describe('sendEmail', () => {
         await makeApiCall<ErrorResponseBody>({} as string, subject, textBody, undefined, auth);
         fail();
       } catch (e) {
-        expect(e).toEqual(new utilLib.CustError(400, 'Invalid to: expected string.'));
+        expect(e).toEqual(new CustError(400, 'Invalid to: expected string.'));
         expect(e.code).toEqual(400);
         expect(e.message).toEqual('Invalid to: expected string.');
       }
@@ -136,7 +136,7 @@ describe('sendEmail', () => {
         await makeApiCall<ErrorResponseBody>(to, {} as string, textBody, undefined, auth);
         fail();
       } catch (e) {
-        expect(e).toEqual(new utilLib.CustError(400, 'Invalid subject: expected string.'));
+        expect(e).toEqual(new CustError(400, 'Invalid subject: expected string.'));
         expect(e.code).toEqual(400);
         expect(e.message).toEqual('Invalid subject: expected string.');
       }
@@ -147,7 +147,7 @@ describe('sendEmail', () => {
         await makeApiCall<ErrorResponseBody>(to, subject, {} as string, undefined, auth);
         fail();
       } catch (e) {
-        expect(e).toEqual(new utilLib.CustError(400, 'Invalid textBody: expected string.'));
+        expect(e).toEqual(new CustError(400, 'Invalid textBody: expected string.'));
         expect(e.code).toEqual(400);
         expect(e.message).toEqual('Invalid textBody: expected string.');
       }
@@ -158,7 +158,7 @@ describe('sendEmail', () => {
         await makeApiCall<ErrorResponseBody>(to, subject, undefined, {} as string, auth);
         fail();
       } catch (e) {
-        expect(e).toEqual(new utilLib.CustError(400, 'Invalid htmlBody: expected string.'));
+        expect(e).toEqual(new CustError(400, 'Invalid htmlBody: expected string.'));
         expect(e.code).toEqual(400);
         expect(e.message).toEqual('Invalid htmlBody: expected string.');
       }
@@ -170,7 +170,7 @@ describe('sendEmail', () => {
         await makeApiCall<ErrorResponseBody>(to, subject, textBody, undefined, null as string);
         fail();
       } catch (e) {
-        expect(e).toEqual(new utilLib.CustError(401, 'No authentication string. Not authenticated.'));
+        expect(e).toEqual(new CustError(401, 'No authentication string. Not authenticated.'));
         expect(e.code).toEqual(401);
         expect(e.message).toEqual('No authentication string. Not authenticated.');
       }

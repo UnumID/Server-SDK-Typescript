@@ -1,5 +1,47 @@
-import { KeyPairSet, PublicKeyInfo } from '@unumid/library-issuer-verifier-utility';
-import { CredentialStatusOptions, Issuer, CredentialSubject, Verifier, PresentationRequest, VerifierInfo, IssuerInfoMap, CredentialRequest, Presentation, NoPresentation } from '@unumid/types';
+import { CredentialStatusOptions, Issuer, CredentialSubject, Verifier, CredentialRequest, Presentation, NoPresentation, KeyPair } from '@unumid/types';
+
+/**
+ * Interface for key pairs. One for signing purposes and the other for encryption.
+ * The signing key pair is generally an ecc key while the encryption is RSA.
+ */
+export interface KeyPairSet {
+  signing: KeyPair;
+  encryption: KeyPair;
+}
+
+/**
+ * JSON string catch all type
+ */
+export type JSONStr = any;
+
+/**
+ * Interface to encapsulate a JSON object with unknown keys
+ */
+export interface JSONObj {
+  [key: string]: any;
+}
+
+/**
+ * Interface to encapsulate all necessary information for a network request.
+ */
+export interface RESTData {
+  method: string;
+  baseUrl: string;
+  endPoint: string;
+  header?: JSONObj;
+  data?: JSONObj;
+}
+
+/**
+ * Interface to encapsulate network request responses.
+ */
+export interface RESTResponse<T = Record<string, unknown>> {
+  headers: {
+    [key: string]: string | string[];
+  }
+  body: T;
+  [key: string]: any;
+}
 
 /**
  * Encapsulates necessary Issuer entity attributes during creation.

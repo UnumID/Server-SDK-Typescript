@@ -1,5 +1,5 @@
-import { CustError } from '@unumid/library-issuer-verifier-utility';
 import logger from './logger';
+import { CustError } from './utils/error';
 
 /**
  * Helper to enforce proper authorization token format.

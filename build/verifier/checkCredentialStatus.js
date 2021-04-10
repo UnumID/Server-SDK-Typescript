@@ -37,8 +37,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkCredentialStatus = void 0;
-var library_issuer_verifier_utility_1 = require("@unumid/library-issuer-verifier-utility");
 var config_1 = require("../config");
+var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 /**
  * Helper to check the status of a credential: verified, revoked, etc.
  * @param credential
@@ -55,11 +55,11 @@ exports.checkCredentialStatus = function (authorization, credentialId) { return 
                     method: 'GET',
                     header: { Authorization: authorization }
                 };
-                return [4 /*yield*/, library_issuer_verifier_utility_1.makeNetworkRequest(options)];
+                return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(options)];
             case 1:
                 credentialStatusResponse = _a.sent();
                 credentialStatus = credentialStatusResponse.body;
-                authToken = library_issuer_verifier_utility_1.handleAuthToken(credentialStatusResponse);
+                authToken = networkRequestHelper_1.handleAuthToken(credentialStatusResponse);
                 result = {
                     authToken: authToken,
                     body: credentialStatus

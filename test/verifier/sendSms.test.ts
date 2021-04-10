@@ -1,9 +1,9 @@
 import fetch from 'node-fetch';
-import * as utilLib from '@unumid/library-issuer-verifier-utility';
 
 import { sendSms } from '../../src/verifier/sendSms';
 import { configData } from '../../src/config';
 import { ErrorResponseBody, UnumDto } from '../../src/types';
+import { CustError } from '../../src/utils/error';
 
 jest.mock('node-fetch');
 const mockFetch = fetch as unknown as jest.Mock;
@@ -88,7 +88,7 @@ describe('sendSms', () => {
         await makeApiCall<ErrorResponseBody>(undefined as string, msg, auth);
         fail();
       } catch (e) {
-        expect(e).toEqual(new utilLib.CustError(400, 'to is required.'));
+        expect(e).toEqual(new CustError(400, 'to is required.'));
         expect(e.code).toEqual(400);
         expect(e.message).toEqual('to is required.');
       }
@@ -99,7 +99,7 @@ describe('sendSms', () => {
         await makeApiCall<ErrorResponseBody>(to, undefined as string, auth);
         fail();
       } catch (e) {
-        expect(e).toEqual(new utilLib.CustError(400, 'msg is required.'));
+        expect(e).toEqual(new CustError(400, 'msg is required.'));
         expect(e.code).toEqual(400);
         expect(e.message).toEqual('msg is required.');
       }
@@ -111,7 +111,7 @@ describe('sendSms', () => {
         await makeApiCall<ErrorResponseBody>({} as string, msg, auth);
         fail();
       } catch (e) {
-        expect(e).toEqual(new utilLib.CustError(400, 'Invalid to: expected string.'));
+        expect(e).toEqual(new CustError(400, 'Invalid to: expected string.'));
         expect(e.code).toEqual(400);
         expect(e.message).toEqual('Invalid to: expected string.');
       }
@@ -122,7 +122,7 @@ describe('sendSms', () => {
         await makeApiCall<ErrorResponseBody>(to, {} as string, auth);
         fail();
       } catch (e) {
-        expect(e).toEqual(new utilLib.CustError(400, 'Invalid msg: expected string.'));
+        expect(e).toEqual(new CustError(400, 'Invalid msg: expected string.'));
         expect(e.code).toEqual(400);
         expect(e.message).toEqual('Invalid msg: expected string.');
       }
@@ -134,7 +134,7 @@ describe('sendSms', () => {
         await makeApiCall<ErrorResponseBody>(to, msg, null as string);
         fail();
       } catch (e) {
-        expect(e).toEqual(new utilLib.CustError(401, 'No authentication string. Not authenticated.'));
+        expect(e).toEqual(new CustError(401, 'No authentication string. Not authenticated.'));
         expect(e.code).toEqual(401);
         expect(e.message).toEqual('No authentication string. Not authenticated.');
       }

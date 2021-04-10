@@ -7,10 +7,10 @@ import { verifyPresentation } from './verifier/verifyPresentation';
 import { registerIssuer } from './issuer/registerIssuer';
 import { issueCredential } from './issuer/issueCredentials';
 import { updateCredentialStatus } from './issuer/updateCredentialStatus';
-import { CustError, Proof, Credential, CredentialSubject } from '@unumid/library-issuer-verifier-utility';
 import { extractCredentialInfo } from './utils/extractCredentialInfo';
-import { NoPresentation, Presentation } from '@unumid/types';
+import { CredentialSubject, NoPresentation, Presentation, Proof, Credential } from '@unumid/types';
 import { checkCredentialStatus } from './verifier/checkCredentialStatus';
+import { CustError } from './utils/error';
 
 export {
   // Issuer Functions

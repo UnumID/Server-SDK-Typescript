@@ -1,10 +1,11 @@
 import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
 
-import { CustError, RESTData, makeNetworkRequest, JSONObj, handleAuthToken } from '@unumid/library-issuer-verifier-utility';
-import { UnumDto } from '../types';
+import { JSONObj, RESTData, UnumDto } from '../types';
 import logger from '../logger';
 import { CredentialStatusOptions, _CredentialStatusOptions } from '@unumid/types';
+import { CustError } from '../utils/error';
+import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
 
 /**
  * Helper to validate request inputs.
