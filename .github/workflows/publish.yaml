@@ -49,7 +49,7 @@ jobs:
 
       - name: Create type docs
         run: |
-          npx typedoc src/index.ts
+          ./createTypedocs.sh
           
       # # ref: https://github.com/marketplace/actions/npm-publish
       # - name: NPM package publish
@@ -83,7 +83,7 @@ jobs:
           author_name: UnumID Admin
           author_email: admin@unum.id
           message: '[Release] ${{ env.RELEASE_VERSION }}'
-          add: '["package.json", "docs/"]'
+          add: '["package.json", "docs/", "build/"]'
           branch: actions
 
       # # ref: https://github.com/actions/create-release
