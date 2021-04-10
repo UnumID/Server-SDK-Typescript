@@ -1,23 +1,27 @@
-import {
-  getUUID,
-  createKeyPairSet,
-  createProof,
-  UnsignedCredential,
-  Credential,
-  RESTResponse,
-  DidDocument
-} from '@unumid/library-issuer-verifier-utility';
-import { HolderApp, PresentationRequestPostDto } from '@unumid/types';
+// import {
+//   getUUID,
+//   createKeyPairSet,
+//   createProof,
+//   UnsignedCredential,
+//   Credential,
+//   RESTResponse,
+//   DidDocument
+// } from '@unumid/library-issuer-verifier-utility';
+import { DidDocument, HolderApp, IssuerInfo, IssuerInfoMap, PresentationRequestPostDto, UnsignedCredential, UnsignedPresentationRequest, Verifier, VerifierInfo } from '@unumid/types';
 
 import { configData } from '../../src/config';
-import {
-  UnsignedPresentationRequest,
-  Verifier,
-  VerifierInfo,
-  IssuerInfoMap,
-  IssuerInfo,
-  VerifierApiKey
-} from '../../src/types';
+import { RESTResponse, VerifierApiKey } from '../../src/types';
+import { createKeyPairSet } from '../../src/utils/createKeyPairs';
+import { createProof } from '../../src/utils/createProof';
+import { getUUID } from '../../src/utils/helpers';
+// import {
+//   UnsignedPresentationRequest,
+//   Verifier,
+//   VerifierInfo,
+//   IssuerInfoMap,
+//   IssuerInfo,
+//   VerifierApiKey
+// } from '../../src/types';
 
 export const dummyIssuerDid = `did:unum:${getUUID()}`;
 export const dummySubjectDid = `did:unum:${getUUID()}`;

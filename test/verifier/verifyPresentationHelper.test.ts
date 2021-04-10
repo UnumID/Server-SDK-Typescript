@@ -1,4 +1,4 @@
-import * as utilLib from '@unumid/library-issuer-verifier-utility';
+// import * as utilLib from '../../src/utils';
 import { Presentation, VerifiedStatus, UnumDto, Proof } from '../../src/index';
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { isCredentialExpired } from '../../src/verifier/isCredentialExpired';
