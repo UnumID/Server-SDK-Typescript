@@ -1,11 +1,13 @@
-import * as utilLib from '@unumid/library-issuer-verifier-utility';
 import { CredentialRequest, PresentationRequestPostDto, PresentationRequest } from '@unumid/types';
 import { sendRequest } from '../../src/index';
-import { UnumDto } from '../../src/types';
+import { JSONObj, UnumDto } from '../../src/types';
+import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { dummyAuthToken, makeDummyPresentationRequestResponse } from './mocks';
+import { CustError } from '../../src/utils/error';
+import { createProof } from '../../src/utils/createProof';
 
-jest.mock('@unumid/library-issuer-verifier-utility', () => {
-  const actual = jest.requireActual('@unumid/library-issuer-verifier-utility');
+jest.mock('../../src/utils/networkRequestHelper', () => {
+  const actual = jest.requireActual('../../src/utils/networkRequestHelper');
 
   return {
     ...actual,
@@ -14,7 +16,7 @@ jest.mock('@unumid/library-issuer-verifier-utility', () => {
   };
 });
 
-const mockMakeNetworkRequest = utilLib.makeNetworkRequest as jest.Mock;
+const mockMakeNetworkRequest = makeNetworkRequest as jest.Mock;
 
 const callSendRequests = (
   verifier: string,
@@ -28,10 +30,10 @@ const callSendRequests = (
   return sendRequest(authToken, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expiresAt, metadata);
 };
 
-const populateMockData = (): utilLib.JSONObj => {
+const populateMockData = (): JSONObj => {
   const verifier = 'did:unum:a40e162e-3297-4834-a1a3-a15e96554fac';
   const holderAppUuid = 'a91a5574-e338-46bd-9405-3a72acbd1b6a';
-  const credentialRequests: utilLib.JSONObj[] = [{
+  const credentialRequests: JSONObj[] = [{
     type: 'DummyCredential',
     issuers: ['did:unum:042b9089-9ee9-4217-844f-b01965cf569a']
   }];
@@ -78,7 +80,7 @@ describe('sendRequest', () => {
   });
 
   it('signs the request', () => {
-    expect(utilLib.createProof).toBeCalled();
+    expect(createProof).toBeCalled();
   });
 
   it('sends the request to the saas', () => {
@@ -190,7 +192,7 @@ describe('sendRequest - Failure cases', () => {
       );
       fail();
     } catch (e) {
-      expect(e).toEqual(new utilLib.CustError(400, 'Invalid PresentationRequest options: verifier is required.'));
+      expect(e).toEqual(new CustError(400, 'Invalid PresentationRequest options: verifier is required.'));
       expect(e.code).toEqual(400);
       expect(e.message).toEqual('Invalid PresentationRequest options: verifier is required.');
     }
@@ -209,7 +211,7 @@ describe('sendRequest - Failure cases', () => {
       );
       fail();
     } catch (e) {
-      expect(e).toEqual(new utilLib.CustError(400, 'Invalid PresentationRequest options: verifier must be a string.'));
+      expect(e).toEqual(new CustError(400, 'Invalid PresentationRequest options: verifier must be a string.'));
       expect(e.code).toEqual(400);
       expect(e.message).toEqual('Invalid PresentationRequest options: verifier must be a string.');
     }
@@ -228,7 +230,7 @@ describe('sendRequest - Failure cases', () => {
       );
       fail();
     } catch (e) {
-      expect(e).toEqual(new utilLib.CustError(400, 'Invalid PresentationRequest options: credentialRequests is required.'));
+      expect(e).toEqual(new CustError(400, 'Invalid PresentationRequest options: credentialRequests is required.'));
       expect(e.code).toEqual(400);
       expect(e.message).toEqual('Invalid PresentationRequest options: credentialRequests is required.');
     }
@@ -247,7 +249,7 @@ describe('sendRequest - Failure cases', () => {
       );
       fail();
     } catch (e) {
-      expect(e).toEqual(new utilLib.CustError(400, 'Invalid PresentationRequest options: credentialRequests must be an array.'));
+      expect(e).toEqual(new CustError(400, 'Invalid PresentationRequest options: credentialRequests must be an array.'));
       expect(e.code).toEqual(400);
       expect(e.message).toEqual('Invalid PresentationRequest options: credentialRequests must be an array.');
     }
@@ -266,7 +268,7 @@ describe('sendRequest - Failure cases', () => {
       );
       fail();
     } catch (e) {
-      expect(e).toEqual(new utilLib.CustError(400, 'Invalid PresentationRequest options: credentialRequests array must not be empty.'));
+      expect(e).toEqual(new CustError(400, 'Invalid PresentationRequest options: credentialRequests array must not be empty.'));
       expect(e.code).toEqual(400);
       expect(e.message).toEqual('Invalid PresentationRequest options: credentialRequests array must not be empty.');
     }
@@ -285,7 +287,7 @@ describe('sendRequest - Failure cases', () => {
       );
       fail();
     } catch (e) {
-      expect(e).toEqual(new utilLib.CustError(400, 'Invalid PresentationRequest options: signingPrivateKey is required.'));
+      expect(e).toEqual(new CustError(400, 'Invalid PresentationRequest options: signingPrivateKey is required.'));
       expect(e.code).toEqual(400);
       expect(e.message).toEqual('Invalid PresentationRequest options: signingPrivateKey is required.');
     }
@@ -303,7 +305,7 @@ describe('sendRequest - Failure cases', () => {
         '');
       fail();
     } catch (e) {
-      expect(e).toEqual(new utilLib.CustError(401, 'No authentication string. Not authenticated.'));
+      expect(e).toEqual(new CustError(401, 'No authentication string. Not authenticated.'));
       expect(e.code).toEqual(401);
       expect(e.message).toEqual('No authentication string. Not authenticated.');
     }
@@ -311,7 +313,7 @@ describe('sendRequest - Failure cases', () => {
 });
 
 describe('sendRequest - Failure cases for credentialRequests element', () => {
-  let response: utilLib.JSONObj;
+  let response: JSONObj;
   const {
     verifier,
     credentialRequests,
@@ -337,7 +339,7 @@ describe('sendRequest - Failure cases for credentialRequests element', () => {
       );
       fail();
     } catch (e) {
-      expect(e).toEqual(new utilLib.CustError(400, 'Invalid credentialRequest: type is required.'));
+      expect(e).toEqual(new CustError(400, 'Invalid credentialRequest: type is required.'));
       expect(e.code).toEqual(400);
       expect(e.message).toEqual('Invalid credentialRequest: type is required.');
     }
@@ -358,7 +360,7 @@ describe('sendRequest - Failure cases for credentialRequests element', () => {
       );
       fail();
     } catch (e) {
-      expect(e).toEqual(new utilLib.CustError(400, 'Invalid credentialRequest: issuers is required.'));
+      expect(e).toEqual(new CustError(400, 'Invalid credentialRequest: issuers is required.'));
       expect(e.code).toEqual(400);
       expect(e.message).toEqual('Invalid credentialRequest: issuers is required.');
     }
@@ -379,7 +381,7 @@ describe('sendRequest - Failure cases for credentialRequests element', () => {
       );
       fail();
     } catch (e) {
-      expect(e).toEqual(new utilLib.CustError(400, 'Invalid credentialRequest: issuers must be an array.'));
+      expect(e).toEqual(new CustError(400, 'Invalid credentialRequest: issuers must be an array.'));
       expect(e.code).toEqual(400);
       expect(e.message).toEqual('Invalid credentialRequest: issuers must be an array.');
     }
@@ -400,7 +402,7 @@ describe('sendRequest - Failure cases for credentialRequests element', () => {
       );
       fail();
     } catch (e) {
-      expect(e).toEqual(new utilLib.CustError(400, 'Invalid credentialRequest: issuers array must not be empty.'));
+      expect(e).toEqual(new CustError(400, 'Invalid credentialRequest: issuers array must not be empty.'));
       expect(e.code).toEqual(400);
       expect(e.message).toEqual('Invalid credentialRequest: issuers array must not be empty.');
     }
@@ -421,7 +423,7 @@ describe('sendRequest - Failure cases for credentialRequests element', () => {
       );
       fail();
     } catch (e) {
-      expect(e).toEqual(new utilLib.CustError(400, 'Invalid credentialRequest: issuers array element must be a string.'));
+      expect(e).toEqual(new CustError(400, 'Invalid credentialRequest: issuers array element must be a string.'));
       expect(e.code).toEqual(400);
       expect(e.message).toEqual('Invalid credentialRequest: issuers array element must be a string.');
     }
@@ -442,7 +444,7 @@ describe('sendRequest - Failure cases for credentialRequests element', () => {
       );
       fail();
     } catch (e) {
-      expect(e).toEqual(new utilLib.CustError(400, 'Invalid PresentationRequest options: holderAppUuid is required.'));
+      expect(e).toEqual(new CustError(400, 'Invalid PresentationRequest options: holderAppUuid is required.'));
       expect(e.code).toEqual(400);
       expect(e.message).toEqual('Invalid PresentationRequest options: holderAppUuid is required.');
     }
@@ -463,7 +465,7 @@ describe('sendRequest - Failure cases for credentialRequests element', () => {
       );
       fail();
     } catch (e) {
-      expect(e).toEqual(new utilLib.CustError(400, 'Invalid PresentationRequest options: holderAppUuid must be a string.'));
+      expect(e).toEqual(new CustError(400, 'Invalid PresentationRequest options: holderAppUuid must be a string.'));
       expect(e.code).toEqual(400);
       expect(e.message).toEqual('Invalid PresentationRequest options: holderAppUuid must be a string.');
     }
@@ -484,7 +486,7 @@ describe('sendRequest - Failure cases - SaaS Errors', () => {
   const stCode = 401;
 
   it('Response code should be ' + stCode + ' when invalid auth token is passed', async () => {
-    mockMakeNetworkRequest.mockRejectedValueOnce(new utilLib.CustError(401, 'Not authenticated.'));
+    mockMakeNetworkRequest.mockRejectedValueOnce(new CustError(401, 'Not authenticated.'));
     try {
       await callSendRequests(
         verifier,
@@ -501,7 +503,7 @@ describe('sendRequest - Failure cases - SaaS Errors', () => {
   });
 
   it('returns a 400 status code when an invalid verifier did is passed', async () => {
-    mockMakeNetworkRequest.mockRejectedValueOnce(new utilLib.CustError(400, 'Invalid \'verifier\': expected string.'));
+    mockMakeNetworkRequest.mockRejectedValueOnce(new CustError(400, 'Invalid \'verifier\': expected string.'));
     try {
       await callSendRequests(
         verifier,
@@ -519,7 +521,7 @@ describe('sendRequest - Failure cases - SaaS Errors', () => {
 
   it('returns a 400 status code when an invalid issuer did is passed', async () => {
     const badCredentialRequests = [{ ...credentialRequests[0], issuers: [{}] }];
-    mockMakeNetworkRequest.mockRejectedValueOnce(new utilLib.CustError(400, 'Invalid \'credentialRequests\': expected \'issuers\' to be an array of strings.'));
+    mockMakeNetworkRequest.mockRejectedValueOnce(new CustError(400, 'Invalid \'credentialRequests\': expected \'issuers\' to be an array of strings.'));
     try {
       await callSendRequests(
         'did',

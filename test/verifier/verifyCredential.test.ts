@@ -1,22 +1,30 @@
-import * as utility from '@unumid/library-issuer-verifier-utility';
 import { VerifiableCredential } from '@unumid/types';
 
 import { UnumDto } from '../../src/types';
+import { getDIDDoc } from '../../src/utils/didHandler';
+import { doVerify } from '../../src/utils/verify';
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { makeDummyDidDocument } from './mocks';
 
 // Selective "spyon" mocking example of package.
-jest.mock('@unumid/library-issuer-verifier-utility', () => {
-  const actual = jest.requireActual('@unumid/library-issuer-verifier-utility');
+jest.mock('../../src/utils/didHandler', () => {
+  const actual = jest.requireActual('../../src/utils/didHandler');
   return {
     ...actual,
-    getDIDDoc: jest.fn(),
+    getDIDDoc: jest.fn()
+  };
+});
+
+jest.mock('../../src/utils/verify', () => {
+  const actual = jest.requireActual('../../src/utils/verify');
+  return {
+    ...actual,
     doVerify: jest.fn(() => actual.doVerify)
   };
 });
 
-const mockGetDIDDoc = utility.getDIDDoc as jest.Mock;
-const mockDoVerify = utility.doVerify as jest.Mock;
+const mockGetDIDDoc = getDIDDoc as jest.Mock;
+const mockDoVerify = doVerify as jest.Mock;
 
 describe('verifyCredential', () => {
   const credential: VerifiableCredential =
@@ -70,7 +78,7 @@ describe('verifyCredential', () => {
   });
 
   it('verifies the credential', () => {
-    expect(utility.doVerify).toBeCalled();
+    expect(doVerify).toBeCalled();
   });
 
   it('returns true for a valid credential', () => {
