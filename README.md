@@ -328,6 +328,11 @@ Response Body: **CredentialStatusInfo**. If unsuccessful and exception will be t
 ### Distribution
 
 This project is publicly published on the official npm [registry](https://www.npmjs.com/package/@unumid/server-sdk). For example it can be pulled with, `npm i @unumid/server-sdk` or `yarn add @unumid/server-sdk`.
+
+### Releases
+
+Releases and publishing to NPM is automated via Github Actions CI job. In order to trigger a release one should push a git tag with a preceding `v` with semver notation, ie v1.1.1, to the `main` branch. This will trigger the CI job to bump the package version, generate typedocs, publish to NPM, make a release commit, and make a Github Release. The message of the git tag will be the release message so please make it meaningful. For example, `git tag v1.2.0 -m "Updated the SDK with a new CI job" && push origin v1.1.1`.
+
 ### Global Dependencies
 - NodeJS v14.0.0 or higher, preferably v14.15.0 or higher
 - yarn
