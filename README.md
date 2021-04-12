@@ -345,4 +345,4 @@ The logs default to stdout so can be aggregated using any log provider you would
 ### Documentation
 High level technical documentation can be found [here](https://https://docs.unum.id/server-sdk) which is served via [Docusaurus](https://github.com/UnumID/UnumID.github.io). More detailed generated from source documentation can be found [here](https://docs.unum.id/Server-SDK-Typescript/index.html) which is served via repo specific Github pages via the /docs folder of the main branch.
 
-In order to generate the Typedoc documentation from the source code run the `createTypedocs.sh` script.
+In order to generate the Typedoc documentation from the source code run the `createTypedocs.sh` script. However, this process is now automated by the Github Actions CI job so no need to complicate Pull Requests by doing this by hand.
