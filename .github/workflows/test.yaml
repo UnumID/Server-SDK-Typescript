@@ -47,9 +47,9 @@ jobs:
       #   run: |
       #     npm --no-git-tag-version version ${{ env.RELEASE_VERSION }}
 
-      # - name: Create type docs
-      #   run: |
-      #     ./createTypedocs.sh
+      - name: Create type docs
+        run: |
+          ./createTypedocs.sh
           
       # ref: https://github.com/marketplace/actions/npm-publish
       # - name: NPM package publish
