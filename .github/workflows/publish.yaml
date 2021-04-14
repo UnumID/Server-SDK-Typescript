@@ -43,7 +43,7 @@ jobs:
         run: yarn
 
       # ref: https://github.community/t/auto-update-package-json-on-publishing/16894
-      - name: Update source code
+      - name: Update package version
         run: |
           npm --no-git-tag-version version ${{ env.RELEASE_VERSION }}
 
