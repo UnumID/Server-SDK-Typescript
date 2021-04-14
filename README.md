@@ -255,16 +255,20 @@ Response Body: [**DecryptedPresentation**](https://docs.unum.id/Server-SDK-Types
 ```
 
 ### sendSms
-Use to send a deep link to a user by SMS. The message will be delivered from an UnumID associated phone number. You can of course use your own SMS sending service if you prefer.
+Use to send a deep link to a user by SMS. A templated message will be delivered from an UnumID associated phone number. You can of course use your own SMS sending service if you prefer.
 
 To request (a presentation of) credentials from a user, you first create the request object and receive a deep link that references it. The user need to receive this deep link, which will open the correct app on their phone and prompt them to share the credentials. SMS is one convenient channel.
 
+The SMS message will be in the format:
+- Verification Request: [verifier_name]. Click here to complete: [deep_link]
+
+**Note**: The verifier is corresponding to the presentation request from which the deeplink references. Because you are the acting verifier, the name will be what ever you provided during [verifier registration](#registerVerifier). 
 
 Parameters
 ```typescript
 {
   "to": string, // phone number to send SMS to
-  "msg": string // message to send
+  "deeplink": string // the deeplink corresponding to the presentation request you would like served to the user
 }
 ```
 
@@ -274,22 +278,21 @@ Response Body: **Empty**. If unsuccessful and exception will be thrown.
 ```
 
 ### sendEmail
-Use to send a deep link to a user by email. The message will be delivered from no-reply@unum.id. You can of course use your own email sending service if you prefer.
+Use to send a deep link to a user by email. A templated message will be delivered from no-reply@unum.id. You can of course use your own email sending service if you prefer.
 
 To request (a presentation of) credentials from a user, you first create the request object and receive a deep link that references it. The user need to receive this deep link, which will open the correct app on their phone and prompt them to share the credentials. Email is one convenient channel, though keep in mind that the user will need to click the link from their phone for the deep link to work.
 
+The email will be in the format:
+  - *subject:* Verification Request: [verifier_name]
+  - *body:* Click here to complete: [deep_link]
 
-**Tip**: JSON special characters such a double quote or backslash in the `subject` or `htmlBody` fields will need to be escaped with a single backslash (\\), i.e. "the best org in the country" must be \\"the best org in the country\\".
+**Note**: The verifier is corresponding to the presentation request from which the deeplink references. Because you are the acting verifier, the name will be what ever you provided during [verifier registration](#registerVerifier). 
 
 Parameters
 ```typescript
 {
   "to": string, // email address to send email to
-  "from": string, // from email address
-  "replyTo": string, // replyTo email address
-  "subject": string, // email subject
-  "textBody"?: string, // (optional) email message body (cannot be used with htmlBody)
-  "htmlBody"?: string, // (optional) email html message body (cannot be used with textBody)
+  "deeplink": string // the deeplink corresponding to the presentation request you would like served to the user
 }
 ```
 
