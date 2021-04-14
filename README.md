@@ -262,7 +262,7 @@ To request (a presentation of) credentials from a user, you first create the req
 The SMS message will be in the format:
 - Verification Request: [verifier_name]. Click here to complete: [deep_link]
 
-**Note**: The verifier is corresponding to the presentation request from which the deeplink references. Because you are the acting verifier, the name will be what ever you provided as the name to [registerVerifier](###registerVerifier). 
+**Note**: The verifier is corresponding to the presentation request from which the deeplink references. Because you are the acting verifier, the name will be what ever you provided during [verifier registration](#registerVerifier). 
 
 Parameters
 ```typescript
@@ -286,7 +286,7 @@ The email will be in the format:
   - *subject:* Verification Request: [verifier_name]
   - *body:* Click here to complete: [deep_link]
 
-**Note**: The verifier is corresponding to the presentation request from which the deeplink references. Because you are the acting verifier, the name will be what ever you provided as the name to [registerVerifier](###registerVerifier). 
+**Note**: The verifier is corresponding to the presentation request from which the deeplink references. Because you are the acting verifier, the name will be what ever you provided during [verifier registration](#registerVerifier). 
 
 Parameters
 ```typescript
