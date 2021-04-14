@@ -50,48 +50,38 @@ var networkRequestHelper_1 = require("../utils/networkRequestHelper");
  * @param body EmailRequestBody
  */
 var validateEmailRequestBody = function (body) {
-    var to = body.to, subject = body.subject, textBody = body.textBody, htmlBody = body.htmlBody;
+    var to = body.to, deeplink = body.deeplink;
     if (!to) {
         throw new error_1.CustError(400, 'to is required.');
     }
-    if (!subject) {
-        throw new error_1.CustError(400, 'subject is required.');
-    }
-    if (!textBody && !htmlBody) {
-        throw new error_1.CustError(400, 'Either textBody or htmlBody is required.');
-    }
-    if (textBody && htmlBody) {
-        throw new error_1.CustError(400, 'Either textBody or htmlBody is required, not both.');
+    if (!deeplink) {
+        throw new error_1.CustError(400, 'deeplink is required.');
     }
     if (typeof to !== 'string') {
         throw new error_1.CustError(400, 'Invalid to: expected string.');
     }
-    if (typeof subject !== 'string') {
-        throw new error_1.CustError(400, 'Invalid subject: expected string.');
+    if (typeof deeplink !== 'string') {
+        throw new error_1.CustError(400, 'Invalid deeplink: expected string.');
     }
-    if (textBody && (typeof textBody !== 'string')) {
-        throw new error_1.CustError(400, 'Invalid textBody: expected string.');
-    }
-    if (htmlBody && (typeof htmlBody !== 'string')) {
-        throw new error_1.CustError(400, 'Invalid htmlBody: expected string.');
+    if (deeplink.split('presentationRequest/').length !== 2) {
+        throw new error_1.CustError(400, 'Invalid deeplink: expected to end in the format presentationRequest/<uuid>.');
     }
 };
 /**
  * Handler to send an email using UnumID's SaaS.
+ * Designed to be used with a deeplink which creates a templated message.
  * @param authorization
  * @param to
- * @param subject
- * @param textBody
- * @param htmlBody
+ * @param deeplink
  */
-exports.sendEmail = function (authorization, to, subject, textBody, htmlBody) { return __awaiter(void 0, void 0, void 0, function () {
+exports.sendEmail = function (authorization, to, deeplink) { return __awaiter(void 0, void 0, void 0, function () {
     var body, data, apiResponse, authToken, result, e_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 2, , 3]);
                 requireAuth_1.requireAuth(authorization);
-                body = { to: to, subject: subject, textBody: textBody, htmlBody: htmlBody };
+                body = { to: to, deeplink: deeplink };
                 validateEmailRequestBody(body);
                 data = {
                     method: 'POST',

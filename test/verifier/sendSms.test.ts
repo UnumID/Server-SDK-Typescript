@@ -7,14 +7,14 @@ import { CustError } from '../../src/utils/error';
 
 jest.mock('node-fetch');
 const mockFetch = fetch as unknown as jest.Mock;
-const makeApiCall = async <T = undefined> (to: string, msg: string, auth: string): Promise<UnumDto<T>> => {
-  return sendSms(auth, to, msg);
+const makeApiCall = async <T = undefined> (to: string, deeplink: string, auth: string): Promise<UnumDto<T>> => {
+  return sendSms(auth, to, deeplink);
 };
 
 describe('sendSms', () => {
   const auth = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
   const to = '5555555555';
-  const msg = 'test msg';
+  const deeplink = 'acme://unumid/presentationRequest/89a96361-c46c-4657-a04b-ca2c624e0b94';
 
   afterEach(() => {
     mockFetch.mockClear();
@@ -32,7 +32,7 @@ describe('sendSms', () => {
 
     beforeEach(async () => {
       mockFetch.mockResolvedValueOnce(mockSaasApiResponse);
-      apiResponse = await makeApiCall('5555555555', 'test msg', auth);
+      apiResponse = await makeApiCall(to, deeplink, auth);
       apiResponseAuthToken = apiResponse.authToken;
     });
 
@@ -40,8 +40,8 @@ describe('sendSms', () => {
       const expectedUrl = `${configData.SaaSUrl}sms`;
       const expectedOptions = {
         method: 'POST',
-        body: JSON.stringify({ to, msg }),
-        headers: { Authorization: auth, 'Content-Type': 'application/json' }
+        body: JSON.stringify({ to, deeplink }),
+        headers: { Authorization: auth, 'Content-Type': 'application/json', version: '1.0.0' }
       };
 
       expect(fetch).toBeCalledWith(expectedUrl, expectedOptions);
@@ -63,7 +63,7 @@ describe('sendSms', () => {
         ok: true
       };
       mockFetch.mockResolvedValueOnce(mockSaasApiResponse);
-      apiResponse = await makeApiCall('5555555555', 'test msg', auth);
+      apiResponse = await makeApiCall(to, deeplink, auth);
       apiResponseAuthToken = apiResponse.authToken;
       expect(apiResponseAuthToken).toEqual(auth);
     });
@@ -75,7 +75,7 @@ describe('sendSms', () => {
         ok: true
       };
       mockFetch.mockResolvedValueOnce(mockSaasApiResponse);
-      apiResponse = await makeApiCall('5555555555', 'test msg', auth);
+      apiResponse = await makeApiCall(to, deeplink, auth);
       apiResponseAuthToken = apiResponse.authToken;
       expect(apiResponseAuthToken).toBe(undefined);
     });
@@ -85,7 +85,7 @@ describe('sendSms', () => {
     // Missing request params
     it('returns a CustError with a descriptive error message if to is missing', async () => {
       try {
-        await makeApiCall<ErrorResponseBody>(undefined as string, msg, auth);
+        await makeApiCall<ErrorResponseBody>(undefined as string, deeplink, auth);
         fail();
       } catch (e) {
         expect(e).toEqual(new CustError(400, 'to is required.'));
@@ -99,16 +99,16 @@ describe('sendSms', () => {
         await makeApiCall<ErrorResponseBody>(to, undefined as string, auth);
         fail();
       } catch (e) {
-        expect(e).toEqual(new CustError(400, 'msg is required.'));
+        expect(e).toEqual(new CustError(400, 'deeplink is required.'));
         expect(e.code).toEqual(400);
-        expect(e.message).toEqual('msg is required.');
+        expect(e.message).toEqual('deeplink is required.');
       }
     });
 
     // Wrong type request params
     it('returns a CustError with a descriptive error message if to is not a string', async () => {
       try {
-        await makeApiCall<ErrorResponseBody>({} as string, msg, auth);
+        await makeApiCall<ErrorResponseBody>({} as string, deeplink, auth);
         fail();
       } catch (e) {
         expect(e).toEqual(new CustError(400, 'Invalid to: expected string.'));
@@ -117,21 +117,21 @@ describe('sendSms', () => {
       }
     });
 
-    it('returns a CustError with a descriptive error message if msg is not a string', async () => {
+    it('returns a CustError with a descriptive error message if deeplink is not a string', async () => {
       try {
         await makeApiCall<ErrorResponseBody>(to, {} as string, auth);
         fail();
       } catch (e) {
-        expect(e).toEqual(new CustError(400, 'Invalid msg: expected string.'));
+        expect(e).toEqual(new CustError(400, 'Invalid deeplink: expected string.'));
         expect(e.code).toEqual(400);
-        expect(e.message).toEqual('Invalid msg: expected string.');
+        expect(e.message).toEqual('Invalid deeplink: expected string.');
       }
     });
 
     // Missing auth header
     it('returns a CustError with a descriptive error message if authorization is missing', async () => {
       try {
-        await makeApiCall<ErrorResponseBody>(to, msg, null as string);
+        await makeApiCall<ErrorResponseBody>(to, deeplink, null as string);
         fail();
       } catch (e) {
         expect(e).toEqual(new CustError(401, 'No authentication string. Not authenticated.'));

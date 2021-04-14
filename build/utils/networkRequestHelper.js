@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -60,7 +71,8 @@ exports.makeNetworkRequest = function (inputObj) { return __awaiter(void 0, void
                 options = {
                     method: inputObj.method,
                     body: JSON.stringify(inputObj.data),
-                    headers: restHdr
+                    headers: __assign(__assign({}, restHdr), { version: '1.0.0' // The api version to hit the UnumID SaaS with in the this version of the SDK
+                     })
                 };
                 respObj = {};
                 logger_1.default.debug("Making " + inputObj.method + " request to url: " + url);

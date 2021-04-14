@@ -4,11 +4,10 @@ export interface EmailResponseBody {
 }
 /**
  * Handler to send an email using UnumID's SaaS.
+ * Designed to be used with a deeplink which creates a templated message.
  * @param authorization
  * @param to
- * @param subject
- * @param textBody
- * @param htmlBody
+ * @param deeplink
  */
-export declare const sendEmail: (authorization: string, to: string, subject: string, textBody?: string | undefined, htmlBody?: string | undefined) => Promise<UnumDto<undefined>>;
+export declare const sendEmail: (authorization: string, to: string, deeplink: string) => Promise<UnumDto<undefined>>;
 //# sourceMappingURL=sendEmail.d.ts.map
