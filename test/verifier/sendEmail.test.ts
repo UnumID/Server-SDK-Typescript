@@ -7,22 +7,15 @@ import { CustError } from '../../src/utils/error';
 
 jest.mock('node-fetch');
 const mockFetch = fetch as unknown as jest.Mock;
-const makeApiCall = async <T = undefined>(
-  to: string,
-  subject: string,
-  textBody: string | undefined,
-  htmlBody: string | undefined,
-  auth: string
-): Promise<UnumDto<T>> => {
-  return sendEmail(auth, to, subject, textBody, htmlBody);
+
+const makeApiCall = async <T = undefined>(to: string, deeplink: string, auth: string): Promise<UnumDto<T>> => {
+  return sendEmail(auth, to, deeplink);
 };
 
 describe('sendEmail', () => {
   const auth = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
   const to = 'test+to@unumid.org';
-  const subject = 'subject';
-  const textBody = 'message';
-  const htmlBody = '<div>message</div>';
+  const deeplink = 'acme://unumid/presentationRequest/89a96361-c46c-4657-a04b-ca2c624e0b94';
 
   afterEach(() => {
     mockFetch.mockClear();
@@ -40,7 +33,7 @@ describe('sendEmail', () => {
 
     beforeEach(async () => {
       mockFetch.mockResolvedValueOnce(mockSaasApiResponse);
-      apiResponse = await makeApiCall(to, subject, textBody, undefined, auth);
+      apiResponse = await makeApiCall(to, deeplink, auth);
       apiResponseAuthToken = apiResponse.authToken;
     });
 
@@ -48,8 +41,8 @@ describe('sendEmail', () => {
       const expectedUrl = `${configData.SaaSUrl}email`;
       const expectedOptions = {
         method: 'POST',
-        body: JSON.stringify({ to, subject, textBody }),
-        headers: { Authorization: auth, 'Content-Type': 'application/json' }
+        body: JSON.stringify({ to, deeplink }),
+        headers: { Authorization: auth, 'Content-Type': 'application/json', version: '1.0.0' }
       };
 
       expect(fetch).toBeCalledWith(expectedUrl, expectedOptions);
@@ -66,7 +59,7 @@ describe('sendEmail', () => {
         ok: true
       };
       mockFetch.mockResolvedValueOnce(mockSaasApiResponse);
-      apiResponse = await makeApiCall(to, subject, textBody, undefined, auth);
+      apiResponse = await makeApiCall(to, deeplink, auth);
       apiResponseAuthToken = apiResponse.authToken;
       expect(apiResponseAuthToken).toEqual(auth);
     });
@@ -78,7 +71,7 @@ describe('sendEmail', () => {
         ok: true
       };
       mockFetch.mockResolvedValueOnce(mockSaasApiResponse);
-      apiResponse = await makeApiCall(to, subject, textBody, undefined, auth);
+      apiResponse = await makeApiCall(to, deeplink, auth);
       apiResponseAuthToken = apiResponse.authToken;
       expect(apiResponseAuthToken).toBe(undefined);
     });
@@ -88,7 +81,7 @@ describe('sendEmail', () => {
     // Missing request params
     it('returns a CustError with a descriptive error message if to is missing', async () => {
       try {
-        await makeApiCall<ErrorResponseBody>('', subject, textBody, undefined, auth);
+        await makeApiCall<ErrorResponseBody>('', deeplink, auth);
         fail();
       } catch (e) {
         expect(e).toEqual(new CustError(400, 'to is required.'));
@@ -97,32 +90,21 @@ describe('sendEmail', () => {
       }
     });
 
-    it('returns a CustError with a descriptive error message if subject is missing', async () => {
+    it('returns a CustError with a descriptive error message if deeplink is missing', async () => {
       try {
-        await makeApiCall<ErrorResponseBody>(to, '', textBody, undefined, auth);
+        await makeApiCall<ErrorResponseBody>(to, '', auth);
         fail();
       } catch (e) {
-        expect(e).toEqual(new CustError(400, 'subject is required.'));
+        expect(e).toEqual(new CustError(400, 'deeplink is required.'));
         expect(e.code).toEqual(400);
-        expect(e.message).toEqual('subject is required.');
-      }
-    });
-
-    it('returns a CustError with a descriptive error message if both textBody and htmlBody are missing', async () => {
-      try {
-        await makeApiCall<ErrorResponseBody>(to, subject, undefined, undefined, auth);
-        fail();
-      } catch (e) {
-        expect(e).toEqual(new CustError(400, 'Either textBody or htmlBody is required.'));
-        expect(e.code).toEqual(400);
-        expect(e.message).toEqual('Either textBody or htmlBody is required.');
+        expect(e.message).toEqual('deeplink is required.');
       }
     });
 
     // Wrong type request params
     it('returns a CustError with a descriptive error message if to is not a string', async () => {
       try {
-        await makeApiCall<ErrorResponseBody>({} as string, subject, textBody, undefined, auth);
+        await makeApiCall<ErrorResponseBody>({} as string, deeplink, auth);
         fail();
       } catch (e) {
         expect(e).toEqual(new CustError(400, 'Invalid to: expected string.'));
@@ -131,43 +113,32 @@ describe('sendEmail', () => {
       }
     });
 
-    it('returns a CustError with a descriptive error message if subject is not a string', async () => {
+    it('returns a CustError with a descriptive error message if deeplink is not a string', async () => {
       try {
-        await makeApiCall<ErrorResponseBody>(to, {} as string, textBody, undefined, auth);
+        await makeApiCall<ErrorResponseBody>(to, {} as string, auth);
         fail();
       } catch (e) {
-        expect(e).toEqual(new CustError(400, 'Invalid subject: expected string.'));
+        expect(e).toEqual(new CustError(400, 'Invalid deeplink: expected string.'));
         expect(e.code).toEqual(400);
-        expect(e.message).toEqual('Invalid subject: expected string.');
+        expect(e.message).toEqual('Invalid deeplink: expected string.');
       }
     });
 
-    it('returns a CustError with a descriptive error message if textBody is present and not a string', async () => {
+    it('returns a CustError with a descriptive error message if deeplink is improper format', async () => {
       try {
-        await makeApiCall<ErrorResponseBody>(to, subject, {} as string, undefined, auth);
+        await makeApiCall<ErrorResponseBody>(to, 'deeplink', auth);
         fail();
       } catch (e) {
-        expect(e).toEqual(new CustError(400, 'Invalid textBody: expected string.'));
+        expect(e).toEqual(new CustError(400, 'Invalid deeplink: expected to end in the format presentationRequest/<uuid>.'));
         expect(e.code).toEqual(400);
-        expect(e.message).toEqual('Invalid textBody: expected string.');
-      }
-    });
-
-    it('returns a CustError with a descriptive error message if htmlBody is present and not a string', async () => {
-      try {
-        await makeApiCall<ErrorResponseBody>(to, subject, undefined, {} as string, auth);
-        fail();
-      } catch (e) {
-        expect(e).toEqual(new CustError(400, 'Invalid htmlBody: expected string.'));
-        expect(e.code).toEqual(400);
-        expect(e.message).toEqual('Invalid htmlBody: expected string.');
+        expect(e.message).toEqual('Invalid deeplink: expected to end in the format presentationRequest/<uuid>.');
       }
     });
 
     // Missing auth header
     it('returns a CustError with a descriptive error message if authorization is missing', async () => {
       try {
-        await makeApiCall<ErrorResponseBody>(to, subject, textBody, undefined, null as string);
+        await makeApiCall<ErrorResponseBody>(to, deeplink, null as string);
         fail();
       } catch (e) {
         expect(e).toEqual(new CustError(401, 'No authentication string. Not authenticated.'));

@@ -1,3 +1,4 @@
+import { MessageInput } from '@unumid/types';
 import { configData } from '../config';
 import logger from '../logger';
 import { requireAuth } from '../requireAuth';
@@ -5,12 +6,12 @@ import { UnumDto } from '../types';
 import { CustError } from '../utils/error';
 import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
 
-interface EmailRequestBody {
-  to: string;
-  subject: string;
-  textBody?: string;
-  htmlBody?: string;
-}
+// interface EmailRequestBody {
+//   to: string;
+//   subject: string;
+//   textBody?: string;
+//   htmlBody?: string;
+// }
 
 export interface EmailResponseBody {
   success: boolean;
@@ -20,55 +21,42 @@ export interface EmailResponseBody {
  * Validates the EmailRequestBody attributes.
  * @param body EmailRequestBody
  */
-const validateEmailRequestBody = (body: EmailRequestBody): void => {
-  const { to, subject, textBody, htmlBody } = body;
+const validateEmailRequestBody = (body: MessageInput): void => {
+  const { to, deeplink } = body;
 
   if (!to) {
     throw new CustError(400, 'to is required.');
   }
 
-  if (!subject) {
-    throw new CustError(400, 'subject is required.');
-  }
-
-  if (!textBody && !htmlBody) {
-    throw new CustError(400, 'Either textBody or htmlBody is required.');
-  }
-
-  if (textBody && htmlBody) {
-    throw new CustError(400, 'Either textBody or htmlBody is required, not both.');
+  if (!deeplink) {
+    throw new CustError(400, 'deeplink is required.');
   }
 
   if (typeof to !== 'string') {
     throw new CustError(400, 'Invalid to: expected string.');
   }
 
-  if (typeof subject !== 'string') {
-    throw new CustError(400, 'Invalid subject: expected string.');
+  if (typeof deeplink !== 'string') {
+    throw new CustError(400, 'Invalid deeplink: expected string.');
   }
 
-  if (textBody && (typeof textBody !== 'string')) {
-    throw new CustError(400, 'Invalid textBody: expected string.');
-  }
-
-  if (htmlBody && (typeof htmlBody !== 'string')) {
-    throw new CustError(400, 'Invalid htmlBody: expected string.');
+  if (deeplink.split('presentationRequest/').length !== 2) {
+    throw new CustError(400, 'Invalid deeplink: expected to end in the format presentationRequest/<uuid>.');
   }
 };
 
 /**
  * Handler to send an email using UnumID's SaaS.
+ * Designed to be used with a deeplink which creates a templated message.
  * @param authorization
  * @param to
- * @param subject
- * @param textBody
- * @param htmlBody
+ * @param deeplink
  */
-export const sendEmail = async (authorization: string, to: string, subject: string, textBody?: string, htmlBody?: string): Promise<UnumDto<undefined>> => {
+export const sendEmail = async (authorization: string, to: string, deeplink: string): Promise<UnumDto<undefined>> => {
   try {
     requireAuth(authorization);
 
-    const body: EmailRequestBody = { to, subject, textBody, htmlBody };
+    const body: MessageInput = { to, deeplink };
     validateEmailRequestBody(body);
 
     const data = {
