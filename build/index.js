@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.extractCredentialInfo = exports.CustError = exports.checkCredentialStatus = exports.verifyPresentation = exports.sendSms = exports.sendRequest = exports.sendEmail = exports.registerVerifier = exports.updateCredentialStatus = exports.issueCredential = exports.registerIssuer = void 0;
+exports.createProof = exports.extractCredentialInfo = exports.CustError = exports.checkCredentialStatus = exports.verifyPresentation = exports.sendSms = exports.sendRequest = exports.sendEmail = exports.registerVerifier = exports.updateCredentialStatus = exports.issueCredential = exports.registerIssuer = void 0;
 var registerVerifier_1 = require("./verifier/registerVerifier");
 Object.defineProperty(exports, "registerVerifier", { enumerable: true, get: function () { return registerVerifier_1.registerVerifier; } });
 var sendEmail_1 = require("./verifier/sendEmail");
@@ -23,4 +23,6 @@ var checkCredentialStatus_1 = require("./verifier/checkCredentialStatus");
 Object.defineProperty(exports, "checkCredentialStatus", { enumerable: true, get: function () { return checkCredentialStatus_1.checkCredentialStatus; } });
 var error_1 = require("./utils/error");
 Object.defineProperty(exports, "CustError", { enumerable: true, get: function () { return error_1.CustError; } });
+var createProof_1 = require("./utils/createProof");
+Object.defineProperty(exports, "createProof", { enumerable: true, get: function () { return createProof_1.createProof; } });
 //# sourceMappingURL=index.js.map

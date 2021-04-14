@@ -803,9 +803,9 @@
     bs58 "^4.0.1"
     fast-json-stable-stringify "^2.1.0"
 
-"@unumid/types@https://github.com/UnumID/types.git#1.4.0":
-  version "1.4.0"
-  resolved "https://github.com/UnumID/types.git#bc9a651ed24933b4a7420d47780f380d987b9ae7"
+"@unumid/types@https://github.com/UnumID/types.git#1.4.1":
+  version "1.4.1"
+  resolved "https://github.com/UnumID/types.git#55853e9b01d603e1c31cbb53f2170e94441cefa1"
   dependencies:
     runtypes "^6.0.0"
 

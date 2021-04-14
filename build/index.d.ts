@@ -11,5 +11,6 @@ import { extractCredentialInfo } from './utils/extractCredentialInfo';
 import { CredentialSubject, NoPresentation, Presentation, Proof, Credential } from '@unumid/types';
 import { checkCredentialStatus } from './verifier/checkCredentialStatus';
 import { CustError } from './utils/error';
-export { registerIssuer, issueCredential, updateCredentialStatus, registerVerifier, sendEmail, sendRequest, sendSms, verifyPresentation, checkCredentialStatus, UnumDto, RegisteredVerifier, VerifiedStatus, NoPresentation, Presentation, RegisteredIssuer, CredentialSubject, DecryptedPresentation, CredentialStatusInfo, CustError, Proof, Credential, CredentialInfo, extractCredentialInfo };
+import { createProof } from './utils/createProof';
+export { registerIssuer, issueCredential, updateCredentialStatus, registerVerifier, sendEmail, sendRequest, sendSms, verifyPresentation, checkCredentialStatus, UnumDto, RegisteredVerifier, VerifiedStatus, NoPresentation, Presentation, RegisteredIssuer, CredentialSubject, DecryptedPresentation, CredentialStatusInfo, CustError, Proof, Credential, CredentialInfo, extractCredentialInfo, createProof };
 //# sourceMappingURL=index.d.ts.map

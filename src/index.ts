@@ -11,6 +11,7 @@ import { extractCredentialInfo } from './utils/extractCredentialInfo';
 import { CredentialSubject, NoPresentation, Presentation, Proof, Credential } from '@unumid/types';
 import { checkCredentialStatus } from './verifier/checkCredentialStatus';
 import { CustError } from './utils/error';
+import { createProof } from './utils/createProof';
 
 export {
   // Issuer Functions
@@ -40,5 +41,6 @@ export {
   Credential,
   CredentialInfo,
   // Util Functions
-  extractCredentialInfo
+  extractCredentialInfo,
+  createProof
 };
