@@ -1,6 +1,6 @@
 import * as cryptoLib from '@unumid/library-crypto';
 import { PublicKeyInfo, EncryptedData, KeyPair } from '@unumid/types';
-import { getDIDDoc, getKeyFromDIDDoc } from '../../src/utils/didHandler';
+import { getDIDDoc, getKeyFromDIDDoc } from '../../src/utils/didHelper';
 import { doEncrypt } from '../../src/utils/encrypt';
 import { doVerify } from '../../src/utils/verify';
 import { getUUID } from '../../src/utils/helpers';

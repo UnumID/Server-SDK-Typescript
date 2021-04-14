@@ -6,7 +6,7 @@ import { UnumDto } from '../types';
 import { configData } from '../config';
 import logger from '../logger';
 import { VerifiableCredential } from '@unumid/types';
-import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHandler';
+import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
 import { handleAuthToken } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
 

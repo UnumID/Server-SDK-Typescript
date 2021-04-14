@@ -4,12 +4,12 @@ import { VerifiedStatus, UnumDto } from '../../src/types';
 import { dummyAuthToken, makeDummyDidDocument } from './mocks';
 import { NoPresentation } from '@unumid/types';
 import { verifyNoPresentationHelper as verifyNoPresentation } from '../../src/verifier/verifyNoPresentationHelper';
-import { getDIDDoc } from '../../src/utils/didHandler';
+import { getDIDDoc } from '../../src/utils/didHelper';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { doVerify } from '../../src/utils/verify';
 
-jest.mock('../../src/utils/didHandler', () => {
-  const actual = jest.requireActual('../../src/utils/didHandler');
+jest.mock('../../src/utils/didHelper', () => {
+  const actual = jest.requireActual('../../src/utils/didHelper');
   return {
     ...actual,
     getDIDDoc: jest.fn()

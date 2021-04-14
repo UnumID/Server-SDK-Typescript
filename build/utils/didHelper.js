@@ -83,4 +83,4 @@ exports.getKeyFromDIDDoc = function (didDocument, type) {
     // return the key in the DID document which corresponds to the type specified.
     return didDocument.publicKey.filter(function (publicKeyInfo) { return publicKeyInfo.type === type; });
 };
-//# sourceMappingURL=didHandler.js.map
+//# sourceMappingURL=didHelper.js.map

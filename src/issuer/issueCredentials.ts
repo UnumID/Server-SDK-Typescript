@@ -4,7 +4,7 @@ import { requireAuth } from '../requireAuth';
 import { CredentialSubject, EncryptedCredentialOptions, EncryptedData, Proof, UnsignedCredential, Credential } from '@unumid/types';
 
 import logger from '../logger';
-import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHandler';
+import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
 import { doEncrypt } from '../utils/encrypt';
 import { createProof } from '../utils/createProof';
 import { getUUID } from '../utils/helpers';

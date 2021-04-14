@@ -51,7 +51,7 @@ var logger_1 = __importDefault(require("../logger"));
 var library_crypto_1 = require("@unumid/library-crypto");
 var helpers_1 = require("../utils/helpers");
 var error_1 = require("../utils/error");
-var didHandler_1 = require("../utils/didHandler");
+var didHelper_1 = require("../utils/didHelper");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var verify_1 = require("../utils/verify");
 /**
@@ -254,14 +254,14 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                     validatePresentationMeetsRequestedCredentials(presentation, credentialRequests);
                 }
                 proof = presentation.proof;
-                return [4 /*yield*/, didHandler_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, proof.verificationMethod)];
+                return [4 /*yield*/, didHelper_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, proof.verificationMethod)];
             case 1:
                 didDocumentResponse = _b.sent();
                 if (didDocumentResponse instanceof Error) {
                     throw didDocumentResponse;
                 }
                 authToken = networkRequestHelper_1.handleAuthToken(didDocumentResponse);
-                pubKeyObj = didHandler_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
+                pubKeyObj = didHelper_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 if (pubKeyObj.length === 0) {
                     result_1 = {
                         authToken: authToken,

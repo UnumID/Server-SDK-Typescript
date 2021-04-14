@@ -1,14 +1,14 @@
 import { VerifiableCredential } from '@unumid/types';
 
 import { UnumDto } from '../../src/types';
-import { getDIDDoc } from '../../src/utils/didHandler';
+import { getDIDDoc } from '../../src/utils/didHelper';
 import { doVerify } from '../../src/utils/verify';
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { makeDummyDidDocument } from './mocks';
 
 // Selective "spyon" mocking example of package.
-jest.mock('../../src/utils/didHandler', () => {
-  const actual = jest.requireActual('../../src/utils/didHandler');
+jest.mock('../../src/utils/didHelper', () => {
+  const actual = jest.requireActual('../../src/utils/didHelper');
   return {
     ...actual,
     getDIDDoc: jest.fn()

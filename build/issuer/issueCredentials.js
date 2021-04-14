@@ -50,7 +50,7 @@ exports.issueCredential = void 0;
 var config_1 = require("../config");
 var requireAuth_1 = require("../requireAuth");
 var logger_1 = __importDefault(require("../logger"));
-var didHandler_1 = require("../utils/didHandler");
+var didHelper_1 = require("../utils/didHelper");
 var encrypt_1 = require("../utils/encrypt");
 var createProof_1 = require("../utils/createProof");
 var helpers_1 = require("../utils/helpers");
@@ -67,13 +67,13 @@ var constructEncryptedCredentialOpts = function (cred, authorization) { return _
         switch (_a.label) {
             case 0:
                 subjectDid = cred.credentialSubject.id;
-                return [4 /*yield*/, didHandler_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, subjectDid)];
+                return [4 /*yield*/, didHelper_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, subjectDid)];
             case 1:
                 didDocResponse = _a.sent();
                 if (didDocResponse instanceof Error) {
                     throw didDocResponse;
                 }
-                publicKeyInfos = didHandler_1.getKeyFromDIDDoc(didDocResponse.body, 'RSA');
+                publicKeyInfos = didHelper_1.getKeyFromDIDDoc(didDocResponse.body, 'RSA');
                 if (publicKeyInfos.length === 0) {
                     throw new error_1.CustError(404, 'Public key not found for the DID');
                 }

@@ -2,7 +2,7 @@ import * as restHlpr from '../../src/utils/networkRequestHelper';
 
 import { DidDocument } from '@unumid/types';
 import { RESTResponse } from '../../src/types';
-import { getDIDDoc } from '../../src/utils/didHandler';
+import { getDIDDoc } from '../../src/utils/didHelper';
 
 describe('Get DID doc for the given did', () => {
   const baseUrl = 'https://api.dev-unumid.org/';

@@ -9,13 +9,13 @@ import { DecryptedPresentation, JSONObj } from '../../src/types';
 import { verifyPresentation } from '../../src/verifier/verifyPresentation';
 import { verifyNoPresentationHelper } from '../../src/verifier/verifyNoPresentationHelper';
 import { PresentationRequestDto } from '@unumid/types';
-import { getDIDDoc } from '../../src/utils/didHandler';
+import { getDIDDoc } from '../../src/utils/didHelper';
 import { getUUID } from '../../src/utils/helpers';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { doVerify } from '../../src/utils/verify';
 
-jest.mock('../../src/utils/didHandler', () => {
-  const actual = jest.requireActual('../../src/utils/didHandler');
+jest.mock('../../src/utils/didHelper', () => {
+  const actual = jest.requireActual('../../src/utils/didHelper');
   return {
     ...actual,
     getDIDDoc: jest.fn()

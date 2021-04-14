@@ -1,5 +1,5 @@
 import { DidDocument } from '@unumid/types';
-import { getKeyFromDIDDoc } from '../../src/utils/didHandler';
+import { getKeyFromDIDDoc } from '../../src/utils/didHelper';
 
 describe('getKeyFromDidDoc', () => {
   it('gets keys by the given type', () => {
