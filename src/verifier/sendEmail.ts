@@ -6,13 +6,6 @@ import { UnumDto } from '../types';
 import { CustError } from '../utils/error';
 import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
 
-// interface EmailRequestBody {
-//   to: string;
-//   subject: string;
-//   textBody?: string;
-//   htmlBody?: string;
-// }
-
 export interface EmailResponseBody {
   success: boolean;
 }
