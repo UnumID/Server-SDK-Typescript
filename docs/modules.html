@@ -88,6 +88,7 @@
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-function"><a href="modules.html#checkcredentialstatus" class="tsd-kind-icon">check<wbr>Credential<wbr>Status</a></li>
+								<li class="tsd-kind-function"><a href="modules.html#createproof" class="tsd-kind-icon">create<wbr>Proof</a></li>
 								<li class="tsd-kind-function"><a href="modules.html#extractcredentialinfo" class="tsd-kind-icon">extract<wbr>Credential<wbr>Info</a></li>
 								<li class="tsd-kind-function"><a href="modules.html#issuecredential" class="tsd-kind-icon">issue<wbr>Credential</a></li>
 								<li class="tsd-kind-function"><a href="modules.html#registerissuer" class="tsd-kind-icon">register<wbr>Issuer</a></li>
@@ -114,7 +115,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/c4c6795/src/verifier/checkCredentialStatus.ts#L10">src/verifier/checkCredentialStatus.ts:10</a></li>
+									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/b699998/src/verifier/checkCredentialStatus.ts#L10">src/verifier/checkCredentialStatus.ts:10</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -138,6 +139,45 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function">
+					<a name="createproof" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> create<wbr>Proof</h3>
+					<ul class="tsd-signatures tsd-kind-function">
+						<li class="tsd-signature tsd-kind-icon">create<wbr>Proof<span class="tsd-signature-symbol">(</span>data<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">JSONObj</span>, privateKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, method<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, encoding<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;base58&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;pem&quot;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="interfaces/proof.html" class="tsd-signature-type" data-tsd-kind="Interface">Proof</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/b699998/src/utils/createProof.ts#L15">src/utils/createProof.ts:15</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Create cryptographic proof.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>data: <span class="tsd-signature-type">JSONObj</span></h5>
+								</li>
+								<li>
+									<h5>privateKey: <span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5>method: <span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5>encoding: <span class="tsd-signature-type">&quot;base58&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;pem&quot;</span></h5>
+									<div class="tsd-comment tsd-typography">
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="interfaces/proof.html" class="tsd-signature-type" data-tsd-kind="Interface">Proof</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function">
 					<a name="extractcredentialinfo" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagConst">Const</span> extract<wbr>Credential<wbr>Info</h3>
 					<ul class="tsd-signatures tsd-kind-function">
@@ -147,7 +187,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/c4c6795/src/utils/extractCredentialInfo.ts#L10">src/utils/extractCredentialInfo.ts:10</a></li>
+									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/b699998/src/utils/extractCredentialInfo.ts#L10">src/utils/extractCredentialInfo.ts:10</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -178,7 +218,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/c4c6795/src/issuer/issueCredentials.ts#L174">src/issuer/issueCredentials.ts:174</a></li>
+									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/b699998/src/issuer/issueCredentials.ts#L174">src/issuer/issueCredentials.ts:174</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -223,7 +263,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/c4c6795/src/issuer/registerIssuer.ts#L63">src/issuer/registerIssuer.ts:63</a></li>
+									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/b699998/src/issuer/registerIssuer.ts#L63">src/issuer/registerIssuer.ts:63</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -259,7 +299,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/c4c6795/src/verifier/registerVerifier.ts#L66">src/verifier/registerVerifier.ts:66</a></li>
+									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/b699998/src/verifier/registerVerifier.ts#L66">src/verifier/registerVerifier.ts:66</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -298,7 +338,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/c4c6795/src/verifier/sendEmail.ts#L48">src/verifier/sendEmail.ts:48</a></li>
+									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/b699998/src/verifier/sendEmail.ts#L48">src/verifier/sendEmail.ts:48</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -335,7 +375,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/c4c6795/src/verifier/sendRequest.ts#L165">src/verifier/sendRequest.ts:165</a></li>
+									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/b699998/src/verifier/sendRequest.ts#L165">src/verifier/sendRequest.ts:165</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -383,7 +423,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/c4c6795/src/verifier/sendSms.ts#L49">src/verifier/sendSms.ts:49</a></li>
+									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/b699998/src/verifier/sendSms.ts#L49">src/verifier/sendSms.ts:49</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -420,7 +460,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/c4c6795/src/issuer/updateCredentialStatus.ts#L33">src/issuer/updateCredentialStatus.ts:33</a></li>
+									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/b699998/src/issuer/updateCredentialStatus.ts#L33">src/issuer/updateCredentialStatus.ts:33</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -463,7 +503,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/c4c6795/src/verifier/verifyPresentation.ts#L21">src/verifier/verifyPresentation.ts:21</a></li>
+									<li>Defined in <a href="https://github.com/UnumID/Server-SDK-Typescript/blob/b699998/src/verifier/verifyPresentation.ts#L21">src/verifier/verifyPresentation.ts:21</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -546,6 +586,9 @@
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="modules.html#checkcredentialstatus" class="tsd-kind-icon">check<wbr>Credential<wbr>Status</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#createproof" class="tsd-kind-icon">create<wbr>Proof</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="modules.html#extractcredentialinfo" class="tsd-kind-icon">extract<wbr>Credential<wbr>Info</a>
