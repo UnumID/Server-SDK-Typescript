@@ -18,7 +18,10 @@ export const makeNetworkRequest = async <T = unknown> (inputObj: RESTData): Prom
   const options = {
     method: inputObj.method,
     body: JSON.stringify(inputObj.data),
-    headers: restHdr
+    headers: {
+      ...restHdr,
+      version: '1.0.0' // The api version to hit the UnumID SaaS with in the this version of the SDK
+    }
   };
   const respObj = {} as RESTResponse<T>;
 
