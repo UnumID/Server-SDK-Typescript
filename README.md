@@ -255,16 +255,20 @@ Response Body: [**DecryptedPresentation**](https://docs.unum.id/Server-SDK-Types
 ```
 
 ### sendSms
-Use to send a deep link to a user by SMS. The message will be delivered from an UnumID associated phone number. You can of course use your own SMS sending service if you prefer.
+Use to send a deep link to a user by SMS. A templated message will be delivered from an UnumID associated phone number. You can of course use your own SMS sending service if you prefer.
 
 To request (a presentation of) credentials from a user, you first create the request object and receive a deep link that references it. The user need to receive this deep link, which will open the correct app on their phone and prompt them to share the credentials. SMS is one convenient channel.
 
+The SMS message will be in the format:
+- Verification Request: [verifier_name]. Click here to complete: [deep_link]
+
+**Note**: The verifier is corresponding to the presentation request from which the deeplink references. Because you are the acting verifier, the name will be what ever you provided as the name to [registerVerifier](###registerVerifier). 
 
 Parameters
 ```typescript
 {
   "to": string, // phone number to send SMS to
-  "msg": string // message to send
+  "deeplink": string // the deeplink corresponding to the presentation request you would like served to the user
 }
 ```
 
@@ -282,7 +286,7 @@ The email will be in the format:
   - *subject:* Verification Request: [verifier_name]
   - *body:* Click here to complete: [deep_link]
 
-The verifier is corresponding to the presentation request from which the deeplink references. Because you are the acting verifier, the name will be what ever you provided as the name to [registerVerifier](###registerVerifier). 
+**Note**: The verifier is corresponding to the presentation request from which the deeplink references. Because you are the acting verifier, the name will be what ever you provided as the name to [registerVerifier](###registerVerifier). 
 
 Parameters
 ```typescript
