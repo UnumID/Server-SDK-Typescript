@@ -1,4 +1,4 @@
-import { MessageInput } from '@unumid/types';
+import { ExternalChannelMessageInput } from '@unumid/types';
 
 import { configData } from '../config';
 import logger from '../logger';
@@ -15,7 +15,7 @@ export interface SmsResponseBody {
  * Validates the SmsRequestBody attributes.
  * @param body SmsRequestBody
  */
-const validateSmsRequestBody = (body: MessageInput): void => {
+const validateSmsRequestBody = (body: ExternalChannelMessageInput): void => {
   const { to, deeplink } = body;
 
   if (!to) {

@@ -1,4 +1,4 @@
-import { MessageInput } from '@unumid/types';
+import { ExternalChannelMessageInput } from '@unumid/types';
 import { configData } from '../config';
 import logger from '../logger';
 import { requireAuth } from '../requireAuth';
@@ -14,7 +14,7 @@ export interface EmailResponseBody {
  * Validates the EmailRequestBody attributes.
  * @param body EmailRequestBody
  */
-const validateEmailRequestBody = (body: MessageInput): void => {
+const validateEmailRequestBody = (body: ExternalChannelMessageInput): void => {
   const { to, deeplink } = body;
 
   if (!to) {
@@ -49,7 +49,7 @@ export const sendEmail = async (authorization: string, to: string, deeplink: str
   try {
     requireAuth(authorization);
 
-    const body: MessageInput = { to, deeplink };
+    const body: ExternalChannelMessageInput = { to, deeplink };
     validateEmailRequestBody(body);
 
     const data = {
