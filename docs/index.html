@@ -279,12 +279,17 @@
 				<a href="#sendsms" id="sendsms" style="color: inherit; text-decoration: none;">
 					<h3>sendSms</h3>
 				</a>
-				<p>Use to send a deep link to a user by SMS. The message will be delivered from an UnumID associated phone number. You can of course use your own SMS sending service if you prefer.</p>
+				<p>Use to send a deep link to a user by SMS. A templated message will be delivered from an UnumID associated phone number. You can of course use your own SMS sending service if you prefer.</p>
 				<p>To request (a presentation of) credentials from a user, you first create the request object and receive a deep link that references it. The user need to receive this deep link, which will open the correct app on their phone and prompt them to share the credentials. SMS is one convenient channel.</p>
+				<p>The SMS message will be in the format:</p>
+				<ul>
+					<li>Verification Request: [verifier_name]. Click here to complete: [deep_link]</li>
+				</ul>
+				<p><strong>Note</strong>: The verifier is corresponding to the presentation request from which the deeplink references. Because you are the acting verifier, the name will be what ever you provided during <a href="#registerVerifier">verifier registration</a>. </p>
 				<p>Parameters</p>
 				<pre><code class="language-typescript"><span style="color: #000000">{</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;to&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// phone number to send SMS to</span>
-<span style="color: #000000">  </span><span style="color: #A31515">&quot;msg&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// message to send</span>
+<span style="color: #000000">  </span><span style="color: #A31515">&quot;deeplink&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// the deeplink corresponding to the presentation request you would like served to the user</span>
 <span style="color: #000000">}</span>
 </code></pre>
 				<p>Response Body: <strong>Empty</strong>. If unsuccessful and exception will be thrown.</p>
@@ -293,17 +298,18 @@
 				<a href="#sendemail" id="sendemail" style="color: inherit; text-decoration: none;">
 					<h3>sendEmail</h3>
 				</a>
-				<p>Use to send a deep link to a user by email. The message will be delivered from <a href="mailto:no-reply@unum.id">no-reply@unum.id</a>. You can of course use your own email sending service if you prefer.</p>
+				<p>Use to send a deep link to a user by email. A templated message will be delivered from <a href="mailto:no-reply@unum.id">no-reply@unum.id</a>. You can of course use your own email sending service if you prefer.</p>
 				<p>To request (a presentation of) credentials from a user, you first create the request object and receive a deep link that references it. The user need to receive this deep link, which will open the correct app on their phone and prompt them to share the credentials. Email is one convenient channel, though keep in mind that the user will need to click the link from their phone for the deep link to work.</p>
-				<p><strong>Tip</strong>: JSON special characters such a double quote or backslash in the <code>subject</code> or <code>htmlBody</code> fields will need to be escaped with a single backslash (\), i.e. &quot;the best org in the country&quot; must be \&quot;the best org in the country\&quot;.</p>
+				<p>The email will be in the format:</p>
+				<ul>
+					<li><em>subject:</em> Verification Request: [verifier_name]</li>
+					<li><em>body:</em> Click here to complete: [deep_link]</li>
+				</ul>
+				<p><strong>Note</strong>: The verifier is corresponding to the presentation request from which the deeplink references. Because you are the acting verifier, the name will be what ever you provided during <a href="#registerVerifier">verifier registration</a>. </p>
 				<p>Parameters</p>
 				<pre><code class="language-typescript"><span style="color: #000000">{</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;to&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// email address to send email to</span>
-<span style="color: #000000">  </span><span style="color: #A31515">&quot;from&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// from email address</span>
-<span style="color: #000000">  </span><span style="color: #A31515">&quot;replyTo&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// replyTo email address</span>
-<span style="color: #000000">  </span><span style="color: #A31515">&quot;subject&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// email subject</span>
-<span style="color: #000000">  </span><span style="color: #A31515">&quot;textBody&quot;</span><span style="color: #000000">?: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// (optional) email message body (cannot be used with htmlBody)</span>
-<span style="color: #000000">  </span><span style="color: #A31515">&quot;htmlBody&quot;</span><span style="color: #000000">?: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// (optional) email html message body (cannot be used with textBody)</span>
+<span style="color: #000000">  </span><span style="color: #A31515">&quot;deeplink&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// the deeplink corresponding to the presentation request you would like served to the user</span>
 <span style="color: #000000">}</span>
 </code></pre>
 				<p>Response Body: <strong>Empty</strong>. If unsuccessful and exception will be thrown.</p>
