@@ -12,7 +12,7 @@ import logger from '../logger';
 import { CryptoError } from '@unumid/library-crypto';
 import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
 import { CustError } from '../utils/error';
-import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHandler';
+import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
 import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
 

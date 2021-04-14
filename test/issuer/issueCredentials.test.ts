@@ -5,12 +5,12 @@ import { UnumDto } from '../../src/types';
 import { CredentialSubject } from '@unumid/types';
 import { CustError } from '../../src/utils/error';
 import * as createKeyPairs from '../../src/utils/createKeyPairs';
-import { getDIDDoc } from '../../src/utils/didHandler';
+import { getDIDDoc } from '../../src/utils/didHelper';
 import { doEncrypt } from '../../src/utils/encrypt';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 
-jest.mock('../../src/utils/didHandler', () => {
-  const actual = jest.requireActual('../../src/utils/didHandler');
+jest.mock('../../src/utils/didHelper', () => {
+  const actual = jest.requireActual('../../src/utils/didHelper');
   return {
     ...actual,
     getDIDDoc: jest.fn()

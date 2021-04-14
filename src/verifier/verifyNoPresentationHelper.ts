@@ -8,7 +8,7 @@ import { requireAuth } from '../requireAuth';
 import logger from '../logger';
 import { NoPresentation } from '@unumid/types';
 import { CustError } from '../utils/error';
-import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHandler';
+import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
 import { isArrayEmpty } from '../utils/helpers';
 import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';

@@ -15,4 +15,4 @@ export declare const getDIDDoc: (baseUrl: string, authorization: string, did: st
  * @param type DidKeyType
  */
 export declare const getKeyFromDIDDoc: (didDocument: DidDocument, type: DidKeyType) => PublicKeyInfo[];
-//# sourceMappingURL=didHandler.d.ts.map
+//# sourceMappingURL=didHelper.d.ts.map

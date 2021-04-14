@@ -46,7 +46,7 @@ var config_1 = require("../config");
 var requireAuth_1 = require("../requireAuth");
 var logger_1 = __importDefault(require("../logger"));
 var error_1 = require("../utils/error");
-var didHandler_1 = require("../utils/didHandler");
+var didHelper_1 = require("../utils/didHelper");
 var helpers_1 = require("../utils/helpers");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var verify_1 = require("../utils/verify");
@@ -97,14 +97,14 @@ exports.verifyNoPresentationHelper = function (authorization, noPresentation, ve
                 requireAuth_1.requireAuth(authorization);
                 exports.validateNoPresentationParams(noPresentation);
                 _a = noPresentation.proof, verificationMethod = _a.verificationMethod, signatureValue = _a.signatureValue, unsignedValue = _a.unsignedValue;
-                return [4 /*yield*/, didHandler_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, verificationMethod)];
+                return [4 /*yield*/, didHelper_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, verificationMethod)];
             case 1:
                 didDocumentResponse = _c.sent();
                 if (didDocumentResponse instanceof Error) {
                     throw didDocumentResponse;
                 }
                 authToken = networkRequestHelper_1.handleAuthToken(didDocumentResponse);
-                publicKeyInfos = didHandler_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
+                publicKeyInfos = didHelper_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 _b = publicKeyInfos[0], publicKey = _b.publicKey, encoding = _b.encoding;
                 unsignedNoPresentation = lodash_1.omit(noPresentation, 'proof');
                 isVerified = verify_1.doVerify(signatureValue, unsignedNoPresentation, publicKey, encoding, unsignedValue);

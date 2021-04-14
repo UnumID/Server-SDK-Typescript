@@ -44,7 +44,7 @@ var library_crypto_1 = require("@unumid/library-crypto");
 var lodash_1 = require("lodash");
 var config_1 = require("../config");
 var logger_1 = __importDefault(require("../logger"));
-var didHandler_1 = require("../utils/didHandler");
+var didHelper_1 = require("../utils/didHelper");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var verify_1 = require("../utils/verify");
 /**
@@ -58,14 +58,14 @@ exports.verifyCredential = function (credential, authorization) { return __await
         switch (_a.label) {
             case 0:
                 proof = credential.proof;
-                return [4 /*yield*/, didHandler_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, proof.verificationMethod)];
+                return [4 /*yield*/, didHelper_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, proof.verificationMethod)];
             case 1:
                 didDocumentResponse = _a.sent();
                 if (didDocumentResponse instanceof Error) {
                     throw didDocumentResponse;
                 }
                 authToken = networkRequestHelper_1.handleAuthToken(didDocumentResponse);
-                publicKeyObject = didHandler_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
+                publicKeyObject = didHelper_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 data = lodash_1.omit(credential, 'proof');
                 try {
                     isVerified = verify_1.doVerify(proof.signatureValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding, proof.unsignedValue);
