@@ -4,11 +4,10 @@ export interface SmsResponseBody {
 }
 /**
  * Handler to send a SMS using UnumID's SaaS.
- * Designed to be used to present a deeplink.
- *
+ * Designed to be used with a deeplink which creates a templated message.
  * @param authorization
  * @param to
- * @param msg
+ * @param deeplink
  */
-export declare const sendSms: (authorization: string, to: string, msg: string) => Promise<UnumDto<undefined>>;
+export declare const sendSms: (authorization: string, to: string, deeplink: string) => Promise<UnumDto<undefined>>;
 //# sourceMappingURL=sendSms.d.ts.map

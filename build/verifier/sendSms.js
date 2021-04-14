@@ -50,35 +50,37 @@ var networkRequestHelper_1 = require("../utils/networkRequestHelper");
  * @param body SmsRequestBody
  */
 var validateSmsRequestBody = function (body) {
-    var to = body.to, msg = body.msg;
+    var to = body.to, deeplink = body.deeplink;
     if (!to) {
         throw new error_1.CustError(400, 'to is required.');
     }
-    if (!msg) {
-        throw new error_1.CustError(400, 'msg is required.');
+    if (!deeplink) {
+        throw new error_1.CustError(400, 'deeplink is required.');
     }
     if (typeof to !== 'string') {
         throw new error_1.CustError(400, 'Invalid to: expected string.');
     }
-    if (typeof msg !== 'string') {
-        throw new error_1.CustError(400, 'Invalid msg: expected string.');
+    if (typeof deeplink !== 'string') {
+        throw new error_1.CustError(400, 'Invalid deeplink: expected string.');
+    }
+    if (deeplink.split('presentationRequest/').length !== 2) {
+        throw new error_1.CustError(400, 'Invalid deeplink: expected to end in the format presentationRequest/<uuid>.');
     }
 };
 /**
  * Handler to send a SMS using UnumID's SaaS.
- * Designed to be used to present a deeplink.
- *
+ * Designed to be used with a deeplink which creates a templated message.
  * @param authorization
  * @param to
- * @param msg
+ * @param deeplink
  */
-exports.sendSms = function (authorization, to, msg) { return __awaiter(void 0, void 0, void 0, function () {
+exports.sendSms = function (authorization, to, deeplink) { return __awaiter(void 0, void 0, void 0, function () {
     var body, data, apiResponse, authToken, result, e_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 2, , 3]);
-                body = { to: to, msg: msg };
+                body = { to: to, deeplink: deeplink };
                 requireAuth_1.requireAuth(authorization);
                 validateSmsRequestBody(body);
                 data = {
