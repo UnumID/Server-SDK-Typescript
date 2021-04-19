@@ -218,6 +218,8 @@ function validatePresentationMeetsRequestedCredentials(presentation, credentialR
                         logger_1.default.warn(errMessage);
                         throw new error_1.CustError(400, errMessage);
                     }
+                    // TODO can break from inner loop here yeah?
+                    break;
                 }
             }
             if (!found) {
@@ -274,6 +276,7 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 }
                 isPresentationVerified = false;
                 try {
+                    // TODO need to also check that the verifier did provided matches that presentation
                     isPresentationVerified = verify_1.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding, proof.unsignedValue);
                 }
                 catch (e) {

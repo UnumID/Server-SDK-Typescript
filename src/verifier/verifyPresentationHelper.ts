@@ -209,6 +209,9 @@ function validatePresentationMeetsRequestedCredentials (presentation: Presentati
             logger.warn(errMessage);
             throw new CustError(400, errMessage);
           }
+
+          // can break from inner loop because validation has been met.
+          break;
         }
       }
 
@@ -277,6 +280,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
     // this logic to verify each credential present separately.  We can take this up later.
     let isPresentationVerified = false;
     try {
+      // TODO need to also check that the verifier did provided matches that presentation
       isPresentationVerified = doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding, proof.unsignedValue);
     } catch (e) {
       if (e instanceof CryptoError) {
