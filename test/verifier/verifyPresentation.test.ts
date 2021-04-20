@@ -52,6 +52,7 @@ const callVerifyEncryptedPresentation = (context, type, verifiableCredentials, p
     type,
     verifiableCredentials,
     presentationRequestUuid,
+    verifierDid: verifier,
     proof,
     uuid: 'a'
   };
@@ -635,6 +636,8 @@ describe('verifyEncryptedPresentation - Validation for proof object', () => {
   });
 });
 
+const verifier = 'did:unum:dd407b1a-ee7f-46a2-af2a-ccbb48cbb0dc';
+
 const dummyNoPresentation: NoPresentation = {
   holder: 'did:unum:50fb0b5b-79ff-4db9-9f33-d93feab702db',
   presentationRequestUuid: 'd5cc3673-d72f-45fa-bc87-36c305f8d0a5',
@@ -642,6 +645,7 @@ const dummyNoPresentation: NoPresentation = {
     'NoPresentation',
     'NoPresentation'
   ],
+  verifierDid: verifier,
   proof: {
     signatureValue: 'AN1rKvtGeqaB4L16dr2gwF9jZF77hdhrb8iBsTgUTt2XqUyoJYnfQQmczxMuKLM2zWU6E6DSSaqzWVsisbD3VhG8taLWGx6BY',
     unsignedValue: 'unsigned sig value',
@@ -664,7 +668,6 @@ const dummyNoPresentationBadHolder = { ...dummyNoPresentation, holder: {} } as N
 const dummyNoPresentationBadProof = { ...dummyNoPresentation, proof: {} } as NoPresentation;
 
 const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
-const verifier = 'did:unum:dd407b1a-ee7f-46a2-af2a-ccbb48cbb0dc';
 
 const callVerifyNoPresentation = (
   noPresentation: NoPresentation,

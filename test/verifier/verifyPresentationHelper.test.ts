@@ -326,7 +326,7 @@ describe('verifyPresentation - Failure Scenarios', () => {
 
     // const response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
     expect(response.body.isVerified).toBe(false);
-    expect(response.body.message).toBe(`åThe presentation was meant for verifier, ${presentation.verifierDid}, not the provided verifier, fakeVerifierDid.`);
+    expect(response.body.message).toBe(`The presentation was meant for verifier, ${presentation.verifierDid}, not the provided verifier, fakeVerifierDid.`);
   });
 });
 
