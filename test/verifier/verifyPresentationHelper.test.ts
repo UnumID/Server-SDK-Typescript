@@ -172,6 +172,78 @@ const populateMockData = (): JSONObj => {
   });
 };
 
+describe('verifyPresentation - Success Scenario with verifiableCredentialsString', () => {
+  let response: UnumDto<VerifiedStatus>;
+  let verStatus: boolean;
+
+  const { context, type, verifiableCredential, verifiableCredentialString, presentationRequestUuid, proof, authHeader, verifier, credentialRequests } = populateMockData();
+
+  beforeAll(async () => {
+    const dummySubjectDidDoc = await makeDummyDidDocument();
+
+    const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
+    mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
+    mockDoVerify.mockResolvedValue(true);
+    mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: true });
+    mockIsCredentialExpired.mockReturnValue(false);
+    mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: { status: 'valid' } });
+    mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers: dummyResponseHeaders });
+    response = await callVerifyPresentation(context, type, verifiableCredentialString, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
+    verStatus = response.body.isVerified;
+  });
+
+  afterAll(() => {
+    jest.clearAllMocks();
+  });
+
+  it('gets the subject did document', () => {
+    expect(mockGetDIDDoc).toBeCalled();
+  });
+
+  it('verifies the presentation', () => {
+    expect(mockDoVerify).toBeCalled();
+  });
+
+  it('verifies each credential', () => {
+    verifiableCredential.forEach((vc) => {
+      expect(mockVerifyCredential).toBeCalledWith(vc, authHeader);
+    });
+  });
+
+  it('checks if each credential is expired', () => {
+    verifiableCredential.forEach((vc) => {
+      expect(mockIsCredentialExpired).toBeCalledWith(vc);
+    });
+  });
+
+  it('checks the status of each credential', () => {
+    verifiableCredential.forEach((vc) => {
+      expect(mockCheckCredentialStatus).toBeCalledWith(authHeader, vc.id);
+    });
+  });
+
+  it('Result should be true', () => {
+    expect(verStatus).toBeDefined();
+    expect(verStatus).toBe(true);
+  });
+
+  it('returns the x-auth-token header returned from the SaaS api in the x-auth-token header', () => {
+    expect(response.authToken).toEqual(dummyAuthToken);
+  });
+
+  it('does not return an x-auth-token header if the SaaS does not return an x-auth-token header', async () => {
+    const dummySubjectDidDoc = await makeDummyDidDocument();
+    const dummyApiResponse = { body: dummySubjectDidDoc };
+    mockMakeNetworkRequest.mockResolvedValueOnce(dummyApiResponse);
+    mockGetDIDDoc.mockResolvedValue({ body: dummySubjectDidDoc, authToken: undefined });
+    mockCheckCredentialStatus.mockReturnValue({ authToken: undefined, body: { status: 'valid' } });
+    mockVerifyCredential.mockResolvedValue({ authToken: undefined, body: true });
+    mockDoVerify.mockReturnValueOnce(true);
+    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
+    expect(response.authToken).toBeUndefined();
+  });
+});
+
 describe('verifyPresentation - Success Scenario', () => {
   let response: UnumDto<VerifiedStatus>;
   let verStatus: boolean;
@@ -327,78 +399,6 @@ describe('verifyPresentation - Failure Scenarios', () => {
     // const response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
     expect(response.body.isVerified).toBe(false);
     expect(response.body.message).toBe(`The presentation was meant for verifier, ${presentation.verifierDid}, not the provided verifier, fakeVerifierDid.`);
-  });
-});
-
-describe('verifyPresentation - Success Scenario with verifiableCredentialsString', () => {
-  let response: UnumDto<VerifiedStatus>;
-  let verStatus: boolean;
-
-  const { context, type, verifiableCredential, verifiableCredentialString, presentationRequestUuid, proof, authHeader, verifier, credentialRequests } = populateMockData();
-
-  beforeAll(async () => {
-    const dummySubjectDidDoc = await makeDummyDidDocument();
-
-    const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
-    mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
-    mockDoVerify.mockResolvedValue(true);
-    mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: true });
-    mockIsCredentialExpired.mockReturnValue(false);
-    mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: { status: 'valid' } });
-    mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers: dummyResponseHeaders });
-    response = await callVerifyPresentation(context, type, verifiableCredentialString, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
-    verStatus = response.body.isVerified;
-  });
-
-  afterAll(() => {
-    jest.clearAllMocks();
-  });
-
-  it('gets the subject did document', () => {
-    expect(mockGetDIDDoc).toBeCalled();
-  });
-
-  it('verifies the presentation', () => {
-    expect(mockDoVerify).toBeCalled();
-  });
-
-  it('verifies each credential', () => {
-    verifiableCredential.forEach((vc) => {
-      expect(mockVerifyCredential).toBeCalledWith(vc, authHeader);
-    });
-  });
-
-  it('checks if each credential is expired', () => {
-    verifiableCredential.forEach((vc) => {
-      expect(mockIsCredentialExpired).toBeCalledWith(vc);
-    });
-  });
-
-  it('checks the status of each credential', () => {
-    verifiableCredential.forEach((vc) => {
-      expect(mockCheckCredentialStatus).toBeCalledWith(authHeader, vc.id);
-    });
-  });
-
-  it('Result should be true', () => {
-    expect(verStatus).toBeDefined();
-    expect(verStatus).toBe(true);
-  });
-
-  it('returns the x-auth-token header returned from the SaaS api in the x-auth-token header', () => {
-    expect(response.authToken).toEqual(dummyAuthToken);
-  });
-
-  it('does not return an x-auth-token header if the SaaS does not return an x-auth-token header', async () => {
-    const dummySubjectDidDoc = await makeDummyDidDocument();
-    const dummyApiResponse = { body: dummySubjectDidDoc };
-    mockMakeNetworkRequest.mockResolvedValueOnce(dummyApiResponse);
-    mockGetDIDDoc.mockResolvedValue({ body: dummySubjectDidDoc, authToken: undefined });
-    mockCheckCredentialStatus.mockReturnValue({ authToken: undefined, body: { status: 'valid' } });
-    mockVerifyCredential.mockResolvedValue({ authToken: undefined, body: true });
-    mockDoVerify.mockReturnValueOnce(true);
-    response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
-    expect(response.authToken).toBeUndefined();
   });
 });
 
