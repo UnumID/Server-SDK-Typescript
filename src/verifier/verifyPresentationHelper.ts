@@ -137,7 +137,7 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
  */
 const validatePresentation = (presentation: Presentation): Presentation => {
   const context = presentation['@context'];
-  const { type, verifiableCredentials, proof, presentationRequestUuid } = presentation;
+  const { type, verifiableCredentials, proof, presentationRequestUuid, verifierDid } = presentation;
   let retObj: JSONObj = {};
 
   // validate required fields
@@ -159,6 +159,10 @@ const validatePresentation = (presentation: Presentation): Presentation => {
 
   if (!presentationRequestUuid) {
     throw new CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
+  }
+
+  if (!verifierDid) {
+    throw new CustError(400, 'Invalid Presentation: verifierDid is required.');
   }
 
   if (isArrayEmpty(context)) {
@@ -245,6 +249,18 @@ export const verifyPresentationHelper = async (authorization: string, presentati
     const data = omit(presentation, 'proof'); // Note: important that this data variable is created prior to the validation thanks to validatePresentation taking potentially stringified VerifiableCredentials objects array and converting them to proper objects.
     presentation = validatePresentation(presentation);
 
+    // validate that the verifier did provided matches the verifier did in the presentation
+    if (presentation.verifierDid !== verifier) {
+      const result: UnumDto<VerifiedStatus> = {
+        authToken: authorization,
+        body: {
+          isVerified: false,
+          message: `The presentation was meant for verifier, ${presentation.verifierDid}, not the provided verifier, ${verifier}.`
+        }
+      };
+      return result;
+    }
+
     // if specific credential requests, then need to confirm the presentation provided meets the requirements
     if (isArrayNotEmpty(credentialRequests)) {
       validatePresentationMeetsRequestedCredentials(presentation, credentialRequests as CredentialRequest[]);
@@ -280,7 +296,6 @@ export const verifyPresentationHelper = async (authorization: string, presentati
     // this logic to verify each credential present separately.  We can take this up later.
     let isPresentationVerified = false;
     try {
-      // TODO need to also check that the verifier did provided matches that presentation
       isPresentationVerified = doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding, proof.unsignedValue);
     } catch (e) {
       if (e instanceof CryptoError) {

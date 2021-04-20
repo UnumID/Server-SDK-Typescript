@@ -51,6 +51,7 @@ const callVerifyPresentation = (context, type, verifiableCredentials, presentati
     type,
     verifiableCredentials,
     presentationRequestUuid,
+    verifierDid: verifier,
     proof,
     uuid: 'a'
   };
@@ -281,7 +282,7 @@ describe('verifyPresentation - Failure Scenarios', () => {
     expect(verStatus).toBe(false);
   });
 
-  it('returns a 404 status code if the did document has no public keys', async () => {
+  it('returns a isVerified false with proper message if the did document has no public keys', async () => {
     const dummyDidDocWithoutKeys = {
       ...makeDummyDidDocument(),
       publicKey: []
@@ -302,6 +303,30 @@ describe('verifyPresentation - Failure Scenarios', () => {
     } catch (e) {
       expect(e.code).toEqual(404);
     }
+  });
+
+  it('returns a isVerified false with proper message if the verifierDid does not match the one in the presentation.', async () => {
+    const dummyDidDocWithoutKeys = {
+      ...makeDummyDidDocument(),
+      publicKey: []
+    };
+    const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
+    mockGetDIDDoc.mockResolvedValueOnce({ body: dummyDidDocWithoutKeys, headers: dummyResponseHeaders });
+
+    const presentation: Presentation = {
+      '@context': context,
+      type,
+      verifiableCredentials: verifiableCredential,
+      presentationRequestUuid,
+      verifierDid: verifier,
+      proof,
+      uuid: 'a'
+    };
+    const response = await verifyPresentation(authHeader, presentation, 'fakeVerifierDid', credentialRequests);
+
+    // const response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
+    expect(response.body.isVerified).toBe(false);
+    expect(response.body.message).toBe(`åThe presentation was meant for verifier, ${presentation.verifierDid}, not the provided verifier, fakeVerifierDid.`);
   });
 });
 
