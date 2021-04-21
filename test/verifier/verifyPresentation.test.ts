@@ -577,6 +577,44 @@ describe('verifyEncryptedPresentation - Validation for verifiableCredentials obj
   });
 });
 
+describe('verifyEncryptedPresentation - presentationRequestSignature check', () => {
+  const { context, type, verifiableCredentials, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
+  it('returns response body with proper validation error message if presentation request signature can not be verified', async () => {
+    const dummyDidDoc = await makeDummyDidDocument({ id: dummyNoPresentation.holder });
+    const headers = { 'x-auth-token': dummyAuthToken };
+    mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
+    mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers });
+    mockDoVerify.mockReturnValueOnce(false);
+
+    const presentation: Presentation = {
+      '@context': context,
+      type,
+      verifiableCredentials,
+      presentationRequestUuid,
+      verifierDid: verifier,
+      proof,
+      uuid: 'a'
+    };
+
+    const encryptedPresentation = encrypt(`did:unum:${getUUID()}`, dummyRsaPublicKey, presentation, 'pem');
+
+    const fakeBadPresentationRequestDto = {
+      presentationRequest: {
+        uuid: presentationRequestUuid,
+        proof: { signatureValue: 'signature' }
+      },
+      verifier: {
+        did: verifier
+      }
+    };
+    // const response = await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
+    const response = await verifyPresentation(authHeader, encryptedPresentation, verifier, dummyRsaPrivateKey, fakeBadPresentationRequestDto);
+
+    expect(response.body.isVerified).toBe(false);
+    expect(response.body.message).toBe('PresentationRequest signature can not be verified.');
+  });
+});
+
 describe('verifyEncryptedPresentation - Validation for proof object', () => {
   const { context, type, verifiableCredentials, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 

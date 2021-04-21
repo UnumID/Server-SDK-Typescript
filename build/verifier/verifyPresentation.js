@@ -57,8 +57,55 @@ var logger_1 = __importDefault(require("../logger"));
 var verifyNoPresentationHelper_1 = require("./verifyNoPresentationHelper");
 var verifyPresentationHelper_1 = require("./verifyPresentationHelper");
 var error_1 = require("../utils/error");
+var lodash_1 = require("lodash");
+var didHelper_1 = require("../utils/didHelper");
+var config_1 = require("../config");
+var verify_1 = require("../utils/verify");
+var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 function isPresentation(presentation) {
     return presentation.type[0] === 'VerifiablePresentation';
+}
+/**
+ * Verify the PresentationRequest signature as a way to side step verifier MITM attacks where an entity spoofs requests.
+ */
+function verifyPresentationRequest(authorization, presentationRequest) {
+    return __awaiter(this, void 0, void 0, function () {
+        var _a, verificationMethod, signatureValue, unsignedValue, didDocumentResponse, authToken, publicKeyInfos, _b, publicKey, encoding, unsignedPresentationRequest, isVerified, result_1, result;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
+                case 0:
+                    _a = presentationRequest.proof, verificationMethod = _a.verificationMethod, signatureValue = _a.signatureValue, unsignedValue = _a.unsignedValue;
+                    return [4 /*yield*/, didHelper_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, verificationMethod)];
+                case 1:
+                    didDocumentResponse = _c.sent();
+                    if (didDocumentResponse instanceof Error) {
+                        throw didDocumentResponse;
+                    }
+                    authToken = networkRequestHelper_1.handleAuthToken(didDocumentResponse);
+                    publicKeyInfos = didHelper_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
+                    _b = publicKeyInfos[0], publicKey = _b.publicKey, encoding = _b.encoding;
+                    unsignedPresentationRequest = lodash_1.omit(presentationRequest, 'proof');
+                    isVerified = verify_1.doVerify(signatureValue, unsignedPresentationRequest, publicKey, encoding, unsignedValue);
+                    if (!isVerified) {
+                        result_1 = {
+                            authToken: authToken,
+                            body: {
+                                isVerified: false,
+                                message: 'PresentationRequest signature can not be verified.'
+                            }
+                        };
+                        return [2 /*return*/, result_1];
+                    }
+                    result = {
+                        authToken: authToken,
+                        body: {
+                            isVerified: true
+                        }
+                    };
+                    return [2 /*return*/, result];
+            }
+        });
+    });
 }
 /**
  * Handler to send information regarding the user agreeing to share a credential Presentation.
@@ -67,11 +114,11 @@ function isPresentation(presentation) {
  * @param verifierDid: string
  */
 exports.verifyPresentation = function (authorization, encryptedPresentation, verifierDid, encryptionPrivateKey, presentationRequest) { return __awaiter(void 0, void 0, void 0, function () {
-    var presentation, verificationResult_1, result_1, credentialRequests, verificationResult, result, error_2;
+    var presentation, requestVerificationResult, type, result_2, verificationResult_1, result_3, credentialRequests, verificationResult, result, error_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                _a.trys.push([0, 4, , 5]);
+                _a.trys.push([0, 6, , 7]);
                 requireAuth_1.requireAuth(authorization);
                 if (!encryptedPresentation) {
                     throw new error_1.CustError(400, 'encryptedPresentation is required.');
@@ -86,29 +133,46 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                     throw new error_1.CustError(400, "verifier provided, " + verifierDid + ", does not match the presentation request verifier, " + presentationRequest.verifier.did + ".");
                 }
                 presentation = library_crypto_1.decrypt(encryptionPrivateKey, encryptedPresentation);
+                // verify the presentation request uuid match
                 if (presentationRequest && presentationRequest.presentationRequest.uuid !== presentation.presentationRequestUuid) {
                     throw new error_1.CustError(400, "presentation request uuid provided, " + presentationRequest.presentationRequest.uuid + ", does not match the presentationRequestUuid that the presentation was in response to, " + presentation.presentationRequestUuid + ".");
                 }
-                if (!!isPresentation(presentation)) return [3 /*break*/, 2];
-                return [4 /*yield*/, verifyNoPresentationHelper_1.verifyNoPresentationHelper(authorization, presentation, verifierDid)];
+                if (!(presentationRequest && presentationRequest.presentationRequest)) return [3 /*break*/, 2];
+                return [4 /*yield*/, verifyPresentationRequest(authorization, presentationRequest.presentationRequest)];
             case 1:
+                requestVerificationResult = _a.sent();
+                authorization = requestVerificationResult.authToken;
+                // if invalid then can stop here but still send back the decrypted presentation with the verification results
+                if (!requestVerificationResult.body.isVerified) {
+                    type = isPresentation(presentation) ? 'VerifiablePresentation' : 'NoPresentation';
+                    result_2 = {
+                        authToken: requestVerificationResult.authToken,
+                        body: __assign(__assign({}, requestVerificationResult.body), { type: type, presentation: presentation })
+                    };
+                    return [2 /*return*/, result_2];
+                }
+                _a.label = 2;
+            case 2:
+                if (!!isPresentation(presentation)) return [3 /*break*/, 4];
+                return [4 /*yield*/, verifyNoPresentationHelper_1.verifyNoPresentationHelper(authorization, presentation, verifierDid)];
+            case 3:
                 verificationResult_1 = _a.sent();
-                result_1 = {
+                result_3 = {
                     authToken: verificationResult_1.authToken,
                     body: __assign(__assign({}, verificationResult_1.body), { type: 'NoPresentation', presentation: presentation })
                 };
-                return [2 /*return*/, result_1];
-            case 2:
+                return [2 /*return*/, result_3];
+            case 4:
                 credentialRequests = presentationRequest === null || presentationRequest === void 0 ? void 0 : presentationRequest.presentationRequest.credentialRequests;
                 return [4 /*yield*/, verifyPresentationHelper_1.verifyPresentationHelper(authorization, presentation, verifierDid, credentialRequests)];
-            case 3:
+            case 5:
                 verificationResult = _a.sent();
                 result = {
                     authToken: verificationResult.authToken,
                     body: __assign(__assign({}, verificationResult.body), { type: 'VerifiablePresentation', presentation: presentation })
                 };
                 return [2 /*return*/, result];
-            case 4:
+            case 6:
                 error_2 = _a.sent();
                 if (error_2 instanceof library_crypto_1.CryptoError) {
                     logger_1.default.error('Crypto error handling encrypted presentation', error_2);
@@ -117,7 +181,7 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                     logger_1.default.error('Error handling encrypted presentation request to UnumID Saas.', error_2);
                 }
                 throw error_2;
-            case 5: return [2 /*return*/];
+            case 7: return [2 /*return*/];
         }
     });
 }); };
