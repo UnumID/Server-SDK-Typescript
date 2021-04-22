@@ -68,9 +68,9 @@ exports.validateNoPresentationParams = function (noPresentation) {
     if (verifiableCredential) {
         throw new error_1.CustError(400, 'Invalid Declined Presentation: verifiableCredential must be undefined.'); // this should never happen base on upstream logic
     }
-    // if (!verifierDid) {
-    //   throw new CustError(400, 'Invalid Presentation: verifierDid is required.');
-    // }
+    if (!verifierDid) {
+        throw new error_1.CustError(400, 'Invalid Presentation: verifierDid is required.');
+    }
     if (!presentationRequestUuid) {
         throw new error_1.CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
     }
@@ -86,14 +86,25 @@ exports.validateNoPresentationParams = function (noPresentation) {
  * @param verifier
  */
 exports.verifyNoPresentationHelper = function (authorization, noPresentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, verificationMethod, signatureValue, unsignedValue, didDocumentResponse, authToken, publicKeyInfos, _b, publicKey, encoding, unsignedNoPresentation, isVerified, result_1, receiptOptions, receiptCallOptions, resp, result, e_1;
+    var _a, verificationMethod, signatureValue, unsignedValue, verifierDid, result_1, didDocumentResponse, authToken, publicKeyInfos, _b, publicKey, encoding, unsignedNoPresentation, isVerified, result_2, receiptOptions, receiptCallOptions, resp, result, e_1;
     return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
                 _c.trys.push([0, 3, , 4]);
                 requireAuth_1.requireAuth(authorization);
                 exports.validateNoPresentationParams(noPresentation);
-                _a = noPresentation.proof, verificationMethod = _a.verificationMethod, signatureValue = _a.signatureValue, unsignedValue = _a.unsignedValue;
+                _a = noPresentation.proof, verificationMethod = _a.verificationMethod, signatureValue = _a.signatureValue, unsignedValue = _a.unsignedValue, verifierDid = noPresentation.verifierDid;
+                // validate that the verifier did provided matches the verifier did in the presentation
+                if (verifierDid !== verifier) {
+                    result_1 = {
+                        authToken: authorization,
+                        body: {
+                            isVerified: false,
+                            message: "The presentation was meant for verifier, " + verifierDid + ", not the provided verifier, " + verifier + "."
+                        }
+                    };
+                    return [2 /*return*/, result_1];
+                }
                 return [4 /*yield*/, didHelper_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, verificationMethod)];
             case 1:
                 didDocumentResponse = _c.sent();
@@ -106,14 +117,14 @@ exports.verifyNoPresentationHelper = function (authorization, noPresentation, ve
                 unsignedNoPresentation = lodash_1.omit(noPresentation, 'proof');
                 isVerified = verify_1.doVerify(signatureValue, unsignedNoPresentation, publicKey, encoding, unsignedValue);
                 if (!isVerified) {
-                    result_1 = {
+                    result_2 = {
                         authToken: authToken,
                         body: {
                             isVerified: false,
-                            message: 'Credential signature can not be verified.'
+                            message: 'Presentation signature can not be verified.'
                         }
                     };
-                    return [2 /*return*/, result_1];
+                    return [2 /*return*/, result_2];
                 }
                 receiptOptions = {
                     type: noPresentation.type,

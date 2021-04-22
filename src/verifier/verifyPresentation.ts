@@ -1,6 +1,6 @@
 
 import { DecryptedPresentation, PresentationOrNoPresentation, UnumDto, VerifiedStatus } from '../types';
-import { Presentation, CredentialRequest, PresentationRequestDto, EncryptedData } from '@unumid/types';
+import { Presentation, CredentialRequest, PresentationRequestDto, EncryptedData, PresentationRequest } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
 import { CryptoError, decrypt } from '@unumid/library-crypto';
 import logger from '../logger';
@@ -8,9 +8,54 @@ import { verifyNoPresentationHelper } from './verifyNoPresentationHelper';
 import { verifyPresentationHelper } from './verifyPresentationHelper';
 import { CustError } from '../utils/error';
 import { isArrayEmpty } from '../utils/helpers';
+import { omit } from 'lodash';
+import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
+import { configData } from '../config';
+import { doVerify } from '../utils/verify';
+import { handleAuthToken } from '../utils/networkRequestHelper';
 
 function isDeclinedPresentation (presentation: Presentation): presentation is Presentation {
   return isArrayEmpty(presentation.verifiableCredential);
+}
+
+/**
+ * Verify the PresentationRequest signature as a way to side step verifier MITM attacks where an entity spoofs requests.
+ */
+async function verifyPresentationRequest (authorization: string, presentationRequest: PresentationRequest): Promise<UnumDto<VerifiedStatus>> {
+  const { proof: { verificationMethod, signatureValue, unsignedValue } } = presentationRequest;
+
+  const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, verificationMethod);
+
+  if (didDocumentResponse instanceof Error) {
+    throw didDocumentResponse;
+  }
+
+  const authToken: string = handleAuthToken(didDocumentResponse);
+  const publicKeyInfos = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
+
+  const { publicKey, encoding } = publicKeyInfos[0];
+  const unsignedPresentationRequest = omit(presentationRequest, 'proof');
+
+  const isVerified = doVerify(signatureValue, unsignedPresentationRequest, publicKey, encoding, unsignedValue);
+
+  if (!isVerified) {
+    const result: UnumDto<VerifiedStatus> = {
+      authToken,
+      body: {
+        isVerified: false,
+        message: 'PresentationRequest signature can not be verified.'
+      }
+    };
+    return result;
+  }
+
+  const result: UnumDto<VerifiedStatus> = {
+    authToken,
+    body: {
+      isVerified: true
+    }
+  };
+  return result;
 }
 
 /**
@@ -42,11 +87,32 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
     // decrypt the presentation
     const presentation = <Presentation> decrypt(encryptionPrivateKey, encryptedPresentation);
 
+    // verify the presentation request uuid match
     if (presentationRequest && presentationRequest.presentationRequest.uuid !== presentation.presentationRequestUuid) {
       throw new CustError(400, `presentation request uuid provided, ${presentationRequest.presentationRequest.uuid}, does not match the presentationRequestUuid that the presentation was in response to, ${presentation.presentationRequestUuid}.`);
     }
 
-    // const type = isDeclinedPresentation(presentation) ? 'NoPresentation' : 'VerifiablePresentation';
+    // verify the presentation request signature if present
+    if (presentationRequest && presentationRequest.presentationRequest) {
+      const requestVerificationResult = await verifyPresentationRequest(authorization, presentationRequest.presentationRequest);
+      authorization = requestVerificationResult.authToken;
+
+      // if invalid then can stop here but still send back the decrypted presentation with the verification results
+      if (!requestVerificationResult.body.isVerified) {
+        const type = isDeclinedPresentation(presentation) ? 'NoPresentation' : 'VerifiablePresentation';
+        const result: UnumDto<DecryptedPresentation> = {
+          authToken: requestVerificationResult.authToken,
+          body: {
+            ...requestVerificationResult.body,
+            type,
+            presentation: presentation
+          }
+        };
+
+        return result;
+      }
+    }
+
     if (isDeclinedPresentation(presentation)) {
       const verificationResult: UnumDto<VerifiedStatus> = await verifyNoPresentationHelper(authorization, presentation, verifierDid);
       const result: UnumDto<DecryptedPresentation> = {

@@ -256,6 +256,18 @@ export const verifyPresentationHelper = async (authorization: string, presentati
       throw new CustError(500, 'presentation as an undefined verifiableCredentials'); // this should have already been checked.
     }
 
+    // validate that the verifier did provided matches the verifier did in the presentation
+    if (presentation.verifierDid !== verifier) {
+      const result: UnumDto<VerifiedStatus> = {
+        authToken: authorization,
+        body: {
+          isVerified: false,
+          message: `The presentation was meant for verifier, ${presentation.verifierDid}, not the provided verifier, ${verifier}.`
+        }
+      };
+      return result;
+    }
+
     // if specific credential requests, then need to confirm the presentation provided meets the requirements
     if (isArrayNotEmpty(credentialRequests)) {
       validatePresentationMeetsRequestedCredentials(presentation, credentialRequests as CredentialRequest[]);
@@ -291,7 +303,6 @@ export const verifyPresentationHelper = async (authorization: string, presentati
     // this logic to verify each credential present separately.  We can take this up later.
     let isPresentationVerified = false;
     try {
-      // TODO need to also check that the verifier did provided matches that presentation
       isPresentationVerified = doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding, proof.unsignedValue);
     } catch (e) {
       if (e instanceof CryptoError) {
