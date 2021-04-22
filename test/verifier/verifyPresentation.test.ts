@@ -46,11 +46,12 @@ const mockGetDIDDoc = getDIDDoc as jest.Mock;
 const mockDoVerify = doVerify as jest.Mock;
 const mockMakeNetworkRequest = makeNetworkRequest as jest.Mock;
 
-const callVerifyEncryptedPresentation = (context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, auth = '', presentationRequest?): Promise<UnumDto<DecryptedPresentation>> => {
+const callVerifyEncryptedPresentation = (context, type, verifiableCredential, presentationRequestUuid, proof, verifier, auth = '', presentationRequest?): Promise<UnumDto<DecryptedPresentation>> => {
   const presentation: Presentation = {
     '@context': context,
     type,
-    verifiableCredentials,
+    verifiableCredential,
+    verifierDid,
     presentationRequestUuid,
     proof,
     uuid: 'a'

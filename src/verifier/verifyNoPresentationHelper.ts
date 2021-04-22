@@ -7,21 +7,23 @@ import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
 import logger from '../logger';
 import { CustError } from '../utils/error';
-import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
 import { isArrayEmpty } from '../utils/helpers';
 import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
+import { Presentation } from '@unumid/types';
+import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
 
 /**
  * Validates the NoPresentation type to ensure the necessary attributes.
  * @param noPresentation NoPresentation
  */
-export const validateNoPresentationParams = (noPresentation: NoPresentation): void => {
+export const validateNoPresentationParams = (noPresentation: Presentation): void => {
   const {
     type,
-    holder,
     proof,
-    presentationRequestUuid
+    presentationRequestUuid,
+    verifiableCredential,
+    verifierDid
   } = noPresentation;
 
   if (!type) {
@@ -36,20 +38,16 @@ export const validateNoPresentationParams = (noPresentation: NoPresentation): vo
     throw new CustError(400, 'Invalid Presentation: proof is required.');
   }
 
-  if (!holder) {
-    throw new CustError(400, 'Invalid Presentation: holder is required.');
+  if (verifiableCredential) {
+    throw new CustError(400, 'Invalid Declined Presentation: verifiableCredential must be undefined.'); // this should never happen base on upstream logic
   }
+
+  // if (!verifierDid) {
+  //   throw new CustError(400, 'Invalid Presentation: verifierDid is required.');
+  // }
 
   if (!presentationRequestUuid) {
     throw new CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
-  }
-
-  if (type[0] !== 'NoPresentation') {
-    throw new CustError(400, 'Invalid type: first element must be \'NoPresentation\'.');
-  }
-
-  if (typeof holder !== 'string') {
-    throw new CustError(400, 'Invalid holder: must be a string.');
   }
 
   if (typeof presentationRequestUuid !== 'string') {
@@ -65,7 +63,7 @@ export const validateNoPresentationParams = (noPresentation: NoPresentation): vo
  * @param noPresentation
  * @param verifier
  */
-export const verifyNoPresentationHelper = async (authorization: string, noPresentation: NoPresentation, verifier: string): Promise<UnumDto<VerifiedStatus>> => {
+export const verifyNoPresentationHelper = async (authorization: string, noPresentation: Presentation, verifier: string): Promise<UnumDto<VerifiedStatus>> => {
   try {
     requireAuth(authorization);
 
@@ -102,7 +100,7 @@ export const verifyNoPresentationHelper = async (authorization: string, noPresen
     const receiptOptions = {
       type: noPresentation.type,
       verifier,
-      subject: noPresentation.holder,
+      subject: noPresentation.proof.verificationMethod,
       data: {
         isVerified
       }

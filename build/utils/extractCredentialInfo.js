@@ -8,9 +8,9 @@ var helpers_1 = require("./helpers");
  */
 exports.extractCredentialInfo = function (presentation) {
     var credentialTypes = [];
-    if (helpers_1.isArrayNotEmpty(presentation.verifiableCredentials)) {
+    if (presentation.verifiableCredential && helpers_1.isArrayNotEmpty(presentation.verifiableCredential)) { // Don't really need to check for existence because does so in isArrayNotEmpty() but doing so just to appease typescript
         // cut off the preceding 'VerifiableCredential' string in each credential type array
-        credentialTypes = presentation.verifiableCredentials.flatMap(function (cred) { return helpers_1.isArrayNotEmpty(cred.type) && cred.type[0] === 'VerifiableCredential' ? cred.type.slice(1) : cred.type; });
+        credentialTypes = presentation.verifiableCredential.flatMap(function (cred) { return helpers_1.isArrayNotEmpty(cred.type) && cred.type[0] === 'VerifiableCredential' ? cred.type.slice(1) : cred.type; });
     }
     // need to handle the possibility of a did fragment being part of the verification method.
     var subjectDid = presentation.proof.verificationMethod.split('#')[0];

@@ -46,20 +46,20 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
       throw new CustError(400, `presentation request uuid provided, ${presentationRequest.presentationRequest.uuid}, does not match the presentationRequestUuid that the presentation was in response to, ${presentation.presentationRequestUuid}.`);
     }
 
-    const type = isDeclinedPresentation(presentation) ? 'NoPresentation' : 'VerifiablePresentation';
-    // if (isDeclinedPresentation(presentation)) {
-    //   const verificationResult: UnumDto<VerifiedStatus> = await verifyNoPresentationHelper(authorization, presentation, verifierDid);
-    //   const result: UnumDto<DecryptedPresentation> = {
-    //     authToken: verificationResult.authToken,
-    //     body: {
-    //       ...verificationResult.body,
-    //       type: 'NoPresentation',
-    //       presentation: presentation
-    //     }
-    //   };
+    // const type = isDeclinedPresentation(presentation) ? 'NoPresentation' : 'VerifiablePresentation';
+    if (isDeclinedPresentation(presentation)) {
+      const verificationResult: UnumDto<VerifiedStatus> = await verifyNoPresentationHelper(authorization, presentation, verifierDid);
+      const result: UnumDto<DecryptedPresentation> = {
+        authToken: verificationResult.authToken,
+        body: {
+          ...verificationResult.body,
+          type: 'NoPresentation',
+          presentation: presentation
+        }
+      };
 
-    //   return result;
-    // }
+      return result;
+    }
 
     const credentialRequests: CredentialRequest[] | undefined = presentationRequest?.presentationRequest.credentialRequests;
     const verificationResult: UnumDto<VerifiedStatus> = await verifyPresentationHelper(authorization, presentation, verifierDid, credentialRequests);
@@ -67,8 +67,7 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
       authToken: verificationResult.authToken,
       body: {
         ...verificationResult.body,
-        // type: 'VerifiablePresentation',
-        type,
+        type: 'VerifiablePresentation',
         presentation: presentation
       }
     };

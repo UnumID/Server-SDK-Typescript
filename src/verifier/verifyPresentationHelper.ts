@@ -251,6 +251,11 @@ export const verifyPresentationHelper = async (authorization: string, presentati
     const data = omit(presentation, 'proof'); // Note: important that this data variable is created prior to the validation thanks to validatePresentation taking potentially stringified VerifiableCredentials objects array and converting them to proper objects.
     presentation = validatePresentation(presentation);
 
+    if (!presentation.verifiableCredential) {
+      logger.error('The presentation has undefined verifiableCrednetials attribute, this should have already be checked.');
+      throw new CustError(500, 'presentation as an undefined verifiableCredentials'); // this should have already been checked.
+    }
+
     // if specific credential requests, then need to confirm the presentation provided meets the requirements
     if (isArrayNotEmpty(credentialRequests)) {
       validatePresentationMeetsRequestedCredentials(presentation, credentialRequests as CredentialRequest[]);
@@ -319,7 +324,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
 
     let areCredentialsValid = true;
 
-    for (const credential of presentation.verifiableCredentials) {
+    for (const credential of presentation.verifiableCredential) {
       const isExpired = isCredentialExpired(credential);
 
       if (isExpired) {
@@ -358,8 +363,8 @@ export const verifyPresentationHelper = async (authorization: string, presentati
     }
 
     const isVerified = isPresentationVerified && areCredentialsValid; // always true if here
-    const credentialTypes = presentation.verifiableCredentials.flatMap(cred => cred.type.slice(1)); // cut off the preceding 'VerifiableCredential' string in each array
-    const issuers = presentation.verifiableCredentials.map(cred => cred.issuer);
+    const credentialTypes = presentation.verifiableCredential.flatMap(cred => cred.type.slice(1)); // cut off the preceding 'VerifiableCredential' string in each array
+    const issuers = presentation.verifiableCredential.map(cred => cred.issuer);
     const subject = proof.verificationMethod;
     const receiptOptions = {
       type: ['PresentationVerified'],

@@ -155,7 +155,7 @@ var validateCredentialInput = function (credentials) {
  */
 var validatePresentation = function (presentation) {
     var context = presentation['@context'];
-    var type = presentation.type, verifiableCredentials = presentation.verifiableCredentials, proof = presentation.proof, presentationRequestUuid = presentation.presentationRequestUuid;
+    var type = presentation.type, verifiableCredential = presentation.verifiableCredential, proof = presentation.proof, presentationRequestUuid = presentation.presentationRequestUuid, verifierDid = presentation.verifierDid;
     var retObj = {};
     // validate required fields
     if (!context) {
@@ -164,14 +164,14 @@ var validatePresentation = function (presentation) {
     if (!type) {
         throw new error_1.CustError(400, 'Invalid Presentation: type is required.');
     }
-    if (!verifiableCredentials) {
-        throw new error_1.CustError(400, 'Invalid Presentation: verifiableCredentials is required.');
-    }
     if (!proof) {
         throw new error_1.CustError(400, 'Invalid Presentation: proof is required.');
     }
     if (!presentationRequestUuid) {
         throw new error_1.CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
+    }
+    if (!verifierDid) {
+        throw new error_1.CustError(400, 'Invalid Presentation: verifierDid is required.');
     }
     if (helpers_1.isArrayEmpty(context)) {
         throw new error_1.CustError(400, 'Invalid Presentation: @context must be a non-empty array.');
@@ -179,13 +179,15 @@ var validatePresentation = function (presentation) {
     if (helpers_1.isArrayEmpty(type)) {
         throw new error_1.CustError(400, 'Invalid Presentation: type must be a non-empty array.');
     }
-    retObj = validateCredentialInput(verifiableCredentials);
-    if (!retObj.valid) {
-        throw new error_1.CustError(400, retObj.msg);
-    }
-    else if (retObj.stringifiedCredentials) {
-        // adding the "objectified" vc, which were sent in string format to appease iOS variable keyed object limitation: https://developer.apple.com/forums/thread/100417
-        presentation.verifiableCredentials = retObj.resultantCredentials;
+    if (verifiableCredential) {
+        retObj = validateCredentialInput(verifiableCredential);
+        if (!retObj.valid) {
+            throw new error_1.CustError(400, retObj.msg);
+        }
+        else if (retObj.stringifiedCredentials) {
+            // adding the "objectified" vc, which were sent in string format to appease iOS variable keyed object limitation: https://developer.apple.com/forums/thread/100417
+            presentation.verifiableCredential = retObj.resultantCredentials;
+        }
     }
     // Check proof object is formatted correctly
     validateProof_1.validateProof(proof);
@@ -199,11 +201,14 @@ var validatePresentation = function (presentation) {
  * @param credentialRequests CredentialRequest[]
  */
 function validatePresentationMeetsRequestedCredentials(presentation, credentialRequests) {
+    if (!presentation.verifiableCredential) {
+        return; // just skip because this is a declined presentation
+    }
     for (var _i = 0, credentialRequests_1 = credentialRequests; _i < credentialRequests_1.length; _i++) {
         var requestedCred = credentialRequests_1[_i];
         if (requestedCred.required) {
             // check that the request credential is present in the presentation
-            var presentationCreds = presentation.verifiableCredentials;
+            var presentationCreds = presentation.verifiableCredential;
             var found = false;
             for (var _a = 0, presentationCreds_1 = presentationCreds; _a < presentationCreds_1.length; _a++) {
                 var presentationCred = presentationCreds_1[_a];
@@ -218,7 +223,7 @@ function validatePresentationMeetsRequestedCredentials(presentation, credentialR
                         logger_1.default.warn(errMessage);
                         throw new error_1.CustError(400, errMessage);
                     }
-                    // TODO can break from inner loop here yeah?
+                    // can break from inner loop because validation has been met.
                     break;
                 }
             }
@@ -251,6 +256,10 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 }
                 data = lodash_1.omit(presentation, 'proof');
                 presentation = validatePresentation(presentation);
+                if (!presentation.verifiableCredential) {
+                    logger_1.default.error('The presentation has undefined verifiableCrednetials attribute, this should have already be checked.');
+                    throw new error_1.CustError(500, 'presentation as an undefined verifiableCredentials'); // this should have already been checked.
+                }
                 // if specific credential requests, then need to confirm the presentation provided meets the requirements
                 if (helpers_1.isArrayNotEmpty(credentialRequests)) {
                     validatePresentationMeetsRequestedCredentials(presentation, credentialRequests);
@@ -306,7 +315,7 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                     return [2 /*return*/, result_3];
                 }
                 areCredentialsValid = true;
-                _i = 0, _a = presentation.verifiableCredentials;
+                _i = 0, _a = presentation.verifiableCredential;
                 _b.label = 2;
             case 2:
                 if (!(_i < _a.length)) return [3 /*break*/, 6];
@@ -350,8 +359,8 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                     return [2 /*return*/, result_4];
                 }
                 isVerified = isPresentationVerified && areCredentialsValid;
-                credentialTypes = presentation.verifiableCredentials.flatMap(function (cred) { return cred.type.slice(1); });
-                issuers = presentation.verifiableCredentials.map(function (cred) { return cred.issuer; });
+                credentialTypes = presentation.verifiableCredential.flatMap(function (cred) { return cred.type.slice(1); });
+                issuers = presentation.verifiableCredential.map(function (cred) { return cred.issuer; });
                 subject = proof.verificationMethod;
                 receiptOptions = {
                     type: ['PresentationVerified'],

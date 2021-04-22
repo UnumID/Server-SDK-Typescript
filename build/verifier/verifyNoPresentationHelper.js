@@ -46,16 +46,16 @@ var config_1 = require("../config");
 var requireAuth_1 = require("../requireAuth");
 var logger_1 = __importDefault(require("../logger"));
 var error_1 = require("../utils/error");
-var didHelper_1 = require("../utils/didHelper");
 var helpers_1 = require("../utils/helpers");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var verify_1 = require("../utils/verify");
+var didHelper_1 = require("../utils/didHelper");
 /**
  * Validates the NoPresentation type to ensure the necessary attributes.
  * @param noPresentation NoPresentation
  */
 exports.validateNoPresentationParams = function (noPresentation) {
-    var type = noPresentation.type, holder = noPresentation.holder, proof = noPresentation.proof, presentationRequestUuid = noPresentation.presentationRequestUuid;
+    var type = noPresentation.type, proof = noPresentation.proof, presentationRequestUuid = noPresentation.presentationRequestUuid, verifiableCredential = noPresentation.verifiableCredential, verifierDid = noPresentation.verifierDid;
     if (!type) {
         throw new error_1.CustError(400, 'Invalid Presentation: type is required.');
     }
@@ -65,17 +65,14 @@ exports.validateNoPresentationParams = function (noPresentation) {
     if (!proof) {
         throw new error_1.CustError(400, 'Invalid Presentation: proof is required.');
     }
-    if (!holder) {
-        throw new error_1.CustError(400, 'Invalid Presentation: holder is required.');
+    if (verifiableCredential) {
+        throw new error_1.CustError(400, 'Invalid Declined Presentation: verifiableCredential must be undefined.'); // this should never happen base on upstream logic
     }
+    // if (!verifierDid) {
+    //   throw new CustError(400, 'Invalid Presentation: verifierDid is required.');
+    // }
     if (!presentationRequestUuid) {
         throw new error_1.CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
-    }
-    if (type[0] !== 'NoPresentation') {
-        throw new error_1.CustError(400, 'Invalid type: first element must be \'NoPresentation\'.');
-    }
-    if (typeof holder !== 'string') {
-        throw new error_1.CustError(400, 'Invalid holder: must be a string.');
     }
     if (typeof presentationRequestUuid !== 'string') {
         throw new error_1.CustError(400, 'Invalid presentationRequestUuid: must be a string.');
@@ -121,7 +118,7 @@ exports.verifyNoPresentationHelper = function (authorization, noPresentation, ve
                 receiptOptions = {
                     type: noPresentation.type,
                     verifier: verifier,
-                    subject: noPresentation.holder,
+                    subject: noPresentation.proof.verificationMethod,
                     data: {
                         isVerified: isVerified
                     }

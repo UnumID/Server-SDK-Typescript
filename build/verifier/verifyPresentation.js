@@ -57,8 +57,9 @@ var logger_1 = __importDefault(require("../logger"));
 var verifyNoPresentationHelper_1 = require("./verifyNoPresentationHelper");
 var verifyPresentationHelper_1 = require("./verifyPresentationHelper");
 var error_1 = require("../utils/error");
-function isPresentation(presentation) {
-    return presentation.type[0] === 'VerifiablePresentation';
+var helpers_1 = require("../utils/helpers");
+function isDeclinedPresentation(presentation) {
+    return helpers_1.isArrayEmpty(presentation.verifiableCredential);
 }
 /**
  * Handler to send information regarding the user agreeing to share a credential Presentation.
@@ -89,7 +90,7 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                 if (presentationRequest && presentationRequest.presentationRequest.uuid !== presentation.presentationRequestUuid) {
                     throw new error_1.CustError(400, "presentation request uuid provided, " + presentationRequest.presentationRequest.uuid + ", does not match the presentationRequestUuid that the presentation was in response to, " + presentation.presentationRequestUuid + ".");
                 }
-                if (!!isPresentation(presentation)) return [3 /*break*/, 2];
+                if (!isDeclinedPresentation(presentation)) return [3 /*break*/, 2];
                 return [4 /*yield*/, verifyNoPresentationHelper_1.verifyNoPresentationHelper(authorization, presentation, verifierDid)];
             case 1:
                 verificationResult_1 = _a.sent();
