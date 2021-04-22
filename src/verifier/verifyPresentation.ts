@@ -1,15 +1,16 @@
 
 import { DecryptedPresentation, PresentationOrNoPresentation, UnumDto, VerifiedStatus } from '../types';
-import { Presentation, CredentialRequest, NoPresentation, PresentationRequestDto, EncryptedData } from '@unumid/types';
+import { Presentation, CredentialRequest, PresentationRequestDto, EncryptedData } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
 import { CryptoError, decrypt } from '@unumid/library-crypto';
 import logger from '../logger';
 import { verifyNoPresentationHelper } from './verifyNoPresentationHelper';
 import { verifyPresentationHelper } from './verifyPresentationHelper';
 import { CustError } from '../utils/error';
+import { isArrayEmpty } from '../utils/helpers';
 
-function isPresentation (presentation: PresentationOrNoPresentation): presentation is Presentation {
-  return presentation.type[0] === 'VerifiablePresentation';
+function isDeclinedPresentation (presentation: Presentation): presentation is Presentation {
+  return isArrayEmpty(presentation.verifiableCredential);
 }
 
 /**
@@ -39,25 +40,26 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
     }
 
     // decrypt the presentation
-    const presentation = <Presentation|NoPresentation> decrypt(encryptionPrivateKey, encryptedPresentation);
+    const presentation = <Presentation> decrypt(encryptionPrivateKey, encryptedPresentation);
 
     if (presentationRequest && presentationRequest.presentationRequest.uuid !== presentation.presentationRequestUuid) {
       throw new CustError(400, `presentation request uuid provided, ${presentationRequest.presentationRequest.uuid}, does not match the presentationRequestUuid that the presentation was in response to, ${presentation.presentationRequestUuid}.`);
     }
 
-    if (!isPresentation(presentation)) {
-      const verificationResult: UnumDto<VerifiedStatus> = await verifyNoPresentationHelper(authorization, presentation, verifierDid);
-      const result: UnumDto<DecryptedPresentation> = {
-        authToken: verificationResult.authToken,
-        body: {
-          ...verificationResult.body,
-          type: 'NoPresentation',
-          presentation: presentation
-        }
-      };
+    const type = isDeclinedPresentation(presentation) ? 'NoPresentation' : 'VerifiablePresentation';
+    // if (isDeclinedPresentation(presentation)) {
+    //   const verificationResult: UnumDto<VerifiedStatus> = await verifyNoPresentationHelper(authorization, presentation, verifierDid);
+    //   const result: UnumDto<DecryptedPresentation> = {
+    //     authToken: verificationResult.authToken,
+    //     body: {
+    //       ...verificationResult.body,
+    //       type: 'NoPresentation',
+    //       presentation: presentation
+    //     }
+    //   };
 
-      return result;
-    }
+    //   return result;
+    // }
 
     const credentialRequests: CredentialRequest[] | undefined = presentationRequest?.presentationRequest.credentialRequests;
     const verificationResult: UnumDto<VerifiedStatus> = await verifyPresentationHelper(authorization, presentation, verifierDid, credentialRequests);
@@ -65,7 +67,8 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
       authToken: verificationResult.authToken,
       body: {
         ...verificationResult.body,
-        type: 'VerifiablePresentation',
+        // type: 'VerifiablePresentation',
+        type,
         presentation: presentation
       }
     };

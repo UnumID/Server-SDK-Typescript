@@ -6,7 +6,6 @@ import { validateProof } from './validateProof';
 import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
 import logger from '../logger';
-import { NoPresentation } from '@unumid/types';
 import { CustError } from '../utils/error';
 import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
 import { isArrayEmpty } from '../utils/helpers';

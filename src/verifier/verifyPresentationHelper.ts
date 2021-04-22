@@ -137,7 +137,7 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
  */
 const validatePresentation = (presentation: Presentation): Presentation => {
   const context = presentation['@context'];
-  const { type, verifiableCredentials, proof, presentationRequestUuid } = presentation;
+  const { type, verifiableCredential, proof, presentationRequestUuid, verifierDid } = presentation;
   let retObj: JSONObj = {};
 
   // validate required fields
@@ -149,16 +149,16 @@ const validatePresentation = (presentation: Presentation): Presentation => {
     throw new CustError(400, 'Invalid Presentation: type is required.');
   }
 
-  if (!verifiableCredentials) {
-    throw new CustError(400, 'Invalid Presentation: verifiableCredentials is required.');
-  }
-
   if (!proof) {
     throw new CustError(400, 'Invalid Presentation: proof is required.');
   }
 
   if (!presentationRequestUuid) {
     throw new CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
+  }
+
+  if (!verifierDid) {
+    throw new CustError(400, 'Invalid Presentation: verifierDid is required.');
   }
 
   if (isArrayEmpty(context)) {
@@ -169,12 +169,14 @@ const validatePresentation = (presentation: Presentation): Presentation => {
     throw new CustError(400, 'Invalid Presentation: type must be a non-empty array.');
   }
 
-  retObj = validateCredentialInput(verifiableCredentials);
-  if (!retObj.valid) {
-    throw new CustError(400, retObj.msg);
-  } else if (retObj.stringifiedCredentials) {
-    // adding the "objectified" vc, which were sent in string format to appease iOS variable keyed object limitation: https://developer.apple.com/forums/thread/100417
-    presentation.verifiableCredentials = retObj.resultantCredentials;
+  if (verifiableCredential) {
+    retObj = validateCredentialInput(verifiableCredential);
+    if (!retObj.valid) {
+      throw new CustError(400, retObj.msg);
+    } else if (retObj.stringifiedCredentials) {
+      // adding the "objectified" vc, which were sent in string format to appease iOS variable keyed object limitation: https://developer.apple.com/forums/thread/100417
+      presentation.verifiableCredential = retObj.resultantCredentials;
+    }
   }
 
   // Check proof object is formatted correctly
@@ -191,10 +193,14 @@ const validatePresentation = (presentation: Presentation): Presentation => {
  * @param credentialRequests CredentialRequest[]
  */
 function validatePresentationMeetsRequestedCredentials (presentation: Presentation, credentialRequests: CredentialRequest[]) {
+  if (!presentation.verifiableCredential) {
+    return; // just skip because this is a declined presentation
+  }
+
   for (const requestedCred of credentialRequests) {
     if (requestedCred.required) {
       // check that the request credential is present in the presentation
-      const presentationCreds:VerifiableCredential[] = presentation.verifiableCredentials;
+      const presentationCreds:VerifiableCredential[] = presentation.verifiableCredential;
       let found = false;
       for (const presentationCred of presentationCreds) {
         // checking required credential types are presents
