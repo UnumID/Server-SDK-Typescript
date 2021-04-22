@@ -22,7 +22,8 @@ export const validateNoPresentationParams = (noPresentation: NoPresentation): vo
     type,
     holder,
     proof,
-    presentationRequestUuid
+    presentationRequestUuid,
+    verifierDid
   } = noPresentation;
 
   if (!type) {
@@ -43,6 +44,10 @@ export const validateNoPresentationParams = (noPresentation: NoPresentation): vo
 
   if (!presentationRequestUuid) {
     throw new CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
+  }
+
+  if (!verifierDid) {
+    throw new CustError(400, 'Invalid Presentation: verifierDid is required.');
   }
 
   if (type[0] !== 'NoPresentation') {
@@ -72,7 +77,19 @@ export const verifyNoPresentationHelper = async (authorization: string, noPresen
 
     validateNoPresentationParams(noPresentation);
 
-    const { proof: { verificationMethod, signatureValue, unsignedValue } } = noPresentation;
+    const { proof: { verificationMethod, signatureValue, unsignedValue }, verifierDid } = noPresentation;
+
+    // validate that the verifier did provided matches the verifier did in the presentation
+    if (verifierDid !== verifier) {
+      const result: UnumDto<VerifiedStatus> = {
+        authToken: authorization,
+        body: {
+          isVerified: false,
+          message: `The presentation was meant for verifier, ${verifierDid}, not the provided verifier, ${verifier}.`
+        }
+      };
+      return result;
+    }
 
     const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, verificationMethod);
 
@@ -94,7 +111,7 @@ export const verifyNoPresentationHelper = async (authorization: string, noPresen
         authToken,
         body: {
           isVerified: false,
-          message: 'Credential signature can not be verified.'
+          message: 'Presentation signature can not be verified.'
         }
       };
       return result;

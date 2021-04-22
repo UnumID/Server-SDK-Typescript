@@ -155,7 +155,7 @@ var validateCredentialInput = function (credentials) {
  */
 var validatePresentation = function (presentation) {
     var context = presentation['@context'];
-    var type = presentation.type, verifiableCredentials = presentation.verifiableCredentials, proof = presentation.proof, presentationRequestUuid = presentation.presentationRequestUuid;
+    var type = presentation.type, verifiableCredentials = presentation.verifiableCredentials, proof = presentation.proof, presentationRequestUuid = presentation.presentationRequestUuid, verifierDid = presentation.verifierDid;
     var retObj = {};
     // validate required fields
     if (!context) {
@@ -172,6 +172,9 @@ var validatePresentation = function (presentation) {
     }
     if (!presentationRequestUuid) {
         throw new error_1.CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
+    }
+    if (!verifierDid) {
+        throw new error_1.CustError(400, 'Invalid Presentation: verifierDid is required.');
     }
     if (helpers_1.isArrayEmpty(context)) {
         throw new error_1.CustError(400, 'Invalid Presentation: @context must be a non-empty array.');
@@ -218,6 +221,8 @@ function validatePresentationMeetsRequestedCredentials(presentation, credentialR
                         logger_1.default.warn(errMessage);
                         throw new error_1.CustError(400, errMessage);
                     }
+                    // can break from inner loop because validation has been met.
+                    break;
                 }
             }
             if (!found) {
@@ -235,7 +240,7 @@ function validatePresentationMeetsRequestedCredentials(presentation, credentialR
  * @param verifier
  */
 exports.verifyPresentationHelper = function (authorization, presentation, verifier, credentialRequests) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, proof, didDocumentResponse, authToken, pubKeyObj, result_1, isPresentationVerified, result_2, result_3, areCredentialsValid, _i, _a, credential, isExpired, isStatusValidResponse, isStatusValid, isVerifiedResponse, isVerified_1, result_4, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, result, error_2;
+    var data, result_1, proof, didDocumentResponse, authToken, pubKeyObj, result_2, isPresentationVerified, result_3, result_4, areCredentialsValid, _i, _a, credential, isExpired, isStatusValidResponse, isStatusValid, isVerifiedResponse, isVerified_1, result_5, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, result, error_2;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -249,6 +254,17 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 }
                 data = lodash_1.omit(presentation, 'proof');
                 presentation = validatePresentation(presentation);
+                // validate that the verifier did provided matches the verifier did in the presentation
+                if (presentation.verifierDid !== verifier) {
+                    result_1 = {
+                        authToken: authorization,
+                        body: {
+                            isVerified: false,
+                            message: "The presentation was meant for verifier, " + presentation.verifierDid + ", not the provided verifier, " + verifier + "."
+                        }
+                    };
+                    return [2 /*return*/, result_1];
+                }
                 // if specific credential requests, then need to confirm the presentation provided meets the requirements
                 if (helpers_1.isArrayNotEmpty(credentialRequests)) {
                     validatePresentationMeetsRequestedCredentials(presentation, credentialRequests);
@@ -263,14 +279,14 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 authToken = networkRequestHelper_1.handleAuthToken(didDocumentResponse);
                 pubKeyObj = didHelper_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 if (pubKeyObj.length === 0) {
-                    result_1 = {
+                    result_2 = {
                         authToken: authToken,
                         body: {
                             isVerified: false,
                             message: 'Public key not found for the DID associated with the proof.verificationMethod'
                         }
                     };
-                    return [2 /*return*/, result_1];
+                    return [2 /*return*/, result_2];
                 }
                 isPresentationVerified = false;
                 try {
@@ -283,24 +299,24 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                     else {
                         logger_1.default.error("Error verifying presentation " + presentation.uuid + " signature", e);
                     }
-                    result_2 = {
+                    result_3 = {
                         authToken: authToken,
                         body: {
                             isVerified: false,
                             message: "Exception verifying presentation signature. " + e.message
                         }
                     };
-                    return [2 /*return*/, result_2];
+                    return [2 /*return*/, result_3];
                 }
                 if (!isPresentationVerified) {
-                    result_3 = {
+                    result_4 = {
                         authToken: authToken,
                         body: {
                             isVerified: false,
                             message: 'Presentation signature can not be verified'
                         }
                     };
-                    return [2 /*return*/, result_3];
+                    return [2 /*return*/, result_4];
                 }
                 areCredentialsValid = true;
                 _i = 0, _a = presentation.verifiableCredentials;
@@ -337,14 +353,14 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 return [3 /*break*/, 2];
             case 6:
                 if (!areCredentialsValid) {
-                    result_4 = {
+                    result_5 = {
                         authToken: authToken,
                         body: {
                             isVerified: false,
                             message: 'Credential signature can not be verified.'
                         }
                     };
-                    return [2 /*return*/, result_4];
+                    return [2 /*return*/, result_5];
                 }
                 isVerified = isPresentationVerified && areCredentialsValid;
                 credentialTypes = presentation.verifiableCredentials.flatMap(function (cred) { return cred.type.slice(1); });

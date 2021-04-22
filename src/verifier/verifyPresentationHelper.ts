@@ -137,7 +137,7 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
  */
 const validatePresentation = (presentation: Presentation): Presentation => {
   const context = presentation['@context'];
-  const { type, verifiableCredentials, proof, presentationRequestUuid } = presentation;
+  const { type, verifiableCredentials, proof, presentationRequestUuid, verifierDid } = presentation;
   let retObj: JSONObj = {};
 
   // validate required fields
@@ -159,6 +159,10 @@ const validatePresentation = (presentation: Presentation): Presentation => {
 
   if (!presentationRequestUuid) {
     throw new CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
+  }
+
+  if (!verifierDid) {
+    throw new CustError(400, 'Invalid Presentation: verifierDid is required.');
   }
 
   if (isArrayEmpty(context)) {
@@ -209,6 +213,9 @@ function validatePresentationMeetsRequestedCredentials (presentation: Presentati
             logger.warn(errMessage);
             throw new CustError(400, errMessage);
           }
+
+          // can break from inner loop because validation has been met.
+          break;
         }
       }
 
@@ -241,6 +248,18 @@ export const verifyPresentationHelper = async (authorization: string, presentati
 
     const data = omit(presentation, 'proof'); // Note: important that this data variable is created prior to the validation thanks to validatePresentation taking potentially stringified VerifiableCredentials objects array and converting them to proper objects.
     presentation = validatePresentation(presentation);
+
+    // validate that the verifier did provided matches the verifier did in the presentation
+    if (presentation.verifierDid !== verifier) {
+      const result: UnumDto<VerifiedStatus> = {
+        authToken: authorization,
+        body: {
+          isVerified: false,
+          message: `The presentation was meant for verifier, ${presentation.verifierDid}, not the provided verifier, ${verifier}.`
+        }
+      };
+      return result;
+    }
 
     // if specific credential requests, then need to confirm the presentation provided meets the requirements
     if (isArrayNotEmpty(credentialRequests)) {
