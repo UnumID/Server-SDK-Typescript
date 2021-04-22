@@ -13,10 +13,57 @@ import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
 import { configData } from '../config';
 import { doVerify } from '../utils/verify';
 import { handleAuthToken } from '../utils/networkRequestHelper';
+import { validateProof } from './validateProof';
 
 function isDeclinedPresentation (presentation: Presentation): presentation is Presentation {
   return isArrayEmpty(presentation.verifiableCredential);
 }
+
+/**
+ * Validates the presentation object has the proper attributes.
+ * @param presentation Presentation
+ */
+const validatePresentation = (presentation: Presentation): void => {
+  const context = presentation['@context'];
+  const { type, proof, presentationRequestUuid, verifierDid } = presentation;
+  // const retObj: JSONObj = {};
+
+  // validate required fields
+  if (!context) {
+    throw new CustError(400, 'Invalid Presentation: @context is required.');
+  }
+
+  if (!type) {
+    throw new CustError(400, 'Invalid Presentation: type is required.');
+  }
+
+  if (!proof) {
+    throw new CustError(400, 'Invalid Presentation: proof is required.');
+  }
+
+  if (!presentationRequestUuid) {
+    throw new CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
+  }
+
+  // if (!verifiableCredential || isArrayEmpty(verifiableCredential)) {
+  //   throw new CustError(400, 'Invalid Presentation: verifiableCredentials must be a non-empty array.');
+  // }
+
+  if (!verifierDid) {
+    throw new CustError(400, 'Invalid Presentation: verifierDid is required.');
+  }
+
+  if (isArrayEmpty(context)) {
+    throw new CustError(400, 'Invalid Presentation: @context must be a non-empty array.');
+  }
+
+  if (isArrayEmpty(type)) {
+    throw new CustError(400, 'Invalid Presentation: type must be a non-empty array.');
+  }
+
+  // Check proof object is formatted correctly
+  validateProof(proof);
+};
 
 /**
  * Verify the PresentationRequest signature as a way to side step verifier MITM attacks where an entity spoofs requests.
@@ -86,6 +133,9 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
 
     // decrypt the presentation
     const presentation = <Presentation> decrypt(encryptionPrivateKey, encryptedPresentation);
+
+    // validate presentation
+    validatePresentation(presentation);
 
     // verify the presentation request uuid match
     if (presentationRequest && presentationRequest.presentationRequest.uuid !== presentation.presentationRequestUuid) {

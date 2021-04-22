@@ -6,7 +6,7 @@ import { checkCredentialStatus } from '../../src/verifier/checkCredentialStatus'
 import { dummyAuthToken, dummyEccPrivateKey, dummyIssuerDid, makeDummyDidDocument } from './mocks';
 import { sign } from '@unumid/library-crypto';
 import stringify from 'fast-json-stable-stringify';
-import { verifyPresentationHelper as verifyPresentation } from '../../src/verifier/verifyPresentationHelper';
+import { verifyPresentationHelper as verifyPresentation, verifyPresentationHelper } from '../../src/verifier/verifyPresentationHelper';
 import { CredentialRequest } from '@unumid/types';
 import { JSONObj } from '../../src/types';
 import { getDIDDoc } from '../../src/utils/didHelper';
@@ -45,17 +45,17 @@ const mockGetDIDDoc = getDIDDoc as jest.Mock;
 const mockDoVerify = doVerify as jest.Mock;
 const mockMakeNetworkRequest = makeNetworkRequest as jest.Mock;
 
-const callVerifyPresentation = (context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, auth = '', credentialRequests): Promise<UnumDto<VerifiedStatus>> => {
+const callVerifyPresentation = (context, type, verifiableCredential, presentationRequestUuid, proof, verifier, auth = '', credentialRequests): Promise<UnumDto<VerifiedStatus>> => {
   const presentation: Presentation = {
     '@context': context,
     type,
-    verifiableCredentials,
+    verifiableCredential,
     presentationRequestUuid,
     verifierDid: verifier,
     proof,
     uuid: 'a'
   };
-  return verifyPresentation(auth, presentation, verifier, credentialRequests);
+  return verifyPresentationHelper(auth, presentation, verifier, credentialRequests);
 };
 
 const copyCredentialObj = (credential: JSONObj, elemName: string, elemValue = ''): JSONObj => {
@@ -172,7 +172,7 @@ const populateMockData = (): JSONObj => {
   });
 };
 
-describe('verifyPresentation - Success Scenario with verifiableCredentialsString', () => {
+describe('verifyPresentationHelper - Success Scenario with verifiableCredentialsString', () => {
   let response: UnumDto<VerifiedStatus>;
   let verStatus: boolean;
 
@@ -244,7 +244,7 @@ describe('verifyPresentation - Success Scenario with verifiableCredentialsString
   });
 });
 
-describe('verifyPresentation - Success Scenario', () => {
+describe('verifyPresentationHelper - Success Scenario', () => {
   let response: UnumDto<VerifiedStatus>;
   let verStatus: boolean;
 
@@ -316,7 +316,7 @@ describe('verifyPresentation - Success Scenario', () => {
   });
 });
 
-describe('verifyPresentation - Failure Scenarios', () => {
+describe('verifyPresentationHelper - Failure Scenarios', () => {
   let response: UnumDto<VerifiedStatus>;
   let verStatus: boolean;
   const { context, type, verifiableCredential, presentationRequestUuid, proof, invalidProof, authHeader, verifier, credentialRequests } = populateMockData();
@@ -388,7 +388,7 @@ describe('verifyPresentation - Failure Scenarios', () => {
     const presentation: Presentation = {
       '@context': context,
       type,
-      verifiableCredentials: verifiableCredential,
+      verifiableCredential,
       presentationRequestUuid,
       verifierDid: verifier,
       proof,
@@ -402,7 +402,7 @@ describe('verifyPresentation - Failure Scenarios', () => {
   });
 });
 
-describe('verifyPresentation - Validation Failures', () => {
+describe('verifyPresentationHelper - Validation Failures', () => {
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier, credentialRequests } = populateMockData();
 
   it('returns a 400 status code with a descriptive error message when @context is missing', async () => {
@@ -431,7 +431,7 @@ describe('verifyPresentation - Validation Failures', () => {
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid Presentation: verifiableCredentials is required.');
+      expect(e.message).toBe('Invalid Presentation: verifiableCredential must be a non-empty array.');
     }
   });
 
@@ -495,23 +495,23 @@ describe('verifyPresentation - Validation Failures', () => {
     }
   });
 
-  it('returns a 400 status code with a descriptive error message when verifiableCredentials is not an array', async () => {
+  it('returns a 400 status code with a descriptive error message when verifiableCredential is not an array', async () => {
     try {
       await callVerifyPresentation(context, type, 'verifiableCredential', presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid Presentation: verifiableCredentials must be a non-empty array.');
+      expect(e.message).toBe('Invalid Presentation: verifiableCredential must be a non-empty array.');
     }
   });
 
   it('returns a 400 status code with a descriptive error message when verifiableCredentials array is empty', async () => {
     try {
-      await callVerifyPresentation(context, type, [], presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
+      await callVerifyPresentation(context, type, undefined, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid Presentation: verifiableCredentials must be a non-empty array.');
+      expect(e.message).toBe('Invalid Presentation: verifiableCredential must be a non-empty array.');
     }
   });
 
@@ -662,7 +662,7 @@ describe('verifyPresentation credential matches requests', () => {
   });
 });
 
-describe('verifyPresentation - Validation for proof object', () => {
+describe('verifyPresentationHelper - Validation for proof object', () => {
   const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier, credentialRequests } = populateMockData();
 
   it('returns a 400 status code with a descriptive error message when created is missing', async () => {

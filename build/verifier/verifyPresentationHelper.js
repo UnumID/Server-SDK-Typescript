@@ -62,7 +62,7 @@ var validateCredentialInput = function (credentials) {
     var retObj = { valid: true, stringifiedCredentials: false, resultantCredentials: [] };
     if (helpers_1.isArrayEmpty(credentials)) {
         retObj.valid = false;
-        retObj.msg = 'Invalid Presentation: verifiableCredentials must be a non-empty array.';
+        retObj.msg = 'Invalid Presentation: verifiableCredential must be a non-empty array.';
         return (retObj);
     }
     var totCred = credentials.length;
@@ -170,6 +170,9 @@ var validatePresentation = function (presentation) {
     if (!presentationRequestUuid) {
         throw new error_1.CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
     }
+    if (!verifiableCredential || helpers_1.isArrayEmpty(verifiableCredential)) {
+        throw new error_1.CustError(400, 'Invalid Presentation: verifiableCredential must be a non-empty array.'); // it should never make it here, ought to be in the NoPresentationHelper
+    }
     if (!verifierDid) {
         throw new error_1.CustError(400, 'Invalid Presentation: verifierDid is required.');
     }
@@ -179,15 +182,13 @@ var validatePresentation = function (presentation) {
     if (helpers_1.isArrayEmpty(type)) {
         throw new error_1.CustError(400, 'Invalid Presentation: type must be a non-empty array.');
     }
-    if (verifiableCredential) {
-        retObj = validateCredentialInput(verifiableCredential);
-        if (!retObj.valid) {
-            throw new error_1.CustError(400, retObj.msg);
-        }
-        else if (retObj.stringifiedCredentials) {
-            // adding the "objectified" vc, which were sent in string format to appease iOS variable keyed object limitation: https://developer.apple.com/forums/thread/100417
-            presentation.verifiableCredential = retObj.resultantCredentials;
-        }
+    retObj = validateCredentialInput(verifiableCredential);
+    if (!retObj.valid) {
+        throw new error_1.CustError(400, retObj.msg);
+    }
+    else if (retObj.stringifiedCredentials) {
+        // adding the "objectified" vc, which were sent in string format to appease iOS variable keyed object limitation: https://developer.apple.com/forums/thread/100417
+        presentation.verifiableCredential = retObj.resultantCredentials;
     }
     // Check proof object is formatted correctly
     validateProof_1.validateProof(proof);

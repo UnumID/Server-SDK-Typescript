@@ -65,9 +65,6 @@ exports.validateNoPresentationParams = function (noPresentation) {
     if (!proof) {
         throw new error_1.CustError(400, 'Invalid Presentation: proof is required.');
     }
-    if (verifiableCredential) {
-        throw new error_1.CustError(400, 'Invalid Declined Presentation: verifiableCredential must be undefined.'); // this should never happen base on upstream logic
-    }
     if (!verifierDid) {
         throw new error_1.CustError(400, 'Invalid Presentation: verifierDid is required.');
     }
@@ -76,6 +73,9 @@ exports.validateNoPresentationParams = function (noPresentation) {
     }
     if (typeof presentationRequestUuid !== 'string') {
         throw new error_1.CustError(400, 'Invalid presentationRequestUuid: must be a string.');
+    }
+    if (verifiableCredential || helpers_1.isArrayNotEmpty(verifiableCredential)) {
+        throw new error_1.CustError(400, 'Invalid Declined Presentation: verifiableCredential must be undefined or empty.'); // this should never happen base on upstream logic
     }
     validateProof_1.validateProof(proof);
 };

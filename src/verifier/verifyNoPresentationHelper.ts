@@ -7,7 +7,7 @@ import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
 import logger from '../logger';
 import { CustError } from '../utils/error';
-import { isArrayEmpty } from '../utils/helpers';
+import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
 import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
 import { Presentation } from '@unumid/types';
@@ -38,10 +38,6 @@ export const validateNoPresentationParams = (noPresentation: Presentation): void
     throw new CustError(400, 'Invalid Presentation: proof is required.');
   }
 
-  if (verifiableCredential) {
-    throw new CustError(400, 'Invalid Declined Presentation: verifiableCredential must be undefined.'); // this should never happen base on upstream logic
-  }
-
   if (!verifierDid) {
     throw new CustError(400, 'Invalid Presentation: verifierDid is required.');
   }
@@ -52,6 +48,10 @@ export const validateNoPresentationParams = (noPresentation: Presentation): void
 
   if (typeof presentationRequestUuid !== 'string') {
     throw new CustError(400, 'Invalid presentationRequestUuid: must be a string.');
+  }
+
+  if (verifiableCredential || isArrayNotEmpty(verifiableCredential)) {
+    throw new CustError(400, 'Invalid Declined Presentation: verifiableCredential must be undefined or empty.'); // this should never happen base on upstream logic
   }
 
   validateProof(proof);

@@ -25,7 +25,7 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
 
   if (isArrayEmpty(credentials)) {
     retObj.valid = false;
-    retObj.msg = 'Invalid Presentation: verifiableCredentials must be a non-empty array.';
+    retObj.msg = 'Invalid Presentation: verifiableCredential must be a non-empty array.';
 
     return (retObj);
   }
@@ -157,6 +157,10 @@ const validatePresentation = (presentation: Presentation): Presentation => {
     throw new CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
   }
 
+  if (!verifiableCredential || isArrayEmpty(verifiableCredential)) {
+    throw new CustError(400, 'Invalid Presentation: verifiableCredential must be a non-empty array.'); // it should never make it here, ought to be in the NoPresentationHelper
+  }
+
   if (!verifierDid) {
     throw new CustError(400, 'Invalid Presentation: verifierDid is required.');
   }
@@ -169,14 +173,12 @@ const validatePresentation = (presentation: Presentation): Presentation => {
     throw new CustError(400, 'Invalid Presentation: type must be a non-empty array.');
   }
 
-  if (verifiableCredential) {
-    retObj = validateCredentialInput(verifiableCredential);
-    if (!retObj.valid) {
-      throw new CustError(400, retObj.msg);
-    } else if (retObj.stringifiedCredentials) {
-      // adding the "objectified" vc, which were sent in string format to appease iOS variable keyed object limitation: https://developer.apple.com/forums/thread/100417
-      presentation.verifiableCredential = retObj.resultantCredentials;
-    }
+  retObj = validateCredentialInput(verifiableCredential);
+  if (!retObj.valid) {
+    throw new CustError(400, retObj.msg);
+  } else if (retObj.stringifiedCredentials) {
+    // adding the "objectified" vc, which were sent in string format to appease iOS variable keyed object limitation: https://developer.apple.com/forums/thread/100417
+    presentation.verifiableCredential = retObj.resultantCredentials;
   }
 
   // Check proof object is formatted correctly
