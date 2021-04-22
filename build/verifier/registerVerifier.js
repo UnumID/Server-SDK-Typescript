@@ -46,6 +46,7 @@ var __1 = require("..");
 var createKeyPairs_1 = require("../utils/createKeyPairs");
 var helpers_1 = require("../utils/helpers");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
+var semver_1 = require("semver");
 /**
  * Creates an object to encapsulate key information.
  * @param kp KeyPair
@@ -96,7 +97,7 @@ var validateInParams = function (name, customerUuid, url, apiKey) {
  * @param apiKey
  */
 exports.registerVerifier = function (name, customerUuid, url, apiKey) { return __awaiter(void 0, void 0, void 0, function () {
-    var kpSet, verifierOpt, restData, restResp, authToken, verifierResp, error_1;
+    var kpSet, verifierOpt, restData, restResp, authToken, verifierVersionInfo, verifierResp, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -117,6 +118,17 @@ exports.registerVerifier = function (name, customerUuid, url, apiKey) { return _
             case 2:
                 restResp = _a.sent();
                 authToken = networkRequestHelper_1.handleAuthToken(restResp);
+                verifierVersionInfo = [{
+                        target: {
+                            version: '2.0.0'
+                        },
+                        sdkVersion: new semver_1.SemVer('2.0.0') // server sdk
+                    }, {
+                        target: {
+                            url: "" + url // dummy value
+                        },
+                        sdkVersion: new semver_1.SemVer('1.0.0') // server sdk
+                    }];
                 verifierResp = {
                     authToken: authToken,
                     body: {
@@ -128,7 +140,8 @@ exports.registerVerifier = function (name, customerUuid, url, apiKey) { return _
                         updatedAt: restResp.body.updatedAt,
                         isAuthorized: restResp.body.isAuthorized,
                         keys: kpSet,
-                        url: url
+                        url: url,
+                        versionInfo: verifierVersionInfo
                     }
                 };
                 return [2 /*return*/, verifierResp];

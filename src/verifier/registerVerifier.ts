@@ -1,11 +1,12 @@
 import { configData } from '../config';
 import { JSONObj, KeyPairSet, RegisteredVerifier, RESTData, UnumDto } from '../types';
 import logger from '../logger';
-import { DidKeyType, KeyPair, PublicKeyInfo, VerifierOptions } from '@unumid/types';
+import { DidKeyType, KeyPair, PublicKeyInfo, VerifierOptions, VersionInfo } from '@unumid/types';
 import { CustError } from '..';
 import { createKeyPairSet } from '../utils/createKeyPairs';
 import { getUUID } from '../utils/helpers';
 import { makeNetworkRequest, handleAuthToken } from '../utils/networkRequestHelper';
+import { SemVer } from 'semver';
 
 /**
  * Creates an object to encapsulate key information.
@@ -81,6 +82,19 @@ export const registerVerifier = async (name: string, customerUuid: string, url: 
 
     const authToken: string = handleAuthToken(restResp);
 
+    // TODO add to params
+    const verifierVersionInfo: VersionInfo[] = [{
+      target: {
+        version: '2.0.0'
+      },
+      sdkVersion: new SemVer('2.0.0') // server sdk
+    }, {
+      target: {
+        url: `${url}` // dummy value
+      },
+      sdkVersion: new SemVer('1.0.0') // server sdk
+    }];
+
     const verifierResp: UnumDto<RegisteredVerifier> = {
       authToken,
       body: {
@@ -92,7 +106,8 @@ export const registerVerifier = async (name: string, customerUuid: string, url: 
         updatedAt: restResp.body.updatedAt,
         isAuthorized: restResp.body.isAuthorized,
         keys: kpSet,
-        url
+        url,
+        versionInfo: verifierVersionInfo
       }
     };
 
