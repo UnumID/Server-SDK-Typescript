@@ -254,7 +254,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
     presentation = validatePresentation(presentation);
 
     if (!presentation.verifiableCredential) {
-      logger.error('The presentation has undefined verifiableCrednetials attribute, this should have already be checked.');
+      logger.error('The presentation has undefined verifiableCredential attribute, this should have already be checked.');
       throw new CustError(500, 'presentation as an undefined verifiableCredentials'); // this should have already been checked.
     }
 

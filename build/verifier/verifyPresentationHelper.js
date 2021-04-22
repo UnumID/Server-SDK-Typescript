@@ -258,7 +258,7 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 data = lodash_1.omit(presentation, 'proof');
                 presentation = validatePresentation(presentation);
                 if (!presentation.verifiableCredential) {
-                    logger_1.default.error('The presentation has undefined verifiableCrednetials attribute, this should have already be checked.');
+                    logger_1.default.error('The presentation has undefined verifiableCredential attribute, this should have already be checked.');
                     throw new error_1.CustError(500, 'presentation as an undefined verifiableCredentials'); // this should have already been checked.
                 }
                 // validate that the verifier did provided matches the verifier did in the presentation
