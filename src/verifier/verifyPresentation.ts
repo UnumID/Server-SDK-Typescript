@@ -1,5 +1,5 @@
 
-import { DecryptedPresentation, PresentationOrNoPresentation, UnumDto, VerifiedStatus } from '../types';
+import { DecryptedPresentation, UnumDto, VerifiedStatus } from '../types';
 import { Presentation, CredentialRequest, PresentationRequestDto, EncryptedData, PresentationRequest } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
 import { CryptoError, decrypt } from '@unumid/library-crypto';
