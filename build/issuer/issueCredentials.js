@@ -127,7 +127,7 @@ var constructUnsignedCredentialObj = function (credOpts) {
             id: config_1.configData.SaaSUrl + "/credentialStatus/" + credentialId,
             type: 'CredentialStatus'
         },
-        credentialSubject: credOpts.credentialSubject,
+        credentialSubject: JSON.stringify(credOpts.credentialSubject),
         issuer: credOpts.issuer,
         type: __spreadArrays(['VerifiableCredential'], credOpts.type),
         id: credentialId,
@@ -218,7 +218,7 @@ exports.issueCredential = function (authorization, type, issuer, credentialSubje
                 encryptedCredentialOptions = _a.sent();
                 encryptedCredentialUploadOptions = {
                     credentialId: credential.id,
-                    subject: credential.credentialSubject.id,
+                    subject: credentialSubject.id,
                     issuer: credential.issuer,
                     type: credential.type,
                     encryptedCredentials: encryptedCredentialOptions

@@ -6,11 +6,12 @@ import { omit } from 'lodash';
  * Handler to convert the JSON representation of the CredentialSubject into a Typescript interface, CredentialSubject
  */
 // export const convertCredentialSubject = (input: JSON): CredentialSubject => {
-export const convertCredentialSubject = (input: JSONObj): CredentialSubject => {
-  const claims = omit(input, 'id');
+export const convertCredentialSubject = (input: string): CredentialSubject => {
+  const obj = JSON.parse(input);
+  const claims = omit(obj, 'id');
 
   const result: CredentialSubject = {
-    id: input.id,
+    id: obj.id,
     ...claims
   };
 

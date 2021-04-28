@@ -810,7 +810,7 @@
 
 "@unumid/types@https://github.com/UnumID/types.git#2.0.0-beta":
   version "1.5.1"
-  resolved "https://github.com/UnumID/types.git#d915600ebbc818dad4379a3a6afc816e760b9e09"
+  resolved "https://github.com/UnumID/types.git#0a8341a2c9179b65492cf2761d442671a58dc3be"
   dependencies:
     runtypes "^6.0.0"
     semver "^7.3.5"

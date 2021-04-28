@@ -85,7 +85,7 @@ const constructUnsignedCredentialObj = (credOpts: CredentialOptions): UnsignedCr
       id: `${configData.SaaSUrl}/credentialStatus/${credentialId}`,
       type: 'CredentialStatus'
     },
-    credentialSubject: credOpts.credentialSubject,
+    credentialSubject: JSON.stringify(credOpts.credentialSubject), // Converting the CredentialSubject type to a string for passing to holder. Really so iOS can handle it as a concrete type instead of a map of unknown keys.
     issuer: credOpts.issuer,
     type: ['VerifiableCredential', ...credOpts.type],
     id: credentialId,
@@ -195,7 +195,7 @@ export const issueCredential = async (authorization: string | undefined, type: s
 
     const encryptedCredentialUploadOptions = {
       credentialId: credential.id,
-      subject: credential.credentialSubject.id,
+      subject: credentialSubject.id,
       issuer: credential.issuer,
       type: credential.type,
       encryptedCredentials: encryptedCredentialOptions

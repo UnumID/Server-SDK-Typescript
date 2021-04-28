@@ -18,8 +18,9 @@ var lodash_1 = require("lodash");
  */
 // export const convertCredentialSubject = (input: JSON): CredentialSubject => {
 exports.convertCredentialSubject = function (input) {
-    var claims = lodash_1.omit(input, 'id');
-    var result = __assign({ id: input.id }, claims);
+    var obj = JSON.parse(input);
+    var claims = lodash_1.omit(obj, 'id');
+    var result = __assign({ id: obj.id }, claims);
     return result;
 };
 //# sourceMappingURL=convertCredentialSubject.js.map
