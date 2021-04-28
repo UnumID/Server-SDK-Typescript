@@ -1,12 +1,11 @@
 import { configData } from '../config';
-import { JSONObj, KeyPairSet, RegisteredVerifier, RESTData, UnumDto } from '../types';
+import { KeyPairSet, RegisteredVerifier, RESTData, UnumDto } from '../types';
 import logger from '../logger';
-import { DidKeyType, KeyPair, PublicKeyInfo, VerifierOptions, VersionInfo } from '@unumid/types';
+import { DidKeyType, KeyPair, PublicKeyInfo, VerifierOptions, VersionInfo, JSONObj } from '@unumid/types';
 import { CustError } from '..';
 import { createKeyPairSet } from '../utils/createKeyPairs';
 import { getUUID } from '../utils/helpers';
 import { makeNetworkRequest, handleAuthToken } from '../utils/networkRequestHelper';
-import { SemVer } from 'semver';
 
 /**
  * Creates an object to encapsulate key information.

@@ -44,7 +44,7 @@
     "@types/semver": "^7.3.4",
     "@types/uuid": "^8.3.0",
     "@unumid/library-crypto": "https://github.com/UnumID/Library-Crypto-TypeScript.git#v1.2.0",
-    "@unumid/types": "https://github.com/UnumID/types.git#2.0.0-alpha2",
+    "@unumid/types": "https://github.com/UnumID/types.git#2.0.0-beta",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "fast-json-stable-stringify": "^2.1.0",

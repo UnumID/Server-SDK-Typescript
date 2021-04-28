@@ -1,5 +1,5 @@
 import logger from '../logger';
-import { JSONObj } from '../types';
+import { JSONObj } from '@unumid/types';
 import { verify, verifyString } from '@unumid/library-crypto';
 import { isEqual } from 'lodash';
 

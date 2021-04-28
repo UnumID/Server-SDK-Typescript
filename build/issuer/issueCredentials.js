@@ -56,17 +56,19 @@ var createProof_1 = require("../utils/createProof");
 var helpers_1 = require("../utils/helpers");
 var error_1 = require("../utils/error");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
+var convertCredentialSubject_1 = require("../utils/convertCredentialSubject");
 /**
  * Creates an object of type EncryptedCredentialOptions which encapsulates information relating to the encrypted credential data
  * @param cred Credential
  * @param authorization String
  */
 var constructEncryptedCredentialOpts = function (cred, authorization) { return __awaiter(void 0, void 0, void 0, function () {
-    var subjectDid, didDocResponse, publicKeyInfos;
+    var credentialSubject, subjectDid, didDocResponse, publicKeyInfos;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                subjectDid = cred.credentialSubject.id;
+                credentialSubject = convertCredentialSubject_1.convertCredentialSubject(cred.credentialSubject);
+                subjectDid = credentialSubject.id;
                 return [4 /*yield*/, didHelper_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, subjectDid)];
             case 1:
                 didDocResponse = _a.sent();

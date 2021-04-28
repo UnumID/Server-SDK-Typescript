@@ -1,8 +1,8 @@
 import { omit } from 'lodash';
 
 import { configData } from '../config';
-import { CredentialStatusInfo, JSONObj, RESTData, UnumDto, VerifiedStatus } from '../types';
-import { Presentation, VerifiableCredential, CredentialRequest, Proof, PublicKeyInfo } from '@unumid/types';
+import { CredentialStatusInfo, RESTData, UnumDto, VerifiedStatus } from '../types';
+import { Presentation, Credential, CredentialRequest, Proof, PublicKeyInfo, JSONObj } from '@unumid/types';
 import { validateProof } from './validateProof';
 import { requireAuth } from '../requireAuth';
 import { verifyCredential } from './verifyCredential';
@@ -40,8 +40,8 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
       credential = JSON.parse(credential);
     }
 
-    // Validate the existence of elements in verifiableCredential object
-    const invalidMsg = `Invalid verifiableCredentials${credPosStr}:`;
+    // Validate the existence of elements in Credential object
+    const invalidMsg = `Invalid verifiableCredential${credPosStr}:`;
     if (!credential['@context']) {
       retObj.valid = false;
       retObj.msg = `${invalidMsg} @context is required.`;
@@ -202,7 +202,7 @@ function validatePresentationMeetsRequestedCredentials (presentation: Presentati
   for (const requestedCred of credentialRequests) {
     if (requestedCred.required) {
       // check that the request credential is present in the presentation
-      const presentationCreds:VerifiableCredential[] = presentation.verifiableCredential;
+      const presentationCreds:Credential[] = presentation.verifiableCredential;
       let found = false;
       for (const presentationCred of presentationCreds) {
         // checking required credential types are presents

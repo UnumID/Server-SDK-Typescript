@@ -14,12 +14,12 @@ export interface KeyPairSet {
  */
 export type JSONStr = any;
 
-/**
- * Interface to encapsulate a JSON object with unknown keys
- */
-export interface JSONObj {
-  [key: string]: any;
-}
+// /**
+//  * Interface to encapsulate a JSON object with unknown keys
+//  */
+// export interface JSONObj {
+//   [key: string]: any;
+// }
 
 /**
  * Interface to encapsulate all necessary information for a network request.

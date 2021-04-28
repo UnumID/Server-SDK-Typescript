@@ -1,9 +1,9 @@
 import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
 
-import { JSONObj, RESTData, UnumDto } from '../types';
+import { RESTData, UnumDto } from '../types';
 import logger from '../logger';
-import { CredentialStatusOptions, _CredentialStatusOptions } from '@unumid/types';
+import { CredentialStatusOptions, JSONObj, _CredentialStatusOptions } from '@unumid/types';
 import { CustError } from '../utils/error';
 import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
 

@@ -1,5 +1,4 @@
-import { EncryptedData, PublicKeyInfo } from '@unumid/types';
-import { JSONObj } from '../types';
+import { EncryptedData, JSONObj, PublicKeyInfo } from '@unumid/types';
 /**
  * Encrypt the provided data object.
  * @param did

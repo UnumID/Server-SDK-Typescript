@@ -73,8 +73,8 @@ var validateCredentialInput = function (credentials) {
             retObj.stringifiedCredentials = true; // setting so know to add the object version of the stringified vc's
             credential = JSON.parse(credential);
         }
-        // Validate the existence of elements in verifiableCredential object
-        var invalidMsg = "Invalid verifiableCredentials" + credPosStr + ":";
+        // Validate the existence of elements in Credential object
+        var invalidMsg = "Invalid verifiableCredential" + credPosStr + ":";
         if (!credential['@context']) {
             retObj.valid = false;
             retObj.msg = invalidMsg + " @context is required.";

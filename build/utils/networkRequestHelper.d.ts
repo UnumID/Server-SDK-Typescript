@@ -1,4 +1,5 @@
-import { JSONObj, RESTData, RESTResponse } from '../types';
+import { RESTData, RESTResponse } from '../types';
+import { JSONObj } from '@unumid/types';
 /**
  * Helper to handle network requests.
  * @param inputObj

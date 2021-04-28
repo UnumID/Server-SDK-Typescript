@@ -1,4 +1,4 @@
-import { JSONObj } from '../types';
+import { JSONObj } from '@unumid/types';
 import { CustError } from '../utils/error';
 
 /**

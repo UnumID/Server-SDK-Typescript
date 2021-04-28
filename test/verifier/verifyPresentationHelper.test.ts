@@ -537,7 +537,7 @@ describe('verifyPresentation - Validation for verifiableCredential object', () =
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid verifiableCredentials[0]: @context is required.');
+      expect(e.message).toBe('Invalid verifiableCredential[0]: @context is required.');
     }
   });
 
@@ -548,7 +548,7 @@ describe('verifyPresentation - Validation for verifiableCredential object', () =
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid verifiableCredentials[0]: credentialStatus is required.');
+      expect(e.message).toBe('Invalid verifiableCredential[0]: credentialStatus is required.');
     }
   });
 
@@ -559,7 +559,7 @@ describe('verifyPresentation - Validation for verifiableCredential object', () =
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid verifiableCredentials[0]: credentialSubject is required.');
+      expect(e.message).toBe('Invalid verifiableCredential[0]: credentialSubject is required.');
     }
   });
 
@@ -570,7 +570,7 @@ describe('verifyPresentation - Validation for verifiableCredential object', () =
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid verifiableCredentials[0]: issuer is required.');
+      expect(e.message).toBe('Invalid verifiableCredential[0]: issuer is required.');
     }
   });
 
@@ -581,7 +581,7 @@ describe('verifyPresentation - Validation for verifiableCredential object', () =
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid verifiableCredentials[0]: type is required.');
+      expect(e.message).toBe('Invalid verifiableCredential[0]: type is required.');
     }
   });
 
@@ -592,7 +592,7 @@ describe('verifyPresentation - Validation for verifiableCredential object', () =
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid verifiableCredentials[0]: id is required.');
+      expect(e.message).toBe('Invalid verifiableCredential[0]: id is required.');
     }
   });
 
@@ -603,7 +603,7 @@ describe('verifyPresentation - Validation for verifiableCredential object', () =
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid verifiableCredentials[0]: issuanceDate is required.');
+      expect(e.message).toBe('Invalid verifiableCredential[0]: issuanceDate is required.');
     }
   });
 
@@ -614,7 +614,7 @@ describe('verifyPresentation - Validation for verifiableCredential object', () =
       fail();
     } catch (e) {
       expect(e.code).toBe(400);
-      expect(e.message).toBe('Invalid verifiableCredentials[0]: proof is required.');
+      expect(e.message).toBe('Invalid verifiableCredential[0]: proof is required.');
     }
   });
 });

@@ -1,7 +1,7 @@
 
 import { omit } from 'lodash';
 
-import { JSONObj, RESTData, UnumDto, VerifiedStatus } from '../types';
+import { RESTData, UnumDto, VerifiedStatus } from '../types';
 import { validateProof } from './validateProof';
 import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
@@ -10,7 +10,7 @@ import { CustError } from '../utils/error';
 import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
 import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
-import { Presentation } from '@unumid/types';
+import { Presentation, JSONObj } from '@unumid/types';
 import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
 
 /**

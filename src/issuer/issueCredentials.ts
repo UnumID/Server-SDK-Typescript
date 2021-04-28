@@ -1,7 +1,7 @@
 import { configData } from '../config';
-import { CredentialOptions, JSONObj, RESTData, UnumDto } from '../types';
+import { CredentialOptions, RESTData, UnumDto } from '../types';
 import { requireAuth } from '../requireAuth';
-import { CredentialSubject, EncryptedCredentialOptions, EncryptedData, Proof, UnsignedCredential, Credential } from '@unumid/types';
+import { CredentialSubject, EncryptedCredentialOptions, EncryptedData, Proof, UnsignedCredential, Credential, JSONObj } from '@unumid/types';
 
 import logger from '../logger';
 import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
@@ -10,6 +10,7 @@ import { createProof } from '../utils/createProof';
 import { getUUID } from '../utils/helpers';
 import { CustError } from '../utils/error';
 import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
+import { convertCredentialSubject } from '../utils/convertCredentialSubject';
 
 /**
  * Creates an object of type EncryptedCredentialOptions which encapsulates information relating to the encrypted credential data
@@ -17,7 +18,8 @@ import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelp
  * @param authorization String
  */
 const constructEncryptedCredentialOpts = async (cred: Credential, authorization: string): Promise<EncryptedCredentialOptions[]> => {
-  const subjectDid = cred.credentialSubject.id;
+  const credentialSubject: CredentialSubject = convertCredentialSubject(cred.credentialSubject);
+  const subjectDid = credentialSubject.id;
 
   // resolve the subject's DID
   const didDocResponse = await getDIDDoc(configData.SaaSUrl, authorization, subjectDid);

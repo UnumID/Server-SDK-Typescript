@@ -5,7 +5,7 @@ import { omit } from 'lodash';
 import { UnumDto } from '../types';
 import { configData } from '../config';
 import logger from '../logger';
-import { VerifiableCredential } from '@unumid/types';
+import { Credential } from '@unumid/types';
 import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
 import { handleAuthToken } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
@@ -15,7 +15,7 @@ import { doVerify } from '../utils/verify';
  * @param credential
  * @param authorization
  */
-export const verifyCredential = async (credential: VerifiableCredential, authorization: string): Promise<UnumDto<boolean>> => {
+export const verifyCredential = async (credential: Credential, authorization: string): Promise<UnumDto<boolean>> => {
   const { proof } = credential;
   const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization, proof.verificationMethod);
 
