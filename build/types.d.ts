@@ -161,7 +161,7 @@ export interface VerifiedStatus {
  * by calls to the SaaS via the UnumDto type.
  */
 export interface DecryptedPresentation extends VerifiedStatus {
-  type: 'VerifiablePresentation' | 'NoPresentation'
+  type: 'VerifiablePresentation' | 'DeclinedPresentation'
   presentation: Presentation
 }
 

@@ -68,8 +68,21 @@ export const registerVerifier = async (name: string, customerUuid: string, url: 
   try {
     validateInParams(name, customerUuid, url, apiKey);
 
+    // TODO add to params
+    const verifierVersionInfo: VersionInfo[] = [{
+      target: {
+        version: '2.0.0'
+      },
+      sdkVersion: '2.0.0' // server sdk
+    }, {
+      target: {
+        url: `${url}` // dummy value
+      },
+      sdkVersion: '1.0.0' // server sdk
+    }];
+
     const kpSet: KeyPairSet = await createKeyPairSet();
-    const verifierOpt: VerifierOptions = { name, customerUuid, url, publicKeyInfo: constructKeyObjs(kpSet) };
+    const verifierOpt: VerifierOptions = { name, customerUuid, url, publicKeyInfo: constructKeyObjs(kpSet), versionInfo: verifierVersionInfo };
     const restData: RESTData = {
       method: 'POST',
       baseUrl: configData.SaaSUrl,
@@ -81,19 +94,6 @@ export const registerVerifier = async (name: string, customerUuid: string, url: 
     const restResp: JSONObj = await makeNetworkRequest(restData);
 
     const authToken: string = handleAuthToken(restResp);
-
-    // TODO add to params
-    const verifierVersionInfo: VersionInfo[] = [{
-      target: {
-        version: '2.0.0'
-      },
-      sdkVersion: new SemVer('2.0.0') // server sdk
-    }, {
-      target: {
-        url: `${url}` // dummy value
-      },
-      sdkVersion: new SemVer('1.0.0') // server sdk
-    }];
 
     const verifierResp: UnumDto<RegisteredVerifier> = {
       authToken,

@@ -184,7 +184,7 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                 authorization = requestVerificationResult.authToken;
                 // if invalid then can stop here but still send back the decrypted presentation with the verification results
                 if (!requestVerificationResult.body.isVerified) {
-                    type = isDeclinedPresentation(presentation) ? 'NoPresentation' : 'VerifiablePresentation';
+                    type = isDeclinedPresentation(presentation) ? 'DeclinedPresentation' : 'VerifiablePresentation';
                     result_2 = {
                         authToken: requestVerificationResult.authToken,
                         body: __assign(__assign({}, requestVerificationResult.body), { type: type, presentation: presentation })
@@ -199,7 +199,7 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                 verificationResult_1 = _a.sent();
                 result_3 = {
                     authToken: verificationResult_1.authToken,
-                    body: __assign(__assign({}, verificationResult_1.body), { type: 'NoPresentation', presentation: presentation })
+                    body: __assign(__assign({}, verificationResult_1.body), { type: 'DeclinedPresentation', presentation: presentation })
                 };
                 return [2 /*return*/, result_3];
             case 4:

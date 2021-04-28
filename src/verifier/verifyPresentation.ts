@@ -149,7 +149,7 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
 
       // if invalid then can stop here but still send back the decrypted presentation with the verification results
       if (!requestVerificationResult.body.isVerified) {
-        const type = isDeclinedPresentation(presentation) ? 'NoPresentation' : 'VerifiablePresentation';
+        const type = isDeclinedPresentation(presentation) ? 'DeclinedPresentation' : 'VerifiablePresentation';
         const result: UnumDto<DecryptedPresentation> = {
           authToken: requestVerificationResult.authToken,
           body: {
@@ -169,7 +169,7 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
         authToken: verificationResult.authToken,
         body: {
           ...verificationResult.body,
-          type: 'NoPresentation',
+          type: 'DeclinedPresentation',
           presentation: presentation
         }
       };

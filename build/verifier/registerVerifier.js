@@ -46,7 +46,6 @@ var __1 = require("..");
 var createKeyPairs_1 = require("../utils/createKeyPairs");
 var helpers_1 = require("../utils/helpers");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
-var semver_1 = require("semver");
 /**
  * Creates an object to encapsulate key information.
  * @param kp KeyPair
@@ -97,16 +96,27 @@ var validateInParams = function (name, customerUuid, url, apiKey) {
  * @param apiKey
  */
 exports.registerVerifier = function (name, customerUuid, url, apiKey) { return __awaiter(void 0, void 0, void 0, function () {
-    var kpSet, verifierOpt, restData, restResp, authToken, verifierVersionInfo, verifierResp, error_1;
+    var verifierVersionInfo, kpSet, verifierOpt, restData, restResp, authToken, verifierResp, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 3, , 4]);
                 validateInParams(name, customerUuid, url, apiKey);
+                verifierVersionInfo = [{
+                        target: {
+                            version: '2.0.0'
+                        },
+                        sdkVersion: '2.0.0' // server sdk
+                    }, {
+                        target: {
+                            url: "" + url // dummy value
+                        },
+                        sdkVersion: '1.0.0' // server sdk
+                    }];
                 return [4 /*yield*/, createKeyPairs_1.createKeyPairSet()];
             case 1:
                 kpSet = _a.sent();
-                verifierOpt = { name: name, customerUuid: customerUuid, url: url, publicKeyInfo: constructKeyObjs(kpSet) };
+                verifierOpt = { name: name, customerUuid: customerUuid, url: url, publicKeyInfo: constructKeyObjs(kpSet), versionInfo: verifierVersionInfo };
                 restData = {
                     method: 'POST',
                     baseUrl: config_1.configData.SaaSUrl,
@@ -118,17 +128,6 @@ exports.registerVerifier = function (name, customerUuid, url, apiKey) { return _
             case 2:
                 restResp = _a.sent();
                 authToken = networkRequestHelper_1.handleAuthToken(restResp);
-                verifierVersionInfo = [{
-                        target: {
-                            version: '2.0.0'
-                        },
-                        sdkVersion: new semver_1.SemVer('2.0.0') // server sdk
-                    }, {
-                        target: {
-                            url: "" + url // dummy value
-                        },
-                        sdkVersion: new semver_1.SemVer('1.0.0') // server sdk
-                    }];
                 verifierResp = {
                     authToken: authToken,
                     body: {
