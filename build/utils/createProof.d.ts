@@ -1,4 +1,5 @@
-import { Proof, JSONObj } from '@unumid/types';
+import { Proof } from '@unumid/types';
+import { JSONObj } from '../types';
 /**
  * Create cryptographic proof.
  * @param data

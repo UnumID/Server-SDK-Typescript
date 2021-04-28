@@ -1,10 +1,10 @@
 import { sign } from '@unumid/library-crypto';
 import stringify from 'fast-json-stable-stringify';
 
-import { Proof, JSONObj } from '@unumid/types';
+import { Proof } from '@unumid/types';
 
 import logger from '../logger';
-// import { JSONObj } from '../types';
+import { JSONObj } from '../types';
 
 /**
  * Create cryptographic proof.
