@@ -12,6 +12,7 @@ import { CredentialSubject, Presentation, Proof, Credential } from '@unumid/type
 import { checkCredentialStatus } from './verifier/checkCredentialStatus';
 import { CustError } from './utils/error';
 import { createProof } from './utils/createProof';
+import { convertCredentialSubject } from './utils/convertCredentialSubject';
 
 export {
   // Issuer Functions
@@ -41,5 +42,6 @@ export {
   CredentialInfo,
   // Util Functions
   extractCredentialInfo,
-  createProof
+  createProof,
+  convertCredentialSubject
 };
