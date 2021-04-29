@@ -62,26 +62,14 @@ const validateInParams = (name: string, customerUuid: string, url: string, apiKe
  * @param customerUuid
  * @param url
  * @param apiKey
+ * @param versionInfo
  */
-export const registerVerifier = async (name: string, customerUuid: string, url: string, apiKey: string): Promise<UnumDto<RegisteredVerifier>> => {
+export const registerVerifier = async (name: string, customerUuid: string, url: string, apiKey: string, versionInfo: VersionInfo[] = [{ target: { version: '1.0.0' }, sdkVersion: '2.0.0' }]): Promise<UnumDto<RegisteredVerifier>> => {
   try {
     validateInParams(name, customerUuid, url, apiKey);
 
-    // TODO add to params
-    const verifierVersionInfo: VersionInfo[] = [{
-      target: {
-        version: '2.0.0'
-      },
-      sdkVersion: '2.0.0' // server sdk
-    }, {
-      target: {
-        url: `${url}` // dummy value
-      },
-      sdkVersion: '1.0.0' // server sdk
-    }];
-
     const kpSet: KeyPairSet = await createKeyPairSet();
-    const verifierOpt: VerifierOptions = { name, customerUuid, url, publicKeyInfo: constructKeyObjs(kpSet), versionInfo: verifierVersionInfo };
+    const verifierOpt: VerifierOptions = { name, customerUuid, url, publicKeyInfo: constructKeyObjs(kpSet), versionInfo };
     const restData: RESTData = {
       method: 'POST',
       baseUrl: configData.SaaSUrl,
@@ -106,7 +94,7 @@ export const registerVerifier = async (name: string, customerUuid: string, url: 
         isAuthorized: restResp.body.isAuthorized,
         keys: kpSet,
         url,
-        versionInfo: verifierVersionInfo
+        versionInfo
       }
     };
 

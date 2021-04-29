@@ -93,6 +93,7 @@ export const makeDummyVerifier = (options: DummyVerifierOptions = {}): Verifier 
   const url = options.url || 'https://customer-api.dev-unumid.org/presentation';
   const isAuthorized = options.isAuthorized || true;
   const did = options.did || dummyVerifierDid;
+  const versionInfo = [{ target: { version: '1.0.0' }, sdkVersion: '2.0.0' }];
 
   return {
     uuid,
@@ -102,7 +103,8 @@ export const makeDummyVerifier = (options: DummyVerifierOptions = {}): Verifier 
     name,
     url,
     isAuthorized,
-    did
+    did,
+    versionInfo
   };
 };
 
