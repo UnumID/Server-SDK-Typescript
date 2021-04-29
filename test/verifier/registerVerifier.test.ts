@@ -67,12 +67,12 @@ describe('registerVerifier', () => {
     expect(response.versionInfo).toBe(versionInfo);
   });
 
-  it('returns verifier details default versionInfo', async () => {
-    responseDto = await registerVerifier(name, customerUuid, url, dummyVerifierApiKey);
-    response = responseDto.body;
-    responseAuthToken = responseDto.authToken;
-    expect(response.versionInfo).toStrictEqual([{ target: { version: '1.0.0' }, sdkVersion: '2.0.0' }]);
-  });
+  // it('returns verifier details default versionInfo', async () => {
+  //   responseDto = await registerVerifier(name, customerUuid, url, dummyVerifierApiKey);
+  //   response = responseDto.body;
+  //   responseAuthToken = responseDto.authToken;
+  //   expect(response.versionInfo).toStrictEqual([{ target: { version: '1.0.0' }, sdkVersion: '2.0.0' }]);
+  // });
 
   it('returns the auth token', () => {
     expect(responseAuthToken).toEqual(dummyAuthToken);
