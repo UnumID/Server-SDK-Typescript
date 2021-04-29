@@ -159,15 +159,6 @@ describe('verifyNoPresentation', () => {
       }
     });
 
-    // it('returns a 400 status code with a descriptive error message if type is invalid', async () => {
-    //   try {
-    //     await callVerifyNoPresentation(dummyNoPresentationBadTypeKeywordMissing, verifier, authHeader);
-    //   } catch (e) {
-    //     expect(e.code).toEqual(400);
-    //     expect(e.message).toEqual('Invalid type: first element must be \'NoPresentation\'.');
-    //   }
-    // });
-
     it('returns a 400 status code with a descriptive error message if type is not an array', async () => {
       try {
         await callVerifyNoPresentation(dummyNoPresentationBadType, verifier, authHeader);
@@ -176,15 +167,6 @@ describe('verifyNoPresentation', () => {
         expect(e.message).toEqual('Invalid Presentation: type must be a non-empty array.');
       }
     });
-
-    // it('returns a 400 status code with a descriptive error message if holder is invalid', async () => {
-    //   try {
-    //     await callVerifyNoPresentation(dummyNoPresentationBadHolder, verifier, authHeader);
-    //   } catch (e) {
-    //     expect(e.code).toEqual(400);
-    //     expect(e.message).toEqual('Invalid holder: must be a string.');
-    //   }
-    // });
 
     it('returns a 400 status code with a descriptive error message if presentationRequestUuid is invalid', async () => {
       try {
