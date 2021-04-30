@@ -8,10 +8,11 @@ import { registerIssuer } from './issuer/registerIssuer';
 import { issueCredential } from './issuer/issueCredentials';
 import { updateCredentialStatus } from './issuer/updateCredentialStatus';
 import { extractCredentialInfo } from './utils/extractCredentialInfo';
-import { CredentialSubject, NoPresentation, Presentation, Proof, Credential } from '@unumid/types';
+import { CredentialSubject, Presentation, Proof, Credential } from '@unumid/types';
 import { checkCredentialStatus } from './verifier/checkCredentialStatus';
 import { CustError } from './utils/error';
 import { createProof } from './utils/createProof';
+import { convertCredentialSubject } from './utils/convertCredentialSubject';
 
 export {
   // Issuer Functions
@@ -29,7 +30,6 @@ export {
   UnumDto,
   RegisteredVerifier,
   VerifiedStatus,
-  NoPresentation,
   Presentation,
   RegisteredIssuer,
   CredentialSubject,
@@ -42,5 +42,6 @@ export {
   CredentialInfo,
   // Util Functions
   extractCredentialInfo,
-  createProof
+  createProof,
+  convertCredentialSubject
 };

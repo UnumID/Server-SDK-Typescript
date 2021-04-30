@@ -1,8 +1,8 @@
 import { omit } from 'lodash';
 
 import { configData } from '../config';
-import { CredentialStatusInfo, JSONObj, RESTData, UnumDto, VerifiedStatus } from '../types';
-import { Presentation, VerifiableCredential, CredentialRequest, Proof, PublicKeyInfo } from '@unumid/types';
+import { CredentialStatusInfo, RESTData, UnumDto, VerifiedStatus } from '../types';
+import { Presentation, Credential, CredentialRequest, Proof, PublicKeyInfo, JSONObj } from '@unumid/types';
 import { validateProof } from './validateProof';
 import { requireAuth } from '../requireAuth';
 import { verifyCredential } from './verifyCredential';
@@ -25,7 +25,7 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
 
   if (isArrayEmpty(credentials)) {
     retObj.valid = false;
-    retObj.msg = 'Invalid Presentation: verifiableCredentials must be a non-empty array.';
+    retObj.msg = 'Invalid Presentation: verifiableCredential must be a non-empty array.';
 
     return (retObj);
   }
@@ -40,8 +40,8 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
       credential = JSON.parse(credential);
     }
 
-    // Validate the existence of elements in verifiableCredential object
-    const invalidMsg = `Invalid verifiableCredentials${credPosStr}:`;
+    // Validate the existence of elements in Credential object
+    const invalidMsg = `Invalid verifiableCredential${credPosStr}:`;
     if (!credential['@context']) {
       retObj.valid = false;
       retObj.msg = `${invalidMsg} @context is required.`;
@@ -137,7 +137,7 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
  */
 const validatePresentation = (presentation: Presentation): Presentation => {
   const context = presentation['@context'];
-  const { type, verifiableCredentials, proof, presentationRequestUuid, verifierDid } = presentation;
+  const { type, verifiableCredential, proof, presentationRequestUuid, verifierDid } = presentation;
   let retObj: JSONObj = {};
 
   // validate required fields
@@ -149,16 +149,16 @@ const validatePresentation = (presentation: Presentation): Presentation => {
     throw new CustError(400, 'Invalid Presentation: type is required.');
   }
 
-  if (!verifiableCredentials) {
-    throw new CustError(400, 'Invalid Presentation: verifiableCredentials is required.');
-  }
-
   if (!proof) {
     throw new CustError(400, 'Invalid Presentation: proof is required.');
   }
 
   if (!presentationRequestUuid) {
     throw new CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
+  }
+
+  if (!verifiableCredential || isArrayEmpty(verifiableCredential)) {
+    throw new CustError(400, 'Invalid Presentation: verifiableCredential must be a non-empty array.'); // it should never make it here, ought to be in the NoPresentationHelper
   }
 
   if (!verifierDid) {
@@ -173,12 +173,12 @@ const validatePresentation = (presentation: Presentation): Presentation => {
     throw new CustError(400, 'Invalid Presentation: type must be a non-empty array.');
   }
 
-  retObj = validateCredentialInput(verifiableCredentials);
+  retObj = validateCredentialInput(verifiableCredential);
   if (!retObj.valid) {
     throw new CustError(400, retObj.msg);
   } else if (retObj.stringifiedCredentials) {
     // adding the "objectified" vc, which were sent in string format to appease iOS variable keyed object limitation: https://developer.apple.com/forums/thread/100417
-    presentation.verifiableCredentials = retObj.resultantCredentials;
+    presentation.verifiableCredential = retObj.resultantCredentials;
   }
 
   // Check proof object is formatted correctly
@@ -195,10 +195,14 @@ const validatePresentation = (presentation: Presentation): Presentation => {
  * @param credentialRequests CredentialRequest[]
  */
 function validatePresentationMeetsRequestedCredentials (presentation: Presentation, credentialRequests: CredentialRequest[]) {
+  if (!presentation.verifiableCredential) {
+    return; // just skip because this is a declined presentation
+  }
+
   for (const requestedCred of credentialRequests) {
     if (requestedCred.required) {
       // check that the request credential is present in the presentation
-      const presentationCreds:VerifiableCredential[] = presentation.verifiableCredentials;
+      const presentationCreds:Credential[] = presentation.verifiableCredential;
       let found = false;
       for (const presentationCred of presentationCreds) {
         // checking required credential types are presents
@@ -248,6 +252,11 @@ export const verifyPresentationHelper = async (authorization: string, presentati
 
     const data = omit(presentation, 'proof'); // Note: important that this data variable is created prior to the validation thanks to validatePresentation taking potentially stringified VerifiableCredentials objects array and converting them to proper objects.
     presentation = validatePresentation(presentation);
+
+    if (!presentation.verifiableCredential) {
+      logger.error('The presentation has undefined verifiableCredential attribute, this should have already be checked.');
+      throw new CustError(500, 'presentation as an undefined verifiableCredentials'); // this should have already been checked.
+    }
 
     // validate that the verifier did provided matches the verifier did in the presentation
     if (presentation.verifierDid !== verifier) {
@@ -328,7 +337,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
 
     let areCredentialsValid = true;
 
-    for (const credential of presentation.verifiableCredentials) {
+    for (const credential of presentation.verifiableCredential) {
       const isExpired = isCredentialExpired(credential);
 
       if (isExpired) {
@@ -367,8 +376,8 @@ export const verifyPresentationHelper = async (authorization: string, presentati
     }
 
     const isVerified = isPresentationVerified && areCredentialsValid; // always true if here
-    const credentialTypes = presentation.verifiableCredentials.flatMap(cred => cred.type.slice(1)); // cut off the preceding 'VerifiableCredential' string in each array
-    const issuers = presentation.verifiableCredentials.map(cred => cred.issuer);
+    const credentialTypes = presentation.verifiableCredential.flatMap(cred => cred.type.slice(1)); // cut off the preceding 'VerifiableCredential' string in each array
+    const issuers = presentation.verifiableCredential.map(cred => cred.issuer);
     const subject = proof.verificationMethod;
     const receiptOptions = {
       type: ['PresentationVerified'],

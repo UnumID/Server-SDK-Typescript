@@ -57,14 +57,52 @@ var logger_1 = __importDefault(require("../logger"));
 var verifyNoPresentationHelper_1 = require("./verifyNoPresentationHelper");
 var verifyPresentationHelper_1 = require("./verifyPresentationHelper");
 var error_1 = require("../utils/error");
+var helpers_1 = require("../utils/helpers");
 var lodash_1 = require("lodash");
 var didHelper_1 = require("../utils/didHelper");
 var config_1 = require("../config");
 var verify_1 = require("../utils/verify");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
-function isPresentation(presentation) {
-    return presentation.type[0] === 'VerifiablePresentation';
+var validateProof_1 = require("./validateProof");
+function isDeclinedPresentation(presentation) {
+    return helpers_1.isArrayEmpty(presentation.verifiableCredential);
 }
+/**
+ * Validates the presentation object has the proper attributes.
+ * @param presentation Presentation
+ */
+var validatePresentation = function (presentation) {
+    var context = presentation['@context'];
+    var type = presentation.type, proof = presentation.proof, presentationRequestUuid = presentation.presentationRequestUuid, verifierDid = presentation.verifierDid;
+    // const retObj: JSONObj = {};
+    // validate required fields
+    if (!context) {
+        throw new error_1.CustError(400, 'Invalid Presentation: @context is required.');
+    }
+    if (!type) {
+        throw new error_1.CustError(400, 'Invalid Presentation: type is required.');
+    }
+    if (!proof) {
+        throw new error_1.CustError(400, 'Invalid Presentation: proof is required.');
+    }
+    if (!presentationRequestUuid) {
+        throw new error_1.CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
+    }
+    // if (!verifiableCredential || isArrayEmpty(verifiableCredential)) {
+    //   throw new CustError(400, 'Invalid Presentation: verifiableCredentials must be a non-empty array.');
+    // }
+    if (!verifierDid) {
+        throw new error_1.CustError(400, 'Invalid Presentation: verifierDid is required.');
+    }
+    if (helpers_1.isArrayEmpty(context)) {
+        throw new error_1.CustError(400, 'Invalid Presentation: @context must be a non-empty array.');
+    }
+    if (helpers_1.isArrayEmpty(type)) {
+        throw new error_1.CustError(400, 'Invalid Presentation: type must be a non-empty array.');
+    }
+    // Check proof object is formatted correctly
+    validateProof_1.validateProof(proof);
+};
 /**
  * Verify the PresentationRequest signature as a way to side step verifier MITM attacks where an entity spoofs requests.
  */
@@ -133,6 +171,8 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                     throw new error_1.CustError(400, "verifier provided, " + verifierDid + ", does not match the presentation request verifier, " + presentationRequest.verifier.did + ".");
                 }
                 presentation = library_crypto_1.decrypt(encryptionPrivateKey, encryptedPresentation);
+                // validate presentation
+                validatePresentation(presentation);
                 // verify the presentation request uuid match
                 if (presentationRequest && presentationRequest.presentationRequest.uuid !== presentation.presentationRequestUuid) {
                     throw new error_1.CustError(400, "presentation request uuid provided, " + presentationRequest.presentationRequest.uuid + ", does not match the presentationRequestUuid that the presentation was in response to, " + presentation.presentationRequestUuid + ".");
@@ -144,7 +184,7 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                 authorization = requestVerificationResult.authToken;
                 // if invalid then can stop here but still send back the decrypted presentation with the verification results
                 if (!requestVerificationResult.body.isVerified) {
-                    type = isPresentation(presentation) ? 'VerifiablePresentation' : 'NoPresentation';
+                    type = isDeclinedPresentation(presentation) ? 'DeclinedPresentation' : 'VerifiablePresentation';
                     result_2 = {
                         authToken: requestVerificationResult.authToken,
                         body: __assign(__assign({}, requestVerificationResult.body), { type: type, presentation: presentation })
@@ -153,13 +193,13 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                 }
                 _a.label = 2;
             case 2:
-                if (!!isPresentation(presentation)) return [3 /*break*/, 4];
+                if (!isDeclinedPresentation(presentation)) return [3 /*break*/, 4];
                 return [4 /*yield*/, verifyNoPresentationHelper_1.verifyNoPresentationHelper(authorization, presentation, verifierDid)];
             case 3:
                 verificationResult_1 = _a.sent();
                 result_3 = {
                     authToken: verificationResult_1.authToken,
-                    body: __assign(__assign({}, verificationResult_1.body), { type: 'NoPresentation', presentation: presentation })
+                    body: __assign(__assign({}, verificationResult_1.body), { type: 'DeclinedPresentation', presentation: presentation })
                 };
                 return [2 /*return*/, result_3];
             case 4:

@@ -1,7 +1,7 @@
 import { configData } from '../config';
-import { JSONObj, KeyPairSet, RegisteredVerifier, RESTData, UnumDto } from '../types';
+import { KeyPairSet, RegisteredVerifier, RESTData, UnumDto } from '../types';
 import logger from '../logger';
-import { DidKeyType, KeyPair, PublicKeyInfo, VerifierOptions } from '@unumid/types';
+import { DidKeyType, KeyPair, PublicKeyInfo, VerifierOptions, VersionInfo, JSONObj } from '@unumid/types';
 import { CustError } from '..';
 import { createKeyPairSet } from '../utils/createKeyPairs';
 import { getUUID } from '../utils/helpers';
@@ -62,13 +62,14 @@ const validateInParams = (name: string, customerUuid: string, url: string, apiKe
  * @param customerUuid
  * @param url
  * @param apiKey
+ * @param versionInfo
  */
-export const registerVerifier = async (name: string, customerUuid: string, url: string, apiKey: string): Promise<UnumDto<RegisteredVerifier>> => {
+export const registerVerifier = async (name: string, customerUuid: string, url: string, apiKey: string, versionInfo: VersionInfo[] = [{ target: { version: '1.0.0' }, sdkVersion: '2.0.0' }]): Promise<UnumDto<RegisteredVerifier>> => {
   try {
     validateInParams(name, customerUuid, url, apiKey);
 
     const kpSet: KeyPairSet = await createKeyPairSet();
-    const verifierOpt: VerifierOptions = { name, customerUuid, url, publicKeyInfo: constructKeyObjs(kpSet) };
+    const verifierOpt: VerifierOptions = { name, customerUuid, url, publicKeyInfo: constructKeyObjs(kpSet), versionInfo };
     const restData: RESTData = {
       method: 'POST',
       baseUrl: configData.SaaSUrl,
@@ -92,7 +93,8 @@ export const registerVerifier = async (name: string, customerUuid: string, url: 
         updatedAt: restResp.body.updatedAt,
         isAuthorized: restResp.body.isAuthorized,
         keys: kpSet,
-        url
+        url,
+        versionInfo
       }
     };
 

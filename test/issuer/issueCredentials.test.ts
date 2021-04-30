@@ -2,7 +2,7 @@ import { configData } from '../../src/config';
 import { dummyAuthToken, makeDummyDidDocument, dummyAdminKey } from './mocks';
 import { issueCredential } from '../../src/issuer/issueCredentials';
 import { UnumDto } from '../../src/types';
-import { CredentialSubject } from '@unumid/types';
+import { CredentialSubject, Credential } from '@unumid/types';
 import { CustError } from '../../src/utils/error';
 import * as createKeyPairs from '../../src/utils/createKeyPairs';
 import { getDIDDoc } from '../../src/utils/didHelper';

@@ -9,6 +9,7 @@ import { UnumDto, RegisteredVerifier } from '../../src/types';
 import { CustError } from '../../src/utils/error';
 import { mocked } from 'ts-jest/utils';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
+import { VersionInfo } from '@unumid/types';
 
 jest.mock('../../src/utils/networkRequestHelper', () => ({
   ...jest.requireActual('../../src/utils/networkRequestHelper'),
@@ -25,15 +26,26 @@ describe('registerVerifier', () => {
   const name = 'First Unumid Verifier';
   const customerUuid = '5e46f1ba-4c82-471d-bbc7-251924a90532';
   const url = 'https://customer-api.dev-unumid.org/presentation';
+  const versionInfo: VersionInfo[] = [{
+    target: {
+      version: '2.0.0'
+    },
+    sdkVersion: '2.0.0' // server sdk
+  }, {
+    target: {
+      url: 'https://customer-api.dev-unumid.org/presentationV1'
+    },
+    sdkVersion: '1.0.0' // server sdk
+  }];
 
   let responseDto: UnumDto<RegisteredVerifier>, responseAuthToken: string, response: RegisteredVerifier;
 
   beforeEach(async () => {
     const dummyVerifier = makeDummyVerifier({ name, customerUuid, url });
     const dummyVerifierResponse = makeDummyVerifierResponse({ verifier: dummyVerifier, authToken: dummyAuthToken });
-    mockMakeNetworkRequest.mockResolvedValueOnce(dummyVerifierResponse);
+    mockMakeNetworkRequest.mockResolvedValue(dummyVerifierResponse);
 
-    responseDto = await registerVerifier(name, customerUuid, url, dummyVerifierApiKey);
+    responseDto = await registerVerifier(name, customerUuid, url, dummyVerifierApiKey, versionInfo);
     response = responseDto.body;
     responseAuthToken = responseDto.authToken;
   });
@@ -52,7 +64,15 @@ describe('registerVerifier', () => {
     expect(response).toHaveProperty('did');
     expect(response.name).toBe(name);
     expect(response.customerUuid).toBe(customerUuid);
+    expect(response.versionInfo).toBe(versionInfo);
   });
+
+  // it('returns verifier details default versionInfo', async () => {
+  //   responseDto = await registerVerifier(name, customerUuid, url, dummyVerifierApiKey);
+  //   response = responseDto.body;
+  //   responseAuthToken = responseDto.authToken;
+  //   expect(response.versionInfo).toStrictEqual([{ target: { version: '1.0.0' }, sdkVersion: '2.0.0' }]);
+  // });
 
   it('returns the auth token', () => {
     expect(responseAuthToken).toEqual(dummyAuthToken);

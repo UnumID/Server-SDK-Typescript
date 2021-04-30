@@ -1,4 +1,4 @@
-import { CredentialStatusOptions, Issuer, CredentialSubject, Verifier, CredentialRequest, Presentation, NoPresentation, KeyPair, PublicKeyInfo } from '@unumid/types';
+import { CredentialStatusOptions, Issuer, CredentialSubject, Verifier, CredentialRequest, Presentation, KeyPair, PublicKeyInfo, JSONObj } from '@unumid/types';
 
 /**
  * Interface for key pairs. One for signing purposes and the other for encryption.
@@ -13,13 +13,6 @@ export interface KeyPairSet {
  * JSON string catch all type
  */
 export type JSONStr = any;
-
-/**
- * Interface to encapsulate a JSON object with unknown keys
- */
-export interface JSONObj {
-  [key: string]: any;
-}
 
 /**
  * Interface to encapsulate all necessary information for a network request.
@@ -99,8 +92,6 @@ export interface SendRequestReqBody extends PresentationRequestParams {
   eccPrivateKey: string;
 }
 
-export type PresentationOrNoPresentation = Presentation | NoPresentation;
-
 /**
  * Encapsulates API Key attributes for Verifier registration.
  */
@@ -161,8 +152,8 @@ export interface VerifiedStatus {
  * by calls to the SaaS via the UnumDto type.
  */
 export interface DecryptedPresentation extends VerifiedStatus {
-  type: 'VerifiablePresentation' | 'NoPresentation'
-  presentation: Presentation | NoPresentation
+  type: 'VerifiablePresentation' | 'DeclinedPresentation'
+  presentation: Presentation
 }
 
 /**

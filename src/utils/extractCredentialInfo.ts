@@ -10,9 +10,9 @@ import { isArrayNotEmpty } from './helpers';
 export const extractCredentialInfo = (presentation: Presentation): CredentialInfo => {
   let credentialTypes: string[] = [];
 
-  if (isArrayNotEmpty(presentation.verifiableCredentials)) {
+  if (presentation.verifiableCredential && isArrayNotEmpty(presentation.verifiableCredential)) { // Don't really need to check for existence because does so in isArrayNotEmpty() but doing so just to appease typescript
     // cut off the preceding 'VerifiableCredential' string in each credential type array
-    credentialTypes = presentation.verifiableCredentials.flatMap(cred => isArrayNotEmpty(cred.type) && cred.type[0] === 'VerifiableCredential' ? cred.type.slice(1) : cred.type);
+    credentialTypes = presentation.verifiableCredential.flatMap(cred => isArrayNotEmpty(cred.type) && cred.type[0] === 'VerifiableCredential' ? cred.type.slice(1) : cred.type);
   }
 
   // need to handle the possibility of a did fragment being part of the verification method.

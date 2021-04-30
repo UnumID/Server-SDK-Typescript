@@ -1,9 +1,10 @@
 import fetch from 'node-fetch';
 
-import { JSONObj, RESTData, RESTResponse } from '../types';
+import { RESTData, RESTResponse } from '../types';
 import { CustError } from './error';
 import logger from '../logger';
 import { isArrayEmpty, isArrayNotEmpty } from './helpers';
+import { JSONObj } from '@unumid/types';
 
 /**
  * Helper to handle network requests.

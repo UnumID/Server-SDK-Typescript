@@ -1,10 +1,10 @@
-import { VerifiableCredential } from '@unumid/types';
+import { Credential } from '@unumid/types';
 
 /**
  * Helper to assess the expiration status of a credential.
  * @param credential VerifiableCredential
  */
-export const isCredentialExpired = (credential: VerifiableCredential): boolean => {
+export const isCredentialExpired = (credential: Credential): boolean => {
   const { expirationDate } = credential;
 
   if (!expirationDate) {

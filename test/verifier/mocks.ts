@@ -1,4 +1,6 @@
-import { DidDocument, HolderApp, IssuerInfo, IssuerInfoMap, PresentationRequestPostDto, UnsignedCredential, UnsignedPresentationRequest, Verifier, VerifierInfo } from '@unumid/types';
+import { sign } from '@unumid/library-crypto';
+import { DidDocument, HolderApp, IssuerInfo, IssuerInfoMap, JSONObj, PresentationRequestPostDto, UnsignedCredential, UnsignedPresentationRequest, Verifier, VerifierInfo, Credential, CredentialSubject, Proof, CredentialRequest } from '@unumid/types';
+import stringify from 'fast-json-stable-stringify';
 
 import { configData } from '../../src/config';
 import { RESTResponse, VerifierApiKey } from '../../src/types';
@@ -91,6 +93,7 @@ export const makeDummyVerifier = (options: DummyVerifierOptions = {}): Verifier 
   const url = options.url || 'https://customer-api.dev-unumid.org/presentation';
   const isAuthorized = options.isAuthorized || true;
   const did = options.did || dummyVerifierDid;
+  const versionInfo = [{ target: { version: '1.0.0' }, sdkVersion: '2.0.0' }];
 
   return {
     uuid,
@@ -100,7 +103,8 @@ export const makeDummyVerifier = (options: DummyVerifierOptions = {}): Verifier 
     name,
     url,
     isAuthorized,
-    did
+    did,
+    versionInfo
   };
 };
 

@@ -8,9 +8,10 @@ import { registerIssuer } from './issuer/registerIssuer';
 import { issueCredential } from './issuer/issueCredentials';
 import { updateCredentialStatus } from './issuer/updateCredentialStatus';
 import { extractCredentialInfo } from './utils/extractCredentialInfo';
-import { CredentialSubject, NoPresentation, Presentation, Proof, Credential } from '@unumid/types';
+import { CredentialSubject, Presentation, Proof, Credential } from '@unumid/types';
 import { checkCredentialStatus } from './verifier/checkCredentialStatus';
 import { CustError } from './utils/error';
 import { createProof } from './utils/createProof';
-export { registerIssuer, issueCredential, updateCredentialStatus, registerVerifier, sendEmail, sendRequest, sendSms, verifyPresentation, checkCredentialStatus, UnumDto, RegisteredVerifier, VerifiedStatus, NoPresentation, Presentation, RegisteredIssuer, CredentialSubject, DecryptedPresentation, CredentialStatusInfo, CustError, Proof, Credential, CredentialInfo, extractCredentialInfo, createProof };
+import { convertCredentialSubject } from './utils/convertCredentialSubject';
+export { registerIssuer, issueCredential, updateCredentialStatus, registerVerifier, sendEmail, sendRequest, sendSms, verifyPresentation, checkCredentialStatus, UnumDto, RegisteredVerifier, VerifiedStatus, Presentation, RegisteredIssuer, CredentialSubject, DecryptedPresentation, CredentialStatusInfo, CustError, Proof, Credential, CredentialInfo, extractCredentialInfo, createProof, convertCredentialSubject };
 //# sourceMappingURL=index.d.ts.map

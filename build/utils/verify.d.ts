@@ -1,4 +1,4 @@
-import { JSONObj } from '../types';
+import { JSONObj } from '@unumid/types';
 /**
  * Verify the signature on the provided data object.
  * @param signature

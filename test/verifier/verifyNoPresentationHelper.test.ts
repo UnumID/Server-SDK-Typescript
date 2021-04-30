@@ -43,7 +43,6 @@ const callVerifyNoPresentation = (
 
 const verifier = 'did:unum:dd407b1a-ee7f-46a2-af2a-ccbb48cbb0dc';
 const dummyNoPresentation: NoPresentation = {
-  holder: 'did:unum:50fb0b5b-79ff-4db9-9f33-d93feab702db',
   presentationRequestUuid: 'd5cc3673-d72f-45fa-bc87-36c305f8d0a5',
   type: [
     'NoPresentation',
@@ -150,16 +149,6 @@ describe('verifyNoPresentation', () => {
       }
     });
 
-    it('returns a 400 status code with a descriptive error message if holder is missing', async () => {
-      try {
-        await callVerifyNoPresentation(dummyNoPresentationWithoutHolder, verifier, authHeader);
-        fail();
-      } catch (e) {
-        expect(e.code).toEqual(400);
-        expect(e.message).toEqual('Invalid Presentation: holder is required.');
-      }
-    });
-
     it('returns a 400 status code with a descriptive error presentationRequestUuid if holder is missing', async () => {
       try {
         await callVerifyNoPresentation(dummyNoPresentationWithoutRequestUuid, verifier, authHeader);
@@ -170,30 +159,12 @@ describe('verifyNoPresentation', () => {
       }
     });
 
-    it('returns a 400 status code with a descriptive error message if type is invalid', async () => {
-      try {
-        await callVerifyNoPresentation(dummyNoPresentationBadTypeKeywordMissing, verifier, authHeader);
-      } catch (e) {
-        expect(e.code).toEqual(400);
-        expect(e.message).toEqual('Invalid type: first element must be \'NoPresentation\'.');
-      }
-    });
-
     it('returns a 400 status code with a descriptive error message if type is not an array', async () => {
       try {
         await callVerifyNoPresentation(dummyNoPresentationBadType, verifier, authHeader);
       } catch (e) {
         expect(e.code).toEqual(400);
         expect(e.message).toEqual('Invalid Presentation: type must be a non-empty array.');
-      }
-    });
-
-    it('returns a 400 status code with a descriptive error message if holder is invalid', async () => {
-      try {
-        await callVerifyNoPresentation(dummyNoPresentationBadHolder, verifier, authHeader);
-      } catch (e) {
-        expect(e.code).toEqual(400);
-        expect(e.message).toEqual('Invalid holder: must be a string.');
       }
     });
 

@@ -1,8 +1,8 @@
 import { configData } from '../config';
-import { IssuerOptions, JSONObj, KeyPairSet, RegisteredIssuer, RESTData, UnumDto } from '../types';
+import { IssuerOptions, KeyPairSet, RegisteredIssuer, RESTData, UnumDto } from '../types';
 
 import logger from '../logger';
-import { DidKeyType, KeyPair, PublicKeyInfo } from '@unumid/types';
+import { DidKeyType, JSONObj, KeyPair, PublicKeyInfo } from '@unumid/types';
 import { getUUID } from '../utils/helpers';
 import { CustError } from '../utils/error';
 import { createKeyPairSet } from '../utils/createKeyPairs';

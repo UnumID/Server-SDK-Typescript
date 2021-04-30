@@ -94,50 +94,55 @@ var validateInParams = function (name, customerUuid, url, apiKey) {
  * @param customerUuid
  * @param url
  * @param apiKey
+ * @param versionInfo
  */
-exports.registerVerifier = function (name, customerUuid, url, apiKey) { return __awaiter(void 0, void 0, void 0, function () {
-    var kpSet, verifierOpt, restData, restResp, authToken, verifierResp, error_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 3, , 4]);
-                validateInParams(name, customerUuid, url, apiKey);
-                return [4 /*yield*/, createKeyPairs_1.createKeyPairSet()];
-            case 1:
-                kpSet = _a.sent();
-                verifierOpt = { name: name, customerUuid: customerUuid, url: url, publicKeyInfo: constructKeyObjs(kpSet) };
-                restData = {
-                    method: 'POST',
-                    baseUrl: config_1.configData.SaaSUrl,
-                    endPoint: 'verifier',
-                    header: { Authorization: 'Bearer ' + apiKey },
-                    data: verifierOpt
-                };
-                return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];
-            case 2:
-                restResp = _a.sent();
-                authToken = networkRequestHelper_1.handleAuthToken(restResp);
-                verifierResp = {
-                    authToken: authToken,
-                    body: {
-                        uuid: restResp.body.uuid,
-                        customerUuid: restResp.body.customerUuid,
-                        did: restResp.body.did,
-                        name: restResp.body.name,
-                        createdAt: restResp.body.createdAt,
-                        updatedAt: restResp.body.updatedAt,
-                        isAuthorized: restResp.body.isAuthorized,
-                        keys: kpSet,
-                        url: url
-                    }
-                };
-                return [2 /*return*/, verifierResp];
-            case 3:
-                error_1 = _a.sent();
-                logger_1.default.error("Error registering verifier " + name + ". " + error_1);
-                throw error_1;
-            case 4: return [2 /*return*/];
-        }
+exports.registerVerifier = function (name, customerUuid, url, apiKey, versionInfo) {
+    if (versionInfo === void 0) { versionInfo = [{ target: { version: '1.0.0' }, sdkVersion: '2.0.0' }]; }
+    return __awaiter(void 0, void 0, void 0, function () {
+        var kpSet, verifierOpt, restData, restResp, authToken, verifierResp, error_1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 3, , 4]);
+                    validateInParams(name, customerUuid, url, apiKey);
+                    return [4 /*yield*/, createKeyPairs_1.createKeyPairSet()];
+                case 1:
+                    kpSet = _a.sent();
+                    verifierOpt = { name: name, customerUuid: customerUuid, url: url, publicKeyInfo: constructKeyObjs(kpSet), versionInfo: versionInfo };
+                    restData = {
+                        method: 'POST',
+                        baseUrl: config_1.configData.SaaSUrl,
+                        endPoint: 'verifier',
+                        header: { Authorization: 'Bearer ' + apiKey },
+                        data: verifierOpt
+                    };
+                    return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];
+                case 2:
+                    restResp = _a.sent();
+                    authToken = networkRequestHelper_1.handleAuthToken(restResp);
+                    verifierResp = {
+                        authToken: authToken,
+                        body: {
+                            uuid: restResp.body.uuid,
+                            customerUuid: restResp.body.customerUuid,
+                            did: restResp.body.did,
+                            name: restResp.body.name,
+                            createdAt: restResp.body.createdAt,
+                            updatedAt: restResp.body.updatedAt,
+                            isAuthorized: restResp.body.isAuthorized,
+                            keys: kpSet,
+                            url: url,
+                            versionInfo: versionInfo
+                        }
+                    };
+                    return [2 /*return*/, verifierResp];
+                case 3:
+                    error_1 = _a.sent();
+                    logger_1.default.error("Error registering verifier " + name + ". " + error_1);
+                    throw error_1;
+                case 4: return [2 /*return*/];
+            }
+        });
     });
-}); };
+};
 //# sourceMappingURL=registerVerifier.js.map
