@@ -99,8 +99,6 @@ export interface SendRequestReqBody extends PresentationRequestParams {
   eccPrivateKey: string;
 }
 
-// export type PresentationOrNoPresentation = Presentation | NoPresentation;
-
 /**
  * Encapsulates API Key attributes for Verifier registration.
  */
