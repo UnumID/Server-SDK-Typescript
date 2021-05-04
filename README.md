@@ -1,4 +1,26 @@
 This SDK combines the functionality of an [**Issuer**](#issuer) and [**Verifier**](#verifier) entities to work with UnumID's SaaS. For necessary account creation and API keys please email admin@unum.id.
+## Distribution
+
+This project is publicly published on the official npm [registry](https://www.npmjs.com/package/@unumid/server-sdk). For example it can be pulled with, `npm i @unumid/server-sdk` or `yarn add @unumid/server-sdk`.
+
+## Releases
+
+Releases and publishing to NPM is automated via Github Actions CI job. In order to trigger a release one should push a git tag with a preceding `v` with semver notation, ie v1.1.1, to the `main` branch. This will trigger the CI job to bump the package version, generate typedocs, publish to NPM, make a release commit, and make a Github Release. The message of the git tag will be the release message so please make it meaningful. For example, `git tag v1.2.0 -m "Updated the SDK with a new CI job" && push origin v1.1.1`.
+
+## Global Dependencies
+- NodeJS v14.0.0 or higher, preferably v14.15.0 or higher
+- yarn
+
+## Logging
+Logs level defaults to Info. One can set to debug for more information via the environment variable LOG_LEVEL, i.e. LOG_LEVEL=debug. We are using standard NPM log levels. More details on the various log levels [here](https://github.com/winstonjs/winston#logging-levels).
+
+The logs default to stdout so can be aggregated using any log provider you would like from disk.
+
+## Documentation
+High level technical documentation can be found [here](https://https://docs.unum.id/server-sdk) which is served via [Docusaurus](https://github.com/UnumID/UnumID.github.io). More detailed generated from source documentation can be found [here](https://docs.unum.id/Server-SDK-Typescript/index.html) which is served via repo specific Github pages via the /docs folder of the main branch.
+
+In order to generate the Typedoc documentation from the source code run the `createTypedocs.sh` script.
+
 
 ## SDK Functionality
 The Server SDK uses the **UnumDto** type to facilitate handling many response body types while providing a reliable structure to access the result body and importantly the rolling JWT authToken.
@@ -81,10 +103,10 @@ Response Body: [**Credential**](https://docs.unum.id/Server-SDK-Typescript/inter
         "id": string, // a url for credential's status
         "type": "CredentialStatus"
     },
-    "credentialSubject": {
+    "credentialSubject": stringify({ // a string representation of an object with  with an id attribute and any number of arbitrary key values pairs.
         "id": string, // subject DID
-        [key: string]: any, // // data about subject
-    },
+        [key: string]: any, // data about subject
+    }),
     "issuer": string, // issuer DID
     "type": string[], // credential type(s), always begins with "VerifiableCredential"
     "id": string, // identifies credential (version 4 UUID)
@@ -248,8 +270,8 @@ Response Body: [**DecryptedPresentation**](https://docs.unum.id/Server-SDK-Types
 ```typescript title="DecryptedPresentation"
 {
   "isVerified": boolean; // whether the presentation is valid
-  "type": 'VerifiablePresentation' | 'NoPresentation' // type of presentation. NoPresentation means user declined request.
-  "presentation": Presentation | NoPresentation, // decrypted Presentation (or NoPresentation) object
+  "type": 'VerifiablePresentation' | 'DeclinedPresentation' // type of presentation. DeclinedPresentation means user declined request and the submitted presentation's VerifiableCredential attribute was undefined or an empty array.
+  "presentation": Presentation, // decrypted Presentation object
   "message"?: string; // (optional) included if isVerified is false. Explains why verification failed.
 }
 ```
@@ -326,26 +348,3 @@ Response Body: **CredentialStatusInfo**. If unsuccessful and exception will be t
   "status": CredentialStatusOptions; // a string literal type that currently only consists of 'valid' and 'revoked'
 }
 ```
-
-## Other Information
-### Distribution
-
-This project is publicly published on the official npm [registry](https://www.npmjs.com/package/@unumid/server-sdk). For example it can be pulled with, `npm i @unumid/server-sdk` or `yarn add @unumid/server-sdk`.
-
-### Releases
-
-Releases and publishing to NPM is automated via Github Actions CI job. In order to trigger a release one should push a git tag with a preceding `v` with semver notation, ie v1.1.1, to the `main` branch. This will trigger the CI job to bump the package version, generate typedocs, publish to NPM, make a release commit, and make a Github Release. The message of the git tag will be the release message so please make it meaningful. For example, `git tag v1.2.0 -m "Updated the SDK with a new CI job" && push origin v1.1.1`.
-
-### Global Dependencies
-- NodeJS v14.0.0 or higher, preferably v14.15.0 or higher
-- yarn
-
-### Logging
-Logs level defaults to Info. One can set to debug for more information via the environment variable LOG_LEVEL, i.e. LOG_LEVEL=debug. We are using standard NPM log levels. More details on the various log levels [here](https://github.com/winstonjs/winston#logging-levels).
-
-The logs default to stdout so can be aggregated using any log provider you would like from disk.
-
-### Documentation
-High level technical documentation can be found [here](https://https://docs.unum.id/server-sdk) which is served via [Docusaurus](https://github.com/UnumID/UnumID.github.io). More detailed generated from source documentation can be found [here](https://docs.unum.id/Server-SDK-Typescript/index.html) which is served via repo specific Github pages via the /docs folder of the main branch.
-
-In order to generate the Typedoc documentation from the source code run the `createTypedocs.sh` script.
