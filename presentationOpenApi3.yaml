@@ -1,0 +1,329 @@
+openapi: 3.0.0
+info:
+  title: Customer Presentation
+  contact: {}
+  version: '1.0'
+servers:
+- url: http://example.com
+  variables: {}
+paths:
+  /presentation:
+    post:
+      summary: /presentation
+      description: Verify an encrypted presentation coming from UnumID Mobile SDK ->  Mobile app -> Unum ID SaaS -> Your app -> Unum ID Server SDK. This is the endpoint your application needs to implement as interface to the Unum ID Server SDK.
+      operationId: /presentation
+      parameters:
+      - name: version
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: 1.0.0
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/~1presentationrequest'
+            example:
+              '@context': https://www.w3.org/2018/credentials/v1
+              presentationRequestInfo:
+                presentationRequest:
+                  uuid: ee62d1f9-29dd-4e3c-917e-be979003f97a
+                  createdAt: 2021-04-24T02:22:53.177Z
+                  updatedAt: 2021-04-24T02:22:53.177Z
+                  expiresAt: 2021-04-24T02:32:53.177Z
+                  verifier: did:unum:f2054199-1069-4337-a588-83d099e79d44
+                  credentialRequests:
+                  - type: FirstNameCredential
+                    issuers:
+                    - did:unum:6b0e3082-2c3d-42e8-9af7-73f7920bfca9
+                    required: false
+                  proof:
+                    type: secp256r1Signature2020
+                    created: 2021-04-24T02:22:53.18Z
+                    proofPurpose: AssertionMethod
+                    unsignedValue: '{"createdAt":"2021-04-24T02:22:53.177Z","credentialRequests":[{"issuers":["did:unum:6b0e3082-2c3d-42e8-9af7-73f7920bfca9"],"required":false,"type":"FirstNameCredential"}],"expiresAt":"2021-04-24T02:32:53.177Z","holderAppUuid":"91514d8e-b5b2-41d9-9744-3cbb2bb9a85d","metadata":{},"updatedAt":"2021-04-24T02:22:53.177Z","uuid":"ee62d1f9-29dd-4e3c-917e-be979003f97a","verifier":"did:unum:f2054199-1069-4337-a588-83d099e79d44"}'
+                    signatureValue: 381yXZBU2F6fP71nyzNKvXPQu7VgYMuGSXNai9UJHHPtoDLGvgLQQLJzHpCGAew9hMrhSwmsTP48AweKwHu5fuQaqAwHQ4u6
+                    verificationMethod: did:unum:f2054199-1069-4337-a588-83d099e79d44
+                  metadata: {}
+                  holderAppUuid: 91514d8e-b5b2-41d9-9744-3cbb2bb9a85d
+                issuers: {}
+                verifier:
+                  name: ACME Website
+                  did: did:unum:f2054199-1069-4337-a588-83d099e79d44
+                  url: https://acme-verifier-api.demo.dev-unum.id/presentation
+              encryptedPresentation:
+                data: nbvvWbBJFfVdquoTUBAEYZVTRdEhnFTbJS66P54fGmkcDhVSAbWDgTrtCPEdZ4vnoVmdsvnjzW6USMRQAww3Y9qvUo9DRp3JDT3JM8L7naqsZ7YK7oggEsgYwessmU8SkLcgsVqRJFnxFSmPH9Wg5iWyrvFDwGb8G6ZsboSiX5kPC1WjVCgQdnoGoU1fike2XDD3y4UY5EVYbRgAN7Mut5x6e2RQmWWeCdwaFXQYBM6j5qY9DUiyXhiAmKsjW1cGt6C6h2wHHxq5XWWEjzTbC4AikvngmUGfVrCixuaEe9ohPdypDugCdGcYWyqsjTaqRwmvYDZ28x2oco9PQdeVmKSW3BrycE54duHDhxme7zwCEXBD1GZbSEjhtxZvr9XnXu7dziTU4FsThLNXDhpnfj4NyX3p63aPj4cJyNkwuDFKDNBHtkDdnqLb1U8em2iwYbcRi2QTZSrisdoAffnEgC72QwTkmgg85Z52F9CWSyJBrEUYhLkDaSdMTqoWrBVzcLJnLxyLpbngxdkHRbrXKDSsrtCwTbbsF22eDBD5mXaeJvUMb6aGyzc7JoUSmsegtrbHAW5DBZLzUpTZvuTsGFrzV5X6fjoxiiMSvwM8pG77Vv5X6137vooTYjfcdWd1LrN4N3E3MXSSMPQYUVMQk21AypUmVhkDF6KqdFbx7L43cuCrpzE4A8VnJy2f4WoGktCztz6PeZvNeqxrjLfz2yA1xPMyjVvdyQtHAkibqdAquJ1eMG2vW1LzpAdWZdPGpzefG7w9QKZbVDcDNH4zKYHAPwPqKtqetwo8mK9irampCVfNXLMk2VmhvqiYzJTpKwYJ4jeg5cSk84hR24rv8ourfH9S4b83PiGtPG4ih5nAA6Vivh9HG1B7DrzAK7BirnNxjwdYUxL5yPZsFKmwRUHEcNyYEMEdCBLQged2EJdTz1NSvF6Wtkt9M9EMGTUCAgrqp5cTGN6ZszjcLSmhmhAFcRxWjrwQnZzjBSbReo27bqv8C1zUkMmECs6BCGNDeTWDrhHVpkAh2UQkcVo5E5hfcv4bZNqLCuPA9YTgoMBxkViWjoMK67zkXtmqYfDR7NRDbTmdQ7cSpbkWV1Ri9k3AzGbroyPVepjyGLFpXBNkN95fTMw9pyZwHWxdtheGdqn7s7hs6PXqKb5JMxzQea7WA9818HNyXsbg5nfeSAXkmMjGyjBkm8ejmf8EGVA5RBKKA94QgMQaMeqH8Z5hEfLn7oxW12SfUd6HghB6gux4tv8mAYaSkZACrNMUDwz3yNWcFzphQqP5ok8S7R2crEDNTNqdEskfgnYmDhKvqUNhzkMtcAX4BEiKWFgmWJYRsVo6ceCzzFzYXcjF7C3M5Hcpt6pknJ2oTt7HEgB2ENh6spq82h8nhxMm3ivHprpxsnhsq6MnHy5462rjWPJaVyRRwdSCk9r847gYTfui7JdJRM94hLFdK13ZzNtS6XAX5E3P7yqgS5FkcqUF2RVQA2wxDhiAAGrnmmGKfDFYPxvTr42A9Jg7L6Yh7UNUzb8b58jvhegGnXAszyjugCb9bL28RYJmaeL8HfMCMwwGk7MzegXoczXGGA7HmUsavx9xjVxTAup9GDsoAU4zkNEbjM8TtzAsprQadJmRLhEoHaKTfKULroPVfxqNCgGgKecj1Zxk2rkhoPh4kXBPP7aRCEdhu9aTMGh4XQn8VeS8NGSwD8jh3YmazBuZFfVdDbr8dAo1QyxpMXVo6HJ9XPuepUxjhMjjFdMYp5zsjUgKsCRNAnYs2i5ur2Mz6gvoRJcvyKyqG6DkA1CyTjvRq7WGQgceDS8i9jpTXeEZsqK5AqjD54diNwokriKWJLwua8YEhGE9GJvphGi2a8yq975nHVGq6XSjfNr68QWnb2CQ7czz2E3nwGHZUa2pUvU96snUb8iVzbvwi18DyNoSoJDvHaKp
+                key:
+                  iv: GJQp3wi7hKAJBGqSYqC7dU94xmkqPLoGRCG4gYkL43Z1FVwAUsK2HQcuDcu2gREk9y7HSN2kYWPENKoS98JEYW4MvHce26RHFdC7xiFvb8KRo4s5ZEY84htpz5JcKWMPUqZ5wqWLm9hZWeEkXD49xWsPsNcZgJGQ2Vessw7aymjxRWzSiQ5xrPygs7d7FLnqc9RrGk6PvyA1YmG9mDMHra7BaFuDyEDrKtGJhvz4qwNUtGpHUNDZepBwmweD1WePRhhFpEZxde5G6Lo72aD7DQ4KZtiKzxWMxZ7iDsRTAPi8cBDui7NTAXQmWq2NFQKh1VTNcffDtnQLuBQbRftncUwuuUHbV
+                  key: 3oFyHguURJcBSzbwpgMD82HqXnj6erk3ciu4uKNAeUJhoxDhXvdzdGwfQcHh941JWMfpG3U1LhVweeex28zLLrUq2xsBeMKYfEZ8PZUi5cJJXj7fNAp1PH6Av1L2Hizxeo2161TeycnwP4S84ZZqneh2LzLKpkPA7j51ZifaZuEJnUabPDANEhBi8WeDsHzqrFv71dE3KoPUgpAqG48NcbqzfktCpfbhuZToVJYp5G1SLjYpHcPwdjKBVfq5VAtaJVzYDEuUnDtuDifjdGDL3V5RiEKpgVo9YTbuS4K9UzfkaWBCzj9ULeUUUM7oGZfK5GA72D1PykewU8PfVBLXZyFrH1smTH
+                  algorithm: 4Bi7mJMt9YdqgLtHmePh3Nm4JDPngf1q5zkWx3gfVDedgqbszw2k6mjcTW71tr32QyQnTem8E65p1Q61SiN1RoFhco4yT2uTwY9LdiD3GaiLRFLVQxLe8QiHDKbHff1YShVfi2Lgr1wHzA4nRcWHTaHxoDJVcib82DxFDxdo3fSuqAsh1BsEJjPzAejh9997hdDmagUti6zCgZUGt5SH6mSW98PsE2o1KoTJYDWUW9dXtxTyqDxv7gxSyNfajqpWm1uMUBsE313HPGwhG4BN1qrMYCy7Zi8UUSaePxgXfT54yFSCskUR2h2cKtygC3Em1PVgk7fD6cRNjzSgQXcMvgCEfTZ1zN
+                  did: did:unum:25f703d2-eede-40e5-8a0f-7e67f01df63e
+        required: true
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+components:
+  schemas:
+    /presentationrequest:
+      title: /presentationrequest
+      required:
+      - '@context'
+      - presentationRequestInfo
+      - encryptedPresentation
+      type: object
+      properties:
+        '@context':
+          type: string
+        presentationRequestInfo:
+          $ref: '#/components/schemas/PresentationRequestInfo'
+        encryptedPresentation:
+          $ref: '#/components/schemas/EncryptedPresentation'
+      example:
+        '@context': https://www.w3.org/2018/credentials/v1
+        presentationRequestInfo:
+          presentationRequest:
+            uuid: ee62d1f9-29dd-4e3c-917e-be979003f97a
+            createdAt: 2021-04-24T02:22:53.177Z
+            updatedAt: 2021-04-24T02:22:53.177Z
+            expiresAt: 2021-04-24T02:32:53.177Z
+            verifier: did:unum:f2054199-1069-4337-a588-83d099e79d44
+            credentialRequests:
+            - type: FirstNameCredential
+              issuers:
+              - did:unum:6b0e3082-2c3d-42e8-9af7-73f7920bfca9
+              required: false
+            proof:
+              type: secp256r1Signature2020
+              created: 2021-04-24T02:22:53.18Z
+              proofPurpose: AssertionMethod
+              unsignedValue: '{"createdAt":"2021-04-24T02:22:53.177Z","credentialRequests":[{"issuers":["did:unum:6b0e3082-2c3d-42e8-9af7-73f7920bfca9"],"required":false,"type":"FirstNameCredential"}],"expiresAt":"2021-04-24T02:32:53.177Z","holderAppUuid":"91514d8e-b5b2-41d9-9744-3cbb2bb9a85d","metadata":{},"updatedAt":"2021-04-24T02:22:53.177Z","uuid":"ee62d1f9-29dd-4e3c-917e-be979003f97a","verifier":"did:unum:f2054199-1069-4337-a588-83d099e79d44"}'
+              signatureValue: 381yXZBU2F6fP71nyzNKvXPQu7VgYMuGSXNai9UJHHPtoDLGvgLQQLJzHpCGAew9hMrhSwmsTP48AweKwHu5fuQaqAwHQ4u6
+              verificationMethod: did:unum:f2054199-1069-4337-a588-83d099e79d44
+            metadata: {}
+            holderAppUuid: 91514d8e-b5b2-41d9-9744-3cbb2bb9a85d
+          issuers: {}
+          verifier:
+            name: ACME Website
+            did: did:unum:f2054199-1069-4337-a588-83d099e79d44
+            url: https://acme-verifier-api.demo.dev-unum.id/presentation
+        encryptedPresentation:
+          data: nbvvWbBJFfVdquoTUBAEYZVTRdEhnFTbJS66P54fGmkcDhVSAbWDgTrtCPEdZ4vnoVmdsvnjzW6USMRQAww3Y9qvUo9DRp3JDT3JM8L7naqsZ7YK7oggEsgYwessmU8SkLcgsVqRJFnxFSmPH9Wg5iWyrvFDwGb8G6ZsboSiX5kPC1WjVCgQdnoGoU1fike2XDD3y4UY5EVYbRgAN7Mut5x6e2RQmWWeCdwaFXQYBM6j5qY9DUiyXhiAmKsjW1cGt6C6h2wHHxq5XWWEjzTbC4AikvngmUGfVrCixuaEe9ohPdypDugCdGcYWyqsjTaqRwmvYDZ28x2oco9PQdeVmKSW3BrycE54duHDhxme7zwCEXBD1GZbSEjhtxZvr9XnXu7dziTU4FsThLNXDhpnfj4NyX3p63aPj4cJyNkwuDFKDNBHtkDdnqLb1U8em2iwYbcRi2QTZSrisdoAffnEgC72QwTkmgg85Z52F9CWSyJBrEUYhLkDaSdMTqoWrBVzcLJnLxyLpbngxdkHRbrXKDSsrtCwTbbsF22eDBD5mXaeJvUMb6aGyzc7JoUSmsegtrbHAW5DBZLzUpTZvuTsGFrzV5X6fjoxiiMSvwM8pG77Vv5X6137vooTYjfcdWd1LrN4N3E3MXSSMPQYUVMQk21AypUmVhkDF6KqdFbx7L43cuCrpzE4A8VnJy2f4WoGktCztz6PeZvNeqxrjLfz2yA1xPMyjVvdyQtHAkibqdAquJ1eMG2vW1LzpAdWZdPGpzefG7w9QKZbVDcDNH4zKYHAPwPqKtqetwo8mK9irampCVfNXLMk2VmhvqiYzJTpKwYJ4jeg5cSk84hR24rv8ourfH9S4b83PiGtPG4ih5nAA6Vivh9HG1B7DrzAK7BirnNxjwdYUxL5yPZsFKmwRUHEcNyYEMEdCBLQged2EJdTz1NSvF6Wtkt9M9EMGTUCAgrqp5cTGN6ZszjcLSmhmhAFcRxWjrwQnZzjBSbReo27bqv8C1zUkMmECs6BCGNDeTWDrhHVpkAh2UQkcVo5E5hfcv4bZNqLCuPA9YTgoMBxkViWjoMK67zkXtmqYfDR7NRDbTmdQ7cSpbkWV1Ri9k3AzGbroyPVepjyGLFpXBNkN95fTMw9pyZwHWxdtheGdqn7s7hs6PXqKb5JMxzQea7WA9818HNyXsbg5nfeSAXkmMjGyjBkm8ejmf8EGVA5RBKKA94QgMQaMeqH8Z5hEfLn7oxW12SfUd6HghB6gux4tv8mAYaSkZACrNMUDwz3yNWcFzphQqP5ok8S7R2crEDNTNqdEskfgnYmDhKvqUNhzkMtcAX4BEiKWFgmWJYRsVo6ceCzzFzYXcjF7C3M5Hcpt6pknJ2oTt7HEgB2ENh6spq82h8nhxMm3ivHprpxsnhsq6MnHy5462rjWPJaVyRRwdSCk9r847gYTfui7JdJRM94hLFdK13ZzNtS6XAX5E3P7yqgS5FkcqUF2RVQA2wxDhiAAGrnmmGKfDFYPxvTr42A9Jg7L6Yh7UNUzb8b58jvhegGnXAszyjugCb9bL28RYJmaeL8HfMCMwwGk7MzegXoczXGGA7HmUsavx9xjVxTAup9GDsoAU4zkNEbjM8TtzAsprQadJmRLhEoHaKTfKULroPVfxqNCgGgKecj1Zxk2rkhoPh4kXBPP7aRCEdhu9aTMGh4XQn8VeS8NGSwD8jh3YmazBuZFfVdDbr8dAo1QyxpMXVo6HJ9XPuepUxjhMjjFdMYp5zsjUgKsCRNAnYs2i5ur2Mz6gvoRJcvyKyqG6DkA1CyTjvRq7WGQgceDS8i9jpTXeEZsqK5AqjD54diNwokriKWJLwua8YEhGE9GJvphGi2a8yq975nHVGq6XSjfNr68QWnb2CQ7czz2E3nwGHZUa2pUvU96snUb8iVzbvwi18DyNoSoJDvHaKp
+          key:
+            iv: GJQp3wi7hKAJBGqSYqC7dU94xmkqPLoGRCG4gYkL43Z1FVwAUsK2HQcuDcu2gREk9y7HSN2kYWPENKoS98JEYW4MvHce26RHFdC7xiFvb8KRo4s5ZEY84htpz5JcKWMPUqZ5wqWLm9hZWeEkXD49xWsPsNcZgJGQ2Vessw7aymjxRWzSiQ5xrPygs7d7FLnqc9RrGk6PvyA1YmG9mDMHra7BaFuDyEDrKtGJhvz4qwNUtGpHUNDZepBwmweD1WePRhhFpEZxde5G6Lo72aD7DQ4KZtiKzxWMxZ7iDsRTAPi8cBDui7NTAXQmWq2NFQKh1VTNcffDtnQLuBQbRftncUwuuUHbV
+            key: 3oFyHguURJcBSzbwpgMD82HqXnj6erk3ciu4uKNAeUJhoxDhXvdzdGwfQcHh941JWMfpG3U1LhVweeex28zLLrUq2xsBeMKYfEZ8PZUi5cJJXj7fNAp1PH6Av1L2Hizxeo2161TeycnwP4S84ZZqneh2LzLKpkPA7j51ZifaZuEJnUabPDANEhBi8WeDsHzqrFv71dE3KoPUgpAqG48NcbqzfktCpfbhuZToVJYp5G1SLjYpHcPwdjKBVfq5VAtaJVzYDEuUnDtuDifjdGDL3V5RiEKpgVo9YTbuS4K9UzfkaWBCzj9ULeUUUM7oGZfK5GA72D1PykewU8PfVBLXZyFrH1smTH
+            algorithm: 4Bi7mJMt9YdqgLtHmePh3Nm4JDPngf1q5zkWx3gfVDedgqbszw2k6mjcTW71tr32QyQnTem8E65p1Q61SiN1RoFhco4yT2uTwY9LdiD3GaiLRFLVQxLe8QiHDKbHff1YShVfi2Lgr1wHzA4nRcWHTaHxoDJVcib82DxFDxdo3fSuqAsh1BsEJjPzAejh9997hdDmagUti6zCgZUGt5SH6mSW98PsE2o1KoTJYDWUW9dXtxTyqDxv7gxSyNfajqpWm1uMUBsE313HPGwhG4BN1qrMYCy7Zi8UUSaePxgXfT54yFSCskUR2h2cKtygC3Em1PVgk7fD6cRNjzSgQXcMvgCEfTZ1zN
+            did: did:unum:25f703d2-eede-40e5-8a0f-7e67f01df63e
+    PresentationRequestInfo:
+      title: PresentationRequestInfo
+      required:
+      - presentationRequest
+      - issuers
+      - verifier
+      type: object
+      properties:
+        presentationRequest:
+          $ref: '#/components/schemas/PresentationRequest1'
+        issuers:
+          type: object
+        verifier:
+          $ref: '#/components/schemas/Verifier'
+      example:
+        presentationRequest:
+          uuid: ee62d1f9-29dd-4e3c-917e-be979003f97a
+          createdAt: 2021-04-24T02:22:53.177Z
+          updatedAt: 2021-04-24T02:22:53.177Z
+          expiresAt: 2021-04-24T02:32:53.177Z
+          verifier: did:unum:f2054199-1069-4337-a588-83d099e79d44
+          credentialRequests:
+          - type: FirstNameCredential
+            issuers:
+            - did:unum:6b0e3082-2c3d-42e8-9af7-73f7920bfca9
+            required: false
+          proof:
+            type: secp256r1Signature2020
+            created: 2021-04-24T02:22:53.18Z
+            proofPurpose: AssertionMethod
+            unsignedValue: '{"createdAt":"2021-04-24T02:22:53.177Z","credentialRequests":[{"issuers":["did:unum:6b0e3082-2c3d-42e8-9af7-73f7920bfca9"],"required":false,"type":"FirstNameCredential"}],"expiresAt":"2021-04-24T02:32:53.177Z","holderAppUuid":"91514d8e-b5b2-41d9-9744-3cbb2bb9a85d","metadata":{},"updatedAt":"2021-04-24T02:22:53.177Z","uuid":"ee62d1f9-29dd-4e3c-917e-be979003f97a","verifier":"did:unum:f2054199-1069-4337-a588-83d099e79d44"}'
+            signatureValue: 381yXZBU2F6fP71nyzNKvXPQu7VgYMuGSXNai9UJHHPtoDLGvgLQQLJzHpCGAew9hMrhSwmsTP48AweKwHu5fuQaqAwHQ4u6
+            verificationMethod: did:unum:f2054199-1069-4337-a588-83d099e79d44
+          metadata: {}
+          holderAppUuid: 91514d8e-b5b2-41d9-9744-3cbb2bb9a85d
+        issuers: {}
+        verifier:
+          name: ACME Website
+          did: did:unum:f2054199-1069-4337-a588-83d099e79d44
+          url: https://acme-verifier-api.demo.dev-unum.id/presentation
+    PresentationRequest1:
+      title: PresentationRequest1
+      required:
+      - uuid
+      - createdAt
+      - updatedAt
+      - expiresAt
+      - verifier
+      - credentialRequests
+      - proof
+      - metadata
+      - holderAppUuid
+      type: object
+      properties:
+        uuid:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        expiresAt:
+          type: string
+        verifier:
+          type: string
+        credentialRequests:
+          type: array
+          items:
+            $ref: '#/components/schemas/CredentialRequest'
+          description: ''
+        proof:
+          $ref: '#/components/schemas/Proof'
+        metadata:
+          type: object
+        holderAppUuid:
+          type: string
+      example:
+        uuid: ee62d1f9-29dd-4e3c-917e-be979003f97a
+        createdAt: 2021-04-24T02:22:53.177Z
+        updatedAt: 2021-04-24T02:22:53.177Z
+        expiresAt: 2021-04-24T02:32:53.177Z
+        verifier: did:unum:f2054199-1069-4337-a588-83d099e79d44
+        credentialRequests:
+        - type: FirstNameCredential
+          issuers:
+          - did:unum:6b0e3082-2c3d-42e8-9af7-73f7920bfca9
+          required: false
+        proof:
+          type: secp256r1Signature2020
+          created: 2021-04-24T02:22:53.18Z
+          proofPurpose: AssertionMethod
+          unsignedValue: '{"createdAt":"2021-04-24T02:22:53.177Z","credentialRequests":[{"issuers":["did:unum:6b0e3082-2c3d-42e8-9af7-73f7920bfca9"],"required":false,"type":"FirstNameCredential"}],"expiresAt":"2021-04-24T02:32:53.177Z","holderAppUuid":"91514d8e-b5b2-41d9-9744-3cbb2bb9a85d","metadata":{},"updatedAt":"2021-04-24T02:22:53.177Z","uuid":"ee62d1f9-29dd-4e3c-917e-be979003f97a","verifier":"did:unum:f2054199-1069-4337-a588-83d099e79d44"}'
+          signatureValue: 381yXZBU2F6fP71nyzNKvXPQu7VgYMuGSXNai9UJHHPtoDLGvgLQQLJzHpCGAew9hMrhSwmsTP48AweKwHu5fuQaqAwHQ4u6
+          verificationMethod: did:unum:f2054199-1069-4337-a588-83d099e79d44
+        metadata: {}
+        holderAppUuid: 91514d8e-b5b2-41d9-9744-3cbb2bb9a85d
+    CredentialRequest:
+      title: CredentialRequest
+      required:
+      - type
+      - issuers
+      - required
+      type: object
+      properties:
+        type:
+          type: string
+        issuers:
+          type: array
+          items:
+            type: string
+          description: ''
+        required:
+          type: boolean
+      example:
+        type: FirstNameCredential
+        issuers:
+        - did:unum:6b0e3082-2c3d-42e8-9af7-73f7920bfca9
+        required: false
+    Proof:
+      title: Proof
+      required:
+      - type
+      - created
+      - proofPurpose
+      - unsignedValue
+      - signatureValue
+      - verificationMethod
+      type: object
+      properties:
+        type:
+          type: string
+        created:
+          type: string
+        proofPurpose:
+          type: string
+        unsignedValue:
+          type: string
+        signatureValue:
+          type: string
+        verificationMethod:
+          type: string
+      example:
+        type: secp256r1Signature2020
+        created: 2021-04-24T02:22:53.18Z
+        proofPurpose: AssertionMethod
+        unsignedValue: '{"createdAt":"2021-04-24T02:22:53.177Z","credentialRequests":[{"issuers":["did:unum:6b0e3082-2c3d-42e8-9af7-73f7920bfca9"],"required":false,"type":"FirstNameCredential"}],"expiresAt":"2021-04-24T02:32:53.177Z","holderAppUuid":"91514d8e-b5b2-41d9-9744-3cbb2bb9a85d","metadata":{},"updatedAt":"2021-04-24T02:22:53.177Z","uuid":"ee62d1f9-29dd-4e3c-917e-be979003f97a","verifier":"did:unum:f2054199-1069-4337-a588-83d099e79d44"}'
+        signatureValue: 381yXZBU2F6fP71nyzNKvXPQu7VgYMuGSXNai9UJHHPtoDLGvgLQQLJzHpCGAew9hMrhSwmsTP48AweKwHu5fuQaqAwHQ4u6
+        verificationMethod: did:unum:f2054199-1069-4337-a588-83d099e79d44
+    Verifier:
+      title: Verifier
+      required:
+      - name
+      - did
+      - url
+      type: object
+      properties:
+        name:
+          type: string
+        did:
+          type: string
+        url:
+          type: string
+      example:
+        name: ACME Website
+        did: did:unum:f2054199-1069-4337-a588-83d099e79d44
+        url: https://acme-verifier-api.demo.dev-unum.id/presentation
+    EncryptedPresentation:
+      title: EncryptedPresentation
+      required:
+      - data
+      - key
+      type: object
+      properties:
+        data:
+          type: string
+        key:
+          $ref: '#/components/schemas/Key'
+      example:
+        data: nbvvWbBJFfVdquoTUBAEYZVTRdEhnFTbJS66P54fGmkcDhVSAbWDgTrtCPEdZ4vnoVmdsvnjzW6USMRQAww3Y9qvUo9DRp3JDT3JM8L7naqsZ7YK7oggEsgYwessmU8SkLcgsVqRJFnxFSmPH9Wg5iWyrvFDwGb8G6ZsboSiX5kPC1WjVCgQdnoGoU1fike2XDD3y4UY5EVYbRgAN7Mut5x6e2RQmWWeCdwaFXQYBM6j5qY9DUiyXhiAmKsjW1cGt6C6h2wHHxq5XWWEjzTbC4AikvngmUGfVrCixuaEe9ohPdypDugCdGcYWyqsjTaqRwmvYDZ28x2oco9PQdeVmKSW3BrycE54duHDhxme7zwCEXBD1GZbSEjhtxZvr9XnXu7dziTU4FsThLNXDhpnfj4NyX3p63aPj4cJyNkwuDFKDNBHtkDdnqLb1U8em2iwYbcRi2QTZSrisdoAffnEgC72QwTkmgg85Z52F9CWSyJBrEUYhLkDaSdMTqoWrBVzcLJnLxyLpbngxdkHRbrXKDSsrtCwTbbsF22eDBD5mXaeJvUMb6aGyzc7JoUSmsegtrbHAW5DBZLzUpTZvuTsGFrzV5X6fjoxiiMSvwM8pG77Vv5X6137vooTYjfcdWd1LrN4N3E3MXSSMPQYUVMQk21AypUmVhkDF6KqdFbx7L43cuCrpzE4A8VnJy2f4WoGktCztz6PeZvNeqxrjLfz2yA1xPMyjVvdyQtHAkibqdAquJ1eMG2vW1LzpAdWZdPGpzefG7w9QKZbVDcDNH4zKYHAPwPqKtqetwo8mK9irampCVfNXLMk2VmhvqiYzJTpKwYJ4jeg5cSk84hR24rv8ourfH9S4b83PiGtPG4ih5nAA6Vivh9HG1B7DrzAK7BirnNxjwdYUxL5yPZsFKmwRUHEcNyYEMEdCBLQged2EJdTz1NSvF6Wtkt9M9EMGTUCAgrqp5cTGN6ZszjcLSmhmhAFcRxWjrwQnZzjBSbReo27bqv8C1zUkMmECs6BCGNDeTWDrhHVpkAh2UQkcVo5E5hfcv4bZNqLCuPA9YTgoMBxkViWjoMK67zkXtmqYfDR7NRDbTmdQ7cSpbkWV1Ri9k3AzGbroyPVepjyGLFpXBNkN95fTMw9pyZwHWxdtheGdqn7s7hs6PXqKb5JMxzQea7WA9818HNyXsbg5nfeSAXkmMjGyjBkm8ejmf8EGVA5RBKKA94QgMQaMeqH8Z5hEfLn7oxW12SfUd6HghB6gux4tv8mAYaSkZACrNMUDwz3yNWcFzphQqP5ok8S7R2crEDNTNqdEskfgnYmDhKvqUNhzkMtcAX4BEiKWFgmWJYRsVo6ceCzzFzYXcjF7C3M5Hcpt6pknJ2oTt7HEgB2ENh6spq82h8nhxMm3ivHprpxsnhsq6MnHy5462rjWPJaVyRRwdSCk9r847gYTfui7JdJRM94hLFdK13ZzNtS6XAX5E3P7yqgS5FkcqUF2RVQA2wxDhiAAGrnmmGKfDFYPxvTr42A9Jg7L6Yh7UNUzb8b58jvhegGnXAszyjugCb9bL28RYJmaeL8HfMCMwwGk7MzegXoczXGGA7HmUsavx9xjVxTAup9GDsoAU4zkNEbjM8TtzAsprQadJmRLhEoHaKTfKULroPVfxqNCgGgKecj1Zxk2rkhoPh4kXBPP7aRCEdhu9aTMGh4XQn8VeS8NGSwD8jh3YmazBuZFfVdDbr8dAo1QyxpMXVo6HJ9XPuepUxjhMjjFdMYp5zsjUgKsCRNAnYs2i5ur2Mz6gvoRJcvyKyqG6DkA1CyTjvRq7WGQgceDS8i9jpTXeEZsqK5AqjD54diNwokriKWJLwua8YEhGE9GJvphGi2a8yq975nHVGq6XSjfNr68QWnb2CQ7czz2E3nwGHZUa2pUvU96snUb8iVzbvwi18DyNoSoJDvHaKp
+        key:
+          iv: GJQp3wi7hKAJBGqSYqC7dU94xmkqPLoGRCG4gYkL43Z1FVwAUsK2HQcuDcu2gREk9y7HSN2kYWPENKoS98JEYW4MvHce26RHFdC7xiFvb8KRo4s5ZEY84htpz5JcKWMPUqZ5wqWLm9hZWeEkXD49xWsPsNcZgJGQ2Vessw7aymjxRWzSiQ5xrPygs7d7FLnqc9RrGk6PvyA1YmG9mDMHra7BaFuDyEDrKtGJhvz4qwNUtGpHUNDZepBwmweD1WePRhhFpEZxde5G6Lo72aD7DQ4KZtiKzxWMxZ7iDsRTAPi8cBDui7NTAXQmWq2NFQKh1VTNcffDtnQLuBQbRftncUwuuUHbV
+          key: 3oFyHguURJcBSzbwpgMD82HqXnj6erk3ciu4uKNAeUJhoxDhXvdzdGwfQcHh941JWMfpG3U1LhVweeex28zLLrUq2xsBeMKYfEZ8PZUi5cJJXj7fNAp1PH6Av1L2Hizxeo2161TeycnwP4S84ZZqneh2LzLKpkPA7j51ZifaZuEJnUabPDANEhBi8WeDsHzqrFv71dE3KoPUgpAqG48NcbqzfktCpfbhuZToVJYp5G1SLjYpHcPwdjKBVfq5VAtaJVzYDEuUnDtuDifjdGDL3V5RiEKpgVo9YTbuS4K9UzfkaWBCzj9ULeUUUM7oGZfK5GA72D1PykewU8PfVBLXZyFrH1smTH
+          algorithm: 4Bi7mJMt9YdqgLtHmePh3Nm4JDPngf1q5zkWx3gfVDedgqbszw2k6mjcTW71tr32QyQnTem8E65p1Q61SiN1RoFhco4yT2uTwY9LdiD3GaiLRFLVQxLe8QiHDKbHff1YShVfi2Lgr1wHzA4nRcWHTaHxoDJVcib82DxFDxdo3fSuqAsh1BsEJjPzAejh9997hdDmagUti6zCgZUGt5SH6mSW98PsE2o1KoTJYDWUW9dXtxTyqDxv7gxSyNfajqpWm1uMUBsE313HPGwhG4BN1qrMYCy7Zi8UUSaePxgXfT54yFSCskUR2h2cKtygC3Em1PVgk7fD6cRNjzSgQXcMvgCEfTZ1zN
+          did: did:unum:25f703d2-eede-40e5-8a0f-7e67f01df63e
+    Key:
+      title: Key
+      required:
+      - iv
+      - key
+      - algorithm
+      - did
+      type: object
+      properties:
+        iv:
+          type: string
+        key:
+          type: string
+        algorithm:
+          type: string
+        did:
+          type: string
+      example:
+        iv: GJQp3wi7hKAJBGqSYqC7dU94xmkqPLoGRCG4gYkL43Z1FVwAUsK2HQcuDcu2gREk9y7HSN2kYWPENKoS98JEYW4MvHce26RHFdC7xiFvb8KRo4s5ZEY84htpz5JcKWMPUqZ5wqWLm9hZWeEkXD49xWsPsNcZgJGQ2Vessw7aymjxRWzSiQ5xrPygs7d7FLnqc9RrGk6PvyA1YmG9mDMHra7BaFuDyEDrKtGJhvz4qwNUtGpHUNDZepBwmweD1WePRhhFpEZxde5G6Lo72aD7DQ4KZtiKzxWMxZ7iDsRTAPi8cBDui7NTAXQmWq2NFQKh1VTNcffDtnQLuBQbRftncUwuuUHbV
+        key: 3oFyHguURJcBSzbwpgMD82HqXnj6erk3ciu4uKNAeUJhoxDhXvdzdGwfQcHh941JWMfpG3U1LhVweeex28zLLrUq2xsBeMKYfEZ8PZUi5cJJXj7fNAp1PH6Av1L2Hizxeo2161TeycnwP4S84ZZqneh2LzLKpkPA7j51ZifaZuEJnUabPDANEhBi8WeDsHzqrFv71dE3KoPUgpAqG48NcbqzfktCpfbhuZToVJYp5G1SLjYpHcPwdjKBVfq5VAtaJVzYDEuUnDtuDifjdGDL3V5RiEKpgVo9YTbuS4K9UzfkaWBCzj9ULeUUUM7oGZfK5GA72D1PykewU8PfVBLXZyFrH1smTH
+        algorithm: 4Bi7mJMt9YdqgLtHmePh3Nm4JDPngf1q5zkWx3gfVDedgqbszw2k6mjcTW71tr32QyQnTem8E65p1Q61SiN1RoFhco4yT2uTwY9LdiD3GaiLRFLVQxLe8QiHDKbHff1YShVfi2Lgr1wHzA4nRcWHTaHxoDJVcib82DxFDxdo3fSuqAsh1BsEJjPzAejh9997hdDmagUti6zCgZUGt5SH6mSW98PsE2o1KoTJYDWUW9dXtxTyqDxv7gxSyNfajqpWm1uMUBsE313HPGwhG4BN1qrMYCy7Zi8UUSaePxgXfT54yFSCskUR2h2cKtygC3Em1PVgk7fD6cRNjzSgQXcMvgCEfTZ1zN
+        did: did:unum:25f703d2-eede-40e5-8a0f-7e67f01df63e
+tags:
+- name: Misc
+  description: ''
