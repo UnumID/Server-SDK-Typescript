@@ -90,7 +90,8 @@ var constructEncryptedCredentialOpts = function (cred, authorization) { return _
                             subject: subjectDidWithKeyFragment,
                             issuer: cred.issuer,
                             type: cred.type,
-                            data: encryptedData
+                            data: encryptedData,
+                            version: '2.0.0'
                         };
                         return encryptedCredentialOptions;
                     })];
@@ -128,7 +129,8 @@ var constructEncryptedCredentialV1Opts = function (cred, authorization) { return
                             subject: subjectDidWithKeyFragment,
                             issuer: cred.issuer,
                             type: cred.type,
-                            data: encryptedData
+                            data: encryptedData,
+                            version: '1.0.0'
                         };
                         return encryptedCredentialOptions;
                     })];

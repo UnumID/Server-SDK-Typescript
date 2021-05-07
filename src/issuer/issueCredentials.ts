@@ -48,7 +48,8 @@ const constructEncryptedCredentialOpts = async (cred: Credential, authorization:
       subject: subjectDidWithKeyFragment,
       issuer: cred.issuer,
       type: cred.type,
-      data: encryptedData
+      data: encryptedData,
+      version: '2.0.0'
     };
 
     return encryptedCredentialOptions;
@@ -88,7 +89,8 @@ const constructEncryptedCredentialV1Opts = async (cred: CredentialV1, authorizat
       subject: subjectDidWithKeyFragment,
       issuer: cred.issuer,
       type: cred.type,
-      data: encryptedData
+      data: encryptedData,
+      version: '1.0.0'
     };
 
     return encryptedCredentialOptions;
