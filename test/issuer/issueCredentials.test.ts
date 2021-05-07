@@ -65,7 +65,7 @@ describe('issueCredential', () => {
     const dummyDidDoc = await makeDummyDidDocument();
     const headers = { 'x-auth-token': dummyAuthToken };
     mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
-    mockMakeNetworkRequest.mockResolvedValueOnce({ body: { success: true }, headers });
+    mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers });
 
     responseDto = await callIssueCreds(credentialSubject, type, issuer, expirationDate, eccPrivateKey, authHeader);
     response = responseDto.body;
@@ -85,7 +85,7 @@ describe('issueCredential', () => {
   });
 
   it('encrypts the credential for each public key', () => {
-    expect(mockDoEncrypt).toBeCalledTimes(2);
+    expect(mockDoEncrypt).toBeCalledTimes(4);
   });
 
   it('sends the encrypted credentials to the saas', () => {
@@ -106,14 +106,14 @@ describe('issueCredential', () => {
   });
 
   it('does not return an auth token if the SaaS does not return an auth token', async () => {
-    mockMakeNetworkRequest.mockResolvedValueOnce({ body: { success: true } });
+    mockMakeNetworkRequest.mockResolvedValue({ body: { success: true } });
     response = await callIssueCreds(credentialSubject, type, issuer, expirationDate, eccPrivateKey, dummyAdminKey);
     responseAuthToken = response.authToken;
     expect(responseAuthToken).toBeUndefined();
   });
 
   it('type array starts with and contains only one `VerifiableCredential` string despite type of the credential options including the preceeding string', async () => {
-    mockMakeNetworkRequest.mockResolvedValueOnce({ body: { success: true } });
+    mockMakeNetworkRequest.mockResolvedValue({ body: { success: true } });
     response = await callIssueCreds(credentialSubject, type, issuer, expirationDate, eccPrivateKey, dummyAdminKey);
     const types = response.body.type;
     expect(types[0]).toEqual('VerifiableCredential');
