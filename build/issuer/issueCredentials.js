@@ -321,7 +321,7 @@ var constructCredentialOptions = function (type, issuer, credentialSubject, sign
  * @param expirationDate
  */
 exports.issueCredential = function (authorization, type, issuer, credentialSubject, signingPrivateKey, expirationDate) { return __awaiter(void 0, void 0, void 0, function () {
-    var credentialOptions, v, version, unsignedCredential_1, credential_1, encryptedCredentialOptions_1, encryptedCredentialUploadOptions_1, restData_1, restResp_1, unsignedCredential, credential, encryptedCredentialOptions, encryptedCredentialUploadOptions, restData, restResp, authToken, issuedCredential, error_2;
+    var credentialOptions, v, version, unsignedCredential_1, credential_1, encryptedCredentialOptions_1, encryptedCredentialUploadOptions_1, restData_1, restResp_1, latestVersion, unsignedCredential, credential, encryptedCredentialOptions, encryptedCredentialUploadOptions, restData, restResp, authToken, issuedCredential, error_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -353,7 +353,7 @@ exports.issueCredential = function (authorization, type, issuer, credentialSubje
                     method: 'POST',
                     baseUrl: config_1.configData.SaaSUrl,
                     endPoint: 'credentialRepository',
-                    header: { Authorization: authorization },
+                    header: { Authorization: authorization, version: version },
                     data: encryptedCredentialUploadOptions_1
                 };
                 return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData_1)];
@@ -365,7 +365,8 @@ exports.issueCredential = function (authorization, type, issuer, credentialSubje
                 v++;
                 return [3 /*break*/, 1];
             case 5:
-                unsignedCredential = constructUnsignedCredentialObj(credentialOptions, versionList_1.versionList[versionList_1.versionList.length - 1]);
+                latestVersion = versionList_1.versionList[versionList_1.versionList.length - 1];
+                unsignedCredential = constructUnsignedCredentialObj(credentialOptions, latestVersion);
                 credential = constructSignedCredentialObj(unsignedCredential, signingPrivateKey);
                 return [4 /*yield*/, constructEncryptedCredentialOpts(credential, authorization)];
             case 6:
@@ -381,7 +382,7 @@ exports.issueCredential = function (authorization, type, issuer, credentialSubje
                     method: 'POST',
                     baseUrl: config_1.configData.SaaSUrl,
                     endPoint: 'credentialRepository',
-                    header: { Authorization: authorization },
+                    header: { Authorization: authorization, version: latestVersion },
                     data: encryptedCredentialUploadOptions
                 };
                 return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];

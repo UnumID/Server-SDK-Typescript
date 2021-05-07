@@ -358,7 +358,7 @@ export const issueCredential = async (authorization: string | undefined, type: s
           method: 'POST',
           baseUrl: configData.SaaSUrl,
           endPoint: 'credentialRepository',
-          header: { Authorization: authorization },
+          header: { Authorization: authorization, version },
           data: encryptedCredentialUploadOptions
         };
 
@@ -369,8 +369,10 @@ export const issueCredential = async (authorization: string | undefined, type: s
     }
     // });
 
+    const latestVersion: string = versionList[versionList.length - 1];
+
     // Create latest version of the UnsignedCredential object
-    const unsignedCredential = constructUnsignedCredentialObj(credentialOptions, versionList[versionList.length - 1]);
+    const unsignedCredential = constructUnsignedCredentialObj(credentialOptions, latestVersion);
 
     // Create the signed Credential object from the unsignedCredential object
     const credential = constructSignedCredentialObj(unsignedCredential, signingPrivateKey);
@@ -390,7 +392,7 @@ export const issueCredential = async (authorization: string | undefined, type: s
       method: 'POST',
       baseUrl: configData.SaaSUrl,
       endPoint: 'credentialRepository',
-      header: { Authorization: authorization },
+      header: { Authorization: authorization, version: latestVersion },
       data: encryptedCredentialUploadOptions
     };
 

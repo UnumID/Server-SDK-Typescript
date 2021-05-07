@@ -88,9 +88,16 @@ describe('issueCredential', () => {
     expect(mockDoEncrypt).toBeCalledTimes(4);
   });
 
-  it('sends the encrypted credentials to the saas', () => {
+  it('sends the encrypted credentials v1 to the saas', () => {
     expect(mockMakeNetworkRequest).toBeCalled();
     expect(mockMakeNetworkRequest.mock.calls[0][0].data.encryptedCredentials.length).toEqual(2);
+    expect(mockMakeNetworkRequest.mock.calls[0][0].header.version).toEqual('1.0.0');
+  });
+
+  it('sends the encrypted credentials v2 to the saas', () => {
+    expect(mockMakeNetworkRequest).toBeCalled();
+    expect(mockMakeNetworkRequest.mock.calls[1][0].data.encryptedCredentials.length).toEqual(2);
+    expect(mockMakeNetworkRequest.mock.calls[1][0].header.version).toEqual('2.0.0');
   });
 
   it('returns the credential', () => {
