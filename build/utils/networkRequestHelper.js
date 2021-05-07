@@ -71,7 +71,7 @@ exports.makeNetworkRequest = function (inputObj) { return __awaiter(void 0, void
                 options = {
                     method: inputObj.method,
                     body: JSON.stringify(inputObj.data),
-                    headers: __assign(__assign({}, restHdr), { version: '1.0.0' // The api version to hit the UnumID SaaS with in the this version of the SDK
+                    headers: __assign(__assign({}, restHdr), { version: restHdr.version ? restHdr.version : '2.0.0' // The api version to hit the UnumID SaaS with in the this version of the SDK
                      })
                 };
                 respObj = {};

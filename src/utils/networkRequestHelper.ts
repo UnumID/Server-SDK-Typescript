@@ -21,7 +21,7 @@ export const makeNetworkRequest = async <T = unknown> (inputObj: RESTData): Prom
     body: JSON.stringify(inputObj.data),
     headers: {
       ...restHdr,
-      version: '1.0.0' // The api version to hit the UnumID SaaS with in the this version of the SDK
+      version: restHdr.version ? restHdr.version : '2.0.0' // The api version to hit the UnumID SaaS with in the this version of the SDK
     }
   };
   const respObj = {} as RESTResponse<T>;
