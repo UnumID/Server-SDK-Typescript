@@ -194,7 +194,7 @@ export const sendRequest = async (
 
     const restResp = await makeNetworkRequest<PresentationRequestPostDto>(restData);
 
-    const authToken: string = handleAuthToken(restResp);
+    const authToken: string = handleAuthToken(restResp, authorization);
 
     const presentationRequestResponse: UnumDto<PresentationRequestPostDto> = { body: { ...restResp.body }, authToken };
 

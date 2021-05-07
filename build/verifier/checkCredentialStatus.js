@@ -59,7 +59,7 @@ exports.checkCredentialStatus = function (authorization, credentialId) { return 
             case 1:
                 credentialStatusResponse = _a.sent();
                 credentialStatus = credentialStatusResponse.body;
-                authToken = networkRequestHelper_1.handleAuthToken(credentialStatusResponse);
+                authToken = networkRequestHelper_1.handleAuthToken(credentialStatusResponse, authorization);
                 result = {
                     authToken: authToken,
                     body: credentialStatus

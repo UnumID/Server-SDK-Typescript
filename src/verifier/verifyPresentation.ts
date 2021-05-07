@@ -77,7 +77,7 @@ async function verifyPresentationRequest (authorization: string, presentationReq
     throw didDocumentResponse;
   }
 
-  const authToken: string = handleAuthToken(didDocumentResponse);
+  const authToken: string = handleAuthToken(didDocumentResponse, authorization);
   const publicKeyInfos = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
   const { publicKey, encoding } = publicKeyInfos[0];

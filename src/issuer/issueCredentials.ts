@@ -364,7 +364,7 @@ export const issueCredential = async (authorization: string | undefined, type: s
 
         const restResp: JSONObj = await makeNetworkRequest(restData);
 
-        authorization = handleAuthToken(restResp);
+        authorization = handleAuthToken(restResp, authorization as string);
       }
     }
     // });
@@ -398,7 +398,7 @@ export const issueCredential = async (authorization: string | undefined, type: s
 
     const restResp: JSONObj = await makeNetworkRequest(restData);
 
-    const authToken: string = handleAuthToken(restResp);
+    const authToken: string = handleAuthToken(restResp, authorization as string);
 
     const issuedCredential: UnumDto<Credential> = { body: credential, authToken };
 

@@ -50,12 +50,12 @@ export const makeNetworkRequest = async <T = unknown> (inputObj: RESTData): Prom
  * Helper to handle safe auth token handling in responses from UnumID's Saas via makeNetworkRequest
  * @param response JSONObj
  */
-export const handleAuthToken = (response:JSONObj): string => {
+export const handleAuthToken = (response:JSONObj, existingAuthToken:string): string => {
   const authTokenResp = response && response.headers && response.headers['x-auth-token'] ? response.headers['x-auth-token'] : '';
 
   // Ensuring that the authToken attribute is presented as a string or undefined. The header values can be a string | string[] so hence the complex ternary.
   const authToken: string = <string>(isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
   // If authToken is undefined just return undefined, otherwise return a properly formatted Bearer token for use in subsequent requests.
-  const result = authToken ? (authToken.startsWith('Bearer ') ? authToken : `Bearer ${authToken}`) : authToken;
+  const result = authToken ? (authToken.startsWith('Bearer ') ? authToken : `Bearer ${authToken}`) : existingAuthToken;
   return result;
 };

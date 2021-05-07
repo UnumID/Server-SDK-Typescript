@@ -62,7 +62,7 @@ export const sendEmail = async (authorization: string, to: string, deeplink: str
 
     const apiResponse = await makeNetworkRequest<EmailResponseBody>(data);
 
-    const authToken: string = handleAuthToken(apiResponse);
+    const authToken: string = handleAuthToken(apiResponse, authorization);
 
     const result: UnumDto<undefined> = {
       authToken,

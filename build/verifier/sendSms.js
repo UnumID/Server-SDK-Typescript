@@ -96,7 +96,7 @@ exports.sendSms = function (authorization, to, deeplink) { return __awaiter(void
                 if (!apiResponse.body.success) {
                     throw new error_1.CustError(500, 'Unknown error during sendSms');
                 }
-                authToken = networkRequestHelper_1.handleAuthToken(apiResponse);
+                authToken = networkRequestHelper_1.handleAuthToken(apiResponse, authorization);
                 result = {
                     authToken: authToken,
                     body: undefined

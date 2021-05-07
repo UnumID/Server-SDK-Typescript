@@ -80,7 +80,11 @@ export const registerIssuer = async (name: string, customerUuid: string, apiKey:
 
     const restResp: JSONObj = await makeNetworkRequest(restData);
 
-    const authToken: string = handleAuthToken(restResp);
+    const authToken: string = handleAuthToken(restResp, ''); // no existing auth token
+
+    if (!authToken) {
+      throw new CustError(500, 'Unable to parse auth token something went wrong');
+    }
 
     const issuerResp: UnumDto<RegisteredIssuer> = {
       authToken,

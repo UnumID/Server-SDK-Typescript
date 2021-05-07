@@ -102,12 +102,12 @@ exports.makeNetworkRequest = function (inputObj) { return __awaiter(void 0, void
  * Helper to handle safe auth token handling in responses from UnumID's Saas via makeNetworkRequest
  * @param response JSONObj
  */
-exports.handleAuthToken = function (response) {
+exports.handleAuthToken = function (response, existingAuthToken) {
     var authTokenResp = response && response.headers && response.headers['x-auth-token'] ? response.headers['x-auth-token'] : '';
     // Ensuring that the authToken attribute is presented as a string or undefined. The header values can be a string | string[] so hence the complex ternary.
     var authToken = (helpers_1.isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (helpers_1.isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
     // If authToken is undefined just return undefined, otherwise return a properly formatted Bearer token for use in subsequent requests.
-    var result = authToken ? (authToken.startsWith('Bearer ') ? authToken : "Bearer " + authToken) : authToken;
+    var result = authToken ? (authToken.startsWith('Bearer ') ? authToken : "Bearer " + authToken) : existingAuthToken;
     return result;
 };
 //# sourceMappingURL=networkRequestHelper.js.map

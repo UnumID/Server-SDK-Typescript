@@ -359,7 +359,7 @@ exports.issueCredential = function (authorization, type, issuer, credentialSubje
                 return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData_1)];
             case 3:
                 restResp_1 = _a.sent();
-                authorization = networkRequestHelper_1.handleAuthToken(restResp_1);
+                authorization = networkRequestHelper_1.handleAuthToken(restResp_1, authorization);
                 _a.label = 4;
             case 4:
                 v++;
@@ -388,7 +388,7 @@ exports.issueCredential = function (authorization, type, issuer, credentialSubje
                 return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];
             case 7:
                 restResp = _a.sent();
-                authToken = networkRequestHelper_1.handleAuthToken(restResp);
+                authToken = networkRequestHelper_1.handleAuthToken(restResp, authorization);
                 issuedCredential = { body: credential, authToken: authToken };
                 return [2 /*return*/, issuedCredential];
             case 8:

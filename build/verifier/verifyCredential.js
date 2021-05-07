@@ -64,7 +64,7 @@ exports.verifyCredential = function (credential, authorization) { return __await
                 if (didDocumentResponse instanceof Error) {
                     throw didDocumentResponse;
                 }
-                authToken = networkRequestHelper_1.handleAuthToken(didDocumentResponse);
+                authToken = networkRequestHelper_1.handleAuthToken(didDocumentResponse, authorization);
                 publicKeyObject = didHelper_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 data = lodash_1.omit(credential, 'proof');
                 try {

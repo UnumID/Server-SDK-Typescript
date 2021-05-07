@@ -47,7 +47,7 @@ export const updateCredentialStatus = async (authorization: string, credentialId
     // make request to SaaS to update the CredentialStatus
     const response: JSONObj = await makeNetworkRequest<{ success: boolean }>(restData);
 
-    const authToken: string = handleAuthToken(response);
+    const authToken: string = handleAuthToken(response, authorization);
 
     const revokedCredential: UnumDto<undefined> = {
       authToken,
