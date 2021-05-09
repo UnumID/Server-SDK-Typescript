@@ -49,7 +49,6 @@ const constructEncryptedCredentialOpts = async (cred: Credential, authorization:
       issuer: cred.issuer,
       type: cred.type,
       data: encryptedData
-      // version: '2.0.0'
     };
 
     return encryptedCredentialOptions;
@@ -268,44 +267,6 @@ const constructCredentialOptions = (type: string|string[], issuer: string, crede
   return (credOpt);
 };
 
-// export const handleSendingEncryptedCredentialToSaas(): void => {
-//       // Construct CredentialOptions object
-//       const credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, signingPrivateKey, expirationDate);
-
-//       // Create the UnsignedCredential object
-//       const unsignedCredential = constructUnsignedCredentialObj(credentialOptions);
-
-//       // Create the signed Credential object from the unsignedCredential object
-//       const credential = constructSignedCredentialObj(unsignedCredential, signingPrivateKey);
-
-//       // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
-//       const encryptedCredentialOptions = await constructEncryptedCredentialOpts(credential, authorization as string);
-
-//       const encryptedCredentialUploadOptions = {
-//         credentialId: credential.id,
-//         subject: credentialSubject.id,
-//         issuer: credential.issuer,
-//         type: credential.type,
-//         encryptedCredentials: encryptedCredentialOptions
-//       };
-
-//       const restData: RESTData = {
-//         method: 'POST',
-//         baseUrl: configData.SaaSUrl,
-//         endPoint: 'credentialRepository',
-//         header: { Authorization: authorization },
-//         data: encryptedCredentialUploadOptions
-//       };
-
-//       const restResp: JSONObj = await makeNetworkRequest(restData);
-
-//       const authToken: string = handleAuthToken(restResp);
-
-//       const issuedCredential: UnumDto<Credential> = { body: credential, authToken };
-
-//       return issuedCredential;
-// }
-
 /**
  * Handles issuing a credential with UnumID's SaaS.
  *
@@ -335,9 +296,9 @@ export const issueCredential = async (authorization: string | undefined, type: s
      * Need to loop through all versions except most recent so that can issued credentials could be backwards compatible with older holder versions.
      * However only care to return the most recent Credential type for customers to use.
      */
-    for (let v = 0; v < versionList.length - 1; v++) {
+    for (let v = 0; v < versionList.length - 1; v++) { // note: purposely terminating one index early, which ought to be the most recent version.
       const version: string = versionList[v];
-      // versionList.forEach(async (version: string) => {
+
       // Create the UnsignedCredential object
       const unsignedCredential: UnsignedCredentialV1 = constructUnsignedCredentialV1Obj(credentialOptions, version);
 
@@ -369,8 +330,8 @@ export const issueCredential = async (authorization: string | undefined, type: s
         authorization = handleAuthToken(restResp, authorization as string);
       }
     }
-    // });
 
+    // Grabbing the latest version as defined in the version list
     const latestVersion: string = versionList[versionList.length - 1];
 
     // Create latest version of the UnsignedCredential object
@@ -405,9 +366,6 @@ export const issueCredential = async (authorization: string | undefined, type: s
     const issuedCredential: UnumDto<Credential> = { body: credential, authToken };
 
     return issuedCredential;
-
-    // const issuedCredential: UnumDto<Credential> = { body: credential as Credential, authToken };
-    return issuedCredential as unknown as UnumDto<Credential>;
   } catch (error) {
     logger.error(`Error issuing a credential with UnumID SaaS. ${error}`);
     throw error;
