@@ -4,6 +4,7 @@ import { sendEmail } from '../../src/verifier/sendEmail';
 import { configData } from '../../src/config';
 import { ErrorResponseBody, UnumDto } from '../../src/types';
 import { CustError } from '../../src/utils/error';
+import { dummyAuthToken } from './mocks';
 
 jest.mock('node-fetch');
 const mockFetch = fetch as unknown as jest.Mock;
@@ -42,7 +43,7 @@ describe('sendEmail', () => {
       const expectedOptions = {
         method: 'POST',
         body: JSON.stringify({ to, deeplink }),
-        headers: { Authorization: auth, 'Content-Type': 'application/json', version: '1.0.0' }
+        headers: { Authorization: auth, 'Content-Type': 'application/json', version: '2.0.0' }
       };
 
       expect(fetch).toBeCalledWith(expectedUrl, expectedOptions);
@@ -73,7 +74,7 @@ describe('sendEmail', () => {
       mockFetch.mockResolvedValueOnce(mockSaasApiResponse);
       apiResponse = await makeApiCall(to, deeplink, auth);
       apiResponseAuthToken = apiResponse.authToken;
-      expect(apiResponseAuthToken).toBe(undefined);
+      expect(apiResponseAuthToken).toBe(dummyAuthToken);
     });
   });
 

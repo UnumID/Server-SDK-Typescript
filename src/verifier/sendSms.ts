@@ -67,7 +67,7 @@ export const sendSms = async (authorization: string, to: string, deeplink: strin
       throw new CustError(500, 'Unknown error during sendSms');
     }
 
-    const authToken: string = handleAuthToken(apiResponse);
+    const authToken: string = handleAuthToken(apiResponse, authorization);
 
     const result: UnumDto<undefined> = {
       authToken,

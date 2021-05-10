@@ -192,7 +192,7 @@ exports.sendRequest = function (authorization, verifier, credentialRequests, ecc
                 return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];
             case 1:
                 restResp = _a.sent();
-                authToken = networkRequestHelper_1.handleAuthToken(restResp);
+                authToken = networkRequestHelper_1.handleAuthToken(restResp, authorization);
                 presentationRequestResponse = { body: __assign({}, restResp.body), authToken: authToken };
                 return [2 /*return*/, presentationRequestResponse];
             case 2:

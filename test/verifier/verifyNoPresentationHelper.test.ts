@@ -115,7 +115,8 @@ describe('verifyNoPresentation', () => {
       mockMakeNetworkRequest.mockResolvedValueOnce(dummyApiResponse);
       mockGetDIDDoc.mockResolvedValue({ body: dummySubjectDidDoc });
       response = await callVerifyNoPresentation(dummyNoPresentation, verifier, authHeader);
-      expect(response.authToken).toBeUndefined();
+
+      expect(response.authToken).toBe(authHeader);
     });
   });
 

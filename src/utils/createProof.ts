@@ -25,6 +25,6 @@ export const createProof = (data: JSONObj, privateKey: string, method: string, e
     proofPurpose: 'AssertionMethod'
   };
 
-  logger.debug('Successfully created proof', proof);
+  logger.debug(`Successfully created proof ${proof}`);
   return (proof);
 };

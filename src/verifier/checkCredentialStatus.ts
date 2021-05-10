@@ -17,7 +17,7 @@ export const checkCredentialStatus = async (authorization: string, credentialId:
 
   const credentialStatusResponse = await makeNetworkRequest<CredentialStatus>(options);
   const credentialStatus = credentialStatusResponse.body;
-  const authToken: string = handleAuthToken(credentialStatusResponse);
+  const authToken: string = handleAuthToken(credentialStatusResponse, authorization);
 
   const result: UnumDto<CredentialStatusInfo> = {
     authToken,

@@ -89,7 +89,7 @@ export const verifyNoPresentationHelper = async (authorization: string, noPresen
       throw didDocumentResponse;
     }
 
-    let authToken: string = handleAuthToken(didDocumentResponse);
+    let authToken: string = handleAuthToken(didDocumentResponse, authorization);
     const publicKeyInfos = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
     const { publicKey, encoding } = publicKeyInfos[0];
@@ -128,7 +128,7 @@ export const verifyNoPresentationHelper = async (authorization: string, noPresen
 
     const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
 
-    authToken = handleAuthToken(resp);
+    authToken = handleAuthToken(resp, authToken);
 
     const result: UnumDto<VerifiedStatus> = {
       authToken,

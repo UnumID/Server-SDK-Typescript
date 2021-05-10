@@ -57,6 +57,8 @@ var helpers_1 = require("../utils/helpers");
 var error_1 = require("../utils/error");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var convertCredentialSubject_1 = require("../utils/convertCredentialSubject");
+var semver_1 = require("semver");
+var versionList_1 = require("../utils/versionList");
 /**
  * Creates an object of type EncryptedCredentialOptions which encapsulates information relating to the encrypted credential data
  * @param cred Credential
@@ -96,6 +98,45 @@ var constructEncryptedCredentialOpts = function (cred, authorization) { return _
     });
 }); };
 /**
+ * Creates an object of type EncryptedCredentialOptions which encapsulates information relating to the encrypted credential data
+ * @param cred Credential
+ * @param authorization String
+ */
+var constructEncryptedCredentialV1Opts = function (cred, authorization) { return __awaiter(void 0, void 0, void 0, function () {
+    var credentialSubject, subjectDid, didDocResponse, publicKeyInfos;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                credentialSubject = cred.credentialSubject;
+                subjectDid = credentialSubject.id;
+                return [4 /*yield*/, didHelper_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, subjectDid)];
+            case 1:
+                didDocResponse = _a.sent();
+                if (didDocResponse instanceof Error) {
+                    throw didDocResponse;
+                }
+                publicKeyInfos = didHelper_1.getKeyFromDIDDoc(didDocResponse.body, 'RSA');
+                if (publicKeyInfos.length === 0) {
+                    throw new error_1.CustError(404, 'Public key not found for the DID');
+                }
+                // create an encrypted copy of the credential with each RSA public key
+                return [2 /*return*/, publicKeyInfos.map(function (publicKeyInfo) {
+                        var subjectDidWithKeyFragment = subjectDid + "#" + publicKeyInfo.id;
+                        var encryptedData = encrypt_1.doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, cred);
+                        var encryptedCredentialOptions = {
+                            credentialId: cred.id,
+                            subject: subjectDidWithKeyFragment,
+                            issuer: cred.issuer,
+                            type: cred.type,
+                            data: encryptedData
+                            // version: '1.0.0'
+                        };
+                        return encryptedCredentialOptions;
+                    })];
+        }
+    });
+}); };
+/**
  * Creates a signed credential with all the relevant information. The proof serves as a cryptographic signature.
  * @param usCred UnsignedCredential
  * @param privateKey String
@@ -116,10 +157,32 @@ var constructSignedCredentialObj = function (usCred, privateKey) {
     return (credential);
 };
 /**
+ * Creates a signed credential with all the relevant information. The proof serves as a cryptographic signature.
+ * @param usCred UnsignedCredential
+ * @param privateKey String
+ */
+var constructSignedCredentialV1Obj = function (usCred, privateKey) {
+    var proof = createProof_1.createProof(usCred, privateKey, usCred.issuer, 'pem');
+    var credential = {
+        '@context': usCred['@context'],
+        credentialStatus: usCred.credentialStatus,
+        credentialSubject: usCred.credentialSubject,
+        issuer: usCred.issuer,
+        type: usCred.type,
+        id: usCred.id,
+        issuanceDate: usCred.issuanceDate,
+        expirationDate: usCred.expirationDate,
+        proof: proof
+    };
+    return (credential);
+};
+/**
  * Creates all the attributes associated with an unsigned credential.
  * @param credOpts CredentialOptions
  */
 var constructUnsignedCredentialObj = function (credOpts) {
+    // CredentialSubject type is dependent on version. V2 is a string for passing to holder so iOS can handle it as a concrete type instead of a map of unknown keys.
+    var credentialSubject = JSON.stringify(credOpts.credentialSubject);
     var credentialId = helpers_1.getUUID();
     var unsCredObj = {
         '@context': ['https://www.w3.org/2018/credentials/v1'],
@@ -127,14 +190,37 @@ var constructUnsignedCredentialObj = function (credOpts) {
             id: config_1.configData.SaaSUrl + "/credentialStatus/" + credentialId,
             type: 'CredentialStatus'
         },
-        credentialSubject: JSON.stringify(credOpts.credentialSubject),
+        credentialSubject: credentialSubject,
         issuer: credOpts.issuer,
         type: __spreadArrays(['VerifiableCredential'], credOpts.type),
         id: credentialId,
         issuanceDate: new Date(),
         expirationDate: credOpts.expirationDate
     };
-    return (unsCredObj);
+    return unsCredObj;
+};
+/**
+ * Creates all the attributes associated with an unsigned credential.
+ * @param credOpts CredentialOptions
+ */
+var constructUnsignedCredentialV1Obj = function (credOpts, version) {
+    // CredentialSubject type is dependent on version. V2 is a string for passing to holder so iOS can handle it as a concrete type instead of a map of unknown keys.
+    var credentialSubject = credOpts.credentialSubject;
+    var credentialId = helpers_1.getUUID();
+    var unsCredObj = {
+        '@context': ['https://www.w3.org/2018/credentials/v1'],
+        credentialStatus: {
+            id: config_1.configData.SaaSUrl + "/credentialStatus/" + credentialId,
+            type: 'CredentialStatus'
+        },
+        credentialSubject: credentialSubject,
+        issuer: credOpts.issuer,
+        type: __spreadArrays(['VerifiableCredential'], credOpts.type),
+        id: credentialId,
+        issuanceDate: new Date(),
+        expirationDate: credOpts.expirationDate
+    };
+    return unsCredObj;
 };
 /**
  * Handle input validation.
@@ -201,20 +287,55 @@ var constructCredentialOptions = function (type, issuer, credentialSubject, sign
  * @param expirationDate
  */
 exports.issueCredential = function (authorization, type, issuer, credentialSubject, signingPrivateKey, expirationDate) { return __awaiter(void 0, void 0, void 0, function () {
-    var credentialOptions, unsignedCredential, credential, encryptedCredentialOptions, encryptedCredentialUploadOptions, restData, restResp, authToken, issuedCredential, error_2;
+    var credentialOptions, v, version, unsignedCredential_1, credential_1, encryptedCredentialOptions_1, encryptedCredentialUploadOptions_1, restData_1, restResp_1, latestVersion, unsignedCredential, credential, encryptedCredentialOptions, encryptedCredentialUploadOptions, restData, restResp, authToken, issuedCredential, error_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                _a.trys.push([0, 3, , 4]);
+                _a.trys.push([0, 8, , 9]);
                 // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
                 requireAuth_1.requireAuth(authorization);
                 // Validate the inputs
                 validateInputs(type, issuer, credentialSubject, signingPrivateKey, expirationDate);
                 credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, signingPrivateKey, expirationDate);
+                v = 0;
+                _a.label = 1;
+            case 1:
+                if (!(v < versionList_1.versionList.length - 1)) return [3 /*break*/, 5];
+                version = versionList_1.versionList[v];
+                unsignedCredential_1 = constructUnsignedCredentialV1Obj(credentialOptions, version);
+                if (!semver_1.lt(version, '2.0.0')) return [3 /*break*/, 4];
+                credential_1 = constructSignedCredentialV1Obj(unsignedCredential_1, signingPrivateKey);
+                return [4 /*yield*/, constructEncryptedCredentialV1Opts(credential_1, authorization)];
+            case 2:
+                encryptedCredentialOptions_1 = _a.sent();
+                encryptedCredentialUploadOptions_1 = {
+                    credentialId: credential_1.id,
+                    subject: credentialSubject.id,
+                    issuer: credential_1.issuer,
+                    type: credential_1.type,
+                    encryptedCredentials: encryptedCredentialOptions_1
+                };
+                restData_1 = {
+                    method: 'POST',
+                    baseUrl: config_1.configData.SaaSUrl,
+                    endPoint: 'credentialRepository',
+                    header: { Authorization: authorization, version: version },
+                    data: encryptedCredentialUploadOptions_1
+                };
+                return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData_1)];
+            case 3:
+                restResp_1 = _a.sent();
+                authorization = networkRequestHelper_1.handleAuthToken(restResp_1, authorization);
+                _a.label = 4;
+            case 4:
+                v++;
+                return [3 /*break*/, 1];
+            case 5:
+                latestVersion = versionList_1.versionList[versionList_1.versionList.length - 1];
                 unsignedCredential = constructUnsignedCredentialObj(credentialOptions);
                 credential = constructSignedCredentialObj(unsignedCredential, signingPrivateKey);
                 return [4 /*yield*/, constructEncryptedCredentialOpts(credential, authorization)];
-            case 1:
+            case 6:
                 encryptedCredentialOptions = _a.sent();
                 encryptedCredentialUploadOptions = {
                     credentialId: credential.id,
@@ -227,20 +348,20 @@ exports.issueCredential = function (authorization, type, issuer, credentialSubje
                     method: 'POST',
                     baseUrl: config_1.configData.SaaSUrl,
                     endPoint: 'credentialRepository',
-                    header: { Authorization: authorization },
+                    header: { Authorization: authorization, version: latestVersion },
                     data: encryptedCredentialUploadOptions
                 };
                 return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];
-            case 2:
+            case 7:
                 restResp = _a.sent();
-                authToken = networkRequestHelper_1.handleAuthToken(restResp);
+                authToken = networkRequestHelper_1.handleAuthToken(restResp, authorization);
                 issuedCredential = { body: credential, authToken: authToken };
                 return [2 /*return*/, issuedCredential];
-            case 3:
+            case 8:
                 error_2 = _a.sent();
                 logger_1.default.error("Error issuing a credential with UnumID SaaS. " + error_2);
                 throw error_2;
-            case 4: return [2 /*return*/];
+            case 9: return [2 /*return*/];
         }
     });
 }); };

@@ -23,7 +23,7 @@ export const verifyCredential = async (credential: Credential, authorization: st
     throw didDocumentResponse;
   }
 
-  const authToken: string = handleAuthToken(didDocumentResponse);
+  const authToken: string = handleAuthToken(didDocumentResponse, authorization);
   const publicKeyObject = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
   const data = omit(credential, 'proof');
 

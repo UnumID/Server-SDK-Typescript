@@ -88,7 +88,7 @@ exports.updateCredentialStatus = function (authorization, credentialId, status) 
                     return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];
                 case 1:
                     response = _a.sent();
-                    authToken = networkRequestHelper_1.handleAuthToken(response);
+                    authToken = networkRequestHelper_1.handleAuthToken(response, authorization);
                     revokedCredential = {
                         authToken: authToken,
                         body: undefined

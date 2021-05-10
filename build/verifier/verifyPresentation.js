@@ -119,7 +119,7 @@ function verifyPresentationRequest(authorization, presentationRequest) {
                     if (didDocumentResponse instanceof Error) {
                         throw didDocumentResponse;
                     }
-                    authToken = networkRequestHelper_1.handleAuthToken(didDocumentResponse);
+                    authToken = networkRequestHelper_1.handleAuthToken(didDocumentResponse, authorization);
                     publicKeyInfos = didHelper_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                     _b = publicKeyInfos[0], publicKey = _b.publicKey, encoding = _b.encoding;
                     unsignedPresentationRequest = lodash_1.omit(presentationRequest, 'proof');

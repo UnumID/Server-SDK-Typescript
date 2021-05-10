@@ -5,6 +5,7 @@ import { CustError } from './error';
 import logger from '../logger';
 import { isArrayEmpty, isArrayNotEmpty } from './helpers';
 import { JSONObj } from '@unumid/types';
+import { versionList } from './versionList';
 
 /**
  * Helper to handle network requests.
@@ -21,7 +22,7 @@ export const makeNetworkRequest = async <T = unknown> (inputObj: RESTData): Prom
     body: JSON.stringify(inputObj.data),
     headers: {
       ...restHdr,
-      version: '1.0.0' // The api version to hit the UnumID SaaS with in the this version of the SDK
+      version: restHdr.version ? restHdr.version : versionList[versionList.length - 1] // The api version to hit the UnumID SaaS with in the this version of the SDK
     }
   };
   const respObj = {} as RESTResponse<T>;
@@ -50,12 +51,12 @@ export const makeNetworkRequest = async <T = unknown> (inputObj: RESTData): Prom
  * Helper to handle safe auth token handling in responses from UnumID's Saas via makeNetworkRequest
  * @param response JSONObj
  */
-export const handleAuthToken = (response:JSONObj): string => {
+export const handleAuthToken = (response:JSONObj, existingAuthToken?:string): string => {
   const authTokenResp = response && response.headers && response.headers['x-auth-token'] ? response.headers['x-auth-token'] : '';
 
   // Ensuring that the authToken attribute is presented as a string or undefined. The header values can be a string | string[] so hence the complex ternary.
   const authToken: string = <string>(isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
-  // If authToken is undefined just return undefined, otherwise return a properly formatted Bearer token for use in subsequent requests.
-  const result = authToken ? (authToken.startsWith('Bearer ') ? authToken : `Bearer ${authToken}`) : authToken;
+  // If authToken is undefined see if the input existing auth token is a valid Bearer token (not an admin key), if an admin key just return undefined, otherwise return a properly formatted Bearer token for use in subsequent requests or the existing, inputting token.
+  const result = authToken ? (authToken.startsWith('Bearer ') ? authToken : `Bearer ${authToken}`) : (existingAuthToken?.startsWith('Bearer ') ? existingAuthToken : authToken);
   return result;
 };

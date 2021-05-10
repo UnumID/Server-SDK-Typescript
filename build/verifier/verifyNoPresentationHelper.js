@@ -111,7 +111,7 @@ exports.verifyNoPresentationHelper = function (authorization, noPresentation, ve
                 if (didDocumentResponse instanceof Error) {
                     throw didDocumentResponse;
                 }
-                authToken = networkRequestHelper_1.handleAuthToken(didDocumentResponse);
+                authToken = networkRequestHelper_1.handleAuthToken(didDocumentResponse, authorization);
                 publicKeyInfos = didHelper_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 _b = publicKeyInfos[0], publicKey = _b.publicKey, encoding = _b.encoding;
                 unsignedNoPresentation = lodash_1.omit(noPresentation, 'proof');
@@ -144,7 +144,7 @@ exports.verifyNoPresentationHelper = function (authorization, noPresentation, ve
                 return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(receiptCallOptions)];
             case 2:
                 resp = _c.sent();
-                authToken = networkRequestHelper_1.handleAuthToken(resp);
+                authToken = networkRequestHelper_1.handleAuthToken(resp, authToken);
                 result = {
                     authToken: authToken,
                     body: {

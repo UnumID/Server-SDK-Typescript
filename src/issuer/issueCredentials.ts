@@ -2,6 +2,7 @@ import { configData } from '../config';
 import { CredentialOptions, RESTData, UnumDto } from '../types';
 import { requireAuth } from '../requireAuth';
 import { CredentialSubject, EncryptedCredentialOptions, EncryptedData, Proof, UnsignedCredential, Credential, JSONObj } from '@unumid/types';
+import { UnsignedCredential as UnsignedCredentialV1, Credential as CredentialV1 } from '@unumid/types-v1';
 
 import logger from '../logger';
 import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
@@ -11,6 +12,8 @@ import { getUUID } from '../utils/helpers';
 import { CustError } from '../utils/error';
 import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
 import { convertCredentialSubject } from '../utils/convertCredentialSubject';
+import { lt } from 'semver';
+import { versionList } from '../utils/versionList';
 
 /**
  * Creates an object of type EncryptedCredentialOptions which encapsulates information relating to the encrypted credential data
@@ -53,6 +56,47 @@ const constructEncryptedCredentialOpts = async (cred: Credential, authorization:
 };
 
 /**
+ * Creates an object of type EncryptedCredentialOptions which encapsulates information relating to the encrypted credential data
+ * @param cred Credential
+ * @param authorization String
+ */
+const constructEncryptedCredentialV1Opts = async (cred: CredentialV1, authorization: string): Promise<EncryptedCredentialOptions[]> => {
+  const credentialSubject: CredentialSubject = cred.credentialSubject;
+  const subjectDid = credentialSubject.id;
+
+  // resolve the subject's DID
+  const didDocResponse = await getDIDDoc(configData.SaaSUrl, authorization, subjectDid);
+
+  if (didDocResponse instanceof Error) {
+    throw didDocResponse;
+  }
+
+  // get subject's public key info from its DID document
+  const publicKeyInfos = getKeyFromDIDDoc(didDocResponse.body, 'RSA');
+
+  if (publicKeyInfos.length === 0) {
+    throw new CustError(404, 'Public key not found for the DID');
+  }
+
+  // create an encrypted copy of the credential with each RSA public key
+  return publicKeyInfos.map(publicKeyInfo => {
+    const subjectDidWithKeyFragment = `${subjectDid}#${publicKeyInfo.id}`;
+    const encryptedData: EncryptedData = doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, cred);
+
+    const encryptedCredentialOptions: EncryptedCredentialOptions = {
+      credentialId: cred.id,
+      subject: subjectDidWithKeyFragment,
+      issuer: cred.issuer,
+      type: cred.type,
+      data: encryptedData
+      // version: '1.0.0'
+    };
+
+    return encryptedCredentialOptions;
+  });
+};
+
+/**
  * Creates a signed credential with all the relevant information. The proof serves as a cryptographic signature.
  * @param usCred UnsignedCredential
  * @param privateKey String
@@ -73,11 +117,36 @@ const constructSignedCredentialObj = (usCred: UnsignedCredential, privateKey: st
 
   return (credential);
 };
+
+/**
+ * Creates a signed credential with all the relevant information. The proof serves as a cryptographic signature.
+ * @param usCred UnsignedCredential
+ * @param privateKey String
+ */
+const constructSignedCredentialV1Obj = (usCred: UnsignedCredentialV1, privateKey: string): CredentialV1 => {
+  const proof: Proof = createProof(usCred, privateKey, usCred.issuer, 'pem');
+  const credential: CredentialV1 = {
+    '@context': usCred['@context'],
+    credentialStatus: usCred.credentialStatus,
+    credentialSubject: usCred.credentialSubject,
+    issuer: usCred.issuer,
+    type: usCred.type,
+    id: usCred.id,
+    issuanceDate: usCred.issuanceDate,
+    expirationDate: usCred.expirationDate,
+    proof: proof
+  };
+
+  return (credential);
+};
+
 /**
  * Creates all the attributes associated with an unsigned credential.
  * @param credOpts CredentialOptions
  */
 const constructUnsignedCredentialObj = (credOpts: CredentialOptions): UnsignedCredential => {
+  // CredentialSubject type is dependent on version. V2 is a string for passing to holder so iOS can handle it as a concrete type instead of a map of unknown keys.
+  const credentialSubject = JSON.stringify(credOpts.credentialSubject);
   const credentialId: string = getUUID();
   const unsCredObj: UnsignedCredential = {
     '@context': ['https://www.w3.org/2018/credentials/v1'],
@@ -85,7 +154,7 @@ const constructUnsignedCredentialObj = (credOpts: CredentialOptions): UnsignedCr
       id: `${configData.SaaSUrl}/credentialStatus/${credentialId}`,
       type: 'CredentialStatus'
     },
-    credentialSubject: JSON.stringify(credOpts.credentialSubject), // Converting the CredentialSubject type to a string for passing to holder. Really so iOS can handle it as a concrete type instead of a map of unknown keys.
+    credentialSubject,
     issuer: credOpts.issuer,
     type: ['VerifiableCredential', ...credOpts.type],
     id: credentialId,
@@ -93,7 +162,32 @@ const constructUnsignedCredentialObj = (credOpts: CredentialOptions): UnsignedCr
     expirationDate: credOpts.expirationDate
   };
 
-  return (unsCredObj);
+  return unsCredObj as UnsignedCredential;
+};
+
+/**
+ * Creates all the attributes associated with an unsigned credential.
+ * @param credOpts CredentialOptions
+ */
+const constructUnsignedCredentialV1Obj = (credOpts: CredentialOptions, version: string): UnsignedCredentialV1 => {
+  // CredentialSubject type is dependent on version. V2 is a string for passing to holder so iOS can handle it as a concrete type instead of a map of unknown keys.
+  const credentialSubject = credOpts.credentialSubject;
+  const credentialId: string = getUUID();
+  const unsCredObj: UnsignedCredentialV1 = {
+    '@context': ['https://www.w3.org/2018/credentials/v1'],
+    credentialStatus: {
+      id: `${configData.SaaSUrl}/credentialStatus/${credentialId}`,
+      type: 'CredentialStatus'
+    },
+    credentialSubject,
+    issuer: credOpts.issuer,
+    type: ['VerifiableCredential', ...credOpts.type],
+    id: credentialId,
+    issuanceDate: new Date(),
+    expirationDate: credOpts.expirationDate
+  };
+
+  return unsCredObj;
 };
 
 /**
@@ -184,7 +278,49 @@ export const issueCredential = async (authorization: string | undefined, type: s
     // Construct CredentialOptions object
     const credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, signingPrivateKey, expirationDate);
 
-    // Create the UnsignedCredential object
+    /**
+     * Need to loop through all versions except most recent so that can issued credentials could be backwards compatible with older holder versions.
+     * However only care to return the most recent Credential type for customers to use.
+     */
+    for (let v = 0; v < versionList.length - 1; v++) { // note: purposely terminating one index early, which ought to be the most recent version.
+      const version: string = versionList[v];
+
+      // Create the UnsignedCredential object
+      const unsignedCredential: UnsignedCredentialV1 = constructUnsignedCredentialV1Obj(credentialOptions, version);
+
+      if (lt(version, '2.0.0')) {
+        // Create the signed Credential object from the unsignedCredential object
+        const credential: CredentialV1 = constructSignedCredentialV1Obj(unsignedCredential as UnsignedCredentialV1, signingPrivateKey);
+
+        // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
+        const encryptedCredentialOptions = await constructEncryptedCredentialV1Opts(credential, authorization as string);
+
+        const encryptedCredentialUploadOptions = {
+          credentialId: credential.id,
+          subject: credentialSubject.id,
+          issuer: credential.issuer,
+          type: credential.type,
+          encryptedCredentials: encryptedCredentialOptions
+        };
+
+        const restData: RESTData = {
+          method: 'POST',
+          baseUrl: configData.SaaSUrl,
+          endPoint: 'credentialRepository',
+          header: { Authorization: authorization, version },
+          data: encryptedCredentialUploadOptions
+        };
+
+        const restResp: JSONObj = await makeNetworkRequest(restData);
+
+        authorization = handleAuthToken(restResp, authorization as string);
+      }
+    }
+
+    // Grabbing the latest version as defined in the version list, 2.0.0
+    const latestVersion: string = versionList[versionList.length - 1];
+
+    // Create latest version of the UnsignedCredential object
     const unsignedCredential = constructUnsignedCredentialObj(credentialOptions);
 
     // Create the signed Credential object from the unsignedCredential object
@@ -205,13 +341,13 @@ export const issueCredential = async (authorization: string | undefined, type: s
       method: 'POST',
       baseUrl: configData.SaaSUrl,
       endPoint: 'credentialRepository',
-      header: { Authorization: authorization },
+      header: { Authorization: authorization, version: latestVersion },
       data: encryptedCredentialUploadOptions
     };
 
     const restResp: JSONObj = await makeNetworkRequest(restData);
 
-    const authToken: string = handleAuthToken(restResp);
+    const authToken: string = handleAuthToken(restResp, authorization as string);
 
     const issuedCredential: UnumDto<Credential> = { body: credential, authToken };
 

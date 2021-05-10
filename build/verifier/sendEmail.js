@@ -93,7 +93,7 @@ exports.sendEmail = function (authorization, to, deeplink) { return __awaiter(vo
                 return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(data)];
             case 1:
                 apiResponse = _a.sent();
-                authToken = networkRequestHelper_1.handleAuthToken(apiResponse);
+                authToken = networkRequestHelper_1.handleAuthToken(apiResponse, authorization);
                 result = {
                     authToken: authToken,
                     body: undefined

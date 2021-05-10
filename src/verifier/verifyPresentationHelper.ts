@@ -284,7 +284,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
       throw didDocumentResponse;
     }
 
-    let authToken: string = handleAuthToken(didDocumentResponse); // Note: going to use authToken instead of authorization for subsequent requests in case saas rolls to token.
+    let authToken: string = handleAuthToken(didDocumentResponse, authorization); // Note: going to use authToken instead of authorization for subsequent requests in case saas rolls to token.
     const pubKeyObj: PublicKeyInfo[] = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
     if (pubKeyObj.length === 0) {
@@ -399,7 +399,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
     };
 
     const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
-    authToken = handleAuthToken(resp);
+    authToken = handleAuthToken(resp, authToken);
 
     const result: UnumDto<VerifiedStatus> = {
       authToken,
