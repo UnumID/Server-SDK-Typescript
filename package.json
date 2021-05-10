@@ -1,6 +1,6 @@
 {
   "name": "@unumid/server-sdk",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "main": "build/index.js",
   "repository": "git@github.com:UnumID/Server-SDK-TypeScript.git",
   "homepage": "https://docs.unum.id/server-sdk/",
