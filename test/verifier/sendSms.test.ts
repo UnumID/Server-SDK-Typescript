@@ -4,6 +4,7 @@ import { sendSms } from '../../src/verifier/sendSms';
 import { configData } from '../../src/config';
 import { ErrorResponseBody, UnumDto } from '../../src/types';
 import { CustError } from '../../src/utils/error';
+import { dummyAuthToken } from './mocks';
 
 jest.mock('node-fetch');
 const mockFetch = fetch as unknown as jest.Mock;
@@ -77,7 +78,7 @@ describe('sendSms', () => {
       mockFetch.mockResolvedValueOnce(mockSaasApiResponse);
       apiResponse = await makeApiCall(to, deeplink, auth);
       apiResponseAuthToken = apiResponse.authToken;
-      expect(apiResponseAuthToken).toBe(undefined);
+      expect(apiResponseAuthToken).toBe(dummyAuthToken);
     });
   });
 

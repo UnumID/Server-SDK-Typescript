@@ -57,7 +57,6 @@ export const handleAuthToken = (response:JSONObj, existingAuthToken?:string): st
   // Ensuring that the authToken attribute is presented as a string or undefined. The header values can be a string | string[] so hence the complex ternary.
   const authToken: string = <string>(isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
   // If authToken is undefined see if the input existing auth token is a valid Bearer token (not an admin key), if an admin key just return undefined, otherwise return a properly formatted Bearer token for use in subsequent requests or the existing, inputting token.
-  // const result = authToken ? (authToken.startsWith('Bearer ') ? authToken : `Bearer ${authToken}`) : (existingAuthToken.startsWith('Bearer ') ? existingAuthToken : authToken);
-  const result = authToken ? (authToken.startsWith('Bearer ') ? authToken : `Bearer ${authToken}`) : authToken;
+  const result = authToken ? (authToken.startsWith('Bearer ') ? authToken : `Bearer ${authToken}`) : (existingAuthToken?.startsWith('Bearer ') ? existingAuthToken : authToken);
   return result;
 };
