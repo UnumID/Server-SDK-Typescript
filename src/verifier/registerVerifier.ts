@@ -82,10 +82,6 @@ export const registerVerifier = async (name: string, customerUuid: string, url: 
 
     const authToken: string = handleAuthToken(restResp);
 
-    if (!authToken) {
-      throw new CustError(500, 'Unable to parse auth token something went wrong');
-    }
-
     const verifierResp: UnumDto<RegisteredVerifier> = {
       authToken,
       body: {
