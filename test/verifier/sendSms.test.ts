@@ -41,7 +41,7 @@ describe('sendSms', () => {
       const expectedOptions = {
         method: 'POST',
         body: JSON.stringify({ to, deeplink }),
-        headers: { Authorization: auth, 'Content-Type': 'application/json', version: '1.0.0' }
+        headers: { Authorization: auth, 'Content-Type': 'application/json', version: '2.0.0' }
       };
 
       expect(fetch).toBeCalledWith(expectedUrl, expectedOptions);

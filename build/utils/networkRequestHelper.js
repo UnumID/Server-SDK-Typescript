@@ -55,6 +55,7 @@ var node_fetch_1 = __importDefault(require("node-fetch"));
 var error_1 = require("./error");
 var logger_1 = __importDefault(require("../logger"));
 var helpers_1 = require("./helpers");
+var versionList_1 = require("./versionList");
 /**
  * Helper to handle network requests.
  * @param inputObj
@@ -71,7 +72,7 @@ exports.makeNetworkRequest = function (inputObj) { return __awaiter(void 0, void
                 options = {
                     method: inputObj.method,
                     body: JSON.stringify(inputObj.data),
-                    headers: __assign(__assign({}, restHdr), { version: restHdr.version ? restHdr.version : '2.0.0' // The api version to hit the UnumID SaaS with in the this version of the SDK
+                    headers: __assign(__assign({}, restHdr), { version: restHdr.version ? restHdr.version : versionList_1.versionList[versionList_1.versionList.length - 1] // The api version to hit the UnumID SaaS with in the this version of the SDK
                      })
                 };
                 respObj = {};
@@ -106,8 +107,9 @@ exports.handleAuthToken = function (response, existingAuthToken) {
     var authTokenResp = response && response.headers && response.headers['x-auth-token'] ? response.headers['x-auth-token'] : '';
     // Ensuring that the authToken attribute is presented as a string or undefined. The header values can be a string | string[] so hence the complex ternary.
     var authToken = (helpers_1.isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (helpers_1.isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
-    // If authToken is undefined just return undefined, otherwise return a properly formatted Bearer token for use in subsequent requests.
-    var result = authToken ? (authToken.startsWith('Bearer ') ? authToken : "Bearer " + authToken) : existingAuthToken;
+    // If authToken is undefined see if the input existing auth token is a valid Bearer token (not an admin key), if an admin key just return undefined, otherwise return a properly formatted Bearer token for use in subsequent requests or the existing, inputting token.
+    // const result = authToken ? (authToken.startsWith('Bearer ') ? authToken : `Bearer ${authToken}`) : (existingAuthToken.startsWith('Bearer ') ? existingAuthToken : authToken);
+    var result = authToken ? (authToken.startsWith('Bearer ') ? authToken : "Bearer " + authToken) : authToken;
     return result;
 };
 //# sourceMappingURL=networkRequestHelper.js.map

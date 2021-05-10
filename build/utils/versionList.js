@@ -1,20 +1,10 @@
 "use strict";
-// import { EncryptedData, JSONObj, PublicKeyInfo } from '@unumid/types';
-// import logger from '../logger';
-// import { encrypt } from '@unumid/library-crypto';
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.versionList = void 0;
-// /**
-//  * Encrypt the provided data object.
-//  * @param did
-//  * @param publicKeyObj
-//  * @param data
-//  */
-// export const doEncrypt = (did: string, publicKeyObj: PublicKeyInfo, data: JSONObj): EncryptedData => {
-//   logger.debug('Performing encryption using public key', publicKeyObj);
-//   const result:EncryptedData = encrypt(did + '#' + publicKeyObj.id, publicKeyObj.publicKey, data, publicKeyObj.encoding);
-//   logger.debug(`Encrypted data result: ${result.data}`);
-//   return result;
-// };
+/**
+ * Version list of versions of which the Unum ID SaaS is expecting.
+ * This is needed for Credential issuing backwards compatibility as a Credential of each previous version is necessary.
+ * The latest element is used as the default version interfacing with the SaaS unless otherwise specified.
+ */
 exports.versionList = ['1.0.0', '2.0.0'];
 //# sourceMappingURL=versionList.js.map

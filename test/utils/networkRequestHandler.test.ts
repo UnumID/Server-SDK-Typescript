@@ -3,6 +3,7 @@ import { CustError } from '../../src/utils/error';
 import { RESTData, JSONObj } from '../../src/types';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import bodyParser from 'body-parser';
+import { versionList } from '../../src/utils/versionList';
 
 const initServer = (): express.Application => {
   const app = express();
@@ -87,5 +88,16 @@ describe('Rest type Call - Failure Scenario', () => {
       .catch(error => {
         expect(error).toBeDefined();
       });
+  });
+});
+
+describe('Version list definitions for default saas version header', () => {
+  it('Check that the version list has at least two versions: 1.0.0 & 2.0.0', async () => {
+    expect(versionList.length).toEqual(2);
+    expect(versionList[0]).toEqual('1.0.0');
+    expect(versionList[1]).toEqual('2.0.0');
+
+    // expecting latest version to be 2.0.0
+    expect(versionList[versionList.length - 1]).toEqual('2.0.0');
   });
 });

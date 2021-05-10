@@ -122,6 +122,7 @@ describe('issueCredential', () => {
     response = await callIssueCreds(credentialSubject, type, issuer, expirationDate, eccPrivateKey, dummyAdminKey);
     responseAuthToken = response.authToken;
     expect(responseAuthToken).toBeUndefined();
+    // expect(responseAuthToken).toBe(dummyAdminKey);
   });
 
   it('type array starts with and contains only one `VerifiableCredential` string despite type of the credential options including the preceeding string', async () => {

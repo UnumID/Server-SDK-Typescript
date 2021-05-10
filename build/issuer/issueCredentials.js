@@ -91,7 +91,6 @@ var constructEncryptedCredentialOpts = function (cred, authorization) { return _
                             issuer: cred.issuer,
                             type: cred.type,
                             data: encryptedData
-                            // version: '2.0.0'
                         };
                         return encryptedCredentialOptions;
                     })];
@@ -181,7 +180,7 @@ var constructSignedCredentialV1Obj = function (usCred, privateKey) {
  * Creates all the attributes associated with an unsigned credential.
  * @param credOpts CredentialOptions
  */
-var constructUnsignedCredentialObj = function (credOpts, version) {
+var constructUnsignedCredentialObj = function (credOpts) {
     // CredentialSubject type is dependent on version. V2 is a string for passing to holder so iOS can handle it as a concrete type instead of a map of unknown keys.
     var credentialSubject = JSON.stringify(credOpts.credentialSubject);
     var credentialId = helpers_1.getUUID();
@@ -198,9 +197,6 @@ var constructUnsignedCredentialObj = function (credOpts, version) {
         issuanceDate: new Date(),
         expirationDate: credOpts.expirationDate
     };
-    // if (lt(version, '2.0.0')) {
-    //   return unsCredObj as UnsignedCredentialV1;
-    // }
     return unsCredObj;
 };
 /**
@@ -225,10 +221,6 @@ var constructUnsignedCredentialV1Obj = function (credOpts, version) {
         expirationDate: credOpts.expirationDate
     };
     return unsCredObj;
-    // if (lt(version, '2.0.0')) {
-    //   return unsCredObj as UnsignedCredentialV1;
-    // }
-    // return unsCredObj as UnsignedCredential;
 };
 /**
  * Handle input validation.
@@ -284,34 +276,6 @@ var constructCredentialOptions = function (type, issuer, credentialSubject, sign
     };
     return (credOpt);
 };
-// export const handleSendingEncryptedCredentialToSaas(): void => {
-//       // Construct CredentialOptions object
-//       const credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, signingPrivateKey, expirationDate);
-//       // Create the UnsignedCredential object
-//       const unsignedCredential = constructUnsignedCredentialObj(credentialOptions);
-//       // Create the signed Credential object from the unsignedCredential object
-//       const credential = constructSignedCredentialObj(unsignedCredential, signingPrivateKey);
-//       // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
-//       const encryptedCredentialOptions = await constructEncryptedCredentialOpts(credential, authorization as string);
-//       const encryptedCredentialUploadOptions = {
-//         credentialId: credential.id,
-//         subject: credentialSubject.id,
-//         issuer: credential.issuer,
-//         type: credential.type,
-//         encryptedCredentials: encryptedCredentialOptions
-//       };
-//       const restData: RESTData = {
-//         method: 'POST',
-//         baseUrl: configData.SaaSUrl,
-//         endPoint: 'credentialRepository',
-//         header: { Authorization: authorization },
-//         data: encryptedCredentialUploadOptions
-//       };
-//       const restResp: JSONObj = await makeNetworkRequest(restData);
-//       const authToken: string = handleAuthToken(restResp);
-//       const issuedCredential: UnumDto<Credential> = { body: credential, authToken };
-//       return issuedCredential;
-// }
 /**
  * Handles issuing a credential with UnumID's SaaS.
  *
@@ -368,7 +332,7 @@ exports.issueCredential = function (authorization, type, issuer, credentialSubje
                 return [3 /*break*/, 1];
             case 5:
                 latestVersion = versionList_1.versionList[versionList_1.versionList.length - 1];
-                unsignedCredential = constructUnsignedCredentialObj(credentialOptions, latestVersion);
+                unsignedCredential = constructUnsignedCredentialObj(credentialOptions);
                 credential = constructSignedCredentialObj(unsignedCredential, signingPrivateKey);
                 return [4 /*yield*/, constructEncryptedCredentialOpts(credential, authorization)];
             case 6:
