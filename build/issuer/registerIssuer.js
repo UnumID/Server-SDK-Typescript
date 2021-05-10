@@ -117,7 +117,7 @@ exports.registerIssuer = function (name, customerUuid, apiKey) { return __awaite
                 return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];
             case 2:
                 restResp = _a.sent();
-                authToken = networkRequestHelper_1.handleAuthToken(restResp, '');
+                authToken = networkRequestHelper_1.handleAuthToken(restResp);
                 if (!authToken) {
                     throw new error_1.CustError(500, 'Unable to parse auth token something went wrong');
                 }

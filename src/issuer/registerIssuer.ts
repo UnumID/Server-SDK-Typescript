@@ -80,7 +80,7 @@ export const registerIssuer = async (name: string, customerUuid: string, apiKey:
 
     const restResp: JSONObj = await makeNetworkRequest(restData);
 
-    const authToken: string = handleAuthToken(restResp, ''); // no existing auth token
+    const authToken: string = handleAuthToken(restResp);
 
     if (!authToken) {
       throw new CustError(500, 'Unable to parse auth token something went wrong');
