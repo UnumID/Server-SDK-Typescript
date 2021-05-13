@@ -401,7 +401,7 @@ export const issueCredential = async (authorization: string | undefined, type: s
     const unsignedCredential = constructUnsignedCredentialPbObj(credentialOptions);
 
     // Create the signed Credential object from the unsignedCredential object
-    const credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
+    const credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey); // RJS NOT USING THE PROTO TYPE
 
     // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
     const encryptedCredentialOptions = await constructEncryptedCredentialOpts(credential, authorization as string);

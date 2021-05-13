@@ -86,14 +86,18 @@ exports.validateNoPresentationParams = function (noPresentation) {
  * @param verifier
  */
 exports.verifyNoPresentationHelper = function (authorization, noPresentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, verificationMethod, signatureValue, unsignedValue, verifierDid, result_1, didDocumentResponse, authToken, publicKeyInfos, _b, publicKey, encoding, unsignedNoPresentation, isVerified, result_2, receiptOptions, receiptCallOptions, resp, result, e_1;
+    var _a, verificationMethod, signatureValue, verifierDid, result_1, didDocumentResponse, authToken, publicKeyInfos, _b, publicKey, encoding, unsignedNoPresentation, isVerified, result_2, receiptOptions, receiptCallOptions, resp, result, e_1;
     return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
                 _c.trys.push([0, 3, , 4]);
                 requireAuth_1.requireAuth(authorization);
                 exports.validateNoPresentationParams(noPresentation);
-                _a = noPresentation.proof, verificationMethod = _a.verificationMethod, signatureValue = _a.signatureValue, unsignedValue = _a.unsignedValue, verifierDid = noPresentation.verifierDid;
+                // TODO figure out a way to ensure proof existed here... already being done in the validate function
+                if (!noPresentation.proof) {
+                    throw new error_1.CustError(400, 'Invalid Presentation: proof is required.');
+                }
+                _a = noPresentation.proof, verificationMethod = _a.verificationMethod, signatureValue = _a.signatureValue, verifierDid = noPresentation.verifierDid;
                 // validate that the verifier did provided matches the verifier did in the presentation
                 if (verifierDid !== verifier) {
                     result_1 = {
@@ -115,7 +119,7 @@ exports.verifyNoPresentationHelper = function (authorization, noPresentation, ve
                 publicKeyInfos = didHelper_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 _b = publicKeyInfos[0], publicKey = _b.publicKey, encoding = _b.encoding;
                 unsignedNoPresentation = lodash_1.omit(noPresentation, 'proof');
-                isVerified = verify_1.doVerify(signatureValue, unsignedNoPresentation, publicKey, encoding, unsignedValue);
+                isVerified = verify_1.doVerify(signatureValue, unsignedNoPresentation, publicKey, encoding);
                 if (!isVerified) {
                     result_2 = {
                         authToken: authToken,
@@ -160,4 +164,74 @@ exports.verifyNoPresentationHelper = function (authorization, noPresentation, ve
         }
     });
 }); };
+// /**
+//  * Handler for when a user does not agree to share the information in the credential request.
+//  * @param authorization
+//  * @param noPresentation
+//  * @param verifier
+//  */
+// export const verifyNoPresentationHelper = async (authorization: string, noPresentation: Presentation, verifier: string): Promise<UnumDto<VerifiedStatus>> => {
+//   try {
+//     requireAuth(authorization);
+//     validateNoPresentationParams(noPresentation);
+//     const { proof: { verificationMethod, signatureValue, unsignedValue }, verifierDid } = noPresentation;
+//     // validate that the verifier did provided matches the verifier did in the presentation
+//     if (verifierDid !== verifier) {
+//       const result: UnumDto<VerifiedStatus> = {
+//         authToken: authorization,
+//         body: {
+//           isVerified: false,
+//           message: `The presentation was meant for verifier, ${verifierDid}, not the provided verifier, ${verifier}.`
+//         }
+//       };
+//       return result;
+//     }
+//     const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, verificationMethod);
+//     if (didDocumentResponse instanceof Error) {
+//       throw didDocumentResponse;
+//     }
+//     let authToken: string = handleAuthToken(didDocumentResponse, authorization);
+//     const publicKeyInfos = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
+//     const { publicKey, encoding } = publicKeyInfos[0];
+//     const unsignedNoPresentation = omit(noPresentation, 'proof');
+//     const isVerified = doVerify(signatureValue, unsignedNoPresentation, publicKey, encoding, unsignedValue);
+//     if (!isVerified) {
+//       const result: UnumDto<VerifiedStatus> = {
+//         authToken,
+//         body: {
+//           isVerified: false,
+//           message: 'Presentation signature can not be verified.'
+//         }
+//       };
+//       return result;
+//     }
+//     const receiptOptions = {
+//       type: noPresentation.type,
+//       verifier,
+//       subject: noPresentation.proof.verificationMethod,
+//       data: {
+//         isVerified
+//       }
+//     };
+//     const receiptCallOptions: RESTData = {
+//       method: 'POST',
+//       baseUrl: configData.SaaSUrl,
+//       endPoint: 'receipt',
+//       header: { Authorization: authorization },
+//       data: receiptOptions
+//     };
+//     const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
+//     authToken = handleAuthToken(resp, authToken);
+//     const result: UnumDto<VerifiedStatus> = {
+//       authToken,
+//       body: {
+//         isVerified
+//       }
+//     };
+//     return result;
+//   } catch (e) {
+//     logger.error(`Error sending a verifyNoPresentation request to UnumID Saas. Error ${e}`);
+//     throw e;
+//   }
+// };
 //# sourceMappingURL=verifyNoPresentationHelper.js.map

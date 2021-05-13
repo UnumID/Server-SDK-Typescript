@@ -1,4 +1,4 @@
-import { CredentialStatusOptions, Issuer, CredentialSubject, Verifier, CredentialRequest, Presentation, KeyPair, PublicKeyInfo, JSONObj } from '@unumid/types';
+import { CredentialStatusOptions, Issuer, CredentialSubject, Verifier, CredentialRequest, Presentation, KeyPair, PublicKeyInfo, JSONObj, PresentationPb } from '@unumid/types';
 
 /**
  * Interface for key pairs. One for signing purposes and the other for encryption.
@@ -153,7 +153,7 @@ export interface VerifiedStatus {
  */
 export interface DecryptedPresentation extends VerifiedStatus {
   type: 'VerifiablePresentation' | 'DeclinedPresentation'
-  presentation: Presentation
+  presentation: Presentation | PresentationPb
 }
 
 /**

@@ -72,9 +72,8 @@ function isDeclinedPresentation(presentation) {
  * @param presentation Presentation
  */
 var validatePresentation = function (presentation) {
-    var context = presentation['@context'];
+    var context = presentation['@context'] ? presentation['@context'] : presentation.context;
     var type = presentation.type, proof = presentation.proof, presentationRequestUuid = presentation.presentationRequestUuid, verifierDid = presentation.verifierDid;
-    // const retObj: JSONObj = {};
     // validate required fields
     if (!context) {
         throw new error_1.CustError(400, 'Invalid Presentation: @context is required.');
@@ -88,9 +87,6 @@ var validatePresentation = function (presentation) {
     if (!presentationRequestUuid) {
         throw new error_1.CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
     }
-    // if (!verifiableCredential || isArrayEmpty(verifiableCredential)) {
-    //   throw new CustError(400, 'Invalid Presentation: verifiableCredentials must be a non-empty array.');
-    // }
     if (!verifierDid) {
         throw new error_1.CustError(400, 'Invalid Presentation: verifierDid is required.');
     }

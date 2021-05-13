@@ -1,6 +1,6 @@
 
 import { DecryptedPresentation, UnumDto, VerifiedStatus } from '../types';
-import { Presentation, CredentialRequest, PresentationRequestDto, EncryptedData, PresentationRequest } from '@unumid/types';
+import { Presentation, CredentialRequest, PresentationRequestDto, EncryptedData, PresentationRequest, PresentationPb } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
 import { CryptoError, decrypt } from '@unumid/library-crypto';
 import logger from '../logger';
@@ -15,7 +15,7 @@ import { doVerify } from '../utils/verify';
 import { handleAuthToken } from '../utils/networkRequestHelper';
 import { validateProof } from './validateProof';
 
-function isDeclinedPresentation (presentation: Presentation): presentation is Presentation {
+function isDeclinedPresentation (presentation: Presentation | PresentationPb): presentation is Presentation {
   return isArrayEmpty(presentation.verifiableCredential);
 }
 
@@ -23,10 +23,9 @@ function isDeclinedPresentation (presentation: Presentation): presentation is Pr
  * Validates the presentation object has the proper attributes.
  * @param presentation Presentation
  */
-const validatePresentation = (presentation: Presentation): void => {
-  const context = presentation['@context'];
+const validatePresentation = (presentation: Presentation | PresentationPb): void => {
+  const context = (presentation as Presentation)['@context'] ? (presentation as Presentation)['@context'] : (presentation as PresentationPb).context;
   const { type, proof, presentationRequestUuid, verifierDid } = presentation;
-  // const retObj: JSONObj = {};
 
   // validate required fields
   if (!context) {
@@ -44,10 +43,6 @@ const validatePresentation = (presentation: Presentation): void => {
   if (!presentationRequestUuid) {
     throw new CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
   }
-
-  // if (!verifiableCredential || isArrayEmpty(verifiableCredential)) {
-  //   throw new CustError(400, 'Invalid Presentation: verifiableCredentials must be a non-empty array.');
-  // }
 
   if (!verifierDid) {
     throw new CustError(400, 'Invalid Presentation: verifierDid is required.');
@@ -133,7 +128,7 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
     }
 
     // decrypt the presentation
-    const presentation = <Presentation> decrypt(encryptionPrivateKey, encryptedPresentation);
+    const presentation = <PresentationPb> decrypt(encryptionPrivateKey, encryptedPresentation);
 
     // validate presentation
     validatePresentation(presentation);
