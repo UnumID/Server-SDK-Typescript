@@ -18,7 +18,7 @@ var logger_1 = __importDefault(require("../logger"));
 exports.createProof = function (data, privateKey, method, encoding) {
     var signature = library_crypto_1.sign(data, privateKey, encoding);
     var proof = {
-        created: (new Date()).toISOString(),
+        created: new Date(),
         signatureValue: signature,
         unsignedValue: fast_json_stable_stringify_1.default(data),
         type: 'secp256r1Signature2020',
