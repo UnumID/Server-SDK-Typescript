@@ -47,6 +47,7 @@ var logger_1 = __importDefault(require("../logger"));
 var didHelper_1 = require("../utils/didHelper");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var verify_1 = require("../utils/verify");
+var __1 = require("..");
 /**
  * Used to verify the credential signature given the corresponding Did document's public key.
  * @param credential
@@ -58,6 +59,9 @@ exports.verifyCredential = function (credential, authorization) { return __await
         switch (_a.label) {
             case 0:
                 proof = credential.proof;
+                if (!proof) {
+                    throw new __1.CustError(400, "Credential " + credential.id + " does not contain a proof attribute.");
+                }
                 return [4 /*yield*/, didHelper_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, proof.verificationMethod)];
             case 1:
                 didDocumentResponse = _a.sent();

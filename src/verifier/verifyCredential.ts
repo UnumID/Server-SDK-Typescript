@@ -5,18 +5,24 @@ import { omit } from 'lodash';
 import { UnumDto } from '../types';
 import { configData } from '../config';
 import logger from '../logger';
-import { Credential } from '@unumid/types';
+import { Credential, CredentialPb, Proof } from '@unumid/types';
 import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
 import { handleAuthToken } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
+import { CustError } from '..';
 
 /**
  * Used to verify the credential signature given the corresponding Did document's public key.
  * @param credential
  * @param authorization
  */
-export const verifyCredential = async (credential: Credential, authorization: string): Promise<UnumDto<boolean>> => {
+export const verifyCredential = async (credential: Credential | CredentialPb, authorization: string): Promise<UnumDto<boolean>> => {
   const { proof } = credential;
+
+  if (!proof) {
+    throw new CustError(400, `Credential ${credential.id} does not contain a proof attribute.`);
+  }
+
   const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization, proof.verificationMethod);
 
   if (didDocumentResponse instanceof Error) {
@@ -28,7 +34,7 @@ export const verifyCredential = async (credential: Credential, authorization: st
   const data = omit(credential, 'proof');
 
   try {
-    const isVerified: boolean = doVerify(proof.signatureValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding, proof.unsignedValue);
+    const isVerified: boolean = doVerify(proof.signatureValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding, (proof as Proof).unsignedValue);
 
     const result: UnumDto<boolean> = {
       authToken,
