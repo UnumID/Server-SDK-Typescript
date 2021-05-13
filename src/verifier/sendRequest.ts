@@ -1,20 +1,60 @@
 import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
 import { CryptoError } from '@unumid/library-crypto';
-import { CredentialRequest, PresentationRequestPostDto, SignedPresentationRequest, UnsignedPresentationRequest } from '@unumid/types';
+import { CredentialRequest, PresentationRequestPostDto, SignedPresentationRequest, UnsignedPresentationRequest, UnsignedPresentationRequestPb, PresentationRequestPb } from '@unumid/types';
 
 import { RESTData, SendRequestReqBody, UnumDto } from '../types';
 import logger from '../logger';
-import { createProof } from '../utils/createProof';
+import { createProof, createProofPb } from '../utils/createProof';
 import { getUUID } from '../utils/helpers';
 import { makeNetworkRequest, handleAuthToken } from '../utils/networkRequestHelper';
 import { CustError } from '../utils/error';
+import { versionList } from '../utils/versionList';
+
+// /**
+//  * Constructs an unsigned PresentationRequest from the incoming request body.
+//  * @param reqBody SendRequestReqBody
+//  */
+// export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody): UnsignedPresentationRequest => {
+//   const {
+//     verifier,
+//     holderAppUuid,
+//     credentialRequests,
+//     metadata,
+//     expiresAt,
+//     createdAt,
+//     updatedAt
+//   } = reqBody;
+
+//   const uuid = getUUID();
+
+//   // any/all default values must be set before signing, or signature will always fail to verify
+//   const now = new Date();
+//   const tenMinutesFromNow = new Date(now.getTime() + 10 * 60 * 1000);
+//   const defaultCreatedAt = now;
+//   const defaultUpdatedAt = now;
+//   const defaultExpiresAt = tenMinutesFromNow;
+//   const credentialRequestsWithDefaults = credentialRequests.map(cr => {
+//     return cr.required ? cr : { ...cr, required: false };
+//   });
+
+//   return {
+//     credentialRequests: credentialRequestsWithDefaults,
+//     createdAt: createdAt || defaultCreatedAt,
+//     updatedAt: updatedAt || defaultUpdatedAt,
+//     expiresAt: expiresAt || defaultExpiresAt,
+//     holderAppUuid,
+//     metadata: metadata || {},
+//     uuid,
+//     verifier
+//   };
+// };
 
 /**
  * Constructs an unsigned PresentationRequest from the incoming request body.
  * @param reqBody SendRequestReqBody
  */
-export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody): UnsignedPresentationRequest => {
+export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody): UnsignedPresentationRequestPb => {
   const {
     verifier,
     holderAppUuid,
@@ -49,14 +89,45 @@ export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody
   };
 };
 
+// /**
+//  * Signs an unsigned PresentationRequest and attaches the resulting Proof
+//  * @param unsignedPresentationRequest UnsignedPresentationRequest
+//  * @param privateKey String
+//  */
+// export const constructSignedPresentationRequest = (unsignedPresentationRequest: UnsignedPresentationRequest, privateKey: string): SignedPresentationRequest => {
+//   try {
+//     const proof = createProof(
+//       unsignedPresentationRequest,
+//       privateKey,
+//       unsignedPresentationRequest.verifier,
+//       'pem'
+//     );
+
+//     const signedPresentationRequest = {
+//       ...unsignedPresentationRequest,
+//       proof: proof
+//     };
+
+//     return signedPresentationRequest;
+//   } catch (e) {
+//     if (e instanceof CryptoError) {
+//       logger.error(`Issue in the crypto lib while creating presentation request ${unsignedPresentationRequest.uuid} proof`, e);
+//     } else {
+//       logger.error(`Issue while creating presentation request ${unsignedPresentationRequest.uuid} proof`, e);
+//     }
+
+//     throw e;
+//   }
+// };
+
 /**
  * Signs an unsigned PresentationRequest and attaches the resulting Proof
  * @param unsignedPresentationRequest UnsignedPresentationRequest
  * @param privateKey String
  */
-export const constructSignedPresentationRequest = (unsignedPresentationRequest: UnsignedPresentationRequest, privateKey: string): SignedPresentationRequest => {
+export const constructSignedPresentationRequest = (unsignedPresentationRequest: UnsignedPresentationRequestPb, privateKey: string): PresentationRequestPb => {
   try {
-    const proof = createProof(
+    const proof = createProofPb(
       unsignedPresentationRequest,
       privateKey,
       unsignedPresentationRequest.verifier,
@@ -188,7 +259,7 @@ export const sendRequest = async (
       method: 'POST',
       baseUrl: configData.SaaSUrl,
       endPoint: 'presentationRequest',
-      header: { Authorization: authorization },
+      header: { Authorization: authorization, version: versionList[versionList.length - 1] }, // TODO need to setup the saas to handle versioned requests.
       data: signedPR
     };
 
