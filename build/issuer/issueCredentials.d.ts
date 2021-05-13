@@ -1,5 +1,5 @@
 import { UnumDto } from '../types';
-import { CredentialSubject, Credential } from '@unumid/types';
+import { CredentialSubject, CredentialPb } from '@unumid/types';
 /**
  * Handles issuing a credential with UnumID's SaaS.
  *
@@ -10,5 +10,5 @@ import { CredentialSubject, Credential } from '@unumid/types';
  * @param signingPrivateKey
  * @param expirationDate
  */
-export declare const issueCredential: (authorization: string | undefined, type: string | string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, expirationDate?: Date | undefined) => Promise<UnumDto<Credential>>;
+export declare const issueCredential: (authorization: string | undefined, type: string | string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, expirationDate?: Date | undefined) => Promise<UnumDto<CredentialPb>>;
 //# sourceMappingURL=issueCredentials.d.ts.map
