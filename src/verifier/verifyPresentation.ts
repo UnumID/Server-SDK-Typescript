@@ -67,6 +67,7 @@ const validatePresentation = (presentation: Presentation): void => {
 
 /**
  * Verify the PresentationRequest signature as a way to side step verifier MITM attacks where an entity spoofs requests.
+ * TODO: this actually needs to be versioned.... because the holder might have grabbed the v1 PresentationRequest
  */
 async function verifyPresentationRequest (authorization: string, presentationRequest: PresentationRequest): Promise<UnumDto<VerifiedStatus>> {
   const { proof: { verificationMethod, signatureValue, unsignedValue } } = presentationRequest;

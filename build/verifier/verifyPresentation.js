@@ -105,6 +105,7 @@ var validatePresentation = function (presentation) {
 };
 /**
  * Verify the PresentationRequest signature as a way to side step verifier MITM attacks where an entity spoofs requests.
+ * TODO: this actually needs to be versioned.... because the holder might have grabbed the v1 PresentationRequest
  */
 function verifyPresentationRequest(authorization, presentationRequest) {
     return __awaiter(this, void 0, void 0, function () {
