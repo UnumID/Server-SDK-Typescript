@@ -158,7 +158,7 @@ const constructSignedCredentialV1Obj = (usCred: UnsignedCredentialV1, privateKey
     expirationDate: usCred.expirationDate,
     proof: {
       ...proof,
-      created: proof.created.toDateString()
+      created: proof.created.toString()
     }
   };
 

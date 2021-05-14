@@ -203,7 +203,7 @@ var constructSignedCredentialV1Obj = function (usCred, privateKey) {
         id: usCred.id,
         issuanceDate: usCred.issuanceDate,
         expirationDate: usCred.expirationDate,
-        proof: __assign(__assign({}, proof), { created: proof.created.toDateString() })
+        proof: __assign(__assign({}, proof), { created: proof.created.toString() })
     };
     return (credential);
 };
