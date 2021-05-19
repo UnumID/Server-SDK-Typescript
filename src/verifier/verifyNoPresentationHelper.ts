@@ -10,7 +10,7 @@ import { CustError } from '../utils/error';
 import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
 import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
-import { Presentation, JSONObj, PresentationPb } from '@unumid/types';
+import { Presentation, JSONObj, PresentationPb, UnsignedPresentationPb } from '@unumid/types';
 import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
 
 /**
@@ -99,9 +99,14 @@ export const verifyNoPresentationHelper = async (authorization: string, noPresen
 
     const { publicKey, encoding } = publicKeyInfos[0];
 
-    const unsignedNoPresentation = omit(noPresentation, 'proof');
+    // remove the proof attribute
+    const unsignedNoPresentation: UnsignedPresentationPb = omit(noPresentation, 'proof');
 
-    const isVerified = doVerify(signatureValue, unsignedNoPresentation, publicKey, encoding);
+    // create byte array from protobuf helpers
+    const bytes = UnsignedPresentationPb.encode(unsignedNoPresentation).finish();
+
+    // verify the signature
+    const isVerified = doVerify(signatureValue, bytes, publicKey, encoding);
 
     if (!isVerified) {
       const result: UnumDto<VerifiedStatus> = {

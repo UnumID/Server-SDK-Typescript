@@ -5,18 +5,19 @@ import { omit } from 'lodash';
 import { UnumDto } from '../types';
 import { configData } from '../config';
 import logger from '../logger';
-import { Credential, CredentialPb, Proof } from '@unumid/types';
+import { Credential, CredentialPb, Proof, UnsignedCredentialPb } from '@unumid/types';
 import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
 import { handleAuthToken } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
 import { CustError } from '..';
+import { UnsignedCredential } from '@unumid/types/build/protos/credential';
 
 /**
  * Used to verify the credential signature given the corresponding Did document's public key.
  * @param credential
  * @param authorization
  */
-export const verifyCredential = async (credential: Credential | CredentialPb, authorization: string): Promise<UnumDto<boolean>> => {
+export const verifyCredential = async (credential: CredentialPb, authorization: string): Promise<UnumDto<boolean>> => {
   const { proof } = credential;
 
   if (!proof) {
@@ -31,10 +32,12 @@ export const verifyCredential = async (credential: Credential | CredentialPb, au
 
   const authToken: string = handleAuthToken(didDocumentResponse, authorization);
   const publicKeyObject = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
-  const data = omit(credential, 'proof');
+
+  const data: UnsignedCredentialPb = omit(credential, 'proof');
 
   try {
-    const isVerified: boolean = doVerify(proof.signatureValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding, (proof as Proof).unsignedValue);
+    const bytes = UnsignedCredentialPb.encode(data).finish();
+    const isVerified: boolean = doVerify(proof.signatureValue, bytes, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
 
     const result: UnumDto<boolean> = {
       authToken,

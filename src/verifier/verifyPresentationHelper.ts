@@ -2,7 +2,7 @@ import { omit } from 'lodash';
 
 import { configData } from '../config';
 import { CredentialStatusInfo, RESTData, UnumDto, VerifiedStatus } from '../types';
-import { Presentation, Credential, CredentialRequest, Proof, PublicKeyInfo, JSONObj, PresentationPb, CredentialPb, ProofPb } from '@unumid/types';
+import { Presentation, Credential, CredentialRequest, Proof, PublicKeyInfo, JSONObj, PresentationPb, CredentialPb, ProofPb, UnsignedPresentationPb } from '@unumid/types';
 import { validateProof } from './validateProof';
 import { requireAuth } from '../requireAuth';
 import { verifyCredential } from './verifyCredential';
@@ -354,7 +354,8 @@ export const verifyPresentationHelper = async (authorization: string, presentati
       throw new CustError(400, 'verifier is required.');
     }
 
-    const data = omit(presentation, 'proof'); // Note: important that this data variable is created prior to the validation thanks to validatePresentation taking potentially stringified VerifiableCredentials objects array and converting them to proper objects.
+    // Note: important that this data variable is created prior to the validation thanks to validatePresentation taking potentially stringified VerifiableCredentials objects array and converting them to proper objects.
+    const data: UnsignedPresentationPb = omit(presentation, 'proof');
     presentation = validatePresentation(presentation);
 
     if (!presentation.verifiableCredential) {
@@ -413,7 +414,11 @@ export const verifyPresentationHelper = async (authorization: string, presentati
     // this logic to verify each credential present separately.  We can take this up later.
     let isPresentationVerified = false;
     try {
-      isPresentationVerified = doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
+      // create byte array from protobuf helpers
+      const bytes = UnsignedPresentationPb.encode(data).finish();
+
+      // verify the signature
+      isPresentationVerified = doVerify(proof.signatureValue, bytes, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
     } catch (e) {
       if (e instanceof CryptoError) {
         logger.error(`CryptoError verifying presentation ${presentation.uuid} signature`, e);

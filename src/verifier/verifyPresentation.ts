@@ -1,6 +1,6 @@
 
 import { DecryptedPresentation, UnumDto, VerifiedStatus } from '../types';
-import { Presentation, CredentialRequest, PresentationRequestDto, EncryptedData, PresentationRequest, PresentationPb } from '@unumid/types';
+import { Presentation, CredentialRequest, PresentationRequestDto, EncryptedData, PresentationRequest, PresentationPb, PresentationRequestPb, ProofPb, UnsignedPresentationRequestPb } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
 import { CryptoError, decrypt } from '@unumid/library-crypto';
 import logger from '../logger';
@@ -61,11 +61,49 @@ const validatePresentation = (presentation: Presentation | PresentationPb): void
 };
 
 /**
+ * Validates the presentation object has the proper attributes.
+ * @param presentation Presentation
+ */
+const validatePresentationRequest = (presentationRequest: PresentationRequestPb): void => {
+  const { proof, credentialRequests, holderAppUuid, verifier } = presentationRequest;
+
+  // validate required fields
+  if (!credentialRequests) {
+    throw new CustError(400, 'Invalid PresentationRequest: credentialRequests is required.');
+  }
+
+  if (!holderAppUuid) {
+    throw new CustError(400, 'Invalid PresentationRequest: holderAppUuid is required.');
+  }
+
+  if (!proof) {
+    throw new CustError(400, 'Invalid PresentationRequest: proof is required.');
+  }
+
+  if (!verifier) {
+    throw new CustError(400, 'Invalid PresentationRequest: verifier is required.');
+  }
+
+  if (isArrayEmpty(credentialRequests)) {
+    throw new CustError(400, 'Invalid Presentation: credentialRequests must be a non-empty array.');
+  }
+
+  // Check proof object is formatted correctly
+  validateProof(proof);
+};
+
+/**
  * Verify the PresentationRequest signature as a way to side step verifier MITM attacks where an entity spoofs requests.
  * TODO: this actually needs to be versioned.... because the holder might have grabbed the v1 PresentationRequest
  */
-async function verifyPresentationRequest (authorization: string, presentationRequest: PresentationRequest): Promise<UnumDto<VerifiedStatus>> {
-  const { proof: { verificationMethod, signatureValue, unsignedValue } } = presentationRequest;
+async function verifyPresentationRequest (authorization: string, presentationRequest: PresentationRequestPb): Promise<UnumDto<VerifiedStatus>> {
+  if (!presentationRequest.proof) {
+    throw new CustError(400, 'Invalid PresentationRequest: proof is required.');
+  }
+
+  const { proof: { verificationMethod, signatureValue } } = presentationRequest;
+  // const proof = presentationRequest.proof as ProofPb;
+  // const { verificationMethod, signatureValue } = proof;
 
   const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, verificationMethod);
 
@@ -77,9 +115,13 @@ async function verifyPresentationRequest (authorization: string, presentationReq
   const publicKeyInfos = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
   const { publicKey, encoding } = publicKeyInfos[0];
-  const unsignedPresentationRequest = omit(presentationRequest, 'proof');
+  const unsignedPresentationRequest: UnsignedPresentationRequestPb = omit(presentationRequest, 'proof');
 
-  const isVerified = doVerify(signatureValue, unsignedPresentationRequest, publicKey, encoding, unsignedValue);
+  // convert to bytes
+  const bytes: Uint8Array = UnsignedPresentationRequestPb.encode(unsignedPresentationRequest).finish();
+
+  // verify the byte array
+  const isVerified = doVerify(signatureValue, bytes, publicKey, encoding);
 
   if (!isVerified) {
     const result: UnumDto<VerifiedStatus> = {
