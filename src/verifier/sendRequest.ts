@@ -1,7 +1,7 @@
 import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
 import { CryptoError } from '@unumid/library-crypto';
-import { CredentialRequest, PresentationRequestPostDto, SignedPresentationRequest, UnsignedPresentationRequest, UnsignedPresentationRequestPb, PresentationRequestPb, ProofPb } from '@unumid/types';
+import { CredentialRequest, PresentationRequestPostDto, UnsignedPresentationRequest, UnsignedPresentationRequestPb, PresentationRequestPb, ProofPb, SignedPresentationRequest, CredentialRequestPb } from '@unumid/types';
 
 import { RESTData, SendRequestReqBody, UnumDto } from '../types';
 import logger from '../logger';
@@ -239,7 +239,7 @@ const validateSendRequestBody = (sendRequestBody: SendRequestReqBody): void => {
 export const sendRequest = async (
   authorization:string,
   verifier: string,
-  credentialRequests: CredentialRequest[],
+  credentialRequests: CredentialRequestPb[],
   eccPrivateKey: string,
   holderAppUuid: string,
   expirationDate?: Date,
@@ -256,7 +256,7 @@ export const sendRequest = async (
     const unsignedPresentationRequest = constructUnsignedPresentationRequest(body);
 
     // Create the signed presentation object from the unsignedPresentation object
-    const signedPR = constructSignedPresentationRequest(unsignedPresentationRequest, eccPrivateKey);
+    const signedPR: PresentationRequestPb = constructSignedPresentationRequest(unsignedPresentationRequest, eccPrivateKey);
 
     const restData: RESTData = {
       method: 'POST',
