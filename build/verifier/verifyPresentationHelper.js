@@ -42,6 +42,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyPresentationHelper = void 0;
 var lodash_1 = require("lodash");
 var config_1 = require("../config");
+var types_1 = require("@unumid/types");
 var validateProof_1 = require("./validateProof");
 var requireAuth_1 = require("../requireAuth");
 var verifyCredential_1 = require("./verifyCredential");
@@ -329,7 +330,7 @@ function validatePresentationMeetsRequestedCredentials(presentation, credentialR
  * @param verifier
  */
 exports.verifyPresentationHelper = function (authorization, presentation, verifier, credentialRequests) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, result_1, proof, didDocumentResponse, authToken, pubKeyObj, result_2, isPresentationVerified, result_3, result_4, areCredentialsValid, _i, _a, credential, isExpired, isStatusValidResponse, isStatusValid, isVerifiedResponse, isVerified_1, result_5, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, result, error_2;
+    var data, result_1, proof, didDocumentResponse, authToken, pubKeyObj, result_2, isPresentationVerified, bytes, result_3, result_4, areCredentialsValid, _i, _a, credential, isExpired, isStatusValidResponse, isStatusValid, isVerifiedResponse, isVerified_1, result_5, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, result, error_2;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -386,7 +387,9 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 }
                 isPresentationVerified = false;
                 try {
-                    isPresentationVerified = verify_1.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
+                    bytes = types_1.UnsignedPresentationPb.encode(data).finish();
+                    // verify the signature
+                    isPresentationVerified = verify_1.doVerify(proof.signatureValue, bytes, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
                 }
                 catch (e) {
                     if (e instanceof library_crypto_1.CryptoError) {

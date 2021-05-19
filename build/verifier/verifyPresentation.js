@@ -51,6 +51,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyPresentation = void 0;
+var types_1 = require("@unumid/types");
 var requireAuth_1 = require("../requireAuth");
 var library_crypto_1 = require("@unumid/library-crypto");
 var logger_1 = __importDefault(require("../logger"));
@@ -100,16 +101,44 @@ var validatePresentation = function (presentation) {
     validateProof_1.validateProof(proof);
 };
 /**
+ * Validates the presentation object has the proper attributes.
+ * @param presentation Presentation
+ */
+var validatePresentationRequest = function (presentationRequest) {
+    var proof = presentationRequest.proof, credentialRequests = presentationRequest.credentialRequests, holderAppUuid = presentationRequest.holderAppUuid, verifier = presentationRequest.verifier;
+    // validate required fields
+    if (!credentialRequests) {
+        throw new error_1.CustError(400, 'Invalid PresentationRequest: credentialRequests is required.');
+    }
+    if (!holderAppUuid) {
+        throw new error_1.CustError(400, 'Invalid PresentationRequest: holderAppUuid is required.');
+    }
+    if (!proof) {
+        throw new error_1.CustError(400, 'Invalid PresentationRequest: proof is required.');
+    }
+    if (!verifier) {
+        throw new error_1.CustError(400, 'Invalid PresentationRequest: verifier is required.');
+    }
+    if (helpers_1.isArrayEmpty(credentialRequests)) {
+        throw new error_1.CustError(400, 'Invalid Presentation: credentialRequests must be a non-empty array.');
+    }
+    // Check proof object is formatted correctly
+    validateProof_1.validateProof(proof);
+};
+/**
  * Verify the PresentationRequest signature as a way to side step verifier MITM attacks where an entity spoofs requests.
  * TODO: this actually needs to be versioned.... because the holder might have grabbed the v1 PresentationRequest
  */
 function verifyPresentationRequest(authorization, presentationRequest) {
     return __awaiter(this, void 0, void 0, function () {
-        var _a, verificationMethod, signatureValue, unsignedValue, didDocumentResponse, authToken, publicKeyInfos, _b, publicKey, encoding, unsignedPresentationRequest, isVerified, result_1, result;
+        var _a, verificationMethod, signatureValue, didDocumentResponse, authToken, publicKeyInfos, _b, publicKey, encoding, unsignedPresentationRequest, bytes, isVerified, result_1, result;
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
-                    _a = presentationRequest.proof, verificationMethod = _a.verificationMethod, signatureValue = _a.signatureValue, unsignedValue = _a.unsignedValue;
+                    if (!presentationRequest.proof) {
+                        throw new error_1.CustError(400, 'Invalid PresentationRequest: proof is required.');
+                    }
+                    _a = presentationRequest.proof, verificationMethod = _a.verificationMethod, signatureValue = _a.signatureValue;
                     return [4 /*yield*/, didHelper_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, verificationMethod)];
                 case 1:
                     didDocumentResponse = _c.sent();
@@ -120,7 +149,8 @@ function verifyPresentationRequest(authorization, presentationRequest) {
                     publicKeyInfos = didHelper_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                     _b = publicKeyInfos[0], publicKey = _b.publicKey, encoding = _b.encoding;
                     unsignedPresentationRequest = lodash_1.omit(presentationRequest, 'proof');
-                    isVerified = verify_1.doVerify(signatureValue, unsignedPresentationRequest, publicKey, encoding, unsignedValue);
+                    bytes = types_1.UnsignedPresentationRequestPb.encode(unsignedPresentationRequest).finish();
+                    isVerified = verify_1.doVerify(signatureValue, bytes, publicKey, encoding);
                     if (!isVerified) {
                         result_1 = {
                             authToken: authToken,

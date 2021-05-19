@@ -44,6 +44,7 @@ var library_crypto_1 = require("@unumid/library-crypto");
 var lodash_1 = require("lodash");
 var config_1 = require("../config");
 var logger_1 = __importDefault(require("../logger"));
+var types_1 = require("@unumid/types");
 var didHelper_1 = require("../utils/didHelper");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var verify_1 = require("../utils/verify");
@@ -54,7 +55,7 @@ var __1 = require("..");
  * @param authorization
  */
 exports.verifyCredential = function (credential, authorization) { return __awaiter(void 0, void 0, void 0, function () {
-    var proof, didDocumentResponse, authToken, publicKeyObject, data, isVerified, result, result;
+    var proof, didDocumentResponse, authToken, publicKeyObject, data, bytes, isVerified, result, result;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -72,7 +73,8 @@ exports.verifyCredential = function (credential, authorization) { return __await
                 publicKeyObject = didHelper_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 data = lodash_1.omit(credential, 'proof');
                 try {
-                    isVerified = verify_1.doVerify(proof.signatureValue, data, publicKeyObject[0].publicKey, publicKeyObject[0].encoding, proof.unsignedValue);
+                    bytes = types_1.UnsignedCredentialPb.encode(data).finish();
+                    isVerified = verify_1.doVerify(proof.signatureValue, bytes, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
                     result = {
                         authToken: authToken,
                         body: isVerified

@@ -49,6 +49,7 @@ var error_1 = require("../utils/error");
 var helpers_1 = require("../utils/helpers");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var verify_1 = require("../utils/verify");
+var types_1 = require("@unumid/types");
 var didHelper_1 = require("../utils/didHelper");
 /**
  * Validates the NoPresentation type to ensure the necessary attributes.
@@ -86,7 +87,7 @@ exports.validateNoPresentationParams = function (noPresentation) {
  * @param verifier
  */
 exports.verifyNoPresentationHelper = function (authorization, noPresentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, verificationMethod, signatureValue, verifierDid, result_1, didDocumentResponse, authToken, publicKeyInfos, _b, publicKey, encoding, unsignedNoPresentation, isVerified, result_2, receiptOptions, receiptCallOptions, resp, result, e_1;
+    var _a, verificationMethod, signatureValue, verifierDid, result_1, didDocumentResponse, authToken, publicKeyInfos, _b, publicKey, encoding, unsignedNoPresentation, bytes, isVerified, result_2, receiptOptions, receiptCallOptions, resp, result, e_1;
     return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
@@ -119,7 +120,8 @@ exports.verifyNoPresentationHelper = function (authorization, noPresentation, ve
                 publicKeyInfos = didHelper_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 _b = publicKeyInfos[0], publicKey = _b.publicKey, encoding = _b.encoding;
                 unsignedNoPresentation = lodash_1.omit(noPresentation, 'proof');
-                isVerified = verify_1.doVerify(signatureValue, unsignedNoPresentation, publicKey, encoding);
+                bytes = types_1.UnsignedPresentationPb.encode(unsignedNoPresentation).finish();
+                isVerified = verify_1.doVerify(signatureValue, bytes, publicKey, encoding);
                 if (!isVerified) {
                     result_2 = {
                         authToken: authToken,
