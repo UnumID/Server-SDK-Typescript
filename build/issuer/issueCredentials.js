@@ -60,6 +60,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.issueCredential = void 0;
 var config_1 = require("../config");
 var requireAuth_1 = require("../requireAuth");
+var types_1 = require("@unumid/types");
 var logger_1 = __importDefault(require("../logger"));
 var didHelper_1 = require("../utils/didHelper");
 var encrypt_1 = require("../utils/encrypt");
@@ -70,6 +71,7 @@ var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var convertCredentialSubject_1 = require("../utils/convertCredentialSubject");
 var semver_1 = require("semver");
 var versionList_1 = require("../utils/versionList");
+var library_crypto_1 = require("@unumid/library-crypto");
 /**
  * Creates an object of type EncryptedCredentialOptions which encapsulates information relating to the encrypted credential data
  * @param cred Credential
@@ -153,19 +155,32 @@ var constructEncryptedCredentialV1Opts = function (cred, authorization) { return
  * @param privateKey String
  */
 var constructSignedCredentialPbObj = function (usCred, privateKey) {
-    var proof = createProof_1.createProofPb(usCred, privateKey, usCred.issuer, 'pem');
-    var credential = {
-        context: usCred.context,
-        credentialStatus: usCred.credentialStatus,
-        credentialSubject: usCred.credentialSubject,
-        issuer: usCred.issuer,
-        type: usCred.type,
-        id: usCred.id,
-        issuanceDate: usCred.issuanceDate,
-        expirationDate: usCred.expirationDate,
-        proof: proof
-    };
-    return (credential);
+    try {
+        // convert the protobuf to a byte array
+        var bytes = types_1.UnsignedCredentialPb.encode(usCred).finish();
+        var proof = createProof_1.createProofPb(bytes, privateKey, usCred.issuer, 'pem');
+        var credential = {
+            context: usCred.context,
+            credentialStatus: usCred.credentialStatus,
+            credentialSubject: usCred.credentialSubject,
+            issuer: usCred.issuer,
+            type: usCred.type,
+            id: usCred.id,
+            issuanceDate: usCred.issuanceDate,
+            expirationDate: usCred.expirationDate,
+            proof: proof
+        };
+        return (credential);
+    }
+    catch (e) {
+        if (e instanceof library_crypto_1.CryptoError) {
+            logger_1.default.error("Issue in the crypto lib while creating credential " + usCred.id + " proof. " + e + ".");
+        }
+        else {
+            logger_1.default.error("Issue while creating creating credential " + usCred.id + " proof " + e + ".");
+        }
+        throw e;
+    }
 };
 /**
  * Creates a signed credential with all the relevant information. The proof serves as a cryptographic signature.

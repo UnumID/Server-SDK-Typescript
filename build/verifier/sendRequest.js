@@ -54,6 +54,7 @@ exports.sendRequest = exports.constructSignedPresentationRequest = exports.const
 var config_1 = require("../config");
 var requireAuth_1 = require("../requireAuth");
 var library_crypto_1 = require("@unumid/library-crypto");
+var types_1 = require("@unumid/types");
 var logger_1 = __importDefault(require("../logger"));
 var createProof_1 = require("../utils/createProof");
 var helpers_1 = require("../utils/helpers");
@@ -156,7 +157,9 @@ exports.constructUnsignedPresentationRequest = function (reqBody) {
  */
 exports.constructSignedPresentationRequest = function (unsignedPresentationRequest, privateKey) {
     try {
-        var proof = createProof_1.createProofPb(unsignedPresentationRequest, privateKey, unsignedPresentationRequest.verifier, 'pem');
+        // convert the protobuf to a byte array
+        var bytes = types_1.UnsignedPresentationRequestPb.encode(unsignedPresentationRequest).finish();
+        var proof = createProof_1.createProofPb(bytes, privateKey, unsignedPresentationRequest.verifier, 'pem');
         var signedPresentationRequest = __assign(__assign({}, unsignedPresentationRequest), { proof: proof });
         return signedPresentationRequest;
     }

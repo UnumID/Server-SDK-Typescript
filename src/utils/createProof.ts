@@ -1,4 +1,4 @@
-import { sign } from '@unumid/library-crypto';
+import { sign, signBytes } from '@unumid/library-crypto';
 import stringify from 'fast-json-stable-stringify';
 
 import { Proof, JSONObj, ProofPb } from '@unumid/types';
@@ -30,14 +30,14 @@ export const createProof = (data: JSONObj, privateKey: string, method: string, e
 };
 
 /**
- * Create cryptographic proof.
+ * Create cryptographic proof from byte array of a Protobuf object
  * @param data
  * @param privateKey
  * @param method
  * @param encoding
  */
-export const createProofPb = (data: JSONObj, privateKey: string, method: string, encoding: 'base58' | 'pem'): ProofPb => {
-  const signature = sign(data, privateKey, encoding);
+export const createProofPb = (data: Uint8Array, privateKey: string, method: string, encoding: 'base58' | 'pem'): ProofPb => {
+  const signature = signBytes(data, privateKey, encoding);
 
   const proof: ProofPb = {
     created: new Date(),

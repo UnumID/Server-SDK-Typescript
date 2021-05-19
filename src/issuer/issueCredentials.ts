@@ -14,6 +14,7 @@ import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelp
 import { convertCredentialSubject } from '../utils/convertCredentialSubject';
 import { gte, lt } from 'semver';
 import { versionList } from '../utils/versionList';
+import { CryptoError } from '@unumid/library-crypto';
 
 /**
  * Creates an object of type EncryptedCredentialOptions which encapsulates information relating to the encrypted credential data
@@ -102,20 +103,34 @@ const constructEncryptedCredentialV1Opts = async (cred: CredentialV1, authorizat
  * @param privateKey String
  */
 const constructSignedCredentialPbObj = (usCred: UnsignedCredentialPb, privateKey: string): CredentialPb => {
-  const proof: ProofPb = createProofPb(usCred, privateKey, usCred.issuer, 'pem');
-  const credential: CredentialPb = {
-    context: usCred.context,
-    credentialStatus: usCred.credentialStatus,
-    credentialSubject: usCred.credentialSubject,
-    issuer: usCred.issuer,
-    type: usCred.type,
-    id: usCred.id,
-    issuanceDate: usCred.issuanceDate,
-    expirationDate: usCred.expirationDate,
-    proof: proof
-  };
+  try {
+    // convert the protobuf to a byte array
+    const bytes: Uint8Array = UnsignedCredentialPb.encode(usCred).finish();
 
-  return (credential);
+    const proof: ProofPb = createProofPb(bytes, privateKey, usCred.issuer, 'pem');
+
+    const credential: CredentialPb = {
+      context: usCred.context,
+      credentialStatus: usCred.credentialStatus,
+      credentialSubject: usCred.credentialSubject,
+      issuer: usCred.issuer,
+      type: usCred.type,
+      id: usCred.id,
+      issuanceDate: usCred.issuanceDate,
+      expirationDate: usCred.expirationDate,
+      proof: proof
+    };
+
+    return (credential);
+  } catch (e) {
+    if (e instanceof CryptoError) {
+      logger.error(`Issue in the crypto lib while creating credential ${usCred.id} proof. ${e}.`);
+    } else {
+      logger.error(`Issue while creating creating credential ${usCred.id} proof ${e}.`);
+    }
+
+    throw e;
+  }
 };
 
 /**

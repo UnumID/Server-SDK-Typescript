@@ -1,7 +1,7 @@
 import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
 import { CryptoError } from '@unumid/library-crypto';
-import { CredentialRequest, PresentationRequestPostDto, SignedPresentationRequest, UnsignedPresentationRequest, UnsignedPresentationRequestPb, PresentationRequestPb } from '@unumid/types';
+import { CredentialRequest, PresentationRequestPostDto, SignedPresentationRequest, UnsignedPresentationRequest, UnsignedPresentationRequestPb, PresentationRequestPb, ProofPb } from '@unumid/types';
 
 import { RESTData, SendRequestReqBody, UnumDto } from '../types';
 import logger from '../logger';
@@ -127,8 +127,11 @@ export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody
  */
 export const constructSignedPresentationRequest = (unsignedPresentationRequest: UnsignedPresentationRequestPb, privateKey: string): PresentationRequestPb => {
   try {
-    const proof = createProofPb(
-      unsignedPresentationRequest,
+    // convert the protobuf to a byte array
+    const bytes: Uint8Array = UnsignedPresentationRequestPb.encode(unsignedPresentationRequest).finish();
+
+    const proof: ProofPb = createProofPb(
+      bytes,
       privateKey,
       unsignedPresentationRequest.verifier,
       'pem'

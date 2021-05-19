@@ -29,14 +29,14 @@ exports.createProof = function (data, privateKey, method, encoding) {
     return (proof);
 };
 /**
- * Create cryptographic proof.
+ * Create cryptographic proof from byte array of a Protobuf object
  * @param data
  * @param privateKey
  * @param method
  * @param encoding
  */
 exports.createProofPb = function (data, privateKey, method, encoding) {
-    var signature = library_crypto_1.sign(data, privateKey, encoding);
+    var signature = library_crypto_1.signBytes(data, privateKey, encoding);
     var proof = {
         created: new Date(),
         signatureValue: signature,
