@@ -24,8 +24,9 @@ import { convertCredentialSubject } from '../utils/convertCredentialSubject';
 // const validateCredentialInput = (credentials: JSONObj): JSONObj => {
 // TODO return a VerifiedStatus type
 const validateCredentialInput = (credentials: CredentialPb[]): JSONObj => {
-  const retObj: JSONObj = { valid: true };
-  // const retObj: JSONObj = { valid: true, stringifiedCredentials: false, resultantCredentials: [] };
+  // const retObj: JSONObj = { valid: true };
+  const retObj: JSONObj = { valid: true, stringifiedDates: false, resultantCredentials: [] };
+  // const retObj: JSONObj = { valid: true, resultantCredentials: [] };
 
   if (isArrayEmpty(credentials)) {
     retObj.valid = false;
@@ -87,6 +88,18 @@ const validateCredentialInput = (credentials: CredentialPb[]): JSONObj => {
       retObj.valid = false;
       retObj.msg = `${invalidMsg} issuanceDate is required.`;
       break;
+    }
+
+    // Handling converting string dates to Date. Note: only needed for now when using Protos with Date attributes
+    // when we move to full grpc this will not be needed because not longer using json.
+    if (credential.issuanceDate instanceof String) {
+      retObj.stringifiedDates = true;
+      credential.issuanceDate = new Date(credential.issuanceDate);
+    }
+
+    if (credential.expirationDate instanceof String) {
+      retObj.stringifiedDates = true;
+      credential.expirationDate = new Date(credential.expirationDate);
     }
 
     if (!credential.proof) {
