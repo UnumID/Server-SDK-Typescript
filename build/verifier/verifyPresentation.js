@@ -97,8 +97,11 @@ var validatePresentation = function (presentation) {
     if (helpers_1.isArrayEmpty(type)) {
         throw new error_1.CustError(400, 'Invalid Presentation: type must be a non-empty array.');
     }
-    // HACK ALERT: Handling converting string dates to Date. Note: only needed for now when using Protos with Date attributes
-    // when we move to full grpc this will not be needed because not longer using json.
+    // // HACK ALERT: Handling converting string dates to Date. Note: only needed for now when using Protos with Date attributes
+    // // when we move to full grpc this will not be needed because not longer using json.
+    // if (!uuid) {
+    //   presentation.uuid = '';
+    // }
     // Check proof object is formatted correctly
     var updatedProof = validateProof_1.validateProof(proof);
     presentation.proof = updatedProof;

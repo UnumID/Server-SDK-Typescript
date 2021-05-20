@@ -441,9 +441,9 @@ export const verifyPresentationHelper = async (authorization: string, presentati
       isPresentationVerified = doVerify(proof.signatureValue, bytes, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
     } catch (e) {
       if (e instanceof CryptoError) {
-        logger.error(`CryptoError verifying presentation ${presentation.uuid} signature`, e);
+        logger.error(`CryptoError verifying presentation ${JSON.stringify(presentation)} signature`, e);
       } else {
-        logger.error(`Error verifying presentation ${presentation.uuid} signature`, e);
+        logger.error(`Error verifying presentation ${JSON.stringify(presentation)} signature`, e);
       }
 
       // need to return the UnumDto with the (potentially) updated authToken

@@ -412,10 +412,10 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 }
                 catch (e) {
                     if (e instanceof library_crypto_1.CryptoError) {
-                        logger_1.default.error("CryptoError verifying presentation " + presentation.uuid + " signature", e);
+                        logger_1.default.error("CryptoError verifying presentation " + JSON.stringify(presentation) + " signature", e);
                     }
                     else {
-                        logger_1.default.error("Error verifying presentation " + presentation.uuid + " signature", e);
+                        logger_1.default.error("Error verifying presentation " + JSON.stringify(presentation) + " signature", e);
                     }
                     result_3 = {
                         authToken: authToken,
