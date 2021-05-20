@@ -83,7 +83,7 @@ export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody
     updatedAt: updatedAt || defaultUpdatedAt,
     expiresAt: expiresAt || defaultExpiresAt,
     holderAppUuid,
-    metadata: metadata || '',
+    metadata: metadata || '{}',
     uuid,
     verifier
   };
