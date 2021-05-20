@@ -119,11 +119,11 @@ var validateCredentialInput = function (credentials) {
         }
         // HACK ALERT: Handling converting string dates to Date. Note: only needed for now when using Protos with Date attributes
         // when we move to full grpc this will not be needed because not longer using json.
-        if (credential.issuanceDate instanceof String) {
+        if (typeof credential.expirationDate === 'string') {
             retObj.stringifiedDates = true;
             credential.issuanceDate = new Date(credential.issuanceDate);
         }
-        if (credential.expirationDate instanceof String) {
+        if (typeof credential.expirationDate === 'string') {
             retObj.stringifiedDates = true;
             credential.expirationDate = new Date(credential.expirationDate);
         }
