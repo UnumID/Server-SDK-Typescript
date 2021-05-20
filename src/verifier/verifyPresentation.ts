@@ -110,6 +110,10 @@ async function verifyPresentationRequest (authorization: string, presentationReq
     throw new CustError(400, 'Invalid PresentationRequest: proof is required.');
   }
 
+  if (!presentationRequest.metadata) {
+    presentationRequest.metadata = '';
+  }
+
   const { proof: { verificationMethod, signatureValue } } = presentationRequest;
   // const proof = presentationRequest.proof as ProofPb;
   // const { verificationMethod, signatureValue } = proof;
