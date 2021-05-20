@@ -55,12 +55,16 @@ var error_1 = require("../utils/error");
 var didHelper_1 = require("../utils/didHelper");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var verify_1 = require("../utils/verify");
+var convertCredentialSubject_1 = require("../utils/convertCredentialSubject");
 /**
  * Validates the attributes for a credential request to UnumID's SaaS.
  * @param credentials JSONObj
  */
+// const validateCredentialInput = (credentials: JSONObj): JSONObj => {
+// TODO return a VerifiedStatus type
 var validateCredentialInput = function (credentials) {
-    var retObj = { valid: true, stringifiedCredentials: false, resultantCredentials: [] };
+    var retObj = { valid: true };
+    // const retObj: JSONObj = { valid: true, stringifiedCredentials: false, resultantCredentials: [] };
     if (helpers_1.isArrayEmpty(credentials)) {
         retObj.valid = false;
         retObj.msg = 'Invalid Presentation: verifiableCredential must be a non-empty array.';
@@ -70,13 +74,14 @@ var validateCredentialInput = function (credentials) {
     for (var i = 0; i < totCred; i++) {
         var credPosStr = '[' + i + ']';
         var credential = credentials[i];
-        if (typeof credential === 'string') {
-            retObj.stringifiedCredentials = true; // setting so know to add the object version of the stringified vc's
-            credential = JSON.parse(credential);
-        }
+        // if (typeof credential === 'string') {
+        //   retObj.stringifiedCredentials = true; // setting so know to add the object version of the stringified vc's
+        //   credential = JSON.parse(credential);
+        // }
         // Validate the existence of elements in Credential object
         var invalidMsg = "Invalid verifiableCredential" + credPosStr + ":";
-        if (!credential['@context']) {
+        // if (!credential['@context']) {
+        if (!credential.context) {
             retObj.valid = false;
             retObj.msg = invalidMsg + " @context is required.";
             break;
@@ -117,7 +122,7 @@ var validateCredentialInput = function (credentials) {
             break;
         }
         // Check @context is an array and not empty
-        if (helpers_1.isArrayEmpty(credential['@context'])) {
+        if (helpers_1.isArrayEmpty(credential.context)) {
             retObj.valid = false;
             retObj.msg = invalidMsg + " @context must be a non-empty array.";
             break;
@@ -129,7 +134,9 @@ var validateCredentialInput = function (credentials) {
             break;
         }
         // Check credentialSubject object has id element.
-        if (!credential.credentialSubject.id) {
+        // if (!credential.credentialSubject.id) {
+        var credentialSubject = convertCredentialSubject_1.convertCredentialSubject(credential.credentialSubject);
+        if (!credentialSubject.id) {
             retObj.valid = false;
             retObj.msg = invalidMsg + " credentialSubject must contain id property.";
             break;
@@ -142,10 +149,10 @@ var validateCredentialInput = function (credentials) {
         }
         // Check that proof object is valid
         validateProof_1.validateProof(credential.proof);
-        if (retObj.stringifiedCredentials) {
-            // Adding the credential to the result list so can use the fully created objects downstream
-            retObj.resultantCredentials.push(credential);
-        }
+        // if (retObj.stringifiedCredentials) {
+        //   // Adding the credential to the result list so can use the fully created objects downstream
+        //   retObj.resultantCredentials.push(credential);
+        // }
     }
     return (retObj);
 };

@@ -16,7 +16,6 @@ var lodash_1 = require("lodash");
 /**
  * Handler to convert the JSON representation of the CredentialSubject into a Typescript interface, CredentialSubject
  */
-// export const convertCredentialSubject = (input: JSON): CredentialSubject => {
 exports.convertCredentialSubject = function (input) {
     var obj = JSON.parse(input);
     var claims = lodash_1.omit(obj, 'id');

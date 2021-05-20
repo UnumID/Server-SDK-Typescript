@@ -2,7 +2,7 @@ import { omit } from 'lodash';
 
 import { configData } from '../config';
 import { CredentialStatusInfo, RESTData, UnumDto, VerifiedStatus } from '../types';
-import { Presentation, Credential, CredentialRequest, Proof, PublicKeyInfo, JSONObj, PresentationPb, CredentialPb, ProofPb, UnsignedPresentationPb } from '@unumid/types';
+import { Presentation, Credential, CredentialRequest, Proof, PublicKeyInfo, JSONObj, PresentationPb, CredentialPb, ProofPb, UnsignedPresentationPb, CredentialSubject } from '@unumid/types';
 import { validateProof } from './validateProof';
 import { requireAuth } from '../requireAuth';
 import { verifyCredential } from './verifyCredential';
@@ -15,13 +15,17 @@ import { CustError } from '../utils/error';
 import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
 import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
+import { convertCredentialSubject } from '../utils/convertCredentialSubject';
 
 /**
  * Validates the attributes for a credential request to UnumID's SaaS.
  * @param credentials JSONObj
  */
-const validateCredentialInput = (credentials: JSONObj): JSONObj => {
-  const retObj: JSONObj = { valid: true, stringifiedCredentials: false, resultantCredentials: [] };
+// const validateCredentialInput = (credentials: JSONObj): JSONObj => {
+// TODO return a VerifiedStatus type
+const validateCredentialInput = (credentials: CredentialPb[]): JSONObj => {
+  const retObj: JSONObj = { valid: true };
+  // const retObj: JSONObj = { valid: true, stringifiedCredentials: false, resultantCredentials: [] };
 
   if (isArrayEmpty(credentials)) {
     retObj.valid = false;
@@ -33,16 +37,17 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
   const totCred = credentials.length;
   for (let i = 0; i < totCred; i++) {
     const credPosStr = '[' + i + ']';
-    let credential = credentials[i];
+    const credential = credentials[i];
 
-    if (typeof credential === 'string') {
-      retObj.stringifiedCredentials = true; // setting so know to add the object version of the stringified vc's
-      credential = JSON.parse(credential);
-    }
+    // if (typeof credential === 'string') {
+    //   retObj.stringifiedCredentials = true; // setting so know to add the object version of the stringified vc's
+    //   credential = JSON.parse(credential);
+    // }
 
     // Validate the existence of elements in Credential object
     const invalidMsg = `Invalid verifiableCredential${credPosStr}:`;
-    if (!credential['@context']) {
+    // if (!credential['@context']) {
+    if (!credential.context) {
       retObj.valid = false;
       retObj.msg = `${invalidMsg} @context is required.`;
       break;
@@ -91,7 +96,7 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
     }
 
     // Check @context is an array and not empty
-    if (isArrayEmpty(credential['@context'])) {
+    if (isArrayEmpty(credential.context)) {
       retObj.valid = false;
       retObj.msg = `${invalidMsg} @context must be a non-empty array.`;
       break;
@@ -105,7 +110,9 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
     }
 
     // Check credentialSubject object has id element.
-    if (!credential.credentialSubject.id) {
+    // if (!credential.credentialSubject.id) {
+    const credentialSubject: CredentialSubject = convertCredentialSubject(credential.credentialSubject);
+    if (!credentialSubject.id) {
       retObj.valid = false;
       retObj.msg = `${invalidMsg} credentialSubject must contain id property.`;
       break;
@@ -121,10 +128,10 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
     // Check that proof object is valid
     validateProof(credential.proof);
 
-    if (retObj.stringifiedCredentials) {
-      // Adding the credential to the result list so can use the fully created objects downstream
-      retObj.resultantCredentials.push(credential);
-    }
+    // if (retObj.stringifiedCredentials) {
+    //   // Adding the credential to the result list so can use the fully created objects downstream
+    //   retObj.resultantCredentials.push(credential);
+    // }
   }
 
   return (retObj);
