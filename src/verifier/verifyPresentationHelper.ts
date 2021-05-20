@@ -22,7 +22,7 @@ import { convertCredentialSubject } from '../utils/convertCredentialSubject';
  * @param credentials JSONObj
  */
 // const validateCredentialInput = (credentials: JSONObj): JSONObj => {
-// TODO return a VerifiedStatus type
+// TODO return a VerifiedStatus type with additional any array for passing back the type conforming objects
 const validateCredentialInput = (credentials: CredentialPb[]): JSONObj => {
   // const retObj: JSONObj = { valid: true };
   const retObj: JSONObj = { valid: true, stringifiedDates: false, resultantCredentials: [] };
@@ -139,7 +139,7 @@ const validateCredentialInput = (credentials: CredentialPb[]): JSONObj => {
     }
 
     // Check that proof object is valid
-    validateProof(credential.proof);
+    credential.proof = validateProof(credential.proof);
 
     // HACK ALERT continued: this is assuming that if one credential date attribute is a string then all of them are.
     // this resultantCredentials array is then take the place of the creds in the presentation
@@ -203,7 +203,7 @@ const validatePresentation = (presentation: PresentationPb): PresentationPb => {
   }
 
   // Check proof object is formatted correctly
-  validateProof(proof);
+  presentation.proof = validateProof(proof);
 
   return presentation;
 };

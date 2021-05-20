@@ -17,7 +17,7 @@ import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
  * Validates the NoPresentation type to ensure the necessary attributes.
  * @param noPresentation NoPresentation
  */
-export const validateNoPresentationParams = (noPresentation: Presentation | PresentationPb): void => {
+export const validateNoPresentationParams = (noPresentation: PresentationPb): PresentationPb => {
   const {
     type,
     proof,
@@ -54,7 +54,9 @@ export const validateNoPresentationParams = (noPresentation: Presentation | Pres
     throw new CustError(400, 'Invalid Declined Presentation: verifiableCredential must be undefined or empty.'); // this should never happen base on upstream logic
   }
 
-  validateProof(proof);
+  noPresentation.proof = validateProof(proof);
+
+  return noPresentation;
 };
 
 /**
@@ -67,7 +69,7 @@ export const verifyNoPresentationHelper = async (authorization: string, noPresen
   try {
     requireAuth(authorization);
 
-    validateNoPresentationParams(noPresentation);
+    noPresentation = validateNoPresentationParams(noPresentation);
 
     // TODO figure out a way to ensure proof existed here... already being done in the validate function
     if (!noPresentation.proof) {

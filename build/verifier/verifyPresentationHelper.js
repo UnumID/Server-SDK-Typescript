@@ -61,7 +61,7 @@ var convertCredentialSubject_1 = require("../utils/convertCredentialSubject");
  * @param credentials JSONObj
  */
 // const validateCredentialInput = (credentials: JSONObj): JSONObj => {
-// TODO return a VerifiedStatus type
+// TODO return a VerifiedStatus type with additional any array for passing back the type conforming objects
 var validateCredentialInput = function (credentials) {
     // const retObj: JSONObj = { valid: true };
     var retObj = { valid: true, stringifiedDates: false, resultantCredentials: [] };
@@ -159,7 +159,7 @@ var validateCredentialInput = function (credentials) {
             break;
         }
         // Check that proof object is valid
-        validateProof_1.validateProof(credential.proof);
+        credential.proof = validateProof_1.validateProof(credential.proof);
         // HACK ALERT continued: this is assuming that if one credential date attribute is a string then all of them are.
         // this resultantCredentials array is then take the place of the creds in the presentation
         if (retObj.stringifiedDates) {
@@ -211,7 +211,7 @@ var validatePresentation = function (presentation) {
         presentation.verifiableCredential = retObj.resultantCredentials;
     }
     // Check proof object is formatted correctly
-    validateProof_1.validateProof(proof);
+    presentation.proof = validateProof_1.validateProof(proof);
     return presentation;
 };
 // /**

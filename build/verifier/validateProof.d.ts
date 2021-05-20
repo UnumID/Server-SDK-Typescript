@@ -1,7 +1,7 @@
-import { JSONObj } from '@unumid/types';
+import { ProofPb } from '@unumid/types';
 /**
  * Helper to validate a proof has the required attributes.
- * @param proof JSONObj
+ * @param proof ProofPb
  */
-export declare const validateProof: (proof: JSONObj) => void;
+export declare const validateProof: (proof: ProofPb) => ProofPb;
 //# sourceMappingURL=validateProof.d.ts.map

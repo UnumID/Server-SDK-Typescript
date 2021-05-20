@@ -73,8 +73,8 @@ function isDeclinedPresentation(presentation) {
  * @param presentation Presentation
  */
 var validatePresentation = function (presentation) {
-    var context = presentation['@context'] ? presentation['@context'] : presentation.context;
-    var type = presentation.type, proof = presentation.proof, presentationRequestUuid = presentation.presentationRequestUuid, verifierDid = presentation.verifierDid;
+    // const context = (presentation as Presentation)['@context'] ? (presentation as Presentation)['@context'] : (presentation as PresentationPb).context;
+    var type = presentation.type, proof = presentation.proof, presentationRequestUuid = presentation.presentationRequestUuid, verifierDid = presentation.verifierDid, context = presentation.context;
     // validate required fields
     if (!context) {
         throw new error_1.CustError(400, 'Invalid Presentation: @context is required.');
@@ -97,8 +97,12 @@ var validatePresentation = function (presentation) {
     if (helpers_1.isArrayEmpty(type)) {
         throw new error_1.CustError(400, 'Invalid Presentation: type must be a non-empty array.');
     }
+    // HACK ALERT: Handling converting string dates to Date. Note: only needed for now when using Protos with Date attributes
+    // when we move to full grpc this will not be needed because not longer using json.
     // Check proof object is formatted correctly
-    validateProof_1.validateProof(proof);
+    var updatedProof = validateProof_1.validateProof(proof);
+    presentation.proof = updatedProof;
+    return presentation;
 };
 /**
  * Validates the presentation object has the proper attributes.

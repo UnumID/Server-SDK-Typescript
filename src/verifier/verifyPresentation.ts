@@ -1,6 +1,6 @@
 
 import { DecryptedPresentation, UnumDto, VerifiedStatus } from '../types';
-import { Presentation, CredentialRequest, PresentationRequestDto, EncryptedData, PresentationRequest, PresentationPb, PresentationRequestPb, ProofPb, UnsignedPresentationRequestPb } from '@unumid/types';
+import { Presentation, CredentialRequest, PresentationRequestDto, EncryptedData, PresentationRequest, PresentationPb, PresentationRequestPb, ProofPb, UnsignedPresentationRequestPb, JSONObj } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
 import { CryptoError, decrypt } from '@unumid/library-crypto';
 import logger from '../logger';
@@ -23,9 +23,9 @@ function isDeclinedPresentation (presentation: Presentation | PresentationPb): p
  * Validates the presentation object has the proper attributes.
  * @param presentation Presentation
  */
-const validatePresentation = (presentation: Presentation | PresentationPb): void => {
-  const context = (presentation as Presentation)['@context'] ? (presentation as Presentation)['@context'] : (presentation as PresentationPb).context;
-  const { type, proof, presentationRequestUuid, verifierDid } = presentation;
+const validatePresentation = (presentation: PresentationPb): PresentationPb => {
+  // const context = (presentation as Presentation)['@context'] ? (presentation as Presentation)['@context'] : (presentation as PresentationPb).context;
+  const { type, proof, presentationRequestUuid, verifierDid, context } = presentation;
 
   // validate required fields
   if (!context) {
@@ -56,8 +56,14 @@ const validatePresentation = (presentation: Presentation | PresentationPb): void
     throw new CustError(400, 'Invalid Presentation: type must be a non-empty array.');
   }
 
+  // HACK ALERT: Handling converting string dates to Date. Note: only needed for now when using Protos with Date attributes
+  // when we move to full grpc this will not be needed because not longer using json.
+
   // Check proof object is formatted correctly
-  validateProof(proof);
+  const updatedProof = validateProof(proof);
+  presentation.proof = updatedProof;
+
+  return presentation;
 };
 
 /**

@@ -78,7 +78,8 @@ exports.validateNoPresentationParams = function (noPresentation) {
     if (verifiableCredential || helpers_1.isArrayNotEmpty(verifiableCredential)) {
         throw new error_1.CustError(400, 'Invalid Declined Presentation: verifiableCredential must be undefined or empty.'); // this should never happen base on upstream logic
     }
-    validateProof_1.validateProof(proof);
+    noPresentation.proof = validateProof_1.validateProof(proof);
+    return noPresentation;
 };
 /**
  * Handler for when a user does not agree to share the information in the credential request.
@@ -93,7 +94,7 @@ exports.verifyNoPresentationHelper = function (authorization, noPresentation, ve
             case 0:
                 _c.trys.push([0, 3, , 4]);
                 requireAuth_1.requireAuth(authorization);
-                exports.validateNoPresentationParams(noPresentation);
+                noPresentation = exports.validateNoPresentationParams(noPresentation);
                 // TODO figure out a way to ensure proof existed here... already being done in the validate function
                 if (!noPresentation.proof) {
                     throw new error_1.CustError(400, 'Invalid Presentation: proof is required.');
