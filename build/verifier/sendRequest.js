@@ -118,7 +118,7 @@ exports.constructUnsignedPresentationRequest = function (reqBody) {
         updatedAt: updatedAt || defaultUpdatedAt,
         expiresAt: expiresAt || defaultExpiresAt,
         holderAppUuid: holderAppUuid,
-        metadata: metadata || '{}',
+        metadata: metadata || {},
         uuid: uuid,
         verifier: verifier
     };
