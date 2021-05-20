@@ -117,7 +117,7 @@ var validateCredentialInput = function (credentials) {
             retObj.msg = invalidMsg + " issuanceDate is required.";
             break;
         }
-        // Handling converting string dates to Date. Note: only needed for now when using Protos with Date attributes
+        // HACK ALERT: Handling converting string dates to Date. Note: only needed for now when using Protos with Date attributes
         // when we move to full grpc this will not be needed because not longer using json.
         if (credential.issuanceDate instanceof String) {
             retObj.stringifiedDates = true;
@@ -160,10 +160,12 @@ var validateCredentialInput = function (credentials) {
         }
         // Check that proof object is valid
         validateProof_1.validateProof(credential.proof);
-        // if (retObj.stringifiedCredentials) {
-        //   // Adding the credential to the result list so can use the fully created objects downstream
-        //   retObj.resultantCredentials.push(credential);
-        // }
+        // HACK ALERT continued: this is assuming that if one credential date attribute is a string then all of them are.
+        // this resultantCredentials array is then take the place of the creds in the presentation
+        if (retObj.stringifiedDates) {
+            // Adding the credential to the result list so can use the fully created objects downstream
+            retObj.resultantCredentials.push(credential);
+        }
     }
     return (retObj);
 };
@@ -204,11 +206,10 @@ var validatePresentation = function (presentation) {
     if (!retObj.valid) {
         throw new error_1.CustError(400, retObj.msg);
     }
-    // TODO probably want to not handle the string case... potential issues / vulnerabilities AND actually not needed in this pb case
-    // else if (retObj.stringifiedCredentials) {
-    //   // adding the "objectified" vc, which were sent in string format to appease iOS variable keyed object limitation: https://developer.apple.com/forums/thread/100417
-    //   presentation.verifiableCredential = retObj.resultantCredentials;
-    // }
+    else if (retObj.stringifiedDates) {
+        // adding the credentials, which which now have the proper date attributes, Date for proto encoding for signature verification.
+        presentation.verifiableCredential = retObj.resultantCredentials;
+    }
     // Check proof object is formatted correctly
     validateProof_1.validateProof(proof);
     return presentation;
