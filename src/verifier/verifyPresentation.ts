@@ -111,7 +111,7 @@ async function verifyPresentationRequest (authorization: string, presentationReq
   }
 
   if (!presentationRequest.metadata) {
-    presentationRequest.metadata = '';
+    presentationRequest.metadata = { fields: {} };
   }
 
   const { proof: { verificationMethod, signatureValue } } = presentationRequest;

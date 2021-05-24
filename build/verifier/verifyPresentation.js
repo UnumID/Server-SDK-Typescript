@@ -146,7 +146,7 @@ function verifyPresentationRequest(authorization, presentationRequest) {
                         throw new error_1.CustError(400, 'Invalid PresentationRequest: proof is required.');
                     }
                     if (!presentationRequest.metadata) {
-                        presentationRequest.metadata = '';
+                        presentationRequest.metadata = { fields: {} };
                     }
                     _a = presentationRequest.proof, verificationMethod = _a.verificationMethod, signatureValue = _a.signatureValue;
                     return [4 /*yield*/, didHelper_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, verificationMethod)];
