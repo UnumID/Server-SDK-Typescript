@@ -83,7 +83,7 @@ export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody
     updatedAt: updatedAt || defaultUpdatedAt,
     expiresAt: expiresAt || defaultExpiresAt,
     holderAppUuid,
-    metadata: metadata || {},
+    metadata: metadata || { fields: {} }, // fields is necessary for the protobuf Struct definition
     uuid,
     verifier
   };
@@ -155,12 +155,13 @@ export const constructSignedPresentationRequest = (unsignedPresentationRequest: 
 };
 
 // validates incoming request body
-const validateSendRequestBody = (sendRequestBody: SendRequestReqBody): void => {
+const validateSendRequestBody = (sendRequestBody: SendRequestReqBody): SendRequestReqBody => {
   const {
     verifier,
     credentialRequests,
     eccPrivateKey,
-    holderAppUuid
+    holderAppUuid,
+    metadata
   } = sendRequestBody;
 
   if (!verifier) {
@@ -226,10 +227,25 @@ const validateSendRequestBody = (sendRequestBody: SendRequestReqBody): void => {
   if (!eccPrivateKey) {
     throw new CustError(400, 'Invalid PresentationRequest options: signingPrivateKey is required.');
   }
+
+  // Ensure that metadata object is keyed on fields for Struct protobuf definition
+  if (!metadata) {
+    sendRequestBody.metadata = {
+      fields: {}
+    };
+  } else if (metadata && !metadata.fields) {
+    logger.debug('Adding the root \'fields\' key to the presentation request metadata.');
+    sendRequestBody.metadata = {
+      fields: sendRequestBody.metadata
+    };
+  }
+
+  return sendRequestBody;
 };
 
 /**
  * Handler for sending a PresentationRequest to UnumID's SaaS.
+ * TODO will need to send older versions in addition to the newest version for persistence in SaaS db for backwards compatibility.
  * @param authorization
  * @param verifier
  * @param credentialRequests
@@ -248,10 +264,10 @@ export const sendRequest = async (
   try {
     requireAuth(authorization);
 
-    const body: SendRequestReqBody = { verifier, credentialRequests, eccPrivateKey, holderAppUuid, expiresAt: expirationDate, metadata };
+    let body: SendRequestReqBody = { verifier, credentialRequests, eccPrivateKey, holderAppUuid, expiresAt: expirationDate, metadata };
 
     // Validate inputs
-    validateSendRequestBody(body);
+    body = validateSendRequestBody(body);
 
     const unsignedPresentationRequest = constructUnsignedPresentationRequest(body);
 
@@ -262,7 +278,7 @@ export const sendRequest = async (
       method: 'POST',
       baseUrl: configData.SaaSUrl,
       endPoint: 'presentationRequest',
-      header: { Authorization: authorization, version: versionList[versionList.length - 1] }, // TODO need to setup the saas to handle versioned requests.
+      header: { Authorization: authorization, version: versionList[versionList.length - 1] },
       data: signedPR
     };
 
