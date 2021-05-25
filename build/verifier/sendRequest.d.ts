@@ -1,4 +1,5 @@
-import { PresentationRequestPostDto, UnsignedPresentationRequestPb, PresentationRequestPb, CredentialRequestPb } from '@unumid/types';
+import { PresentationRequestPostDto as PresentationRequestPostDtoDeprecatedV2, UnsignedPresentationRequest as UnsignedPresentationRequestDeprecatedV2 } from '@unumid/types-v2';
+import { CredentialRequest, PresentationRequestPostDto, UnsignedPresentationRequestPb, PresentationRequestPb, SignedPresentationRequest, CredentialRequestPb } from '@unumid/types';
 import { SendRequestReqBody, UnumDto } from '../types';
 /**
  * Constructs an unsigned PresentationRequest from the incoming request body.
@@ -10,15 +11,38 @@ export declare const constructUnsignedPresentationRequest: (reqBody: SendRequest
  * @param unsignedPresentationRequest UnsignedPresentationRequest
  * @param privateKey String
  */
+export declare const constructSignedPresentationRequestDeprecatedV2: (unsignedPresentationRequest: UnsignedPresentationRequestDeprecatedV2, privateKey: string) => SignedPresentationRequest;
+/**
+ * Signs an unsigned PresentationRequest and attaches the resulting Proof
+ * @param unsignedPresentationRequest UnsignedPresentationRequest
+ * @param privateKey String
+ */
 export declare const constructSignedPresentationRequest: (unsignedPresentationRequest: UnsignedPresentationRequestPb, privateKey: string) => PresentationRequestPb;
 /**
  * Handler for sending a PresentationRequest to UnumID's SaaS.
- * TODO will need to send older versions in addition to the newest version for persistence in SaaS db for backwards compatibility.
  * @param authorization
  * @param verifier
  * @param credentialRequests
  * @param eccPrivateKey
  * @param holderAppUuid
  */
-export declare const sendRequest: (authorization: string, verifier: string, credentialRequests: CredentialRequestPb[], eccPrivateKey: string, holderAppUuid: string, expirationDate?: Date | undefined, metadata?: Record<string, unknown> | undefined) => Promise<UnumDto<PresentationRequestPostDto>>;
+export declare const sendRequest: (authorization: string, verifier: string, credentialRequests: CredentialRequestPb[] | CredentialRequest[], eccPrivateKey: string, holderAppUuid: string, expirationDate?: Date | undefined, metadata?: Record<string, unknown> | undefined) => Promise<UnumDto<PresentationRequestPostDto>>;
+/**
+ * Handler for sending a PresentationRequest to UnumID's SaaS.
+ * @param authorization
+ * @param verifier
+ * @param credentialRequests
+ * @param eccPrivateKey
+ * @param holderAppUuid
+ */
+export declare const sendRequestV3: (authorization: string, verifier: string, credentialRequests: CredentialRequestPb[], eccPrivateKey: string, holderAppUuid: string, expirationDate?: Date | undefined, metadata?: Record<string, unknown> | undefined) => Promise<UnumDto<PresentationRequestPostDto>>;
+/**
+ * Handler for sending a PresentationRequest to UnumID's SaaS.
+ * @param authorization
+ * @param verifier
+ * @param credentialRequests
+ * @param eccPrivateKey
+ * @param holderAppUuid
+ */
+export declare const sendRequestDeprecated: (authorization: string, verifier: string, credentialRequests: CredentialRequest[], eccPrivateKey: string, holderAppUuid: string, expirationDate?: Date | undefined, metadata?: Record<string, unknown> | undefined) => Promise<UnumDto<PresentationRequestPostDtoDeprecatedV2>>;
 //# sourceMappingURL=sendRequest.d.ts.map

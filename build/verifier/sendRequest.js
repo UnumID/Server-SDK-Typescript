@@ -50,7 +50,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendRequest = exports.constructSignedPresentationRequest = exports.constructUnsignedPresentationRequest = void 0;
+exports.sendRequestDeprecated = exports.sendRequestV3 = exports.sendRequest = exports.constructSignedPresentationRequest = exports.constructSignedPresentationRequestDeprecatedV2 = exports.constructUnsignedPresentationRequest = void 0;
 var config_1 = require("../config");
 var requireAuth_1 = require("../requireAuth");
 var library_crypto_1 = require("@unumid/library-crypto");
@@ -60,7 +60,6 @@ var createProof_1 = require("../utils/createProof");
 var helpers_1 = require("../utils/helpers");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var error_1 = require("../utils/error");
-var versionList_1 = require("../utils/versionList");
 // /**
 //  * Constructs an unsigned PresentationRequest from the incoming request body.
 //  * @param reqBody SendRequestReqBody
@@ -123,33 +122,27 @@ exports.constructUnsignedPresentationRequest = function (reqBody) {
         verifier: verifier
     };
 };
-// /**
-//  * Signs an unsigned PresentationRequest and attaches the resulting Proof
-//  * @param unsignedPresentationRequest UnsignedPresentationRequest
-//  * @param privateKey String
-//  */
-// export const constructSignedPresentationRequest = (unsignedPresentationRequest: UnsignedPresentationRequest, privateKey: string): SignedPresentationRequest => {
-//   try {
-//     const proof = createProof(
-//       unsignedPresentationRequest,
-//       privateKey,
-//       unsignedPresentationRequest.verifier,
-//       'pem'
-//     );
-//     const signedPresentationRequest = {
-//       ...unsignedPresentationRequest,
-//       proof: proof
-//     };
-//     return signedPresentationRequest;
-//   } catch (e) {
-//     if (e instanceof CryptoError) {
-//       logger.error(`Issue in the crypto lib while creating presentation request ${unsignedPresentationRequest.uuid} proof`, e);
-//     } else {
-//       logger.error(`Issue while creating presentation request ${unsignedPresentationRequest.uuid} proof`, e);
-//     }
-//     throw e;
-//   }
-// };
+/**
+ * Signs an unsigned PresentationRequest and attaches the resulting Proof
+ * @param unsignedPresentationRequest UnsignedPresentationRequest
+ * @param privateKey String
+ */
+exports.constructSignedPresentationRequestDeprecatedV2 = function (unsignedPresentationRequest, privateKey) {
+    try {
+        var proof = createProof_1.createProof(unsignedPresentationRequest, privateKey, unsignedPresentationRequest.verifier, 'pem');
+        var signedPresentationRequest = __assign(__assign({}, unsignedPresentationRequest), { proof: proof });
+        return signedPresentationRequest;
+    }
+    catch (e) {
+        if (e instanceof library_crypto_1.CryptoError) {
+            logger_1.default.error("Issue in the crypto lib while creating presentation request " + unsignedPresentationRequest.uuid + " proof", e);
+        }
+        else {
+            logger_1.default.error("Issue while creating presentation request " + unsignedPresentationRequest.uuid + " proof", e);
+        }
+        throw e;
+    }
+};
 /**
  * Signs an unsigned PresentationRequest and attaches the resulting Proof
  * @param unsignedPresentationRequest UnsignedPresentationRequest
@@ -243,7 +236,6 @@ var validateSendRequestBody = function (sendRequestBody) {
 };
 /**
  * Handler for sending a PresentationRequest to UnumID's SaaS.
- * TODO will need to send older versions in addition to the newest version for persistence in SaaS db for backwards compatibility.
  * @param authorization
  * @param verifier
  * @param credentialRequests
@@ -251,6 +243,23 @@ var validateSendRequestBody = function (sendRequestBody) {
  * @param holderAppUuid
  */
 exports.sendRequest = function (authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata) { return __awaiter(void 0, void 0, void 0, function () {
+    var responseV2, response;
+    return __generator(this, function (_a) {
+        responseV2 = exports.sendRequestDeprecated(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata);
+        authorization = networkRequestHelper_1.handleAuthToken(responseV2, authorization);
+        response = exports.sendRequestV3(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata);
+        return [2 /*return*/, response];
+    });
+}); };
+/**
+ * Handler for sending a PresentationRequest to UnumID's SaaS.
+ * @param authorization
+ * @param verifier
+ * @param credentialRequests
+ * @param eccPrivateKey
+ * @param holderAppUuid
+ */
+exports.sendRequestV3 = function (authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata) { return __awaiter(void 0, void 0, void 0, function () {
     var body, unsignedPresentationRequest, signedPR, restData, restResp, authToken, presentationRequestResponse, error_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
@@ -266,7 +275,7 @@ exports.sendRequest = function (authorization, verifier, credentialRequests, ecc
                     method: 'POST',
                     baseUrl: config_1.configData.SaaSUrl,
                     endPoint: 'presentationRequest',
-                    header: { Authorization: authorization, version: versionList_1.versionList[versionList_1.versionList.length - 1] },
+                    header: { Authorization: authorization, version: '3.0.0' },
                     data: signedPR
                 };
                 return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];
@@ -279,6 +288,47 @@ exports.sendRequest = function (authorization, verifier, credentialRequests, ecc
                 error_2 = _a.sent();
                 logger_1.default.error("Error sending request to use UnumID Saas. " + error_2);
                 throw error_2;
+            case 3: return [2 /*return*/];
+        }
+    });
+}); };
+/**
+ * Handler for sending a PresentationRequest to UnumID's SaaS.
+ * @param authorization
+ * @param verifier
+ * @param credentialRequests
+ * @param eccPrivateKey
+ * @param holderAppUuid
+ */
+exports.sendRequestDeprecated = function (authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata) { return __awaiter(void 0, void 0, void 0, function () {
+    var body, unsignedPresentationRequest, signedPR, restData, restResp, authToken, presentationRequestResponse, error_3;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                _a.trys.push([0, 2, , 3]);
+                requireAuth_1.requireAuth(authorization);
+                body = { verifier: verifier, credentialRequests: credentialRequests, eccPrivateKey: eccPrivateKey, holderAppUuid: holderAppUuid, expiresAt: expirationDate, metadata: metadata };
+                // Validate inputs
+                validateSendRequestBody(body);
+                unsignedPresentationRequest = exports.constructUnsignedPresentationRequest(body);
+                signedPR = exports.constructSignedPresentationRequestDeprecatedV2(unsignedPresentationRequest, eccPrivateKey);
+                restData = {
+                    method: 'POST',
+                    baseUrl: config_1.configData.SaaSUrl,
+                    endPoint: 'presentationRequest',
+                    header: { Authorization: authorization, version: '2.0.0' },
+                    data: signedPR
+                };
+                return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];
+            case 1:
+                restResp = _a.sent();
+                authToken = networkRequestHelper_1.handleAuthToken(restResp, authorization);
+                presentationRequestResponse = { body: __assign({}, restResp.body), authToken: authToken };
+                return [2 /*return*/, presentationRequestResponse];
+            case 2:
+                error_3 = _a.sent();
+                logger_1.default.error("Error sending request to use UnumID Saas. " + error_3);
+                throw error_3;
             case 3: return [2 /*return*/];
         }
     });

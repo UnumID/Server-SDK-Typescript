@@ -1,6 +1,7 @@
 import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
-import { CryptoError } from '@unumid/library-crypto';
+import { CryptoError, verifyBytes } from '@unumid/library-crypto';
+import { PresentationRequestPostDto as PresentationRequestPostDtoDeprecatedV2, UnsignedPresentationRequest as UnsignedPresentationRequestDeprecatedV2 } from '@unumid/types-v2';
 import { CredentialRequest, PresentationRequestPostDto, UnsignedPresentationRequest, UnsignedPresentationRequestPb, PresentationRequestPb, ProofPb, SignedPresentationRequest, CredentialRequestPb } from '@unumid/types';
 
 import { RESTData, SendRequestReqBody, UnumDto } from '../types';
@@ -89,36 +90,36 @@ export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody
   };
 };
 
-// /**
-//  * Signs an unsigned PresentationRequest and attaches the resulting Proof
-//  * @param unsignedPresentationRequest UnsignedPresentationRequest
-//  * @param privateKey String
-//  */
-// export const constructSignedPresentationRequest = (unsignedPresentationRequest: UnsignedPresentationRequest, privateKey: string): SignedPresentationRequest => {
-//   try {
-//     const proof = createProof(
-//       unsignedPresentationRequest,
-//       privateKey,
-//       unsignedPresentationRequest.verifier,
-//       'pem'
-//     );
+/**
+ * Signs an unsigned PresentationRequest and attaches the resulting Proof
+ * @param unsignedPresentationRequest UnsignedPresentationRequest
+ * @param privateKey String
+ */
+export const constructSignedPresentationRequestDeprecatedV2 = (unsignedPresentationRequest: UnsignedPresentationRequestDeprecatedV2, privateKey: string): SignedPresentationRequest => {
+  try {
+    const proof = createProof(
+      unsignedPresentationRequest,
+      privateKey,
+      unsignedPresentationRequest.verifier,
+      'pem'
+    );
 
-//     const signedPresentationRequest = {
-//       ...unsignedPresentationRequest,
-//       proof: proof
-//     };
+    const signedPresentationRequest = {
+      ...unsignedPresentationRequest,
+      proof: proof
+    };
 
-//     return signedPresentationRequest;
-//   } catch (e) {
-//     if (e instanceof CryptoError) {
-//       logger.error(`Issue in the crypto lib while creating presentation request ${unsignedPresentationRequest.uuid} proof`, e);
-//     } else {
-//       logger.error(`Issue while creating presentation request ${unsignedPresentationRequest.uuid} proof`, e);
-//     }
+    return signedPresentationRequest;
+  } catch (e) {
+    if (e instanceof CryptoError) {
+      logger.error(`Issue in the crypto lib while creating presentation request ${unsignedPresentationRequest.uuid} proof`, e);
+    } else {
+      logger.error(`Issue while creating presentation request ${unsignedPresentationRequest.uuid} proof`, e);
+    }
 
-//     throw e;
-//   }
-// };
+    throw e;
+  }
+};
 
 /**
  * Signs an unsigned PresentationRequest and attaches the resulting Proof
@@ -245,7 +246,6 @@ const validateSendRequestBody = (sendRequestBody: SendRequestReqBody): SendReque
 
 /**
  * Handler for sending a PresentationRequest to UnumID's SaaS.
- * TODO will need to send older versions in addition to the newest version for persistence in SaaS db for backwards compatibility.
  * @param authorization
  * @param verifier
  * @param credentialRequests
@@ -253,6 +253,31 @@ const validateSendRequestBody = (sendRequestBody: SendRequestReqBody): SendReque
  * @param holderAppUuid
  */
 export const sendRequest = async (
+  authorization:string,
+  verifier: string,
+  credentialRequests: CredentialRequestPb[] | CredentialRequest[],
+  eccPrivateKey: string,
+  holderAppUuid: string,
+  expirationDate?: Date,
+  metadata?: Record<string, unknown>
+): Promise<UnumDto<PresentationRequestPostDto>> => {
+  // create and send a v2 presentation request for backwards compatibility
+  const responseV2 = sendRequestDeprecated(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata);
+  authorization = handleAuthToken(responseV2, authorization);
+
+  const response = sendRequestV3(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata);
+  return response;
+};
+
+/**
+ * Handler for sending a PresentationRequest to UnumID's SaaS.
+ * @param authorization
+ * @param verifier
+ * @param credentialRequests
+ * @param eccPrivateKey
+ * @param holderAppUuid
+ */
+export const sendRequestV3 = async (
   authorization:string,
   verifier: string,
   credentialRequests: CredentialRequestPb[],
@@ -278,7 +303,58 @@ export const sendRequest = async (
       method: 'POST',
       baseUrl: configData.SaaSUrl,
       endPoint: 'presentationRequest',
-      header: { Authorization: authorization, version: versionList[versionList.length - 1] },
+      header: { Authorization: authorization, version: '3.0.0' },
+      data: signedPR
+    };
+
+    const restResp = await makeNetworkRequest<PresentationRequestPostDto>(restData);
+
+    const authToken: string = handleAuthToken(restResp, authorization);
+
+    const presentationRequestResponse: UnumDto<PresentationRequestPostDto> = { body: { ...restResp.body }, authToken };
+
+    return presentationRequestResponse;
+  } catch (error) {
+    logger.error(`Error sending request to use UnumID Saas. ${error}`);
+    throw error;
+  }
+};
+
+/**
+ * Handler for sending a PresentationRequest to UnumID's SaaS.
+ * @param authorization
+ * @param verifier
+ * @param credentialRequests
+ * @param eccPrivateKey
+ * @param holderAppUuid
+ */
+export const sendRequestDeprecated = async (
+  authorization:string,
+  verifier: string,
+  credentialRequests: CredentialRequest[],
+  eccPrivateKey: string,
+  holderAppUuid: string,
+  expirationDate?: Date,
+  metadata?: Record<string, unknown>
+): Promise<UnumDto<PresentationRequestPostDtoDeprecatedV2>> => {
+  try {
+    requireAuth(authorization);
+
+    const body: SendRequestReqBody = { verifier, credentialRequests, eccPrivateKey, holderAppUuid, expiresAt: expirationDate, metadata };
+
+    // Validate inputs
+    validateSendRequestBody(body);
+
+    const unsignedPresentationRequest: UnsignedPresentationRequestDeprecatedV2 = constructUnsignedPresentationRequest(body);
+
+    // Create the signed presentation object from the unsignedPresentation object
+    const signedPR = constructSignedPresentationRequestDeprecatedV2(unsignedPresentationRequest, eccPrivateKey);
+
+    const restData: RESTData = {
+      method: 'POST',
+      baseUrl: configData.SaaSUrl,
+      endPoint: 'presentationRequest',
+      header: { Authorization: authorization, version: '2.0.0' },
       data: signedPR
     };
 
