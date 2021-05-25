@@ -236,6 +236,7 @@ var validateSendRequestBody = function (sendRequestBody) {
 };
 /**
  * Handler for sending a PresentationRequest to UnumID's SaaS.
+ * Middleware function where one can add requests of multiple versions to be encrypted and stored in the SaaS db for versioning needs.
  * @param authorization
  * @param verifier
  * @param credentialRequests
@@ -243,10 +244,8 @@ var validateSendRequestBody = function (sendRequestBody) {
  * @param holderAppUuid
  */
 exports.sendRequest = function (authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata) { return __awaiter(void 0, void 0, void 0, function () {
-    var responseV2, response;
+    var response;
     return __generator(this, function (_a) {
-        responseV2 = exports.sendRequestDeprecated(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata);
-        authorization = networkRequestHelper_1.handleAuthToken(responseV2, authorization);
         response = exports.sendRequestV3(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata);
         return [2 /*return*/, response];
     });

@@ -20,6 +20,7 @@ export declare const constructSignedPresentationRequestDeprecatedV2: (unsignedPr
 export declare const constructSignedPresentationRequest: (unsignedPresentationRequest: UnsignedPresentationRequestPb, privateKey: string) => PresentationRequestPb;
 /**
  * Handler for sending a PresentationRequest to UnumID's SaaS.
+ * Middleware function where one can add requests of multiple versions to be encrypted and stored in the SaaS db for versioning needs.
  * @param authorization
  * @param verifier
  * @param credentialRequests

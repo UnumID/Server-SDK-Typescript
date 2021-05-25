@@ -246,6 +246,7 @@ const validateSendRequestBody = (sendRequestBody: SendRequestReqBody): SendReque
 
 /**
  * Handler for sending a PresentationRequest to UnumID's SaaS.
+ * Middleware function where one can add requests of multiple versions to be encrypted and stored in the SaaS db for versioning needs.
  * @param authorization
  * @param verifier
  * @param credentialRequests
@@ -261,9 +262,12 @@ export const sendRequest = async (
   expirationDate?: Date,
   metadata?: Record<string, unknown>
 ): Promise<UnumDto<PresentationRequestPostDto>> => {
+  /**
+   * Note: actually no need to version the presentation requests as the difference between v2 and v3 is no existent thanks to still using the json / http even with the protobuf definitions.
+   */
   // create and send a v2 presentation request for backwards compatibility
-  const responseV2 = sendRequestDeprecated(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata);
-  authorization = handleAuthToken(responseV2, authorization);
+  // const responseV2 = sendRequestDeprecated(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata);
+  // authorization = handleAuthToken(responseV2, authorization);
 
   const response = sendRequestV3(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata);
   return response;
