@@ -151,7 +151,7 @@ var constructEncryptedCredentialV1Opts = function (cred, authorization) { return
 }); };
 /**
  * Creates a signed credential with all the relevant information. The proof serves as a cryptographic signature.
- * @param usCred UnsignedCredential
+ * @param usCred UnsignedCredentialPb
  * @param privateKey String
  */
 var constructSignedCredentialPbObj = function (usCred, privateKey) {

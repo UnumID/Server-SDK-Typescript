@@ -13,6 +13,7 @@ export declare const constructUnsignedPresentationRequest: (reqBody: SendRequest
 export declare const constructSignedPresentationRequest: (unsignedPresentationRequest: UnsignedPresentationRequestPb, privateKey: string) => PresentationRequestPb;
 /**
  * Handler for sending a PresentationRequest to UnumID's SaaS.
+ * TODO will need to send older versions in addition to the newest version for persistence in SaaS db for backwards compatibility.
  * @param authorization
  * @param verifier
  * @param credentialRequests

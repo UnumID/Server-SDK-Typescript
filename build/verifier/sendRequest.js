@@ -118,7 +118,7 @@ exports.constructUnsignedPresentationRequest = function (reqBody) {
         updatedAt: updatedAt || defaultUpdatedAt,
         expiresAt: expiresAt || defaultExpiresAt,
         holderAppUuid: holderAppUuid,
-        metadata: metadata || {},
+        metadata: metadata || { fields: {} },
         uuid: uuid,
         verifier: verifier
     };
@@ -175,7 +175,7 @@ exports.constructSignedPresentationRequest = function (unsignedPresentationReque
 };
 // validates incoming request body
 var validateSendRequestBody = function (sendRequestBody) {
-    var verifier = sendRequestBody.verifier, credentialRequests = sendRequestBody.credentialRequests, eccPrivateKey = sendRequestBody.eccPrivateKey, holderAppUuid = sendRequestBody.holderAppUuid;
+    var verifier = sendRequestBody.verifier, credentialRequests = sendRequestBody.credentialRequests, eccPrivateKey = sendRequestBody.eccPrivateKey, holderAppUuid = sendRequestBody.holderAppUuid, metadata = sendRequestBody.metadata;
     if (!verifier) {
         throw new error_1.CustError(400, 'Invalid PresentationRequest options: verifier is required.');
     }
@@ -227,9 +227,23 @@ var validateSendRequestBody = function (sendRequestBody) {
     if (!eccPrivateKey) {
         throw new error_1.CustError(400, 'Invalid PresentationRequest options: signingPrivateKey is required.');
     }
+    // Ensure that metadata object is keyed on fields for Struct protobuf definition
+    if (!metadata) {
+        sendRequestBody.metadata = {
+            fields: {}
+        };
+    }
+    else if (metadata && !metadata.fields) {
+        logger_1.default.debug('Adding the root \'fields\' key to the presentation request metadata.');
+        sendRequestBody.metadata = {
+            fields: sendRequestBody.metadata
+        };
+    }
+    return sendRequestBody;
 };
 /**
  * Handler for sending a PresentationRequest to UnumID's SaaS.
+ * TODO will need to send older versions in addition to the newest version for persistence in SaaS db for backwards compatibility.
  * @param authorization
  * @param verifier
  * @param credentialRequests
@@ -245,7 +259,7 @@ exports.sendRequest = function (authorization, verifier, credentialRequests, ecc
                 requireAuth_1.requireAuth(authorization);
                 body = { verifier: verifier, credentialRequests: credentialRequests, eccPrivateKey: eccPrivateKey, holderAppUuid: holderAppUuid, expiresAt: expirationDate, metadata: metadata };
                 // Validate inputs
-                validateSendRequestBody(body);
+                body = validateSendRequestBody(body);
                 unsignedPresentationRequest = exports.constructUnsignedPresentationRequest(body);
                 signedPR = exports.constructSignedPresentationRequest(unsignedPresentationRequest, eccPrivateKey);
                 restData = {

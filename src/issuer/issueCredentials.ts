@@ -1,8 +1,9 @@
 import { configData } from '../config';
 import { CredentialOptions, RESTData, UnumDto } from '../types';
 import { requireAuth } from '../requireAuth';
-import { CredentialSubject, EncryptedCredentialOptions, EncryptedData, Proof, UnsignedCredential, Credential, JSONObj, UnsignedCredentialPb, CredentialPb, ProofPb } from '@unumid/types';
+import { CredentialSubject, EncryptedCredentialOptions, EncryptedData, Proof, Credential, JSONObj, UnsignedCredentialPb, CredentialPb, ProofPb } from '@unumid/types';
 import { UnsignedCredential as UnsignedCredentialV1, Credential as CredentialV1 } from '@unumid/types-v1';
+import { UnsignedCredential as UnsignedCredentialV2, Credential as CredentialV2 } from '@unumid/types-v2';
 
 import logger from '../logger';
 import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
@@ -99,7 +100,7 @@ const constructEncryptedCredentialV1Opts = async (cred: CredentialV1, authorizat
 
 /**
  * Creates a signed credential with all the relevant information. The proof serves as a cryptographic signature.
- * @param usCred UnsignedCredential
+ * @param usCred UnsignedCredentialPb
  * @param privateKey String
  */
 const constructSignedCredentialPbObj = (usCred: UnsignedCredentialPb, privateKey: string): CredentialPb => {
@@ -138,7 +139,7 @@ const constructSignedCredentialPbObj = (usCred: UnsignedCredentialPb, privateKey
  * @param usCred UnsignedCredential
  * @param privateKey String
  */
-const constructSignedCredentialObj = (usCred: UnsignedCredential, privateKey: string): Credential => {
+const constructSignedCredentialObj = (usCred: UnsignedCredentialV2, privateKey: string): CredentialV2 => {
   const proof: Proof = createProof(usCred, privateKey, usCred.issuer, 'pem');
   const credential: Credential = {
     '@context': usCred['@context'],
@@ -209,11 +210,11 @@ const constructUnsignedCredentialPbObj = (credOpts: CredentialOptions): Unsigned
  * Creates all the attributes associated with an unsigned credential.
  * @param credOpts CredentialOptions
  */
-const constructUnsignedCredentialObj = (credOpts: CredentialOptions): UnsignedCredential => {
+const constructUnsignedCredentialObj = (credOpts: CredentialOptions): UnsignedCredentialV2 => {
   // CredentialSubject type is dependent on version. V2 is a string for passing to holder so iOS can handle it as a concrete type instead of a map of unknown keys.
   const credentialSubject = JSON.stringify(credOpts.credentialSubject);
   const credentialId: string = getUUID();
-  const unsCredObj: UnsignedCredential = {
+  const unsCredObj: UnsignedCredentialV2 = {
     '@context': ['https://www.w3.org/2018/credentials/v1'],
     credentialStatus: {
       id: `${configData.SaaSUrl}/credentialStatus/${credentialId}`,
@@ -382,10 +383,10 @@ export const issueCredential = async (authorization: string | undefined, type: s
         authorization = handleAuthToken(restResp, authorization as string);
       } else if (gte(version, '2.0.0') && lt(version, '3.0.0')) {
         // Create latest version of the UnsignedCredential object
-        const unsignedCredential = constructUnsignedCredentialObj(credentialOptions);
+        const unsignedCredential: UnsignedCredentialV2 = constructUnsignedCredentialObj(credentialOptions);
 
         // Create the signed Credential object from the unsignedCredential object
-        const credential = constructSignedCredentialObj(unsignedCredential, signingPrivateKey);
+        const credential: CredentialV2 = constructSignedCredentialObj(unsignedCredential, signingPrivateKey);
 
         // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
         const encryptedCredentialOptions = await constructEncryptedCredentialOpts(credential, authorization as string);

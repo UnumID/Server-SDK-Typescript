@@ -134,7 +134,7 @@ var validatePresentationRequest = function (presentationRequest) {
 };
 /**
  * Verify the PresentationRequest signature as a way to side step verifier MITM attacks where an entity spoofs requests.
- * TODO: this actually needs to be versioned.... because the holder might have grabbed the v1 PresentationRequest
+ * TODO: this actually needs to be versioned.... because the holder might have grabbed an older presentation request
  */
 function verifyPresentationRequest(authorization, presentationRequest) {
     return __awaiter(this, void 0, void 0, function () {
@@ -144,9 +144,6 @@ function verifyPresentationRequest(authorization, presentationRequest) {
                 case 0:
                     if (!presentationRequest.proof) {
                         throw new error_1.CustError(400, 'Invalid PresentationRequest: proof is required.');
-                    }
-                    if (!presentationRequest.metadata) {
-                        presentationRequest.metadata = { fields: {} };
                     }
                     _a = presentationRequest.proof, verificationMethod = _a.verificationMethod, signatureValue = _a.signatureValue;
                     return [4 /*yield*/, didHelper_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, verificationMethod)];
