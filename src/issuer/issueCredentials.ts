@@ -141,7 +141,7 @@ const constructSignedCredentialPbObj = (usCred: UnsignedCredentialPb, privateKey
  */
 const constructSignedCredentialObj = (usCred: UnsignedCredentialV2, privateKey: string): CredentialV2 => {
   const proof: Proof = createProof(usCred, privateKey, usCred.issuer, 'pem');
-  const credential: Credential = {
+  const credential: CredentialV2 = {
     '@context': usCred['@context'],
     credentialStatus: usCred.credentialStatus,
     credentialSubject: usCred.credentialSubject,

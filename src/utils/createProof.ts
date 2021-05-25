@@ -17,7 +17,7 @@ export const createProof = (data: JSONObj, privateKey: string, method: string, e
   const signature = sign(data, privateKey, encoding);
 
   const proof: Proof = {
-    created: new Date(),
+    created: new Date().toISOString(),
     signatureValue: signature,
     unsignedValue: stringify(data),
     type: 'secp256r1Signature2020',

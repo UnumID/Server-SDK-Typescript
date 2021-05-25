@@ -1,7 +1,7 @@
 import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
 import { CryptoError, verifyBytes } from '@unumid/library-crypto';
-import { PresentationRequestPostDto as PresentationRequestPostDtoDeprecatedV2, UnsignedPresentationRequest as UnsignedPresentationRequestDeprecatedV2 } from '@unumid/types-v2';
+import { PresentationRequestPostDto as PresentationRequestPostDtoDeprecatedV2, UnsignedPresentationRequest as UnsignedPresentationRequestDeprecatedV2, SignedPresentationRequest as SignedPresentationRequestDeprecatedV2 } from '@unumid/types-v2';
 import { CredentialRequest, PresentationRequestPostDto, UnsignedPresentationRequest, UnsignedPresentationRequestPb, PresentationRequestPb, ProofPb, SignedPresentationRequest, CredentialRequestPb } from '@unumid/types';
 
 import { RESTData, SendRequestReqBody, UnumDto } from '../types';
@@ -95,7 +95,7 @@ export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody
  * @param unsignedPresentationRequest UnsignedPresentationRequest
  * @param privateKey String
  */
-export const constructSignedPresentationRequestDeprecatedV2 = (unsignedPresentationRequest: UnsignedPresentationRequestDeprecatedV2, privateKey: string): SignedPresentationRequest => {
+export const constructSignedPresentationRequestDeprecatedV2 = (unsignedPresentationRequest: UnsignedPresentationRequestDeprecatedV2, privateKey: string): SignedPresentationRequestDeprecatedV2 => {
   try {
     const proof = createProof(
       unsignedPresentationRequest,

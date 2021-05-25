@@ -1,5 +1,5 @@
-import { PresentationRequestPostDto as PresentationRequestPostDtoDeprecatedV2, UnsignedPresentationRequest as UnsignedPresentationRequestDeprecatedV2 } from '@unumid/types-v2';
-import { CredentialRequest, PresentationRequestPostDto, UnsignedPresentationRequestPb, PresentationRequestPb, SignedPresentationRequest, CredentialRequestPb } from '@unumid/types';
+import { PresentationRequestPostDto as PresentationRequestPostDtoDeprecatedV2, UnsignedPresentationRequest as UnsignedPresentationRequestDeprecatedV2, SignedPresentationRequest as SignedPresentationRequestDeprecatedV2 } from '@unumid/types-v2';
+import { CredentialRequest, PresentationRequestPostDto, UnsignedPresentationRequestPb, PresentationRequestPb, CredentialRequestPb } from '@unumid/types';
 import { SendRequestReqBody, UnumDto } from '../types';
 /**
  * Constructs an unsigned PresentationRequest from the incoming request body.
@@ -11,7 +11,7 @@ export declare const constructUnsignedPresentationRequest: (reqBody: SendRequest
  * @param unsignedPresentationRequest UnsignedPresentationRequest
  * @param privateKey String
  */
-export declare const constructSignedPresentationRequestDeprecatedV2: (unsignedPresentationRequest: UnsignedPresentationRequestDeprecatedV2, privateKey: string) => SignedPresentationRequest;
+export declare const constructSignedPresentationRequestDeprecatedV2: (unsignedPresentationRequest: UnsignedPresentationRequestDeprecatedV2, privateKey: string) => SignedPresentationRequestDeprecatedV2;
 /**
  * Signs an unsigned PresentationRequest and attaches the resulting Proof
  * @param unsignedPresentationRequest UnsignedPresentationRequest
