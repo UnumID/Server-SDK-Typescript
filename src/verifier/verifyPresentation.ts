@@ -103,7 +103,7 @@ const validatePresentationRequest = (presentationRequest: PresentationRequestPb)
 
 /**
  * Verify the PresentationRequest signature as a way to side step verifier MITM attacks where an entity spoofs requests.
- * TODO: this actually needs to be versioned.... because the holder might have grabbed the v1 PresentationRequest
+ * TODO: this actually needs to be versioned.... because the holder might have grabbed an older presentation request
  */
 async function verifyPresentationRequest (authorization: string, presentationRequest: PresentationRequestPb): Promise<UnumDto<VerifiedStatus>> {
   if (!presentationRequest.proof) {
