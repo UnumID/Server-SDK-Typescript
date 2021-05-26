@@ -1,9 +1,10 @@
 import { sign, signBytes } from '@unumid/library-crypto';
 import stringify from 'fast-json-stable-stringify';
 
-import { Proof, JSONObj, ProofPb } from '@unumid/types';
+import { JSONObj, ProofPb } from '@unumid/types';
 
 import logger from '../logger';
+import { Proof } from '@unumid/types-v2';
 // import { JSONObj } from '../types';
 
 /**

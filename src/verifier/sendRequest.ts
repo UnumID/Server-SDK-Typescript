@@ -1,7 +1,7 @@
 import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
 import { CryptoError, verifyBytes } from '@unumid/library-crypto';
-import { PresentationRequestPostDto as PresentationRequestPostDtoDeprecatedV2, UnsignedPresentationRequest as UnsignedPresentationRequestDeprecatedV2, SignedPresentationRequest as SignedPresentationRequestDeprecatedV2 } from '@unumid/types-v2';
+import { PresentationRequestPostDto as PresentationRequestPostDtoDeprecatedV2, UnsignedPresentationRequest as UnsignedPresentationRequestDeprecatedV2, SignedPresentationRequest as SignedPresentationRequestDeprecatedV2, Proof } from '@unumid/types-v2';
 import { CredentialRequest, PresentationRequestPostDto, UnsignedPresentationRequest, UnsignedPresentationRequestPb, PresentationRequestPb, ProofPb, SignedPresentationRequest, CredentialRequestPb } from '@unumid/types';
 
 import { RESTData, SendRequestReqBody, UnumDto } from '../types';
@@ -63,7 +63,8 @@ export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody
     metadata,
     expiresAt,
     createdAt,
-    updatedAt
+    updatedAt,
+    id
   } = reqBody;
 
   const uuid = getUUID();
@@ -86,6 +87,7 @@ export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody
     holderAppUuid,
     metadata: metadata || { fields: {} }, // fields is necessary for the protobuf Struct definition
     uuid,
+    id,
     verifier
   };
 };
@@ -97,14 +99,14 @@ export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody
  */
 export const constructSignedPresentationRequestDeprecatedV2 = (unsignedPresentationRequest: UnsignedPresentationRequestDeprecatedV2, privateKey: string): SignedPresentationRequestDeprecatedV2 => {
   try {
-    const proof = createProof(
+    const proof: Proof = createProof(
       unsignedPresentationRequest,
       privateKey,
       unsignedPresentationRequest.verifier,
       'pem'
     );
 
-    const signedPresentationRequest = {
+    const signedPresentationRequest: SignedPresentationRequestDeprecatedV2 = {
       ...unsignedPresentationRequest,
       proof: proof
     };
@@ -138,7 +140,7 @@ export const constructSignedPresentationRequest = (unsignedPresentationRequest: 
       'pem'
     );
 
-    const signedPresentationRequest = {
+    const signedPresentationRequest: PresentationRequestPb = {
       ...unsignedPresentationRequest,
       proof: proof
     };
@@ -162,7 +164,8 @@ const validateSendRequestBody = (sendRequestBody: SendRequestReqBody): SendReque
     credentialRequests,
     eccPrivateKey,
     holderAppUuid,
-    metadata
+    metadata,
+    id
   } = sendRequestBody;
 
   if (!verifier) {
@@ -241,6 +244,10 @@ const validateSendRequestBody = (sendRequestBody: SendRequestReqBody): SendReque
     };
   }
 
+  if (!id) {
+    throw new CustError(400, 'Invalid PresentationRequest options: id is required.');
+  }
+
   return sendRequestBody;
 };
 
@@ -294,7 +301,7 @@ export const sendRequestV3 = async (
   try {
     requireAuth(authorization);
 
-    let body: SendRequestReqBody = { verifier, credentialRequests, eccPrivateKey, holderAppUuid, expiresAt: expirationDate, metadata };
+    let body: SendRequestReqBody = { verifier, credentialRequests, eccPrivateKey, holderAppUuid, expiresAt: expirationDate, metadata, id };
 
     // Validate inputs
     body = validateSendRequestBody(body);
@@ -346,7 +353,7 @@ export const sendRequestDeprecated = async (
   try {
     requireAuth(authorization);
 
-    const body: SendRequestReqBody = { verifier, credentialRequests, eccPrivateKey, holderAppUuid, expiresAt: expirationDate, metadata };
+    const body: SendRequestReqBody = { verifier, credentialRequests, eccPrivateKey, holderAppUuid, expiresAt: expirationDate, metadata, id };
 
     // Validate inputs
     validateSendRequestBody(body);

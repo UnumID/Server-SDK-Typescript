@@ -77,12 +77,13 @@ export interface RegisteredIssuer extends Issuer {
  */
 export interface PresentationRequestParams {
   credentialRequests: CredentialRequestPb[];
+  holderAppUuid: string;
+  verifier: string;
+  id: string; // identifier for related requests between versions
   createdAt?: Date;
   updatedAt?: Date;
   expiresAt?: Date;
-  holderAppUuid: string;
   metadata?: any;
-  verifier: string;
 }
 
 /**

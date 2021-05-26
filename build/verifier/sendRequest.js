@@ -100,7 +100,7 @@ var error_1 = require("../utils/error");
  * @param reqBody SendRequestReqBody
  */
 exports.constructUnsignedPresentationRequest = function (reqBody) {
-    var verifier = reqBody.verifier, holderAppUuid = reqBody.holderAppUuid, credentialRequests = reqBody.credentialRequests, metadata = reqBody.metadata, expiresAt = reqBody.expiresAt, createdAt = reqBody.createdAt, updatedAt = reqBody.updatedAt;
+    var verifier = reqBody.verifier, holderAppUuid = reqBody.holderAppUuid, credentialRequests = reqBody.credentialRequests, metadata = reqBody.metadata, expiresAt = reqBody.expiresAt, createdAt = reqBody.createdAt, updatedAt = reqBody.updatedAt, id = reqBody.id;
     var uuid = helpers_1.getUUID();
     // any/all default values must be set before signing, or signature will always fail to verify
     var now = new Date();
@@ -119,6 +119,7 @@ exports.constructUnsignedPresentationRequest = function (reqBody) {
         holderAppUuid: holderAppUuid,
         metadata: metadata || { fields: {} },
         uuid: uuid,
+        id: id,
         verifier: verifier
     };
 };
@@ -168,7 +169,7 @@ exports.constructSignedPresentationRequest = function (unsignedPresentationReque
 };
 // validates incoming request body
 var validateSendRequestBody = function (sendRequestBody) {
-    var verifier = sendRequestBody.verifier, credentialRequests = sendRequestBody.credentialRequests, eccPrivateKey = sendRequestBody.eccPrivateKey, holderAppUuid = sendRequestBody.holderAppUuid, metadata = sendRequestBody.metadata;
+    var verifier = sendRequestBody.verifier, credentialRequests = sendRequestBody.credentialRequests, eccPrivateKey = sendRequestBody.eccPrivateKey, holderAppUuid = sendRequestBody.holderAppUuid, metadata = sendRequestBody.metadata, id = sendRequestBody.id;
     if (!verifier) {
         throw new error_1.CustError(400, 'Invalid PresentationRequest options: verifier is required.');
     }
@@ -232,6 +233,9 @@ var validateSendRequestBody = function (sendRequestBody) {
             fields: sendRequestBody.metadata
         };
     }
+    if (!id) {
+        throw new error_1.CustError(400, 'Invalid PresentationRequest options: id is required.');
+    }
     return sendRequestBody;
 };
 /**
@@ -268,7 +272,7 @@ exports.sendRequestV3 = function (authorization, verifier, credentialRequests, e
             case 0:
                 _a.trys.push([0, 2, , 3]);
                 requireAuth_1.requireAuth(authorization);
-                body = { verifier: verifier, credentialRequests: credentialRequests, eccPrivateKey: eccPrivateKey, holderAppUuid: holderAppUuid, expiresAt: expirationDate, metadata: metadata };
+                body = { verifier: verifier, credentialRequests: credentialRequests, eccPrivateKey: eccPrivateKey, holderAppUuid: holderAppUuid, expiresAt: expirationDate, metadata: metadata, id: id };
                 // Validate inputs
                 body = validateSendRequestBody(body);
                 unsignedPresentationRequest = exports.constructUnsignedPresentationRequest(body);
@@ -309,7 +313,7 @@ exports.sendRequestDeprecated = function (authorization, verifier, credentialReq
             case 0:
                 _a.trys.push([0, 2, , 3]);
                 requireAuth_1.requireAuth(authorization);
-                body = { verifier: verifier, credentialRequests: credentialRequests, eccPrivateKey: eccPrivateKey, holderAppUuid: holderAppUuid, expiresAt: expirationDate, metadata: metadata };
+                body = { verifier: verifier, credentialRequests: credentialRequests, eccPrivateKey: eccPrivateKey, holderAppUuid: holderAppUuid, expiresAt: expirationDate, metadata: metadata, id: id };
                 // Validate inputs
                 validateSendRequestBody(body);
                 unsignedPresentationRequest = exports.constructUnsignedPresentationRequest(body);
