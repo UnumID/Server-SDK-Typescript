@@ -262,14 +262,14 @@ export const sendRequest = async (
   expirationDate?: Date,
   metadata?: Record<string, unknown>
 ): Promise<UnumDto<PresentationRequestPostDto>> => {
-  /**
-   * Note: actually no need to version the presentation requests as the difference between v2 and v3 is no existent thanks to still using the json / http even with the protobuf definitions.
-   */
-  // create and send a v2 presentation request for backwards compatibility
-  // const responseV2 = sendRequestDeprecated(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata);
-  // authorization = handleAuthToken(responseV2, authorization);
+  // create an indentifier that ties together these related requests of different versions.
+  const id = getUUID();
 
-  const response = sendRequestV3(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata);
+  // create and send a v2 presentation request for backwards compatibility
+  const responseV2 = sendRequestDeprecated(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata);
+  authorization = handleAuthToken(responseV2, authorization);
+
+  const response = sendRequestV3(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata);
   return response;
 };
 
@@ -287,6 +287,7 @@ export const sendRequestV3 = async (
   credentialRequests: CredentialRequestPb[],
   eccPrivateKey: string,
   holderAppUuid: string,
+  id: string,
   expirationDate?: Date,
   metadata?: Record<string, unknown>
 ): Promise<UnumDto<PresentationRequestPostDto>> => {
@@ -338,6 +339,7 @@ export const sendRequestDeprecated = async (
   credentialRequests: CredentialRequest[],
   eccPrivateKey: string,
   holderAppUuid: string,
+  id: string,
   expirationDate?: Date,
   metadata?: Record<string, unknown>
 ): Promise<UnumDto<PresentationRequestPostDtoDeprecatedV2>> => {

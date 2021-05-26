@@ -244,9 +244,12 @@ var validateSendRequestBody = function (sendRequestBody) {
  * @param holderAppUuid
  */
 exports.sendRequest = function (authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata) { return __awaiter(void 0, void 0, void 0, function () {
-    var response;
+    var id, responseV2, response;
     return __generator(this, function (_a) {
-        response = exports.sendRequestV3(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata);
+        id = helpers_1.getUUID();
+        responseV2 = exports.sendRequestDeprecated(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata);
+        authorization = networkRequestHelper_1.handleAuthToken(responseV2, authorization);
+        response = exports.sendRequestV3(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata);
         return [2 /*return*/, response];
     });
 }); };
@@ -258,7 +261,7 @@ exports.sendRequest = function (authorization, verifier, credentialRequests, ecc
  * @param eccPrivateKey
  * @param holderAppUuid
  */
-exports.sendRequestV3 = function (authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata) { return __awaiter(void 0, void 0, void 0, function () {
+exports.sendRequestV3 = function (authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata) { return __awaiter(void 0, void 0, void 0, function () {
     var body, unsignedPresentationRequest, signedPR, restData, restResp, authToken, presentationRequestResponse, error_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
@@ -299,7 +302,7 @@ exports.sendRequestV3 = function (authorization, verifier, credentialRequests, e
  * @param eccPrivateKey
  * @param holderAppUuid
  */
-exports.sendRequestDeprecated = function (authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata) { return __awaiter(void 0, void 0, void 0, function () {
+exports.sendRequestDeprecated = function (authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata) { return __awaiter(void 0, void 0, void 0, function () {
     var body, unsignedPresentationRequest, signedPR, restData, restResp, authToken, presentationRequestResponse, error_3;
     return __generator(this, function (_a) {
         switch (_a.label) {

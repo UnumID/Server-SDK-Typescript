@@ -18,7 +18,7 @@ import { doVerify } from '../utils/verify';
 import { convertCredentialSubject } from '../utils/convertCredentialSubject';
 
 /**
- * Validates the attributes for a credential request to UnumID's SaaS.
+ * Validates the attributes for a credential from UnumId's Saas
  * @param credentials JSONObj
  */
 // const validateCredentialInput = (credentials: JSONObj): JSONObj => {

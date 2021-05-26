@@ -36,7 +36,7 @@ export declare const sendRequest: (authorization: string, verifier: string, cred
  * @param eccPrivateKey
  * @param holderAppUuid
  */
-export declare const sendRequestV3: (authorization: string, verifier: string, credentialRequests: CredentialRequestPb[], eccPrivateKey: string, holderAppUuid: string, expirationDate?: Date | undefined, metadata?: Record<string, unknown> | undefined) => Promise<UnumDto<PresentationRequestPostDto>>;
+export declare const sendRequestV3: (authorization: string, verifier: string, credentialRequests: CredentialRequestPb[], eccPrivateKey: string, holderAppUuid: string, id: string, expirationDate?: Date | undefined, metadata?: Record<string, unknown> | undefined) => Promise<UnumDto<PresentationRequestPostDto>>;
 /**
  * Handler for sending a PresentationRequest to UnumID's SaaS.
  * @param authorization
@@ -45,5 +45,5 @@ export declare const sendRequestV3: (authorization: string, verifier: string, cr
  * @param eccPrivateKey
  * @param holderAppUuid
  */
-export declare const sendRequestDeprecated: (authorization: string, verifier: string, credentialRequests: CredentialRequest[], eccPrivateKey: string, holderAppUuid: string, expirationDate?: Date | undefined, metadata?: Record<string, unknown> | undefined) => Promise<UnumDto<PresentationRequestPostDtoDeprecatedV2>>;
+export declare const sendRequestDeprecated: (authorization: string, verifier: string, credentialRequests: CredentialRequest[], eccPrivateKey: string, holderAppUuid: string, id: string, expirationDate?: Date | undefined, metadata?: Record<string, unknown> | undefined) => Promise<UnumDto<PresentationRequestPostDtoDeprecatedV2>>;
 //# sourceMappingURL=sendRequest.d.ts.map
