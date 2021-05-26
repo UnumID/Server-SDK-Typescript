@@ -273,7 +273,7 @@ export const sendRequest = async (
   const id = getUUID();
 
   // create and send a v2 presentation request for backwards compatibility
-  const responseV2 = sendRequestDeprecated(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata);
+  const responseV2 = await sendRequestDeprecated(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata);
   authorization = handleAuthToken(responseV2, authorization);
 
   const response = sendRequestV3(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata);
