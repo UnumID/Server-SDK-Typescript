@@ -1,5 +1,6 @@
 import { sign } from '@unumid/library-crypto';
-import { DidDocument, HolderApp, IssuerInfo, IssuerInfoMap, JSONObj, PresentationRequestPostDto, UnsignedCredential, UnsignedPresentationRequest, Verifier, VerifierInfo, Credential, CredentialSubject, Proof, CredentialRequest } from '@unumid/types';
+import { UnsignedCredentialPb, CredentialPb, DidDocument, HolderApp, IssuerInfo, IssuerInfoMap, JSONObj, PresentationRequestPostDto, UnsignedCredential, UnsignedPresentationRequest, Verifier, VerifierInfo, Credential, CredentialSubject, Proof, CredentialRequest } from '@unumid/types';
+
 import stringify from 'fast-json-stable-stringify';
 
 import { configData } from '../../src/config';
@@ -36,7 +37,7 @@ export interface DummyUnsignedCredentialOptions {
   expirationDate?: Date;
 }
 
-export const makeDummyUnsignedCredential = (options: DummyUnsignedCredentialOptions = {}): UnsignedCredential => {
+export const makeDummyUnsignedCredentialDeprecated = (options: DummyUnsignedCredentialOptions = {}): UnsignedCredential => {
   const id = getUUID();
   const issuer = options.issuer || dummyIssuerDid;
   const subject = options.subject || dummySubjectDid;
@@ -61,7 +62,52 @@ export const makeDummyUnsignedCredential = (options: DummyUnsignedCredentialOpti
   };
 };
 
-export const makeDummyCredential = async (options: DummyCredentialOptions): Promise<Credential> => {
+export const makeDummyUnsignedCredential = (options: DummyUnsignedCredentialOptions = {}): UnsignedCredentialPb => {
+  const id = getUUID();
+  const issuer = options.issuer || dummyIssuerDid;
+  const subject = options.subject || dummySubjectDid;
+  const type = options.type || 'DummyCredential';
+  const claims = options.claims || { value: 'Dummy' };
+
+  return {
+    context: ['https://www.w3.org/2018/credentials/v1'],
+    id,
+    type: ['VerifiableCredential', type],
+    issuer,
+    credentialSubject: JSON.stringify({
+      id: subject,
+      ...claims
+    }),
+    credentialStatus: {
+      id: `${configData.SaaSUrl}/credentialStatus/${id}`,
+      type: 'CredentialStatus'
+    },
+    issuanceDate: new Date(),
+    expirationDate: options.expirationDate
+  };
+};
+
+export const makeDummyCredentialDeprecated = async (options: DummyCredentialOptions): Promise<Credential> => {
+  const { unsignedCredential, encoding } = options;
+  let { privateKey } = options;
+  if (!privateKey) {
+    const keys = await createKeyPairSet(encoding);
+    privateKey = keys.signing.privateKey;
+  }
+
+  const privateKeyId = options.privateKeyId || getUUID();
+
+  const issuerDidWithKeyFragment = `${unsignedCredential.issuer}#${privateKeyId}`;
+
+  const proof = createProof(unsignedCredential, privateKey, issuerDidWithKeyFragment, encoding);
+
+  return {
+    ...unsignedCredential,
+    proof
+  };
+};
+
+export const makeDummyCredential = async (options: DummyCredentialOptions): Promise<CredentialPb> => {
   const { unsignedCredential, encoding } = options;
   let { privateKey } = options;
   if (!privateKey) {
