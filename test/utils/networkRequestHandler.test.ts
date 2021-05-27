@@ -96,7 +96,7 @@ describe('Version list definitions for default saas version header', () => {
     expect(versionList.length).toEqual(3);
     expect(versionList[0]).toEqual('1.0.0');
     expect(versionList[1]).toEqual('2.0.0');
-    expect(versionList[1]).toEqual('3.0.0');
+    expect(versionList[2]).toEqual('3.0.0');
 
     // expecting latest version to be 2.0.0
     expect(versionList[versionList.length - 1]).toEqual('3.0.0');

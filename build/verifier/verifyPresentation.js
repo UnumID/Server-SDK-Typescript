@@ -80,7 +80,7 @@ var validatePresentation = function (presentation) {
     var type = presentation.type, proof = presentation.proof, presentationRequestUuid = presentation.presentationRequestUuid, verifierDid = presentation.verifierDid, context = presentation.context;
     // validate required fields
     if (!context) {
-        throw new error_1.CustError(400, 'Invalid Presentation: @context is required.');
+        throw new error_1.CustError(400, 'Invalid Presentation: context is required.');
     }
     if (!type) {
         throw new error_1.CustError(400, 'Invalid Presentation: type is required.');
@@ -95,7 +95,7 @@ var validatePresentation = function (presentation) {
         throw new error_1.CustError(400, 'Invalid Presentation: verifierDid is required.');
     }
     if (helpers_1.isArrayEmpty(context)) {
-        throw new error_1.CustError(400, 'Invalid Presentation: @context must be a non-empty array.');
+        throw new error_1.CustError(400, 'Invalid Presentation: context must be a non-empty array.');
     }
     if (helpers_1.isArrayEmpty(type)) {
         throw new error_1.CustError(400, 'Invalid Presentation: type must be a non-empty array.');

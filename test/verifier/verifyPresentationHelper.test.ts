@@ -7,7 +7,7 @@ import { dummyAuthToken, dummyEccPrivateKey, dummyIssuerDid, makeDummyDidDocumen
 import { sign } from '@unumid/library-crypto';
 import stringify from 'fast-json-stable-stringify';
 import { verifyPresentationHelper as verifyPresentation, verifyPresentationHelper } from '../../src/verifier/verifyPresentationHelper';
-import { CredentialRequest } from '@unumid/types';
+import { CredentialRequest, PresentationPb } from '@unumid/types';
 import { JSONObj } from '../../src/types';
 import { getDIDDoc } from '../../src/utils/didHelper';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
@@ -46,14 +46,13 @@ const mockDoVerify = doVerify as jest.Mock;
 const mockMakeNetworkRequest = makeNetworkRequest as jest.Mock;
 
 const callVerifyPresentation = (context, type, verifiableCredential, presentationRequestUuid, proof, verifier, auth = '', credentialRequests): Promise<UnumDto<VerifiedStatus>> => {
-  const presentation: Presentation = {
-    '@context': context,
+  const presentation: PresentationPb = {
+    context,
     type,
     verifiableCredential,
     presentationRequestUuid,
     verifierDid: verifier,
-    proof,
-    uuid: 'a'
+    proof
   };
   return verifyPresentationHelper(auth, presentation, verifier, credentialRequests);
 };

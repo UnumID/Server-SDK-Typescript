@@ -22,8 +22,15 @@ export const dummyRsaPrivateKey = '-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkq
 export const dummyEccPublicKey = 'aSq9DsNNvGhYxYyqA9wd2eduEAZ5AXWgJTbTKcK5rUyWBBvenyGeVgJFo2UQRRwcNhVQTAMYkzoWRNSaqxsvp6MTXLNiopgnmAMNCNV9AmnwGPHUpTpmzT5YTAVq';
 export const dummyEccPrivateKey = '2EPbyvKQKUaUPMF7Mm94FjEzvs5tsLWfesyc97W1dqYeeZFEG3RbKtndUZSYBdcp4xQtukTc6yUB4vyfWrxWqm1wPsY1g7uPaRftRJ57WaJ5zMWHpVagZdK7FVz2qUXHc7Fs5JwoxixcYwxDu4iL29y9KWyexi3CQKT2Ze3SSRqz9ZzTzhusitc7TjLBm';
 
-export interface DummyCredentialOptions {
+export interface DummyCredentialOptionsDeprecated {
   unsignedCredential: UnsignedCredential;
+  privateKey?: string;
+  privateKeyId?: string;
+  encoding?: 'base58' | 'pem'
+}
+
+export interface DummyCredentialOptions {
+  unsignedCredential: UnsignedCredentialPb;
   privateKey?: string;
   privateKeyId?: string;
   encoding?: 'base58' | 'pem'
@@ -87,7 +94,7 @@ export const makeDummyUnsignedCredential = (options: DummyUnsignedCredentialOpti
   };
 };
 
-export const makeDummyCredentialDeprecated = async (options: DummyCredentialOptions): Promise<Credential> => {
+export const makeDummyCredentialDeprecated = async (options: DummyCredentialOptionsDeprecated): Promise<Credential> => {
   const { unsignedCredential, encoding } = options;
   let { privateKey } = options;
   if (!privateKey) {

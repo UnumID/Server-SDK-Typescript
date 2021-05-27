@@ -32,7 +32,7 @@ const validatePresentation = (presentation: PresentationPb): PresentationPb => {
 
   // validate required fields
   if (!context) {
-    throw new CustError(400, 'Invalid Presentation: @context is required.');
+    throw new CustError(400, 'Invalid Presentation: context is required.');
   }
 
   if (!type) {
@@ -52,7 +52,7 @@ const validatePresentation = (presentation: PresentationPb): PresentationPb => {
   }
 
   if (isArrayEmpty(context)) {
-    throw new CustError(400, 'Invalid Presentation: @context must be a non-empty array.');
+    throw new CustError(400, 'Invalid Presentation: context must be a non-empty array.');
   }
 
   if (isArrayEmpty(type)) {

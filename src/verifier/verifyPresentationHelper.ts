@@ -50,7 +50,7 @@ const validateCredentialInput = (credentials: CredentialPb[]): JSONObj => {
     // if (!credential['@context']) {
     if (!credential.context) {
       retObj.valid = false;
-      retObj.msg = `${invalidMsg} @context is required.`;
+      retObj.msg = `${invalidMsg} context is required.`;
       break;
     }
 
