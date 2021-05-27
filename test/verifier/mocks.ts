@@ -1,6 +1,15 @@
-import { sign } from '@unumid/library-crypto';
-import { DidDocument, HolderApp, IssuerInfo, IssuerInfoMap, JSONObj, PresentationRequestPostDto, UnsignedCredential, UnsignedPresentationRequest, Verifier, VerifierInfo, Credential, CredentialSubject, Proof, CredentialRequest } from '@unumid/types';
-import stringify from 'fast-json-stable-stringify';
+import {
+  DidDocument,
+  HolderApp,
+  IssuerInfo,
+  IssuerInfoMap,
+  PresentationRequestDto,
+  UnsignedCredential,
+  UnsignedPresentationRequest,
+  Verifier,
+  VerifierInfo,
+  Credential
+} from '@unumid/types';
 
 import { configData } from '../../src/config';
 import { RESTResponse, VerifierApiKey } from '../../src/types';
@@ -43,15 +52,13 @@ export const makeDummyUnsignedCredential = (options: DummyUnsignedCredentialOpti
   const type = options.type || 'DummyCredential';
   const claims = options.claims || { value: 'Dummy' };
 
+  const credentialSubjectObj = { id: subject, ...claims };
   return {
     '@context': ['https://www.w3.org/2018/credentials/v1'],
     id,
     type: ['VerifiableCredential', type],
     issuer,
-    credentialSubject: {
-      id: subject,
-      ...claims
-    },
+    credentialSubject: JSON.stringify(credentialSubjectObj),
     credentialStatus: {
       id: `${configData.SaaSUrl}/credentialStatus/${id}`,
       type: 'CredentialStatus'
@@ -85,7 +92,7 @@ export type DummyVerifierOptions = Partial<Verifier>
 
 export const makeDummyVerifier = (options: DummyVerifierOptions = {}): Verifier => {
   const uuid = options.uuid || getUUID();
-  const now = new Date();
+  const now = new Date().toISOString();
   const createdAt = options.createdAt || now;
   const updatedAt = options.updatedAt || now;
   const customerUuid = options.customerUuid || getUUID();
@@ -191,12 +198,12 @@ export interface MakeDummyPresentationRequestOptions {
   updatedAt?: Date;
   qrCode?: string;
   deeplink?: string;
-  verifier?: VerifierInfo;
+  verifier?: Pick<Verifier, 'did' | 'name' | 'url'>;
   issuers?: IssuerInfoMap;
   holderApp?: HolderAppInfo;
 }
 
-export const makeDummyVerifierInfo = (options: Partial<VerifierInfo>): VerifierInfo => {
+export const makeDummyVerifierInfo = (options: Partial<VerifierInfo>): Pick<Verifier, 'did' | 'name' | 'url'> => {
   return {
     did: options.did || dummyVerifierDid,
     name: options.name || 'Dummy Verifier',
@@ -227,7 +234,9 @@ export const makeDummyHolderAppInfo = (options: Partial<HolderAppInfo> = {}): Ho
   };
 };
 
-export const makeDummyPresentationRequestResponse = async (options: MakeDummyPresentationRequestOptions = {}): Promise<PresentationRequestPostDto> => {
+// formerly called makeDummyPresentationRequestResponse
+// renamed it to align better with names from the types package
+export const makeDummyPresentationRequestDto = async (options: MakeDummyPresentationRequestOptions = {}): Promise<PresentationRequestDto> => {
   const unsignedPresentationRequest = options.unsignedPresentationRequest || makeDummyUnsignedPresentationRequest();
   const privateKeyId = options.privateKeyId || getUUID();
   const encoding = options.encoding || 'pem';
@@ -265,6 +274,10 @@ export const makeDummyPresentationRequestResponse = async (options: MakeDummyPre
     holderApp
   };
 };
+
+// leaving this in as an alias so I don't have to go update all the files importing it by this name yet
+// TODO: remove this and use makeDummyPresentationRequestDto everywhere
+export const makeDummyPresentationRequestResponse = makeDummyPresentationRequestDto;
 
 export const makeDummyVerifierApiKey = (): VerifierApiKey => {
   const now = new Date();
