@@ -50,7 +50,7 @@ export const validateNoPresentationParams = (noPresentation: PresentationPb): Pr
     throw new CustError(400, 'Invalid presentationRequestUuid: must be a string.');
   }
 
-  if (verifiableCredential || isArrayNotEmpty(verifiableCredential)) {
+  if (verifiableCredential && isArrayNotEmpty(verifiableCredential)) {
     throw new CustError(400, 'Invalid Declined Presentation: verifiableCredential must be undefined or empty.'); // this should never happen base on upstream logic
   }
 
