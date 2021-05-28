@@ -149,7 +149,7 @@ describe('sendRequest', () => {
     expect(apiResponseAuthToken).toEqual(dummyAuthToken);
   });
 
-  it('returns the provided auth-token if the SaaS does not return an x-auth-token header', async () => {
+  it('returns undefined auth-token if the SaaS does not return an x-auth-token header', async () => {
     const dummyPresentationRequestResponse = await makeDummyPresentationRequestResponse();
     const dummyApiResponse = { body: dummyPresentationRequestResponse };
     mockMakeNetworkRequest.mockResolvedValue(dummyApiResponse);
@@ -163,7 +163,7 @@ describe('sendRequest', () => {
       authToken
     );
     apiResponseAuthToken = apiResponse.authToken;
-    expect(apiResponseAuthToken).toEqual(authToken);
+    expect(apiResponseAuthToken).toBeUndefined();
   });
 });
 
