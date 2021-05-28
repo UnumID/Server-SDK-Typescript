@@ -355,6 +355,33 @@ export interface MakeDummyPresentationOptions {
   // holderApp?: HolderAppInfo;
 }
 
+export const makeDummyUnsignedPresentation = async (options: MakeDummyPresentationOptions): Promise<PresentationPb> => {
+  const verifierDid = options.verifierDid || dummyVerifierDid;
+
+  const context = options.context || ['https://www.w3.org/2018/credentials/v1'];
+  const type = options.type || ['VerifiablePresentation'];
+  const presentationRequestUuid = options.presentationRequestUuid || getUUID();
+
+  const unsignedCredential: UnsignedCredentialPb = makeDummyUnsignedCredential();
+  const credOptions: DummyCredentialOptions = {
+    unsignedCredential
+  };
+  const credential = await makeDummyCredential(credOptions);
+  const credentials = [credential];
+
+  const verifiableCredential = options.verifiableCredential || credentials;
+
+  const unsignedPresentation: UnsignedPresentationPb = {
+    context,
+    type,
+    presentationRequestUuid,
+    verifierDid,
+    verifiableCredential
+  };
+
+  return unsignedPresentation;
+};
+
 // export const makeDummyPresentation = (credentials: CredentialPb[], presentationRequestUuid?: string, verifierDid?:string): PresentationPb => {
 export const makeDummyPresentation = async (options: MakeDummyPresentationOptions): Promise<PresentationPb> => {
   const privateKeyId = options.privateKeyId || getUUID();

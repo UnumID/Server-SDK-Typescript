@@ -2,8 +2,8 @@ import { Presentation, VerifiedStatus, UnumDto, CustError } from '../../src/inde
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { isCredentialExpired } from '../../src/verifier/isCredentialExpired';
 import { checkCredentialStatus } from '../../src/verifier/checkCredentialStatus';
-import { dummyAuthToken, dummyRsaPrivateKey, dummyRsaPublicKey, dummyVerifierDid, makeDummyCredential, makeDummyDidDocument, makeDummyPresentation, makeDummyPresentationRequestResponse, makeDummyUnsignedCredential, makeDummyUnsignedPresentationRequest } from './mocks';
-import { encrypt } from '@unumid/library-crypto';
+import { dummyAuthToken, dummyRsaPrivateKey, dummyRsaPublicKey, dummyVerifierDid, makeDummyCredential, makeDummyDidDocument, makeDummyPresentation, makeDummyPresentationRequestResponse, makeDummyUnsignedCredential, makeDummyUnsignedPresentation, makeDummyUnsignedPresentationRequest } from './mocks';
+import { encrypt, encryptBytes } from '@unumid/library-crypto';
 import { omit } from 'lodash';
 import { DecryptedPresentation } from '../../src/types';
 import { verifyPresentation } from '../../src/verifier/verifyPresentation';
@@ -79,7 +79,31 @@ const mockGetDIDDoc = getDIDDoc as jest.Mock;
 const mockDoVerify = doVerify as jest.Mock;
 const mockMakeNetworkRequest = makeNetworkRequest as jest.Mock;
 
-const callVerifyEncryptedPresentation = (context, type, verifiableCredential, presentationRequestUuid, proof, verifier, auth = '', presentationRequest?): Promise<UnumDto<DecryptedPresentation>> => {
+const callVerifyEncryptedPresentation = async (context, type, verifiableCredential, presentationRequestUuid, proof, verifier, auth = '', presentationRequest?): Promise<UnumDto<DecryptedPresentation>> => {
+  // const presentation: PresentationPb = {
+  //   context,
+  //   type,
+  //   verifiableCredential,
+  //   presentationRequestUuid,
+  //   verifierDid: verifier,
+  //   proof
+  // };
+
+  const presentation: PresentationPb = await makeDummyPresentation({
+    context,
+    type,
+    verifiableCredential,
+    presentationRequestUuid,
+    verifierDid: verifier
+  });
+
+  // const encryptedPresentation = encrypt(`did:unum:${getUUID()}`, dummyRsaPublicKey, presentation, 'pem');
+  const bytes: Uint8Array = PresentationPb.encode(presentation).finish();
+  const encryptedPresentation = encryptBytes(`did:unum:${getUUID()}`, dummyRsaPublicKey, bytes, 'pem');
+  return verifyPresentation(auth, encryptedPresentation, verifier, dummyRsaPrivateKey, presentationRequest);
+};
+
+const callVerifyEncryptedPresentationManual = (context, type, verifiableCredential, presentationRequestUuid, proof, verifier, auth = '', presentationRequest?): Promise<UnumDto<DecryptedPresentation>> => {
   const presentation: PresentationPb = {
     context,
     type,
@@ -89,7 +113,9 @@ const callVerifyEncryptedPresentation = (context, type, verifiableCredential, pr
     proof
   };
 
-  const encryptedPresentation = encrypt(`did:unum:${getUUID()}`, dummyRsaPublicKey, presentation, 'pem');
+  // const encryptedPresentation = encrypt(`did:unum:${getUUID()}`, dummyRsaPublicKey, presentation, 'pem');
+  const bytes: Uint8Array = PresentationPb.encode(presentation).finish();
+  const encryptedPresentation = encryptBytes(`did:unum:${getUUID()}`, dummyRsaPublicKey, bytes, 'pem');
   return verifyPresentation(auth, encryptedPresentation, verifier, dummyRsaPrivateKey, presentationRequest);
 };
 
@@ -126,6 +152,7 @@ const populateMockData = async (): Promise<JSONObj> => {
   const presentationRequestDto = await makeDummyPresentationRequestResponse({ unsignedPresentationRequest: presentationRequest });
   const proof = (await presentationRequestDto).presentationRequest.proof;
 
+  const unsignedPresentation = await makeDummyUnsignedPresentation({ verifierDid: verifier, context, type, verifiableCredential: verifiableCredentials, presentationRequestUuid });
   const presentation = await makeDummyPresentation({ verifierDid: verifier, context, type, verifiableCredential: verifiableCredentials, presentationRequestUuid });
 
   const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
@@ -140,7 +167,8 @@ const populateMockData = async (): Promise<JSONObj> => {
     proof,
     authHeader,
     verifier,
-    presentation
+    presentation,
+    unsignedPresentation
   });
 };
 
@@ -148,7 +176,7 @@ describe('verifyPresentation', () => {
   let response: UnumDto<DecryptedPresentation>;
   let verStatus: boolean;
 
-  let context, type, verifiableCredentials, presentationRequestUuid, proof, authHeader, verifier, presentationRequestDto, presentationRequest, unsignedPresentationRequest, presentation;
+  let context, type, verifiableCredentials, presentationRequestUuid, proof, authHeader, verifier, presentationRequestDto, presentationRequest, unsignedPresentationRequest, presentation, unsignedPresentation;
 
   beforeAll(async () => {
   // const presentationRequest = makeDummyPresentationRequestResponse();
@@ -163,6 +191,7 @@ describe('verifyPresentation', () => {
     presentationRequestDto = dummyData.presentationRequestDto;
     presentationRequest = dummyData.presentationRequestDto.presentationRequest;
     unsignedPresentationRequest = dummyData.presentationRequest;
+    unsignedPresentation = dummyData.unsignedPresentation;
 
     presentation = dummyData.presentation;
 
@@ -275,6 +304,19 @@ describe('verifyPresentation', () => {
     // afterAll(() => {
     //   jest.clearAllMocks();
     // });
+
+    beforeEach(async () => {
+      const dummySubjectDidDoc = await makeDummyDidDocument();
+      const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
+      mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
+      mockDoVerify.mockReturnValueOnce(true);
+      mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: true });
+      mockIsCredentialExpired.mockReturnValue(false);
+      mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: { status: 'valid' } });
+      mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers: dummyResponseHeaders });
+      response = await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
+      verStatus = response.body.isVerified;
+    });
 
     it('gets the subject did document', () => {
       expect(mockGetDIDDoc).toBeCalled();
@@ -544,13 +586,13 @@ describe('verifyPresentation', () => {
     });
 
     it('Response code should be ' + 400 + ' when type is not passed', async () => {
-      cred = copyCredentialObj(verifiableCredentials[0], 'type');
+      cred = copyCredentialObj(verifiableCredentials[0], 'type', undefined);
       try {
         await callVerifyEncryptedPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
-        expect(e.message).toBe('Invalid verifiableCredential[0]: type is required.');
+        expect(e.message).toBe('Invalid verifiableCredential[0]: type must be a non-empty array.');
       }
     });
 
@@ -609,7 +651,9 @@ describe('verifyPresentation', () => {
       // };
 
       // const bytes = PresentationPb.encode(presentation).finish();
-      const encryptedPresentation = encrypt(`did:unum:${getUUID()}`, dummyRsaPublicKey, presentation, 'pem');
+      // const encryptedPresentation = encrypt(`did:unum:${getUUID()}`, dummyRsaPublicKey, presentation, 'pem');
+      const bytes: Uint8Array = PresentationPb.encode(presentation).finish();
+      const encryptedPresentation = encryptBytes(`did:unum:${getUUID()}`, dummyRsaPublicKey, bytes, 'pem');
 
       const fakeBadPresentationRequestDto = {
         presentationRequest: {
@@ -664,7 +708,7 @@ describe('verifyPresentation', () => {
     beforeEach(async () => {
       const dummySubjectDidDoc = await makeDummyDidDocument();
       const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
-      mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
+      mockGetDIDDoc.mockResolvedValue({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
       mockDoVerify.mockReturnValueOnce(true);
       mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: true });
       mockIsCredentialExpired.mockReturnValue(false);
@@ -675,9 +719,19 @@ describe('verifyPresentation', () => {
     });
 
     it('returns a 400 status code with a descriptive error message when created is missing', async () => {
-      const invalidProof = { created: '', signatureValue: proof.signatureValue, type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
       try {
-        await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, invalidProof, verifier, authHeader);
+        const invalidProof = { created: undefined, signatureValue: proof.signatureValue, type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
+        // const badProofPresentation = {
+        //   ...unsignedPresentation,
+        //   proof: invalidProof
+        // };
+
+        // // const encryptedPresentation = encrypt(`did:unum:${getUUID()}`, dummyRsaPublicKey, presentation, 'pem');
+        // const bytes: Uint8Array = PresentationPb.encode(badProofPresentation).finish();
+        // const encryptedPresentation = encryptBytes(`did:unum:${getUUID()}`, dummyRsaPublicKey, bytes, 'pem');
+        // await verifyPresentation(authHeader, encryptedPresentation, verifier, dummyRsaPrivateKey, presentationRequest);
+
+        await callVerifyEncryptedPresentationManual(context, type, verifiableCredentials, presentationRequestUuid, invalidProof, verifier, authHeader);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -688,7 +742,7 @@ describe('verifyPresentation', () => {
     it('returns a 400 status code with a descriptive error message when signatureValue is missing', async () => {
       const invalidProof = { created: proof.created, signatureValue: '', type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
       try {
-        await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, invalidProof, verifier, authHeader);
+        await callVerifyEncryptedPresentationManual(context, type, verifiableCredentials, presentationRequestUuid, invalidProof, verifier, authHeader);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -699,7 +753,7 @@ describe('verifyPresentation', () => {
     it('returns a 400 status code with a descriptive error message when type is missing', async () => {
       const invalidProof = { created: proof.created, signatureValue: proof.signatureValue, type: '', verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
       try {
-        await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, invalidProof, verifier, authHeader);
+        await callVerifyEncryptedPresentationManual(context, type, verifiableCredentials, presentationRequestUuid, invalidProof, verifier, authHeader);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -710,7 +764,7 @@ describe('verifyPresentation', () => {
     it('returns a 400 status code with a descriptive error message when verificationMethod is missing', async () => {
       const invalidProof = { created: proof.created, signatureValue: proof.signatureValue, type: proof.type, verificationMethod: '', proofPurpose: proof.proofPurpose };
       try {
-        await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, invalidProof, verifier, authHeader);
+        await callVerifyEncryptedPresentationManual(context, type, verifiableCredentials, presentationRequestUuid, invalidProof, verifier, authHeader);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -721,7 +775,7 @@ describe('verifyPresentation', () => {
     it('returns a 400 status code with a descriptive error message when proofPurpose is missing', async () => {
       const invalidProof = { created: proof.created, signatureValue: proof.signatureValue, type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: '' };
       try {
-        await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, invalidProof, verifier, authHeader);
+        await callVerifyEncryptedPresentationManual(context, type, verifiableCredentials, presentationRequestUuid, invalidProof, verifier, authHeader);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);

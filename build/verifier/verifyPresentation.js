@@ -317,7 +317,7 @@ function verifyPresentationRequest(authorization, presentationRequest) {
  * @param verifierDid: string
  */
 exports.verifyPresentation = function (authorization, encryptedPresentation, verifierDid, encryptionPrivateKey, presentationRequest) { return __awaiter(void 0, void 0, void 0, function () {
-    var presentation, presentationRequestPb, requestVerificationResult, type, result_2, verificationResult_1, result_3, credentialRequests, verificationResult, result, error_2;
+    var presentationBytes, presentation, presentationRequestPb, requestVerificationResult, type, result_2, verificationResult_1, result_3, credentialRequests, verificationResult, result, error_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -335,7 +335,8 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                 if (presentationRequest && presentationRequest.verifier.did !== verifierDid) {
                     throw new error_1.CustError(400, "verifier provided, " + verifierDid + ", does not match the presentation request verifier, " + presentationRequest.verifier.did + ".");
                 }
-                presentation = library_crypto_1.decrypt(encryptionPrivateKey, encryptedPresentation);
+                presentationBytes = library_crypto_1.decryptBytes(encryptionPrivateKey, encryptedPresentation);
+                presentation = types_1.PresentationPb.decode(presentationBytes);
                 // validate presentation
                 validatePresentation(presentation);
                 // verify the presentation request uuid match

@@ -4,7 +4,7 @@ import { Presentation, CredentialRequest, PresentationRequestDto, EncryptedData,
 // import { Presentation, EncryptedData, PresentationPb, PresentationRequestPb, ProofPb, UnsignedPresentationRequestPb, JSONObj, CredentialRequestPb } from '@unumid/types';
 // import { PresentationRequestDto, PresentationRequest, CredentialRequest } from '@unumid/types-v2';
 import { requireAuth } from '../requireAuth';
-import { CryptoError, decrypt } from '@unumid/library-crypto';
+import { CryptoError, decrypt, decryptBytes } from '@unumid/library-crypto';
 import logger from '../logger';
 import { verifyNoPresentationHelper } from './verifyNoPresentationHelper';
 import { verifyPresentationHelper } from './verifyPresentationHelper';
@@ -357,7 +357,9 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
     }
 
     // decrypt the presentation
-    const presentation = <PresentationPb> decrypt(encryptionPrivateKey, encryptedPresentation);
+    // const presentation = <PresentationPb> decrypt(encryptionPrivateKey, encryptedPresentation);
+    const presentationBytes = decryptBytes(encryptionPrivateKey, encryptedPresentation);
+    const presentation: PresentationPb = PresentationPb.decode(presentationBytes);
 
     // validate presentation
     validatePresentation(presentation);
