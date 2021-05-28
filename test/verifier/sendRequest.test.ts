@@ -67,7 +67,7 @@ describe('sendRequest', () => {
     const dummyPresentationRequestResponse = await makeDummyPresentationRequestResponse();
     const headers = { 'x-auth-token': dummyAuthToken };
     const dummyApiResponse = { body: dummyPresentationRequestResponse, headers };
-    mockMakeNetworkRequest.mockResolvedValueOnce(dummyApiResponse);
+    mockMakeNetworkRequest.mockResolvedValue(dummyApiResponse);
     apiResponse = await callSendRequests(verifier, credentialRequests, metadata, expiresAt, eccPrivateKey, holderAppUuid, authToken);
     apiResponseAuthToken = apiResponse.authToken;
 
@@ -149,10 +149,10 @@ describe('sendRequest', () => {
     expect(apiResponseAuthToken).toEqual(dummyAuthToken);
   });
 
-  it('does not return an x-auth-token header if the SaaS does not return an x-auth-token header', async () => {
+  it('returns the provided auth-token if the SaaS does not return an x-auth-token header', async () => {
     const dummyPresentationRequestResponse = await makeDummyPresentationRequestResponse();
     const dummyApiResponse = { body: dummyPresentationRequestResponse };
-    mockMakeNetworkRequest.mockResolvedValueOnce(dummyApiResponse);
+    mockMakeNetworkRequest.mockResolvedValue(dummyApiResponse);
     apiResponse = await callSendRequests(
       verifier,
       credentialRequests,
@@ -163,7 +163,7 @@ describe('sendRequest', () => {
       authToken
     );
     apiResponseAuthToken = apiResponse.authToken;
-    expect(apiResponseAuthToken).toBeUndefined();
+    expect(apiResponseAuthToken).toEqual(authToken);
   });
 });
 
