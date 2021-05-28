@@ -2,7 +2,7 @@ import { Presentation, VerifiedStatus, UnumDto, CustError } from '../../src/inde
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { isCredentialExpired } from '../../src/verifier/isCredentialExpired';
 import { checkCredentialStatus } from '../../src/verifier/checkCredentialStatus';
-import { dummyAuthToken, dummyRsaPrivateKey, dummyRsaPublicKey, dummyVerifierDid, makeDummyCredential, makeDummyDidDocument, makeDummyPresentationRequestResponse, makeDummyUnsignedCredential, makeDummyUnsignedPresentationRequest } from './mocks';
+import { dummyAuthToken, dummyRsaPrivateKey, dummyRsaPublicKey, dummyVerifierDid, makeDummyCredential, makeDummyDidDocument, makeDummyPresentation, makeDummyPresentationRequestResponse, makeDummyUnsignedCredential, makeDummyUnsignedPresentationRequest } from './mocks';
 import { encrypt } from '@unumid/library-crypto';
 import { omit } from 'lodash';
 import { DecryptedPresentation } from '../../src/types';
@@ -117,88 +117,17 @@ const populateMockData = async (): Promise<JSONObj> => {
   const unsignedCredential = await makeDummyUnsignedCredential();
   const signedCredential = await makeDummyCredential({ unsignedCredential });
   const verifiableCredentials = [signedCredential];
-  // const verifiableCredentials: JSONObj[] = [
-  //   {
-  //     '@context': [
-  //       'https://www.w3.org/2018/credentials/v1'
-  //     ],
-  //     credentialStatus: {
-  //       id: 'https://api.dev-unumid.org//credentialStatus/b2acd26a-ab18-4d18-9ad1-3b77f55c564b',
-  //       type: 'CredentialStatus'
-  //     },
-  //     credentialSubject: {
-  //       id: 'did:unum:3ff2f020-50b0-4f4c-a267-a9f104aedcd8',
-  //       test: 'test'
-  //     },
-  //     issuer: 'did:unum:2e05967f-216f-44c4-ae8e-d6f71cd17c5a',
-  //     type: [
-  //       'VerifiableCredential',
-  //       'TestCredential'
-  //     ],
-  //     id: 'b2acd26a-ab18-4d18-9ad1-3b77f55c564b',
-  //     issuanceDate: '2020-09-03T18:42:30.645Z',
-  //     proof: {
-  //       created: '2020-09-03T18:42:30.658Z',
-  //       signatureValue: '381yXYx2wa7qR4XMEWeLPWVR7xhksi4684VCZL7Yx9jXneVMxXoa3eT3dA5QU1tofsH4XrGbU8d4pNTiLRpa8iUWvWmAdnfE',
-  //       unsignedValue: 'todo',
-  //       type: 'secp256r1Signature2020',
-  //       verificationMethod: 'did:unum:2e05967f-216f-44c4-ae8e-d6f71cd17c5a',
-  //       proofPurpose: 'AssertionMethod'
-  //     }
-  //   }
-  // ];
+
   const presentationRequestUuid = '0cebee3b-3295-4ef6-a4d6-7dfea413b3aa';
   const verifier = 'did:unum:f2054199-1069-4337-a588-83d099e79d44';
   // const presentationRequest = makeDummyPresentationRequestResponse();
-  const presentationRequest = makeDummyUnsignedPresentationRequest();
-  const presentationRequestDto = makeDummyPresentationRequestResponse({ unsignedPresentationRequest: presentationRequest });
+  const presentationRequest = await makeDummyUnsignedPresentationRequest({ uuid: presentationRequestUuid, verifier });
+  // const presentationRequestUuid = presentationRequest.uuid;
+  const presentationRequestDto = await makeDummyPresentationRequestResponse({ unsignedPresentationRequest: presentationRequest });
   const proof = (await presentationRequestDto).presentationRequest.proof;
-  // const presentationRequest: PresentationRequestDto = {
-  //   presentationRequest: {
-  //     uuid: presentationRequestUuid,
-  //     createdAt: new Date('2021-04-07T01:21:41.059Z'),
-  //     updatedAt: new Date('2021-04-07T01:21:41.059Z'),
-  //     expiresAt: new Date('2021-04-07T01:31:41.059Z'),
-  //     verifier,
-  //     credentialRequests: [
-  //       {
-  //         type: 'FirstNameCredential',
-  //         issuers: [
-  //           'did:unum:512ff9b8-bdb4-4d38-ac7d-63086122f6ae'
-  //         ],
-  //         required: false
-  //       }
-  //     ],
-  //     proof: {
-  //       created: '2021-04-07T01:21:41.059Z',
-  //       signatureValue: 'AN1rKpweXKqdMBBkmGtbDRsZcKVopuurFjvwcTRzkE8r5wUD1ZXphVGZ3ZSTmjA8CKihvrX8wtyvn1uAykUvL36tobr4uvRGv',
-  //       unsignedValue: '{"createdAt":"2021-04-07T01:21:41.059Z","credentialRequests":[{"issuers":["did:unum:512ff9b8-bdb4-4d38-ac7d-63086122f6ae"],"required":false,"type":"FirstNameCredential"}],"expiresAt":"2021-04-07T01:31:41.059Z","holderAppUuid":"91514d8e-b5b2-41d9-9744-3cbb2bb9a85d","metadata":{},"updatedAt":"2021-04-07T01:21:41.059Z","uuid":"da8edbfd-b630-4ea1-8267-ecc7b891fd34","verifier":"did:unum:f2054199-1069-4337-a588-83d099e79d44"}',
-  //       type: 'secp256r1Signature2020',
-  //       verificationMethod: verifier,
-  //       proofPurpose: 'AssertionMethod'
-  //     },
-  //     metadata: {},
-  //     holderAppUuid: '91514d8e-b5b2-41d9-9744-3cbb2bb9a85d'
-  //   },
-  //   issuers: {
-  //     'did:unum:512ff9b8-bdb4-4d38-ac7d-63086122f6ae': {
-  //       name: 'Acme Co Issuer',
-  //       did: 'did:unum:512ff9b8-bdb4-4d38-ac7d-63086122f6ae'
-  //     }
-  //   },
-  //   verifier: {
-  //     name: 'demo acme verifier 1',
-  //     did: verifier,
-  //     url: 'https://acme-verifier-api.demo.dev-unum.id/presentation'
-  //   }
-  // };
-  // const proof: JSONObj = {
-  //   created: '2020-09-03T18:50:52.105Z',
-  //   signatureValue: 'iKx1CJLYue7vopUo2fqGps3TWmxqRxoBDTupumLkaNp2W3UeAjwLUf5WxLRCRkDzEFeKCgT7JdF5fqbpvqnBZoHyYzWYbmW4YQ',
-  //   type: 'secp256r1Signature2020',
-  //   verificationMethod: 'did:unum:3ff2f020-50b0-4f4c-a267-a9f104aedcd8',
-  //   proofPurpose: 'AssertionMethod'
-  // };
+
+  const presentation = await makeDummyPresentation({ verifierDid: verifier, context, type, verifiableCredential: verifiableCredentials, presentationRequestUuid });
+
   const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
 
   return ({
@@ -207,9 +136,11 @@ const populateMockData = async (): Promise<JSONObj> => {
     verifiableCredentials,
     presentationRequestUuid,
     presentationRequest,
+    presentationRequestDto,
     proof,
     authHeader,
-    verifier
+    verifier,
+    presentation
   });
 };
 
@@ -217,7 +148,7 @@ describe('verifyPresentation', () => {
   let response: UnumDto<DecryptedPresentation>;
   let verStatus: boolean;
 
-  let context, type, verifiableCredentials, presentationRequestUuid, proof, authHeader, verifier;
+  let context, type, verifiableCredentials, presentationRequestUuid, proof, authHeader, verifier, presentationRequestDto, presentationRequest, unsignedPresentationRequest, presentation;
 
   beforeAll(async () => {
   // const presentationRequest = makeDummyPresentationRequestResponse();
@@ -229,6 +160,11 @@ describe('verifyPresentation', () => {
     proof = dummyData.proof;
     authHeader = dummyData.authHeader;
     verifier = dummyData.verifier;
+    presentationRequestDto = dummyData.presentationRequestDto;
+    presentationRequest = dummyData.presentationRequestDto.presentationRequest;
+    unsignedPresentationRequest = dummyData.presentationRequest;
+
+    presentation = dummyData.presentation;
 
     // const dummySubjectDidDoc = await makeDummyDidDocument();
 
@@ -413,7 +349,7 @@ describe('verifyPresentation', () => {
     it('returns a 400 status code with a descriptive error message when if presentationRequest is present, presentationRequest verifier did does not match supplied verifier did', async () => {
       const fakeVerifierDid = 'did:1234';
       try {
-        await verifyPresentation(authHeader, {}, fakeVerifierDid, dummyRsaPrivateKey, presentationRequest);
+        await verifyPresentation(authHeader, {}, fakeVerifierDid, dummyRsaPrivateKey, presentationRequestDto);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -423,7 +359,7 @@ describe('verifyPresentation', () => {
 
     it('returns a 400 status code with a descriptive error message when if presentationRequest uuid provided does not match is the presentation presentationRequestUuid.', async () => {
       try {
-        await callVerifyEncryptedPresentation(context, type, verifiableCredentials, 'uuid:123', proof, verifier, authHeader, presentationRequest);
+        await callVerifyEncryptedPresentation(context, type, verifiableCredentials, 'uuid:123', proof, verifier, authHeader, presentationRequestDto);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -443,7 +379,7 @@ describe('verifyPresentation', () => {
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
-        expect(e.message).toBe('Invalid Presentation: @context is required.');
+        expect(e.message).toBe('Invalid Presentation: context is required.');
       }
     });
 
@@ -487,13 +423,13 @@ describe('verifyPresentation', () => {
       }
     });
 
-    it('returns a 400 status code with a descriptive error message when @context is not an array', async () => {
+    it('returns a 400 status code with a descriptive error message when context is not an array', async () => {
       try {
         await callVerifyEncryptedPresentation('https://www.w3.org/2018/credentials/v1', type, verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
-        expect(e.message).toBe('Invalid Presentation: @context must be a non-empty array.');
+        expect(e.message).toBe('Invalid Presentation: context must be a non-empty array.');
       }
     });
 
@@ -503,7 +439,7 @@ describe('verifyPresentation', () => {
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
-        expect(e.message).toBe('Invalid Presentation: @context must be a non-empty array.');
+        expect(e.message).toBe('Invalid Presentation: context must be a non-empty array.');
       }
     });
 
@@ -563,14 +499,14 @@ describe('verifyPresentation', () => {
     // const { context, type, verifiableCredentials, presentationRequestUuid, proof, authHeader, verifier } = populateMockData();
 
     let cred;
-    it('Response code should be ' + 400 + ' when @context is not passed', async () => {
-      cred = copyCredentialObj(verifiableCredentials[0], '@context');
+    it('Response code should be ' + 400 + ' when context is not passed', async () => {
+      cred = copyCredentialObj(verifiableCredentials[0], 'context');
       try {
         await callVerifyEncryptedPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
-        expect(e.message).toBe('Invalid verifiableCredential[0]: @context is required.');
+        expect(e.message).toBe('Invalid verifiableCredential[0]: context is required.');
       }
     });
 
@@ -663,21 +599,26 @@ describe('verifyPresentation', () => {
       mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers });
       mockDoVerify.mockReturnValueOnce(false);
 
-      const presentation: PresentationPb = {
-        context,
-        type,
-        verifiableCredential: verifiableCredentials,
-        presentationRequestUuid,
-        verifierDid: verifier,
-        proof
-      };
+      // const presentation: PresentationPb = {
+      //   context,
+      //   type,
+      //   verifiableCredential: verifiableCredentials,
+      //   presentationRequestUuid,
+      //   verifierDid: verifier,
+      //   proof
+      // };
 
+      // const bytes = PresentationPb.encode(presentation).finish();
       const encryptedPresentation = encrypt(`did:unum:${getUUID()}`, dummyRsaPublicKey, presentation, 'pem');
 
       const fakeBadPresentationRequestDto = {
         presentationRequest: {
-          uuid: presentationRequestUuid,
-          proof: { signatureValue: 'signature' }
+          // uuid: presentationRequestUuid,
+          ...presentationRequest,
+          proof: {
+            ...presentationRequest.proof,
+            signatureValue: 'signature'
+          }
         },
         verifier: {
           did: verifier

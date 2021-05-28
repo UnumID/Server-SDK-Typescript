@@ -115,7 +115,8 @@ export const makeDummyCredentialDeprecated = async (options: DummyCredentialOpti
 };
 
 export const makeDummyCredential = async (options: DummyCredentialOptions): Promise<CredentialPb> => {
-  const { unsignedCredential, encoding } = options;
+  const { encoding } = options;
+  const unsignedCredential: UnsignedCredentialPb = options.unsignedCredential;
   let { privateKey } = options;
   if (!privateKey) {
     const keys = await createKeyPairSet(encoding);
@@ -126,7 +127,8 @@ export const makeDummyCredential = async (options: DummyCredentialOptions): Prom
 
   const issuerDidWithKeyFragment = `${unsignedCredential.issuer}#${privateKeyId}`;
 
-  const proof = createProof(unsignedCredential, privateKey, issuerDidWithKeyFragment, encoding);
+  const bytes = UnsignedCredentialPb.encode(unsignedCredential).finish();
+  const proof = createProofPb(bytes, privateKey, issuerDidWithKeyFragment, encoding);
 
   return {
     ...unsignedCredential,
@@ -221,9 +223,11 @@ export const dummyCredentialRequest = {
 export const makeDummyUnsignedPresentationRequest = (options: Partial<UnsignedPresentationRequest> = {}): UnsignedPresentationRequest => {
   const credentialRequests = options.credentialRequests || [dummyCredentialRequest];
   const uuid = options.uuid || getUUID();
-  const { expiresAt, metadata } = options;
+  const expiresAt = options.expiresAt;
   const holderAppUuid = options.holderAppUuid || getUUID();
   const verifier = options.verifier || dummyVerifierDid;
+  const id = options.id || getUUID();
+  const metadata = options.metadata || { fields: {} };
 
   return {
     uuid,
@@ -231,7 +235,8 @@ export const makeDummyUnsignedPresentationRequest = (options: Partial<UnsignedPr
     holderAppUuid,
     verifier,
     expiresAt,
-    metadata
+    metadata,
+    id
   };
 };
 
@@ -351,7 +356,7 @@ export interface MakeDummyPresentationOptions {
 }
 
 // export const makeDummyPresentation = (credentials: CredentialPb[], presentationRequestUuid?: string, verifierDid?:string): PresentationPb => {
-export const makeDummyPresentation = async (options: MakeDummyPresentationOptions): PresentationPb => {
+export const makeDummyPresentation = async (options: MakeDummyPresentationOptions): Promise<PresentationPb> => {
   const privateKeyId = options.privateKeyId || getUUID();
   const encoding = options.encoding || 'pem';
 
@@ -366,7 +371,7 @@ export const makeDummyPresentation = async (options: MakeDummyPresentationOption
   const type = options.type || ['VerifiablePresentation'];
   const presentationRequestUuid = options.presentationRequestUuid || getUUID();
 
-  const unsignedCredential = makeDummyUnsignedCredential();
+  const unsignedCredential: UnsignedCredentialPb = makeDummyUnsignedCredential();
   const credOptions: DummyCredentialOptions = {
     unsignedCredential
   };
@@ -376,7 +381,7 @@ export const makeDummyPresentation = async (options: MakeDummyPresentationOption
   const verifiableCredential = options.verifiableCredential || credentials;
 
   const unsignedPresentation: UnsignedPresentationPb = {
-    context: [],
+    context,
     type,
     presentationRequestUuid,
     verifierDid,
