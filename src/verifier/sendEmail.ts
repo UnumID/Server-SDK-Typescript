@@ -4,7 +4,7 @@ import logger from '../logger';
 import { requireAuth } from '../requireAuth';
 import { UnumDto } from '../types';
 import { CustError } from '../utils/error';
-import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
+import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
 
 export interface EmailResponseBody {
   success: boolean;
@@ -62,7 +62,7 @@ export const sendEmail = async (authorization: string, to: string, deeplink: str
 
     const apiResponse = await makeNetworkRequest<EmailResponseBody>(data);
 
-    const authToken: string = handleAuthToken(apiResponse, authorization);
+    const authToken: string = handleAuthTokenHeader(apiResponse, authorization);
 
     const result: UnumDto<undefined> = {
       authToken,

@@ -8,7 +8,7 @@ import { RESTData, SendRequestReqBody, UnumDto } from '../types';
 import logger from '../logger';
 import { createProof, createProofPb } from '../utils/createProof';
 import { getUUID } from '../utils/helpers';
-import { makeNetworkRequest, handleAuthToken } from '../utils/networkRequestHelper';
+import { makeNetworkRequest, handleAuthTokenHeader } from '../utils/networkRequestHelper';
 import { CustError } from '../utils/error';
 import { versionList } from '../utils/versionList';
 
@@ -274,7 +274,7 @@ export const sendRequest = async (
 
   // create and send a v2 presentation request for backwards compatibility
   const responseV2 = await sendRequestDeprecated(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata);
-  authorization = responseV2.authToken;
+  authorization = handleAuthTokenHeader(responseV2, authorization);
 
   const response = sendRequestV3(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata);
   return response;
@@ -321,7 +321,7 @@ export const sendRequestV3 = async (
 
     const restResp = await makeNetworkRequest<PresentationRequestPostDto>(restData);
 
-    const authToken: string = handleAuthToken(restResp, authorization);
+    const authToken: string = handleAuthTokenHeader(restResp, authorization);
 
     const presentationRequestResponse: UnumDto<PresentationRequestPostDto> = { body: { ...restResp.body }, authToken };
 
@@ -373,7 +373,7 @@ export const sendRequestDeprecated = async (
 
     const restResp = await makeNetworkRequest<PresentationRequestPostDto>(restData);
 
-    const authToken: string = handleAuthToken(restResp, authorization);
+    const authToken: string = handleAuthTokenHeader(restResp, authorization);
 
     const presentationRequestResponse: UnumDto<PresentationRequestPostDto> = { body: { ...restResp.body }, authToken };
 

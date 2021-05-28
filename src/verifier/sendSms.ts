@@ -5,7 +5,7 @@ import logger from '../logger';
 import { requireAuth } from '../requireAuth';
 import { UnumDto } from '../types';
 import { CustError } from '../utils/error';
-import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
+import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
 
 export interface SmsResponseBody {
   success: boolean;
@@ -67,7 +67,7 @@ export const sendSms = async (authorization: string, to: string, deeplink: strin
       throw new CustError(500, 'Unknown error during sendSms');
     }
 
-    const authToken: string = handleAuthToken(apiResponse, authorization);
+    const authToken: string = handleAuthTokenHeader(apiResponse, authorization);
 
     const result: UnumDto<undefined> = {
       authToken,

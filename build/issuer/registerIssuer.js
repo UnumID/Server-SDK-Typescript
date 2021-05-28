@@ -117,7 +117,7 @@ exports.registerIssuer = function (name, customerUuid, apiKey) { return __awaite
                 return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];
             case 2:
                 restResp = _a.sent();
-                authToken = networkRequestHelper_1.handleAuthToken(restResp);
+                authToken = networkRequestHelper_1.handleAuthTokenHeader(restResp);
                 issuerResp = {
                     authToken: authToken,
                     body: {

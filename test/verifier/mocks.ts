@@ -220,6 +220,12 @@ export const dummyCredentialRequest = {
   required: true
 };
 
+// export const dummyCredentialRequestPb: CredentialRequestPb = {
+//   type: 'DummyCredential',
+//   issuers: [dummyIssuerDid],
+//   required: true
+// };
+
 export const makeDummyUnsignedPresentationRequest = (options: Partial<UnsignedPresentationRequest> = {}): UnsignedPresentationRequest => {
   const credentialRequests = options.credentialRequests || [dummyCredentialRequest];
   const uuid = options.uuid || getUUID();

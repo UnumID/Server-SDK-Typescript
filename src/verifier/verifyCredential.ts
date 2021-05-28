@@ -7,7 +7,7 @@ import { configData } from '../config';
 import logger from '../logger';
 import { Credential, CredentialPb, Proof, UnsignedCredentialPb } from '@unumid/types';
 import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
-import { handleAuthToken } from '../utils/networkRequestHelper';
+import { handleAuthTokenHeader } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
 import { CustError } from '..';
 import { UnsignedCredential } from '@unumid/types/build/protos/credential';
@@ -30,7 +30,7 @@ export const verifyCredential = async (credential: CredentialPb, authorization: 
     throw didDocumentResponse;
   }
 
-  const authToken: string = handleAuthToken(didDocumentResponse, authorization);
+  const authToken: string = handleAuthTokenHeader(didDocumentResponse, authorization);
   const publicKeyObject = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
   const data: UnsignedCredentialPb = omit(credential, 'proof');

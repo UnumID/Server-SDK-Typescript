@@ -1,6 +1,6 @@
 import { CredentialStatus, CredentialStatusInfo, UnumDto } from '../types';
 import { configData } from '../config';
-import { makeNetworkRequest, handleAuthToken } from '../utils/networkRequestHelper';
+import { makeNetworkRequest, handleAuthTokenHeader } from '../utils/networkRequestHelper';
 
 /**
  * Helper to check the status of a credential: verified, revoked, etc.
@@ -17,7 +17,7 @@ export const checkCredentialStatus = async (authorization: string, credentialId:
 
   const credentialStatusResponse = await makeNetworkRequest<CredentialStatus>(options);
   const credentialStatus = credentialStatusResponse.body;
-  const authToken: string = handleAuthToken(credentialStatusResponse, authorization);
+  const authToken: string = handleAuthTokenHeader(credentialStatusResponse, authorization);
 
   const result: UnumDto<CredentialStatusInfo> = {
     authToken,

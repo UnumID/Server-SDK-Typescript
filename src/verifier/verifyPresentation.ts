@@ -14,7 +14,7 @@ import { omit } from 'lodash';
 import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
 import { configData } from '../config';
 import { doVerify } from '../utils/verify';
-import { handleAuthToken } from '../utils/networkRequestHelper';
+import { handleAuthTokenHeader } from '../utils/networkRequestHelper';
 import { validateProof } from './validateProof';
 import { convertProof } from '../utils/convertToProtobuf';
 
@@ -283,7 +283,7 @@ async function verifyPresentationRequest (authorization: string, presentationReq
     throw didDocumentResponse;
   }
 
-  const authToken: string = handleAuthToken(didDocumentResponse, authorization);
+  const authToken: string = handleAuthTokenHeader(didDocumentResponse, authorization);
   const publicKeyInfos = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
   const { publicKey, encoding } = publicKeyInfos[0];

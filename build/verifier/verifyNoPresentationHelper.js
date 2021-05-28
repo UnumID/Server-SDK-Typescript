@@ -117,7 +117,7 @@ exports.verifyNoPresentationHelper = function (authorization, noPresentation, ve
                 if (didDocumentResponse instanceof Error) {
                     throw didDocumentResponse;
                 }
-                authToken = networkRequestHelper_1.handleAuthToken(didDocumentResponse, authorization);
+                authToken = networkRequestHelper_1.handleAuthTokenHeader(didDocumentResponse, authorization);
                 publicKeyInfos = didHelper_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 _b = publicKeyInfos[0], publicKey = _b.publicKey, encoding = _b.encoding;
                 unsignedNoPresentation = lodash_1.omit(noPresentation, 'proof');
@@ -151,7 +151,7 @@ exports.verifyNoPresentationHelper = function (authorization, noPresentation, ve
                 return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(receiptCallOptions)];
             case 2:
                 resp = _c.sent();
-                authToken = networkRequestHelper_1.handleAuthToken(resp, authToken);
+                authToken = networkRequestHelper_1.handleAuthTokenHeader(resp, authToken);
                 result = {
                     authToken: authToken,
                     body: {
@@ -193,7 +193,7 @@ exports.verifyNoPresentationHelper = function (authorization, noPresentation, ve
 //     if (didDocumentResponse instanceof Error) {
 //       throw didDocumentResponse;
 //     }
-//     let authToken: string = handleAuthToken(didDocumentResponse, authorization);
+//     let authToken: string = handleAuthTokenHeader(didDocumentResponse, authorization);
 //     const publicKeyInfos = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 //     const { publicKey, encoding } = publicKeyInfos[0];
 //     const unsignedNoPresentation = omit(noPresentation, 'proof');
@@ -224,7 +224,7 @@ exports.verifyNoPresentationHelper = function (authorization, noPresentation, ve
 //       data: receiptOptions
 //     };
 //     const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
-//     authToken = handleAuthToken(resp, authToken);
+//     authToken = handleAuthTokenHeader(resp, authToken);
 //     const result: UnumDto<VerifiedStatus> = {
 //       authToken,
 //       body: {

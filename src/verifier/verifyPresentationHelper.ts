@@ -13,7 +13,7 @@ import { CryptoError } from '@unumid/library-crypto';
 import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
 import { CustError } from '../utils/error';
 import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
-import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
+import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
 import { convertCredentialSubject } from '../utils/convertCredentialSubject';
 
@@ -413,7 +413,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
       throw didDocumentResponse;
     }
 
-    let authToken: string = handleAuthToken(didDocumentResponse, authorization); // Note: going to use authToken instead of authorization for subsequent requests in case saas rolls to token.
+    let authToken: string = handleAuthTokenHeader(didDocumentResponse, authorization); // Note: going to use authToken instead of authorization for subsequent requests in case saas rolls to token.
     const pubKeyObj: PublicKeyInfo[] = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
     if (pubKeyObj.length === 0) {
@@ -532,7 +532,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
     };
 
     const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
-    authToken = handleAuthToken(resp, authToken);
+    authToken = handleAuthTokenHeader(resp, authToken);
 
     const result: UnumDto<VerifiedStatus> = {
       authToken,
@@ -600,7 +600,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
 //       throw didDocumentResponse;
 //     }
 
-//     let authToken: string = handleAuthToken(didDocumentResponse, authorization); // Note: going to use authToken instead of authorization for subsequent requests in case saas rolls to token.
+//     let authToken: string = handleAuthTokenHeader(didDocumentResponse, authorization); // Note: going to use authToken instead of authorization for subsequent requests in case saas rolls to token.
 //     const pubKeyObj: PublicKeyInfo[] = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
 //     if (pubKeyObj.length === 0) {
@@ -715,7 +715,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
 //     };
 
 //     const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
-//     authToken = handleAuthToken(resp, authToken);
+//     authToken = handleAuthTokenHeader(resp, authToken);
 
 //     const result: UnumDto<VerifiedStatus> = {
 //       authToken,

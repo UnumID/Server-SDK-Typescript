@@ -392,7 +392,7 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 if (didDocumentResponse instanceof Error) {
                     throw didDocumentResponse;
                 }
-                authToken = networkRequestHelper_1.handleAuthToken(didDocumentResponse, authorization);
+                authToken = networkRequestHelper_1.handleAuthTokenHeader(didDocumentResponse, authorization);
                 pubKeyObj = didHelper_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 if (pubKeyObj.length === 0) {
                     result_2 = {
@@ -504,7 +504,7 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(receiptCallOptions)];
             case 7:
                 resp = _b.sent();
-                authToken = networkRequestHelper_1.handleAuthToken(resp, authToken);
+                authToken = networkRequestHelper_1.handleAuthTokenHeader(resp, authToken);
                 result = {
                     authToken: authToken,
                     body: {
@@ -562,7 +562,7 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
 //     if (didDocumentResponse instanceof Error) {
 //       throw didDocumentResponse;
 //     }
-//     let authToken: string = handleAuthToken(didDocumentResponse, authorization); // Note: going to use authToken instead of authorization for subsequent requests in case saas rolls to token.
+//     let authToken: string = handleAuthTokenHeader(didDocumentResponse, authorization); // Note: going to use authToken instead of authorization for subsequent requests in case saas rolls to token.
 //     const pubKeyObj: PublicKeyInfo[] = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 //     if (pubKeyObj.length === 0) {
 //       const result: UnumDto<VerifiedStatus> = {
@@ -662,7 +662,7 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
 //       data: receiptOptions
 //     };
 //     const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
-//     authToken = handleAuthToken(resp, authToken);
+//     authToken = handleAuthTokenHeader(resp, authToken);
 //     const result: UnumDto<VerifiedStatus> = {
 //       authToken,
 //       body: {

@@ -8,7 +8,7 @@ import { requireAuth } from '../requireAuth';
 import logger from '../logger';
 import { CustError } from '../utils/error';
 import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
-import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
+import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
 import { Presentation, JSONObj, PresentationPb, UnsignedPresentationPb } from '@unumid/types';
 import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
@@ -96,7 +96,7 @@ export const verifyNoPresentationHelper = async (authorization: string, noPresen
       throw didDocumentResponse;
     }
 
-    let authToken: string = handleAuthToken(didDocumentResponse, authorization);
+    let authToken: string = handleAuthTokenHeader(didDocumentResponse, authorization);
     const publicKeyInfos = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
     const { publicKey, encoding } = publicKeyInfos[0];
@@ -140,7 +140,7 @@ export const verifyNoPresentationHelper = async (authorization: string, noPresen
 
     const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
 
-    authToken = handleAuthToken(resp, authToken);
+    authToken = handleAuthTokenHeader(resp, authToken);
 
     const result: UnumDto<VerifiedStatus> = {
       authToken,
@@ -188,7 +188,7 @@ export const verifyNoPresentationHelper = async (authorization: string, noPresen
 //       throw didDocumentResponse;
 //     }
 
-//     let authToken: string = handleAuthToken(didDocumentResponse, authorization);
+//     let authToken: string = handleAuthTokenHeader(didDocumentResponse, authorization);
 //     const publicKeyInfos = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
 //     const { publicKey, encoding } = publicKeyInfos[0];
@@ -227,7 +227,7 @@ export const verifyNoPresentationHelper = async (authorization: string, noPresen
 
 //     const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
 
-//     authToken = handleAuthToken(resp, authToken);
+//     authToken = handleAuthTokenHeader(resp, authToken);
 
 //     const result: UnumDto<VerifiedStatus> = {
 //       authToken,

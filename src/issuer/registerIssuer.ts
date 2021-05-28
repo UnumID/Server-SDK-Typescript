@@ -6,7 +6,7 @@ import { DidKeyType, JSONObj, KeyPair, PublicKeyInfo } from '@unumid/types';
 import { getUUID } from '../utils/helpers';
 import { CustError } from '../utils/error';
 import { createKeyPairSet } from '../utils/createKeyPairs';
-import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
+import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
 
 /**
  * Creates an object to encapsulate key information.
@@ -80,7 +80,7 @@ export const registerIssuer = async (name: string, customerUuid: string, apiKey:
 
     const restResp: JSONObj = await makeNetworkRequest(restData);
 
-    const authToken: string = handleAuthToken(restResp);
+    const authToken: string = handleAuthTokenHeader(restResp);
 
     const issuerResp: UnumDto<RegisteredIssuer> = {
       authToken,

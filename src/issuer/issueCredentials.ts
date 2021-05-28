@@ -11,7 +11,7 @@ import { doEncrypt } from '../utils/encrypt';
 import { createProof, createProofPb } from '../utils/createProof';
 import { getUUID } from '../utils/helpers';
 import { CustError } from '../utils/error';
-import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
+import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
 import { convertCredentialSubject } from '../utils/convertCredentialSubject';
 import { gte, lt } from 'semver';
 import { versionList } from '../utils/versionList';
@@ -380,7 +380,7 @@ export const issueCredential = async (authorization: string | undefined, type: s
 
         const restResp: JSONObj = await makeNetworkRequest(restData);
 
-        authorization = handleAuthToken(restResp, authorization as string);
+        authorization = handleAuthTokenHeader(restResp, authorization as string);
       } else if (gte(version, '2.0.0') && lt(version, '3.0.0')) {
         // Create latest version of the UnsignedCredential object
         const unsignedCredential: UnsignedCredentialV2 = constructUnsignedCredentialObj(credentialOptions);
@@ -409,7 +409,7 @@ export const issueCredential = async (authorization: string | undefined, type: s
 
         const restResp: JSONObj = await makeNetworkRequest(restData);
 
-        authorization = handleAuthToken(restResp, authorization as string);
+        authorization = handleAuthTokenHeader(restResp, authorization as string);
       }
     }
 
@@ -443,7 +443,7 @@ export const issueCredential = async (authorization: string | undefined, type: s
 
     const restResp: JSONObj = await makeNetworkRequest(restData);
 
-    const authToken: string = handleAuthToken(restResp, authorization as string);
+    const authToken: string = handleAuthTokenHeader(restResp, authorization as string);
 
     const issuedCredential: UnumDto<CredentialPb> = { body: credential, authToken };
 

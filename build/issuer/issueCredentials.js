@@ -394,7 +394,7 @@ exports.issueCredential = function (authorization, type, issuer, credentialSubje
                 return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData_1)];
             case 3:
                 restResp_1 = _a.sent();
-                authorization = networkRequestHelper_1.handleAuthToken(restResp_1, authorization);
+                authorization = networkRequestHelper_1.handleAuthTokenHeader(restResp_1, authorization);
                 return [3 /*break*/, 7];
             case 4:
                 if (!(semver_1.gte(version, '2.0.0') && semver_1.lt(version, '3.0.0'))) return [3 /*break*/, 7];
@@ -420,7 +420,7 @@ exports.issueCredential = function (authorization, type, issuer, credentialSubje
                 return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData_2)];
             case 6:
                 restResp_2 = _a.sent();
-                authorization = networkRequestHelper_1.handleAuthToken(restResp_2, authorization);
+                authorization = networkRequestHelper_1.handleAuthTokenHeader(restResp_2, authorization);
                 _a.label = 7;
             case 7:
                 v++;
@@ -449,7 +449,7 @@ exports.issueCredential = function (authorization, type, issuer, credentialSubje
                 return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];
             case 10:
                 restResp = _a.sent();
-                authToken = networkRequestHelper_1.handleAuthToken(restResp, authorization);
+                authToken = networkRequestHelper_1.handleAuthTokenHeader(restResp, authorization);
                 issuedCredential = { body: credential, authToken: authToken };
                 return [2 /*return*/, issuedCredential];
             case 11:

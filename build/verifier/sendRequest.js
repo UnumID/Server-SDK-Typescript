@@ -256,7 +256,7 @@ exports.sendRequest = function (authorization, verifier, credentialRequests, ecc
                 return [4 /*yield*/, exports.sendRequestDeprecated(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata)];
             case 1:
                 responseV2 = _a.sent();
-                authorization = networkRequestHelper_1.handleAuthToken(responseV2, authorization);
+                authorization = networkRequestHelper_1.handleAuthTokenHeader(responseV2, authorization);
                 response = exports.sendRequestV3(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata);
                 return [2 /*return*/, response];
         }
@@ -292,7 +292,7 @@ exports.sendRequestV3 = function (authorization, verifier, credentialRequests, e
                 return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];
             case 1:
                 restResp = _a.sent();
-                authToken = networkRequestHelper_1.handleAuthToken(restResp, authorization);
+                authToken = networkRequestHelper_1.handleAuthTokenHeader(restResp, authorization);
                 presentationRequestResponse = { body: __assign({}, restResp.body), authToken: authToken };
                 return [2 /*return*/, presentationRequestResponse];
             case 2:
@@ -333,7 +333,7 @@ exports.sendRequestDeprecated = function (authorization, verifier, credentialReq
                 return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];
             case 1:
                 restResp = _a.sent();
-                authToken = networkRequestHelper_1.handleAuthToken(restResp, authorization);
+                authToken = networkRequestHelper_1.handleAuthTokenHeader(restResp, authorization);
                 presentationRequestResponse = { body: __assign({}, restResp.body), authToken: authToken };
                 return [2 /*return*/, presentationRequestResponse];
             case 2:

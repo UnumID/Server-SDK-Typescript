@@ -50,7 +50,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.handleAuthToken = exports.makeNetworkRequest = void 0;
+exports.handleAuthTokenHeader = exports.makeNetworkRequest = void 0;
 var node_fetch_1 = __importDefault(require("node-fetch"));
 var error_1 = require("./error");
 var logger_1 = __importDefault(require("../logger"));
@@ -103,7 +103,7 @@ exports.makeNetworkRequest = function (inputObj) { return __awaiter(void 0, void
  * Helper to handle safe auth token handling in responses from UnumID's Saas via makeNetworkRequest
  * @param response JSONObj
  */
-exports.handleAuthToken = function (response, existingAuthToken) {
+exports.handleAuthTokenHeader = function (response, existingAuthToken) {
     var authTokenResp = response && response.headers && response.headers['x-auth-token'] ? response.headers['x-auth-token'] : '';
     // Ensuring that the authToken attribute is presented as a string or undefined. The header values can be a string | string[] so hence the complex ternary.
     var authToken = (helpers_1.isArrayEmpty(authTokenResp) && authTokenResp ? authTokenResp : (helpers_1.isArrayNotEmpty(authTokenResp) ? authTokenResp[0] : undefined));
