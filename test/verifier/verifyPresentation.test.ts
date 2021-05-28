@@ -363,7 +363,7 @@ describe('verifyPresentation', () => {
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
-        expect(e.message).toBe(`presentation request uuid provided, ${presentationRequest.presentationRequest.uuid}, does not match the presentationRequestUuid that the presentation was in response to, uuid:123.`);
+        expect(e.message).toBe(`presentation request uuid provided, ${presentationRequestDto.presentationRequest.uuid}, does not match the presentationRequestUuid that the presentation was in response to, uuid:123.`);
       }
     });
   });
