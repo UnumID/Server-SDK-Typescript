@@ -111,7 +111,7 @@ const validateCredentialInput = (credentials: CredentialPb[]): JSONObj => {
     // Check @context is an array and not empty
     if (isArrayEmpty(credential.context)) {
       retObj.valid = false;
-      retObj.msg = `${invalidMsg} @context must be a non-empty array.`;
+      retObj.msg = `${invalidMsg} context must be a non-empty array.`;
       break;
     }
 
@@ -187,11 +187,15 @@ const validatePresentation = (presentation: PresentationPb): PresentationPb => {
   }
 
   if (isArrayEmpty(context)) {
-    throw new CustError(400, 'Invalid Presentation: @context must be a non-empty array.');
+    throw new CustError(400, 'Invalid Presentation: context must be a non-empty array.');
   }
 
   if (isArrayEmpty(type)) {
     throw new CustError(400, 'Invalid Presentation: type must be a non-empty array.');
+  }
+
+  if (type[0] !== 'VerifiablePresentation') {
+    throw new CustError(400, 'Invalid Presentation: type\'s first array element must be VerifiablePresentation.');
   }
 
   retObj = validateCredentialInput(verifiableCredential);

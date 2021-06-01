@@ -422,9 +422,11 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
     return result;
   } catch (error) {
     if (error instanceof CryptoError) {
-      logger.error('Crypto error handling encrypted presentation', error);
+      logger.error(`Crypto error handling encrypted presentation ${error}`);
+    } if (error instanceof TypeError) {
+      logger.error(`Type error handling decoding presentation, credential or proof from bytes to protobufs ${error}`);
     } else {
-      logger.error('Error handling encrypted presentation request to UnumID Saas.', error);
+      logger.error(`Error handling encrypted presentation request to UnumID Saas. ${error}`);
     }
 
     throw error;

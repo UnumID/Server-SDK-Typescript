@@ -567,7 +567,7 @@ describe('verifyPresentationHelper', () => {
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
-        expect(e.message).toBe('Invalid Presentation: @context must be a non-empty array.');
+        expect(e.message).toBe('Invalid Presentation: context must be a non-empty array.');
       }
     });
 
@@ -577,7 +577,7 @@ describe('verifyPresentationHelper', () => {
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
-        expect(e.message).toBe('Invalid Presentation: @context must be a non-empty array.');
+        expect(e.message).toBe('Invalid Presentation: context must be a non-empty array.');
       }
     });
 

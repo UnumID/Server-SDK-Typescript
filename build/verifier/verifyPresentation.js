@@ -382,10 +382,13 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
             case 6:
                 error_2 = _a.sent();
                 if (error_2 instanceof library_crypto_1.CryptoError) {
-                    logger_1.default.error('Crypto error handling encrypted presentation', error_2);
+                    logger_1.default.error("Crypto error handling encrypted presentation " + error_2);
+                }
+                if (error_2 instanceof TypeError) {
+                    logger_1.default.error("Type error handling decoding presentation, credential or proof from bytes to protobufs " + error_2);
                 }
                 else {
-                    logger_1.default.error('Error handling encrypted presentation request to UnumID Saas.', error_2);
+                    logger_1.default.error("Error handling encrypted presentation request to UnumID Saas. " + error_2);
                 }
                 throw error_2;
             case 7: return [2 /*return*/];

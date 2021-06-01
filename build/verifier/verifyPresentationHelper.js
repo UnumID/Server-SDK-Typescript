@@ -135,7 +135,7 @@ var validateCredentialInput = function (credentials) {
         // Check @context is an array and not empty
         if (helpers_1.isArrayEmpty(credential.context)) {
             retObj.valid = false;
-            retObj.msg = invalidMsg + " @context must be a non-empty array.";
+            retObj.msg = invalidMsg + " context must be a non-empty array.";
             break;
         }
         // Check CredentialStatus object has id and type elements.
@@ -197,10 +197,13 @@ var validatePresentation = function (presentation) {
         throw new error_1.CustError(400, 'Invalid Presentation: verifierDid is required.');
     }
     if (helpers_1.isArrayEmpty(context)) {
-        throw new error_1.CustError(400, 'Invalid Presentation: @context must be a non-empty array.');
+        throw new error_1.CustError(400, 'Invalid Presentation: context must be a non-empty array.');
     }
     if (helpers_1.isArrayEmpty(type)) {
         throw new error_1.CustError(400, 'Invalid Presentation: type must be a non-empty array.');
+    }
+    if (type[0] !== 'VerifiablePresentation') {
+        throw new error_1.CustError(400, 'Invalid Presentation: type\'s first array element must be VerifiablePresentation.');
     }
     retObj = validateCredentialInput(verifiableCredential);
     if (!retObj.valid) {

@@ -359,6 +359,18 @@ export interface MakeDummyPresentationOptions {
   // verifier?: VerifierInfo;
   // issuers?: IssuerInfoMap;
   // holderApp?: HolderAppInfo;
+
+  unsignedPresentationRequestLiteral?: boolean;
+  privateKeyLiteral?: boolean;
+  privateKeyIdLiteral?: boolean;
+  encodingLiteral?: boolean;
+  createdAtLiteral?: boolean;
+  updatedAtLiteral?: boolean;
+  verifierDidLiteral?: boolean;
+  contextLiteral?: boolean;
+  typeLiteral?: boolean;
+  presentationRequestUuidLiteral?: boolean;
+  verifiableCredentialLiteral?: boolean;
 }
 
 export const makeDummyUnsignedPresentation = async (options: MakeDummyPresentationOptions): Promise<PresentationPb> => {
@@ -390,19 +402,19 @@ export const makeDummyUnsignedPresentation = async (options: MakeDummyPresentati
 
 // export const makeDummyPresentation = (credentials: CredentialPb[], presentationRequestUuid?: string, verifierDid?:string): PresentationPb => {
 export const makeDummyPresentation = async (options: MakeDummyPresentationOptions): Promise<PresentationPb> => {
-  const privateKeyId = options.privateKeyId || getUUID();
-  const encoding = options.encoding || 'pem';
+  const privateKeyId = options.privateKeyIdLiteral ? options.privateKeyId : options.privateKeyId || getUUID();
+  const encoding = options.encodingLiteral ? options.encoding : options.encoding || 'pem';
 
   // const now = new Date();
   // const createdAt = options.createdAt || now;
   // const updatedAt = options.updatedAt || now;
   // const deeplink = options.deeplink || `https://unumid.org/${unsignedPresentationRequest.uuid}`;
   // const qrCode = options.qrCode || 'Dummy QR Code data url';
-  const verifierDid = options.verifierDid || dummyVerifierDid;
+  const verifierDid = options.verifierDidLiteral ? options.verifierDid : options.verifierDid || dummyVerifierDid;
 
-  const context = options.context || ['https://www.w3.org/2018/credentials/v1'];
-  const type = options.type || ['VerifiablePresentation'];
-  const presentationRequestUuid = options.presentationRequestUuid || getUUID();
+  const context = options.contextLiteral ? options.context : options.context || ['https://www.w3.org/2018/credentials/v1'];
+  const type = options.typeLiteral ? options.type : options.type || ['VerifiablePresentation'];
+  const presentationRequestUuid = options.presentationRequestUuidLiteral ? options.presentationRequestUuid : options.presentationRequestUuid || getUUID();
 
   const unsignedCredential: UnsignedCredentialPb = makeDummyUnsignedCredential();
   const credOptions: DummyCredentialOptions = {
@@ -411,7 +423,7 @@ export const makeDummyPresentation = async (options: MakeDummyPresentationOption
   const credential = await makeDummyCredential(credOptions);
   const credentials = [credential];
 
-  const verifiableCredential = options.verifiableCredential || credentials;
+  const verifiableCredential = options.verifiableCredentialLiteral ? options.verifiableCredential : options.verifiableCredential || credentials;
 
   const unsignedPresentation: UnsignedPresentationPb = {
     context,
