@@ -621,7 +621,7 @@ describe('verifyPresentation', () => {
     it('Response code should be ' + 400 + ' when proof is not passed', async () => {
       cred = copyCredentialObj(verifiableCredentials[0], 'proof');
       try {
-        await callVerifyEncryptedPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
+        await callVerifyEncryptedPresentationManual(context, type, cred, presentationRequestUuid, proof, verifier, authHeader);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -714,8 +714,8 @@ describe('verifyPresentation', () => {
       mockIsCredentialExpired.mockReturnValue(false);
       mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: { status: 'valid' } });
       mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers: dummyResponseHeaders });
-      response = await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
-      verStatus = response.body.isVerified;
+      // response = await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
+      // verStatus = response.body.isVerified;
     });
 
     it('returns a 400 status code with a descriptive error message when created is missing', async () => {
@@ -740,7 +740,7 @@ describe('verifyPresentation', () => {
     });
 
     it('returns a 400 status code with a descriptive error message when signatureValue is missing', async () => {
-      const invalidProof = { created: proof.created, signatureValue: '', type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
+      const invalidProof = { created: new Date(proof.created), signatureValue: '', type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
       try {
         await callVerifyEncryptedPresentationManual(context, type, verifiableCredentials, presentationRequestUuid, invalidProof, verifier, authHeader);
         fail();
@@ -751,7 +751,7 @@ describe('verifyPresentation', () => {
     });
 
     it('returns a 400 status code with a descriptive error message when type is missing', async () => {
-      const invalidProof = { created: proof.created, signatureValue: proof.signatureValue, type: '', verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
+      const invalidProof = { created: new Date(proof.created), signatureValue: proof.signatureValue, type: '', verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
       try {
         await callVerifyEncryptedPresentationManual(context, type, verifiableCredentials, presentationRequestUuid, invalidProof, verifier, authHeader);
         fail();
@@ -762,7 +762,7 @@ describe('verifyPresentation', () => {
     });
 
     it('returns a 400 status code with a descriptive error message when verificationMethod is missing', async () => {
-      const invalidProof = { created: proof.created, signatureValue: proof.signatureValue, type: proof.type, verificationMethod: '', proofPurpose: proof.proofPurpose };
+      const invalidProof = { created: new Date(proof.created), signatureValue: proof.signatureValue, type: proof.type, verificationMethod: '', proofPurpose: proof.proofPurpose };
       try {
         await callVerifyEncryptedPresentationManual(context, type, verifiableCredentials, presentationRequestUuid, invalidProof, verifier, authHeader);
         fail();
@@ -773,7 +773,7 @@ describe('verifyPresentation', () => {
     });
 
     it('returns a 400 status code with a descriptive error message when proofPurpose is missing', async () => {
-      const invalidProof = { created: proof.created, signatureValue: proof.signatureValue, type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: '' };
+      const invalidProof = { created: new Date(proof.created), signatureValue: proof.signatureValue, type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: '' };
       try {
         await callVerifyEncryptedPresentationManual(context, type, verifiableCredentials, presentationRequestUuid, invalidProof, verifier, authHeader);
         fail();

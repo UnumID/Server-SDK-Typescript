@@ -745,9 +745,10 @@ describe('verifyPresentationHelper', () => {
 
     it('Response code should be ' + 400 + ' when credentials do not meet credential request type requirements', async () => {
       // const { context, type, verifiableCredential, verifiableCredentialString, presentationRequestUuid, proof, authHeader, verifier, credentialRequests } = populateMockData();
-      verifiableCredential[0].type = ['VerifiableCredential', 'AddressCredential'];
+      const credCopy = JSON.parse(JSON.stringify(verifiableCredential));
+      credCopy[0].type = ['VerifiableCredential', 'AddressCredential'];
       try {
-        await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
+        await callVerifyPresentation(context, type, credCopy, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -757,9 +758,10 @@ describe('verifyPresentationHelper', () => {
 
     it('Response code should be ' + 400 + ' when credentials do not meet credential request issuer requirements', async () => {
       // const { context, type, verifiableCredential, verifiableCredentialString, presentationRequestUuid, proof, authHeader, verifier, credentialRequests } = populateMockData();
-      verifiableCredential[0].issuer = dummyIssuerDid;
+      const credCopy = JSON.parse(JSON.stringify(verifiableCredential));
+      credCopy[0].issuer = dummyIssuerDid;
       try {
-        await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
+        await callVerifyPresentation(context, type, credCopy, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);

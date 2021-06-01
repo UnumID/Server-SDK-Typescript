@@ -274,7 +274,7 @@ export const sendRequest = async (
 
   // create and send a v2 presentation request for backwards compatibility
   const responseV2 = await sendRequestDeprecated(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata);
-  authorization = responseV2.authToken || authorization;
+  authorization = responseV2.authToken ? responseV2.authToken : authorization;
 
   const response = sendRequestV3(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata);
   return response;

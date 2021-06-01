@@ -256,7 +256,7 @@ exports.sendRequest = function (authorization, verifier, credentialRequests, ecc
                 return [4 /*yield*/, exports.sendRequestDeprecated(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata)];
             case 1:
                 responseV2 = _a.sent();
-                authorization = responseV2.authToken || authorization;
+                authorization = responseV2.authToken ? responseV2.authToken : authorization;
                 response = exports.sendRequestV3(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata);
                 return [2 /*return*/, response];
         }
