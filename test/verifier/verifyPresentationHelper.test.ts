@@ -96,7 +96,7 @@ const callVerifyPresentationManual = (context, type, verifiableCredential, prese
 const copyCredentialObj = (credential: JSONObj, elemName: string, elemValue = ''): JSONObj => {
   const newCred: JSONObj = [
     {
-      '@context': credential['@context'],
+      context: credential.context,
       credentialStatus: credential.credentialStatus,
       credentialSubject: credential.credentialSubject,
       issuer: credential.issuer,
@@ -644,22 +644,42 @@ describe('verifyPresentationHelper', () => {
     // let response: JSONObj, preReq: JSONObj;
     // const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier, credentialRequests } = populateMockData();
 
+    let context, type, verifiableCredentials, presentationRequestUuid, proof, authHeader, verifier, presentationRequestDto, presentationRequest, unsignedPresentationRequest, presentation, unsignedPresentation;
+
+    beforeAll(async () => {
+    // const presentationRequest = makeDummyPresentationRequestResponse();
+      const dummyData = await populateMockData();
+      context = dummyData.context;
+      type = dummyData.type;
+      verifiableCredentials = dummyData.verifiableCredentials;
+      presentationRequestUuid = dummyData.presentationRequestUuid;
+      proof = dummyData.proof;
+      authHeader = dummyData.authHeader;
+      verifier = dummyData.verifier;
+      presentationRequestDto = dummyData.presentationRequestDto;
+      presentationRequest = dummyData.presentationRequestDto.presentationRequest;
+      unsignedPresentationRequest = dummyData.presentationRequest;
+      unsignedPresentation = dummyData.unsignedPresentation;
+
+      presentation = dummyData.presentation;
+    });
+
     let cred;
-    it('Response code should be ' + 400 + ' when @context is not passed', async () => {
-      cred = copyCredentialObj(verifiableCredential[0], '@context');
+    it('Response code should be ' + 400 + ' when context is not passed', async () => {
+      cred = copyCredentialObj(verifiableCredential[0], 'context');
       try {
-        await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
+        await callVerifyPresentationManual(context, type, cred, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
-        expect(e.message).toBe('Invalid verifiableCredential[0]: @context is required.');
+        expect(e.message).toBe('Invalid verifiableCredential[0]: context is required.');
       }
     });
 
     it('Response code should be ' + 400 + ' when credentialStatus is not passed', async () => {
       cred = copyCredentialObj(verifiableCredential[0], 'credentialStatus');
       try {
-        await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
+        await callVerifyPresentationManual(context, type, cred, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -670,7 +690,7 @@ describe('verifyPresentationHelper', () => {
     it('Response code should be ' + 400 + ' when credentialSubject is not passed', async () => {
       cred = copyCredentialObj(verifiableCredential[0], 'credentialSubject');
       try {
-        await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
+        await callVerifyPresentationManual(context, type, cred, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -681,7 +701,7 @@ describe('verifyPresentationHelper', () => {
     it('Response code should be ' + 400 + ' when issuer is not passed', async () => {
       cred = copyCredentialObj(verifiableCredential[0], 'issuer');
       try {
-        await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
+        await callVerifyPresentationManual(context, type, cred, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -692,7 +712,7 @@ describe('verifyPresentationHelper', () => {
     it('Response code should be ' + 400 + ' when type is not passed', async () => {
       cred = copyCredentialObj(verifiableCredential[0], 'type');
       try {
-        await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
+        await callVerifyPresentationManual(context, type, cred, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -703,7 +723,7 @@ describe('verifyPresentationHelper', () => {
     it('Response code should be ' + 400 + ' when id is not passed', async () => {
       cred = copyCredentialObj(verifiableCredential[0], 'id');
       try {
-        await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
+        await callVerifyPresentationManual(context, type, cred, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -714,7 +734,7 @@ describe('verifyPresentationHelper', () => {
     it('Response code should be ' + 400 + ' when issuanceDate is not passed', async () => {
       cred = copyCredentialObj(verifiableCredential[0], 'issuanceDate');
       try {
-        await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
+        await callVerifyPresentationManual(context, type, cred, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -725,7 +745,7 @@ describe('verifyPresentationHelper', () => {
     it('Response code should be ' + 400 + ' when proof is not passed', async () => {
       cred = copyCredentialObj(verifiableCredential[0], 'proof');
       try {
-        await callVerifyPresentation(context, type, cred, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
+        await callVerifyPresentationManual(context, type, cred, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
