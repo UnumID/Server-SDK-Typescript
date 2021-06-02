@@ -14,8 +14,6 @@ export const validateProof = (proof: ProofPb): ProofPb => {
     proofPurpose
   } = proof;
 
-  // const retObj: JSONObj = { valid: true, stringifiedDates: false };
-
   if (!created) {
     throw new CustError(400, 'Invalid Presentation: proof.created is required.');
   } else if (typeof created === 'string') {

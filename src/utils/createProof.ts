@@ -5,7 +5,6 @@ import { JSONObj, ProofPb } from '@unumid/types';
 
 import logger from '../logger';
 import { Proof } from '@unumid/types-v2';
-// import { JSONObj } from '../types';
 
 /**
  * Create cryptographic proof.

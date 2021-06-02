@@ -7,7 +7,6 @@ exports.createProofPb = exports.createProof = void 0;
 var library_crypto_1 = require("@unumid/library-crypto");
 var fast_json_stable_stringify_1 = __importDefault(require("fast-json-stable-stringify"));
 var logger_1 = __importDefault(require("../logger"));
-// import { JSONObj } from '../types';
 /**
  * Create cryptographic proof.
  * @param data

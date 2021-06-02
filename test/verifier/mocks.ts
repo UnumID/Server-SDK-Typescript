@@ -220,12 +220,6 @@ export const dummyCredentialRequest = {
   required: true
 };
 
-// export const dummyCredentialRequestPb: CredentialRequestPb = {
-//   type: 'DummyCredential',
-//   issuers: [dummyIssuerDid],
-//   required: true
-// };
-
 export const makeDummyUnsignedPresentationRequest = (options: Partial<UnsignedPresentationRequest> = {}): UnsignedPresentationRequest => {
   const credentialRequests = options.credentialRequests || [dummyCredentialRequest];
   const uuid = options.uuid || getUUID();
@@ -354,11 +348,6 @@ export interface MakeDummyPresentationOptions {
   type?: string[]
   presentationRequestUuid?: string
   verifiableCredential?: CredentialPb[]
-  // qrCode?: string;
-  // deeplink?: string;
-  // verifier?: VerifierInfo;
-  // issuers?: IssuerInfoMap;
-  // holderApp?: HolderAppInfo;
 
   unsignedPresentationRequestLiteral?: boolean;
   privateKeyLiteral?: boolean;
@@ -405,11 +394,6 @@ export const makeDummyPresentation = async (options: MakeDummyPresentationOption
   const privateKeyId = options.privateKeyIdLiteral ? options.privateKeyId : options.privateKeyId || getUUID();
   const encoding = options.encodingLiteral ? options.encoding : options.encoding || 'pem';
 
-  // const now = new Date();
-  // const createdAt = options.createdAt || now;
-  // const updatedAt = options.updatedAt || now;
-  // const deeplink = options.deeplink || `https://unumid.org/${unsignedPresentationRequest.uuid}`;
-  // const qrCode = options.qrCode || 'Dummy QR Code data url';
   const verifierDid = options.verifierDidLiteral ? options.verifierDid : options.verifierDid || dummyVerifierDid;
 
   const context = options.contextLiteral ? options.context : options.context || ['https://www.w3.org/2018/credentials/v1'];

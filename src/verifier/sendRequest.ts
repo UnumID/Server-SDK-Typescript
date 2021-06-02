@@ -1,8 +1,8 @@
 import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
-import { CryptoError, verifyBytes } from '@unumid/library-crypto';
+import { CryptoError } from '@unumid/library-crypto';
 import { PresentationRequestPostDto as PresentationRequestPostDtoDeprecatedV2, UnsignedPresentationRequest as UnsignedPresentationRequestDeprecatedV2, SignedPresentationRequest as SignedPresentationRequestDeprecatedV2, Proof } from '@unumid/types-v2';
-import { CredentialRequest, PresentationRequestPostDto, UnsignedPresentationRequest, UnsignedPresentationRequestPb, PresentationRequestPb, ProofPb, SignedPresentationRequest, CredentialRequestPb } from '@unumid/types';
+import { CredentialRequest, PresentationRequestPostDto, UnsignedPresentationRequestPb, PresentationRequestPb, ProofPb, SignedPresentationRequest, CredentialRequestPb } from '@unumid/types';
 
 import { RESTData, SendRequestReqBody, UnumDto } from '../types';
 import logger from '../logger';
@@ -10,46 +10,6 @@ import { createProof, createProofPb } from '../utils/createProof';
 import { getUUID } from '../utils/helpers';
 import { makeNetworkRequest, handleAuthTokenHeader } from '../utils/networkRequestHelper';
 import { CustError } from '../utils/error';
-import { versionList } from '../utils/versionList';
-
-// /**
-//  * Constructs an unsigned PresentationRequest from the incoming request body.
-//  * @param reqBody SendRequestReqBody
-//  */
-// export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody): UnsignedPresentationRequest => {
-//   const {
-//     verifier,
-//     holderAppUuid,
-//     credentialRequests,
-//     metadata,
-//     expiresAt,
-//     createdAt,
-//     updatedAt
-//   } = reqBody;
-
-//   const uuid = getUUID();
-
-//   // any/all default values must be set before signing, or signature will always fail to verify
-//   const now = new Date();
-//   const tenMinutesFromNow = new Date(now.getTime() + 10 * 60 * 1000);
-//   const defaultCreatedAt = now;
-//   const defaultUpdatedAt = now;
-//   const defaultExpiresAt = tenMinutesFromNow;
-//   const credentialRequestsWithDefaults = credentialRequests.map(cr => {
-//     return cr.required ? cr : { ...cr, required: false };
-//   });
-
-//   return {
-//     credentialRequests: credentialRequestsWithDefaults,
-//     createdAt: createdAt || defaultCreatedAt,
-//     updatedAt: updatedAt || defaultUpdatedAt,
-//     expiresAt: expiresAt || defaultExpiresAt,
-//     holderAppUuid,
-//     metadata: metadata || {},
-//     uuid,
-//     verifier
-//   };
-// };
 
 /**
  * Constructs an unsigned PresentationRequest from the incoming request body.

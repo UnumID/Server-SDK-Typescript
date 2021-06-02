@@ -8,7 +8,6 @@ var error_1 = require("../utils/error");
  */
 exports.validateProof = function (proof) {
     var created = proof.created, signatureValue = proof.signatureValue, type = proof.type, verificationMethod = proof.verificationMethod, proofPurpose = proof.proofPurpose;
-    // const retObj: JSONObj = { valid: true, stringifiedDates: false };
     if (!created) {
         throw new error_1.CustError(400, 'Invalid Presentation: proof.created is required.');
     }

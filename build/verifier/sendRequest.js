@@ -60,41 +60,6 @@ var createProof_1 = require("../utils/createProof");
 var helpers_1 = require("../utils/helpers");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var error_1 = require("../utils/error");
-// /**
-//  * Constructs an unsigned PresentationRequest from the incoming request body.
-//  * @param reqBody SendRequestReqBody
-//  */
-// export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody): UnsignedPresentationRequest => {
-//   const {
-//     verifier,
-//     holderAppUuid,
-//     credentialRequests,
-//     metadata,
-//     expiresAt,
-//     createdAt,
-//     updatedAt
-//   } = reqBody;
-//   const uuid = getUUID();
-//   // any/all default values must be set before signing, or signature will always fail to verify
-//   const now = new Date();
-//   const tenMinutesFromNow = new Date(now.getTime() + 10 * 60 * 1000);
-//   const defaultCreatedAt = now;
-//   const defaultUpdatedAt = now;
-//   const defaultExpiresAt = tenMinutesFromNow;
-//   const credentialRequestsWithDefaults = credentialRequests.map(cr => {
-//     return cr.required ? cr : { ...cr, required: false };
-//   });
-//   return {
-//     credentialRequests: credentialRequestsWithDefaults,
-//     createdAt: createdAt || defaultCreatedAt,
-//     updatedAt: updatedAt || defaultUpdatedAt,
-//     expiresAt: expiresAt || defaultExpiresAt,
-//     holderAppUuid,
-//     metadata: metadata || {},
-//     uuid,
-//     verifier
-//   };
-// };
 /**
  * Constructs an unsigned PresentationRequest from the incoming request body.
  * @param reqBody SendRequestReqBody
