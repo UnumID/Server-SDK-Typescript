@@ -179,7 +179,7 @@ var validatePresentation = function (presentation) {
     var retObj = {};
     // validate required fields
     if (!context) {
-        throw new error_1.CustError(400, 'Invalid Presentation: @context is required.');
+        throw new error_1.CustError(400, 'Invalid Presentation: context is required.');
     }
     if (!type) {
         throw new error_1.CustError(400, 'Invalid Presentation: type is required.');
@@ -228,7 +228,7 @@ var validatePresentation = function (presentation) {
 //   let retObj: JSONObj = {};
 //   // validate required fields
 //   if (!context) {
-//     throw new CustError(400, 'Invalid Presentation: @context is required.');
+//     throw new CustError(400, 'Invalid Presentation: context is required.');
 //   }
 //   if (!type) {
 //     throw new CustError(400, 'Invalid Presentation: type is required.');

@@ -27,6 +27,7 @@ import { isCredentialExpired } from '../../src/verifier/isCredentialExpired';
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { verifyPresentationHelper } from '../../src/verifier/verifyPresentationHelper';
 import { makeDummyPresentation, makeDummyUnsignedCredential, makeDummyCredential, dummyCredentialRequest, makeDummyUnsignedPresentationRequest, makeDummyPresentationRequestResponse, makeDummyUnsignedPresentation, makeDummyDidDocument, dummyAuthToken, dummyIssuerDid } from './mocks';
+import { encryptBytes } from '@unumid/library-crypto';
 
 jest.mock('../../src/utils/didHelper', () => {
   const actual = jest.requireActual('../../src/utils/didHelper');
@@ -440,7 +441,7 @@ describe('verifyPresentationHelper', () => {
       const dummySubjectDidDoc = await makeDummyDidDocument();
       const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
 
-      mockDoVerify.mockReturnValueOnce(false);
+      mockDoVerify.mockReturnValue(false);
       mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: false });
       mockIsCredentialExpired.mockReturnValue(true);
       mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: { status: 'revoked' } });
@@ -454,8 +455,8 @@ describe('verifyPresentationHelper', () => {
     it('gets the subject did document', async () => {
       const dummySubjectDidDoc = await makeDummyDidDocument();
       const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
-      mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
-      response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, invalidProof, verifier, authHeader, credentialRequests);
+      mockGetDIDDoc.mockResolvedValue({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
+      response = await callVerifyPresentationManual(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
       verStatus = response.body.isVerified;
       expect(mockGetDIDDoc).toBeCalled();
     });
@@ -475,14 +476,14 @@ describe('verifyPresentationHelper', () => {
         publicKey: []
       };
       const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
-      mockGetDIDDoc.mockResolvedValueOnce({ body: dummyDidDocWithoutKeys, headers: dummyResponseHeaders });
+      mockGetDIDDoc.mockResolvedValue({ body: dummyDidDocWithoutKeys, headers: dummyResponseHeaders });
       const response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
       expect(response.body.isVerified).toBe(false);
       expect(response.body.message).toBe('Public key not found for the DID associated with the proof.verificationMethod');
     });
 
     it('returns a 404 status code if the did document is not found', async () => {
-      mockGetDIDDoc.mockResolvedValueOnce(new CustError(404, 'DID Document not found.'));
+      mockGetDIDDoc.mockResolvedValue(new CustError(404, 'DID Document not found.'));
 
       try {
         await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
@@ -500,16 +501,19 @@ describe('verifyPresentationHelper', () => {
       const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
       mockGetDIDDoc.mockResolvedValueOnce({ body: dummyDidDocWithoutKeys, headers: dummyResponseHeaders });
 
-      const presentation: Presentation = {
-        '@context': context,
-        type,
-        verifiableCredential,
-        presentationRequestUuid,
-        verifierDid: verifier,
-        proof,
-        uuid: 'a'
-      };
-      const response = await verifyPresentation(authHeader, presentation, 'fakeVerifierDid', credentialRequests);
+      // const presentation: Presentation = {
+      //   '@context': context,
+      //   type,
+      //   verifiableCredential,
+      //   presentationRequestUuid,
+      //   verifierDid: verifier,
+      //   proof,
+      //   uuid: 'a'
+      // };
+      // const encryptedPresentation = encrypt(`did:unum:${getUUID()}`, dummyRsaPublicKey, presentation, 'pem');
+      // const bytes: Uint8Array = PresentationPb.encode(presentation).finish();
+      // const encryptedPresentation = encryptBytes(`did:unum:${getUUID()}`, dummyRsaPublicKey, bytes, 'pem');
+      const response = await verifyPresentationHelper(authHeader, presentation, 'fakeVerifierDid', credentialRequests);
 
       // const response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
       expect(response.body.isVerified).toBe(false);
