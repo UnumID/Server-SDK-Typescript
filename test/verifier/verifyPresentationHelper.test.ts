@@ -520,19 +520,19 @@ describe('verifyPresentationHelper', () => {
   describe('verifyPresentationHelper - Validation Failures', () => {
     // const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier, credentialRequests } = populateMockData();
 
-    it('returns a 400 status code with a descriptive error message when @context is missing', async () => {
+    it('returns a 400 status code with a descriptive error message when context is missing', async () => {
       try {
-        await callVerifyPresentation('', type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
+        await callVerifyPresentationManual('', type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
-        expect(e.message).toBe('Invalid Presentation: @context is required.');
+        expect(e.message).toBe('Invalid Presentation: context is required.');
       }
     });
 
     it('returns a 400 status code with a descriptive error message when type is missing', async () => {
       try {
-        await callVerifyPresentation(context, '', verifiableCredential, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
+        await callVerifyPresentationManual(context, '', verifiableCredential, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -542,7 +542,7 @@ describe('verifyPresentationHelper', () => {
 
     it('returns a 400 status code with a descriptive error message when verifiableCredential is missing', async () => {
       try {
-        await callVerifyPresentation(context, type, '', presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
+        await callVerifyPresentationManual(context, type, '', presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -552,7 +552,7 @@ describe('verifyPresentationHelper', () => {
 
     it('returns a 400 status code with a descriptive error message when presentationRequestUuid is missing', async () => {
       try {
-        await callVerifyPresentation(context, type, verifiableCredential, '', proof, verifier, authHeader, credentialRequests);
+        await callVerifyPresentationManual(context, type, verifiableCredential, '', proof, verifier, authHeader, credentialRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -562,7 +562,7 @@ describe('verifyPresentationHelper', () => {
 
     it('returns a 400 status code with a descriptive error message when proof is missing', async () => {
       try {
-        await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, '', verifier, authHeader, credentialRequests);
+        await callVerifyPresentationManual(context, type, verifiableCredential, presentationRequestUuid, '', verifier, authHeader, credentialRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -572,7 +572,7 @@ describe('verifyPresentationHelper', () => {
 
     it('returns a 400 status code with a descriptive error message when @context is not an array', async () => {
       try {
-        await callVerifyPresentation('https://www.w3.org/2018/credentials/v1', type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
+        await callVerifyPresentationManual('https://www.w3.org/2018/credentials/v1', type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -582,7 +582,7 @@ describe('verifyPresentationHelper', () => {
 
     it('returns a 400 status code with a descriptive error message when @context array is empty', async () => {
       try {
-        await callVerifyPresentation([], type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
+        await callVerifyPresentationManual([], type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -592,7 +592,7 @@ describe('verifyPresentationHelper', () => {
 
     it('returns a 400 status code with a descriptive error message when type is not an array', async () => {
       try {
-        await callVerifyPresentation(context, 'VerifiablePresentation', verifiableCredential, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
+        await callVerifyPresentationManual(context, 'VerifiablePresentation', verifiableCredential, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -602,7 +602,7 @@ describe('verifyPresentationHelper', () => {
 
     it('returns a 400 status code with a descriptive error message when type is empty', async () => {
       try {
-        await callVerifyPresentation(context, [], verifiableCredential, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
+        await callVerifyPresentationManual(context, [], verifiableCredential, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -612,7 +612,7 @@ describe('verifyPresentationHelper', () => {
 
     it('returns a 400 status code with a descriptive error message when verifiableCredential is not an array', async () => {
       try {
-        await callVerifyPresentation(context, type, 'verifiableCredential', presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
+        await callVerifyPresentationManual(context, type, 'verifiableCredential', presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -622,7 +622,7 @@ describe('verifyPresentationHelper', () => {
 
     it('returns a 400 status code with a descriptive error message when verifiableCredentials array is empty', async () => {
       try {
-        await callVerifyPresentation(context, type, undefined, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
+        await callVerifyPresentationManual(context, type, undefined, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
