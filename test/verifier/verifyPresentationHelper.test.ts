@@ -45,15 +45,6 @@ const mockDoVerify = doVerify as jest.Mock;
 const mockMakeNetworkRequest = makeNetworkRequest as jest.Mock;
 
 const callVerifyPresentation = async (context, type, verifiableCredential, presentationRequestUuid, proof, verifier, auth = '', credentialRequests): Promise<UnumDto<VerifiedStatus>> => {
-  // const presentation: PresentationPb = {
-  //   context,
-  //   type,
-  //   verifiableCredential,
-  //   presentationRequestUuid,
-  //   verifierDid: verifier,
-  //   proof
-  // };
-
   const presentation: PresentationPb = await makeDummyPresentation({
     context,
     type,
@@ -104,12 +95,10 @@ const populateMockData = async (): Promise<JSONObj> => {
 
   const presentationRequestUuid = '0cebee3b-3295-4ef6-a4d6-7dfea413b3aa';
   const verifier = 'did:unum:f2054199-1069-4337-a588-83d099e79d44';
-  // const presentationRequest = makeDummyPresentationRequestResponse();
 
   const credentialRequest = dummyCredentialRequest;
   const credentialRequests = [credentialRequest];
   const presentationRequest = await makeDummyUnsignedPresentationRequest({ uuid: presentationRequestUuid, verifier, credentialRequests });
-  // const presentationRequestUuid = presentationRequest.uuid;
   const presentationRequestDto = await makeDummyPresentationRequestResponse({ unsignedPresentationRequest: presentationRequest });
   const proof = (await presentationRequestDto).presentationRequest.proof;
 
