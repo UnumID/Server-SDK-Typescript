@@ -1,20 +1,3 @@
-// import * as utilLib from '../../src/utils';
-// import { Presentation, VerifiedStatus, UnumDto, Proof, CustError } from '../../src/index';
-// import { verifyCredential, verifyCredential } from '../../src/verifier/verifyCredential';
-// import { isCredentialExpired, isCredentialExpired } from '../../src/verifier/isCredentialExpired';
-// import { checkCredentialStatus, checkCredentialStatus } from '../../src/verifier/checkCredentialStatus';
-// import { dummyAuthToken, dummyEccPrivateKey, dummyIssuerDid, makeDummyDidDocument, dummyAuthToken, dummyRsaPrivateKey, dummyRsaPublicKey, dummyVerifierDid, makeDummyCredential, makeDummyDidDocument, makeDummyPresentation, makeDummyPresentationRequestResponse, makeDummyUnsignedCredential, makeDummyUnsignedPresentation, makeDummyUnsignedPresentationRequest, dummyCredentialRequest } from './mocks';
-// import stringify from 'fast-json-stable-stringify';
-// import { verifyPresentationHelper as verifyPresentation, verifyPresentationHelper } from '../../src/verifier/verifyPresentationHelper';
-// import { CredentialRequest, PresentationPb, JSONObj, PresentationPb, PresentationRequestDto } from '@unumid/types';
-// import { JSONObj, DecryptedPresentation } from '../../src/types';
-// import { getDIDDoc, getDIDDoc } from '../../src/utils/didHelper';
-// import { makeNetworkRequest, makeNetworkRequest } from '../../src/utils/networkRequestHelper';
-// import { doVerify, doVerify } from '../../src/utils/verify';
-
-// import { omit } from 'lodash';
-
-// import { verifyPresentation } from '../../src/verifier/verifyPresentation';
 import { verifyNoPresentationHelper } from '../../src/verifier/verifyNoPresentationHelper';
 
 import { getUUID } from '../../src/utils/helpers';
@@ -151,106 +134,7 @@ const populateMockData = async (): Promise<JSONObj> => {
   });
 };
 
-// const populateMockData = (): JSONObj => {
-//   const context: string[] = ['https://www.w3.org/2018/credentials/v1'];
-//   const type: string[] = ['VerifiablePresentation'];
-
-//   const credentialIssuerDid = 'did:unum:7fc1753e-cdb7-428a-b6ce-eefc0e3634e5'; // could be dummyIssuerDid?
-//   const verifiableCredentialObj =
-//       {
-//         '@context': [
-//           'https://www.w3.org/2018/credentials/v1'
-//         ],
-//         credentialStatus: {
-//           id: 'https://api.dev-unumid.org//credentialStatus/f8287c1e-0c56-460a-92af-5519f5c10cbf',
-//           type: 'CredentialStatus'
-//         },
-//         credentialSubject: {
-//           id: 'did:unum:5f5eb3dd-d0e0-4356-bfdd-96bc1393c705',
-//           test: 'test'
-//         },
-//         issuer: credentialIssuerDid,
-//         type: [
-//           'VerifiableCredential',
-//           'UsernameCredential'
-//         ],
-//         id: 'f8287c1e-0c56-460a-92af-5519f5c10cbf',
-//         issuanceDate: '2021-01-09T02:23:54.844Z',
-//         expirationDate: '2022-01-09T00:00:00.000Z',
-//         proof: {
-//           created: '2021-01-09T02:23:54.844Z',
-//           type: 'secp256r1Signature2020',
-//           verificationMethod: 'did:unum:7fc1753e-cdb7-428a-b6ce-eefc0e3634e5',
-//           proofPurpose: 'AssertionMethod',
-//           signatureValue: '381yXZCEPSC9NB2smArjiBtvnGL6LZ2yAUW1qLQfhuZSyeQiCyrFRqkxfPoa1gaLaScR7cFVJmguo1v1JKYH6uEU4Zd32D9C',
-//           unsignedValue: '{"@context":["https://www.w3.org/2018/credentials/v1"],"credentialStatus":{"id":"https://api.dev-unumid.org//credentialStatus/f8287c1e-0c56-460a-92af-5519f5c10cbf","type":"CredentialStatus"},"credentialSubject":{"id":"did:unum:5f5eb3dd-d0e0-4356-bfdd-96bc1393c705","username":"Analyst-Shoes-278"},"expirationDate":"2022-01-09T00:00:00.000Z","id":"f8287c1e-0c56-460a-92af-5519f5c10cbf","issuanceDate":"2021-01-09T02:23:54.844Z","issuer":"did:unum:7fc1753e-cdb7-428a-b6ce-eefc0e3634e5","proof":{"created":"2021-01-09T02:23:54.844Z","proofPurpose":"AssertionMethod","type":"secp256r1Signature2020","verificationMethod":"did:unum:7fc1753e-cdb7-428a-b6ce-eefc0e3634e5"},"type":["VerifiableCredential","UsernameCredential"]}'
-//         }
-//       };
-//   const verifiableCredential = [verifiableCredentialObj];
-//   const verifiableCredentialString = [stringify(verifiableCredentialObj)];
-
-//   const presentationRequestUuid = '0cebee3b-3295-4ef6-a4d6-7dfea413b3aa';
-//   const invalidProof: JSONObj = {
-//     created: '2020-09-03T18:50:52.105Z',
-//     signatureValue: 'iTx1CJLYue7vopUo2fqGps3TWmxqRxoBDTupumLkaNp2W3UeAjwLUf5WxLRCRkDzEFeKCgT7JdF5fqbpvqnBZoHyYzWYbmW4YQ',
-//     unsignedValue: stringify({}),
-//     type: 'secp256r1Signature2020',
-//     verificationMethod: 'did:unum:3ff2f020-50b0-4f4c-a267-a9f104aedcd8',
-//     proofPurpose: 'AssertionMethod'
-//   };
-//   const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
-//   const verifier = 'did:unum:dd407b1a-ee7f-46a2-af2a-ccbb48cbb0dc';
-
-//   const subjectDid = 'did:unum:3ff2f020-50b0-4f4c-a267-a9f104aedcd8';
-//   const unsignedPresentation = {
-//     '@context': ['https://www.w3.org/2018/credentials/v1'],
-//     presentationRequestUuid,
-//     verifiableCredential: [verifiableCredential],
-//     type: ['VerifiablePresentation']
-//   };
-
-//   const signatureValue = sign(unsignedPresentation, dummyEccPrivateKey, 'base58');
-
-//   const proof: Proof = {
-//     created: new Date().toISOString(),
-//     signatureValue,
-//     unsignedValue: stringify(unsignedPresentation),
-//     type: 'secp256r1Signature2020',
-//     verificationMethod: subjectDid,
-//     proofPurpose: 'assertionMethod'
-//   };
-
-//   const presentation = {
-//     ...unsignedPresentation,
-//     proof
-//   };
-
-//   const credRequest: CredentialRequest = {
-//     type: 'UsernameCredential',
-//     issuers: [credentialIssuerDid],
-//     required: true
-//   };
-//   const credentialRequests = [credRequest];
-
-//   return ({
-//     context,
-//     type,
-//     verifiableCredential,
-//     verifiableCredentialString,
-//     presentationRequestUuid,
-//     proof,
-//     invalidProof,
-//     authHeader,
-//     verifier,
-//     presentation,
-//     credentialRequests
-//   });
-// };
-
 describe('verifyPresentationHelper', () => {
-  // let response: UnumDto<DecryptedPresentation>;
-  // let verStatus: boolean;
-
   let context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier, credentialRequests, presentationRequestDto, presentationRequest, unsignedPresentationRequest, presentation, unsignedPresentation;
 
   beforeAll(async () => {
@@ -270,18 +154,6 @@ describe('verifyPresentationHelper', () => {
     unsignedPresentation = dummyData.unsignedPresentation;
 
     presentation = dummyData.presentation;
-
-    // const dummySubjectDidDoc = await makeDummyDidDocument();
-
-  // const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
-  // mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
-  // mockDoVerify.mockReturnValueOnce(true);
-  // mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: true });
-  // mockIsCredentialExpired.mockReturnValue(false);
-  // mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: { status: 'valid' } });
-  // mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers: dummyResponseHeaders });
-  // response = await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestUuid, proof, verifier, authHeader);
-  // verStatus = response.body.isVerified;
   });
 
   afterAll(() => {
@@ -501,18 +373,6 @@ describe('verifyPresentationHelper', () => {
       const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
       mockGetDIDDoc.mockResolvedValueOnce({ body: dummyDidDocWithoutKeys, headers: dummyResponseHeaders });
 
-      // const presentation: Presentation = {
-      //   '@context': context,
-      //   type,
-      //   verifiableCredential,
-      //   presentationRequestUuid,
-      //   verifierDid: verifier,
-      //   proof,
-      //   uuid: 'a'
-      // };
-      // const encryptedPresentation = encrypt(`did:unum:${getUUID()}`, dummyRsaPublicKey, presentation, 'pem');
-      // const bytes: Uint8Array = PresentationPb.encode(presentation).finish();
-      // const encryptedPresentation = encryptBytes(`did:unum:${getUUID()}`, dummyRsaPublicKey, bytes, 'pem');
       const response = await verifyPresentationHelper(authHeader, presentation, 'fakeVerifierDid', credentialRequests);
 
       // const response = await callVerifyPresentation(context, type, verifiableCredential, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
@@ -645,9 +505,6 @@ describe('verifyPresentationHelper', () => {
   });
 
   describe('verifyPresentation - Validation for verifiableCredential object', () => {
-    // let response: JSONObj, preReq: JSONObj;
-    // const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier, credentialRequests } = populateMockData();
-
     let context, type, verifiableCredentials, presentationRequestUuid, proof, authHeader, verifier, presentationRequestDto, presentationRequest, unsignedPresentationRequest, presentation, unsignedPresentation;
 
     beforeAll(async () => {
@@ -759,8 +616,6 @@ describe('verifyPresentationHelper', () => {
   });
 
   describe('verifyPresentation credential matches requests', () => {
-  // let context, type, cred, presentationRequestUuid, proof, verifier, authHeader, credentialRequests;
-  // const { context, type, verifiableCredential, verifiableCredentialString, presentationRequestUuid, proof, authHeader, verifier, credentialRequests } = populateMockData();
     beforeAll(async () => {
       const dummySubjectDidDoc = await makeDummyDidDocument();
 
@@ -771,13 +626,9 @@ describe('verifyPresentationHelper', () => {
       mockIsCredentialExpired.mockReturnValue(false);
       mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: { status: 'valid' } });
       mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers: dummyResponseHeaders });
-    // response = await callVerifyPresentation(context, type, verifiableCredentialString, presentationRequestUuid, proof, verifier, authHeader, credentialRequests);
-    // verStatus = response.body.isVerified;
-    // const { context, type, verifiableCredential, verifiableCredentialString, presentationRequestUuid, proof, authHeader, verifier, credentialRequests } = populateMockData();
     });
 
     it('Response code should be ' + 400 + ' when credentials do not meet credential request type requirements', async () => {
-      // const { context, type, verifiableCredential, verifiableCredentialString, presentationRequestUuid, proof, authHeader, verifier, credentialRequests } = populateMockData();
       const credCopy = JSON.parse(JSON.stringify(verifiableCredential));
       credCopy[0].type = ['VerifiableCredential', 'AddressCredential'];
       try {
@@ -790,7 +641,6 @@ describe('verifyPresentationHelper', () => {
     });
 
     it('Response code should be ' + 400 + ' when credentials do not meet credential request issuer requirements', async () => {
-      // const { context, type, verifiableCredential, verifiableCredentialString, presentationRequestUuid, proof, authHeader, verifier, credentialRequests } = populateMockData();
       const credCopy = JSON.parse(JSON.stringify(verifiableCredential));
       credCopy[0].issuer = 'dummyIssuerDid';
       try {
@@ -804,8 +654,6 @@ describe('verifyPresentationHelper', () => {
   });
 
   describe('verifyPresentationHelper - Validation for proof object', () => {
-    // const { context, type, verifiableCredential, presentationRequestUuid, proof, authHeader, verifier, credentialRequests } = populateMockData();
-
     it('returns a 400 status code with a descriptive error message when created is missing', async () => {
       const invalidProof = { created: '', signatureValue: proof.signatureValue, type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
       try {
