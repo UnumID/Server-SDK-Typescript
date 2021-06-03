@@ -393,7 +393,6 @@ export const makeDummyUnsignedPresentation = async (options: MakeDummyPresentati
   return unsignedPresentation;
 };
 
-// export const makeDummyPresentation = (credentials: CredentialPb[], presentationRequestUuid?: string, verifierDid?:string): PresentationPb => {
 export const makeDummyPresentation = async (options: MakeDummyPresentationOptions): Promise<PresentationPb> => {
   const privateKeyId = options.privateKeyIdLiteral ? options.privateKeyId : options.privateKeyId || getUUID();
   const encoding = options.encodingLiteral ? options.encoding : options.encoding || 'pem';

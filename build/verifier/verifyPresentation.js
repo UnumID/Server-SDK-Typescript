@@ -388,7 +388,7 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                     logger_1.default.error("Type error handling decoding presentation, credential or proof from bytes to protobufs " + error_2);
                 }
                 else {
-                    logger_1.default.error("Error handling encrypted presentation request to UnumID Saas. " + error_2);
+                    logger_1.default.error("Error handling encrypted presentation. " + error_2);
                 }
                 throw error_2;
             case 7: return [2 /*return*/];
