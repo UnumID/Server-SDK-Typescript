@@ -13,6 +13,7 @@ import { checkCredentialStatus } from './verifier/checkCredentialStatus';
 import { CustError } from './utils/error';
 import { createProof } from './utils/createProof';
 import { convertCredentialSubject } from './utils/convertCredentialSubject';
+import { getRequest } from './verifier/getRequest';
 
 export {
   // Issuer Functions
@@ -43,5 +44,6 @@ export {
   // Util Functions
   extractCredentialInfo,
   createProof,
-  convertCredentialSubject
+  convertCredentialSubject,
+  getRequest
 };

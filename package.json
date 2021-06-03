@@ -1,6 +1,6 @@
 {
   "name": "@unumid/server-sdk",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "main": "build/index.js",
   "repository": "git@github.com:UnumID/Server-SDK-TypeScript.git",
   "homepage": "https://docs.unum.id/server-sdk/",
@@ -45,7 +45,7 @@
     "@types/uuid": "^8.3.0",
     "@unumid/library-crypto": "https://github.com/UnumID/Library-Crypto-TypeScript.git#bytes",
     "@unumid/types": "https://github.com/UnumID/types.git#proto4",
-    "@unumid/types-v2": "https://github.com/UnumID/types.git#id",
+    "@unumid/types-v2": "https://github.com/UnumID/types.git#2.1.2",
     "@unumid/types-v1": "https://github.com/UnumID/types.git#1.5.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",

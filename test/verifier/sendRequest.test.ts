@@ -1,6 +1,6 @@
 import { CredentialRequest, PresentationRequestPostDto, PresentationRequest } from '@unumid/types';
 import { sendRequest } from '../../src/index';
-import { JSONObj, UnumDto } from '../../src/types';
+import { UnumDto } from '../../src/types';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { dummyAuthToken, makeDummyPresentationRequestResponse } from './mocks';
 import { CustError } from '../../src/utils/error';
@@ -30,10 +30,10 @@ const callSendRequests = (
   return sendRequest(authToken, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expiresAt, metadata);
 };
 
-const populateMockData = (): JSONObj => {
+const populateMockData = (): Record<string, any> => {
   const verifier = 'did:unum:a40e162e-3297-4834-a1a3-a15e96554fac';
   const holderAppUuid = 'a91a5574-e338-46bd-9405-3a72acbd1b6a';
-  const credentialRequests: JSONObj[] = [{
+  const credentialRequests: CredentialRequest[] = [{
     type: 'DummyCredential',
     issuers: ['did:unum:042b9089-9ee9-4217-844f-b01965cf569a']
   }];
@@ -313,7 +313,6 @@ describe('sendRequest - Failure cases', () => {
 });
 
 describe('sendRequest - Failure cases for credentialRequests element', () => {
-  let response: JSONObj;
   const {
     verifier,
     credentialRequests,
