@@ -90,10 +90,10 @@ const populateMockData = (): JSONObj => {
           id: 'https://api.dev-unumid.org//credentialStatus/f8287c1e-0c56-460a-92af-5519f5c10cbf',
           type: 'CredentialStatus'
         },
-        credentialSubject: {
+        credentialSubject: JSON.stringify({
           id: 'did:unum:5f5eb3dd-d0e0-4356-bfdd-96bc1393c705',
           test: 'test'
-        },
+        }),
         issuer: credentialIssuerDid,
         type: [
           'VerifiableCredential',

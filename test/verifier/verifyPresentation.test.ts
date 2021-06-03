@@ -124,10 +124,10 @@ const populateMockData = (): JSONObj => {
         id: 'https://api.dev-unumid.org//credentialStatus/b2acd26a-ab18-4d18-9ad1-3b77f55c564b',
         type: 'CredentialStatus'
       },
-      credentialSubject: {
+      credentialSubject: JSON.stringify({
         id: 'did:unum:3ff2f020-50b0-4f4c-a267-a9f104aedcd8',
         test: 'test'
-      },
+      }),
       issuer: 'did:unum:2e05967f-216f-44c4-ae8e-d6f71cd17c5a',
       type: [
         'VerifiableCredential',
@@ -288,7 +288,7 @@ describe('verifyEncryptedPresentation - Failure Scenarios', () => {
 
     const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
     mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
-    mockDoVerify.mockReturnValueOnce(false);
+    mockDoVerify.mockReturnValue(false);
     mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: false });
     mockIsCredentialExpired.mockReturnValue(true);
     mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: false });
