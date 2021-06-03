@@ -138,7 +138,6 @@ var validateCredentialInput = function (credentials) {
             break;
         }
         // Check credentialSubject object has id element.
-        // if (!credential.credentialSubject.id) {
         var credentialSubject = convertCredentialSubject_1.convertCredentialSubject(credential.credentialSubject);
         if (!credentialSubject.id) {
             retObj.valid = false;

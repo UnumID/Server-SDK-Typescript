@@ -115,7 +115,6 @@ const validateCredentialInput = (credentials: CredentialPb[]): JSONObj => {
     }
 
     // Check credentialSubject object has id element.
-    // if (!credential.credentialSubject.id) {
     const credentialSubject: CredentialSubject = convertCredentialSubject(credential.credentialSubject);
     if (!credentialSubject.id) {
       retObj.valid = false;

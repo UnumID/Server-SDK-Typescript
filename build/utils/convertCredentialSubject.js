@@ -13,10 +13,14 @@ var __assign = (this && this.__assign) || function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.convertCredentialSubject = void 0;
 var lodash_1 = require("lodash");
+var error_1 = require("./error");
 /**
  * Handler to convert the JSON representation of the CredentialSubject into a Typescript interface, CredentialSubject
  */
 exports.convertCredentialSubject = function (input) {
+    if (typeof input !== 'string') {
+        throw new error_1.CustError(400, "CredentialSubject is not a string: " + input);
+    }
     var obj = JSON.parse(input);
     var claims = lodash_1.omit(obj, 'id');
     var result = __assign({ id: obj.id }, claims);
