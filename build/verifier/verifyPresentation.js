@@ -152,7 +152,7 @@ function verifyPresentationRequest(authorization, presentationRequest) {
  * @param verifierDid: string
  */
 exports.verifyPresentation = function (authorization, encryptedPresentation, verifierDid, encryptionPrivateKey, presentationRequest) { return __awaiter(void 0, void 0, void 0, function () {
-    var presentation, requestVerificationResult, type, result_2, verificationResult_1, result_3, credentialRequests, verificationResult, result, error_2;
+    var presentation, presentationRequestWithoutVersion, requestVerificationResult, type, result_2, verificationResult_1, result_3, credentialRequests, verificationResult, result, error_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -178,7 +178,8 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                     throw new error_1.CustError(400, "presentation request uuid provided, " + presentationRequest.presentationRequest.uuid + ", does not match the presentationRequestUuid that the presentation was in response to, " + presentation.presentationRequestUuid + ".");
                 }
                 if (!(presentationRequest && presentationRequest.presentationRequest)) return [3 /*break*/, 2];
-                return [4 /*yield*/, verifyPresentationRequest(authorization, presentationRequest.presentationRequest)];
+                presentationRequestWithoutVersion = lodash_1.omit(presentationRequest.presentationRequest, 'version');
+                return [4 /*yield*/, verifyPresentationRequest(authorization, presentationRequestWithoutVersion)];
             case 1:
                 requestVerificationResult = _a.sent();
                 authorization = requestVerificationResult.authToken;
