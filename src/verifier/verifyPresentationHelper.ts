@@ -2,7 +2,7 @@ import { omit } from 'lodash';
 
 import { configData } from '../config';
 import { CredentialStatusInfo, RESTData, UnumDto, VerifiedStatus } from '../types';
-import { Presentation, Credential, CredentialRequest, Proof, PublicKeyInfo, JSONObj } from '@unumid/types';
+import { Presentation, Credential, CredentialRequest, Proof, PublicKeyInfo, JSONObj, CredentialSubject } from '@unumid/types';
 import { validateProof } from './validateProof';
 import { requireAuth } from '../requireAuth';
 import { verifyCredential } from './verifyCredential';
@@ -15,6 +15,7 @@ import { CustError } from '../utils/error';
 import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
 import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
+import { convertCredentialSubject } from '../utils/convertCredentialSubject';
 
 /**
  * Validates the attributes for a credential request to UnumID's SaaS.
@@ -105,7 +106,8 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
     }
 
     // Check credentialSubject object has id element.
-    if (!credential.credentialSubject.id) {
+    const credentialSubject: CredentialSubject = convertCredentialSubject(credential.credentialSubject);
+    if (!credentialSubject.id) {
       retObj.valid = false;
       retObj.msg = `${invalidMsg} credentialSubject must contain id property.`;
       break;
