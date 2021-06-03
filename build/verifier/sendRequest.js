@@ -203,6 +203,71 @@ var validateSendRequestBody = function (sendRequestBody) {
     }
     return sendRequestBody;
 };
+// validates incoming request body
+var validateSendRequestBodyDeprecated = function (sendRequestBody) {
+    var verifier = sendRequestBody.verifier, credentialRequests = sendRequestBody.credentialRequests, eccPrivateKey = sendRequestBody.eccPrivateKey, holderAppUuid = sendRequestBody.holderAppUuid, metadata = sendRequestBody.metadata, id = sendRequestBody.id;
+    if (!verifier) {
+        throw new error_1.CustError(400, 'Invalid PresentationRequest options: verifier is required.');
+    }
+    if (typeof verifier !== 'string') {
+        throw new error_1.CustError(400, 'Invalid PresentationRequest options: verifier must be a string.');
+    }
+    if (!holderAppUuid) {
+        throw new error_1.CustError(400, 'Invalid PresentationRequest options: holderAppUuid is required.');
+    }
+    if (typeof holderAppUuid !== 'string') {
+        throw new error_1.CustError(400, 'Invalid PresentationRequest options: holderAppUuid must be a string.');
+    }
+    if (!credentialRequests) {
+        throw new error_1.CustError(400, 'Invalid PresentationRequest options: credentialRequests is required.');
+    }
+    // credentialRequests input element must be an array
+    if (!Array.isArray(credentialRequests)) {
+        throw new error_1.CustError(400, 'Invalid PresentationRequest options: credentialRequests must be an array.');
+    }
+    var totCredReqs = credentialRequests.length;
+    if (totCredReqs === 0) {
+        throw new error_1.CustError(400, 'Invalid PresentationRequest options: credentialRequests array must not be empty.');
+    }
+    // credentialRequests input element should have type and issuer elements
+    for (var i = 0; i < totCredReqs; i++) {
+        var credentialRequest = credentialRequests[i];
+        if (!credentialRequest.type) {
+            throw new error_1.CustError(400, 'Invalid credentialRequest: type is required.');
+        }
+        if (!credentialRequest.issuers) {
+            throw new error_1.CustError(400, 'Invalid credentialRequest: issuers is required.');
+        }
+        // credentialRequests.issuers input element must be an array
+        if (!Array.isArray(credentialRequest.issuers)) {
+            throw new error_1.CustError(400, 'Invalid credentialRequest: issuers must be an array.');
+        }
+        var totIssuers = credentialRequest.issuers.length;
+        if (totIssuers === 0) {
+            throw new error_1.CustError(400, 'Invalid credentialRequest: issuers array must not be empty.');
+        }
+        for (var _i = 0, _a = credentialRequest.issuers; _i < _a.length; _i++) {
+            var issuer = _a[_i];
+            if (typeof issuer !== 'string') {
+                throw new error_1.CustError(400, 'Invalid credentialRequest: issuers array element must be a string.');
+            }
+        }
+    }
+    // ECC Private Key is mandatory input parameter
+    if (!eccPrivateKey) {
+        throw new error_1.CustError(400, 'Invalid PresentationRequest options: signingPrivateKey is required.');
+    }
+    // Ensure that metadata object is keyed on fields for Struct protobuf definition
+    if (!metadata) {
+        sendRequestBody.metadata = {
+            fields: {}
+        };
+    }
+    if (!id) {
+        throw new error_1.CustError(400, 'Invalid PresentationRequest options: id is required.');
+    }
+    return sendRequestBody;
+};
 /**
  * Handler for sending a PresentationRequest to UnumID's SaaS.
  * Middleware function where one can add requests of multiple versions to be encrypted and stored in the SaaS db for versioning needs.
@@ -285,7 +350,7 @@ exports.sendRequestDeprecated = function (authorization, verifier, credentialReq
                 requireAuth_1.requireAuth(authorization);
                 body = { verifier: verifier, credentialRequests: credentialRequests, eccPrivateKey: eccPrivateKey, holderAppUuid: holderAppUuid, expiresAt: expirationDate, metadata: metadata, id: id };
                 // Validate inputs
-                validateSendRequestBody(body);
+                validateSendRequestBodyDeprecated(body);
                 unsignedPresentationRequest = exports.constructUnsignedPresentationRequest(body);
                 signedPR = exports.constructSignedPresentationRequestDeprecatedV2(unsignedPresentationRequest, eccPrivateKey);
                 restData = {

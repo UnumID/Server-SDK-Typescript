@@ -211,6 +211,95 @@ const validateSendRequestBody = (sendRequestBody: SendRequestReqBody): SendReque
   return sendRequestBody;
 };
 
+// validates incoming request body
+const validateSendRequestBodyDeprecated = (sendRequestBody: SendRequestReqBody): SendRequestReqBody => {
+  const {
+    verifier,
+    credentialRequests,
+    eccPrivateKey,
+    holderAppUuid,
+    metadata,
+    id
+  } = sendRequestBody;
+
+  if (!verifier) {
+    throw new CustError(400, 'Invalid PresentationRequest options: verifier is required.');
+  }
+
+  if (typeof verifier !== 'string') {
+    throw new CustError(400, 'Invalid PresentationRequest options: verifier must be a string.');
+  }
+
+  if (!holderAppUuid) {
+    throw new CustError(400, 'Invalid PresentationRequest options: holderAppUuid is required.');
+  }
+
+  if (typeof holderAppUuid !== 'string') {
+    throw new CustError(400, 'Invalid PresentationRequest options: holderAppUuid must be a string.');
+  }
+
+  if (!credentialRequests) {
+    throw new CustError(400, 'Invalid PresentationRequest options: credentialRequests is required.');
+  }
+
+  // credentialRequests input element must be an array
+  if (!Array.isArray(credentialRequests)) {
+    throw new CustError(400, 'Invalid PresentationRequest options: credentialRequests must be an array.');
+  }
+
+  const totCredReqs = credentialRequests.length;
+  if (totCredReqs === 0) {
+    throw new CustError(400, 'Invalid PresentationRequest options: credentialRequests array must not be empty.');
+  }
+
+  // credentialRequests input element should have type and issuer elements
+  for (let i = 0; i < totCredReqs; i++) {
+    const credentialRequest = credentialRequests[i];
+
+    if (!credentialRequest.type) {
+      throw new CustError(400, 'Invalid credentialRequest: type is required.');
+    }
+
+    if (!credentialRequest.issuers) {
+      throw new CustError(400, 'Invalid credentialRequest: issuers is required.');
+    }
+
+    // credentialRequests.issuers input element must be an array
+    if (!Array.isArray(credentialRequest.issuers)) {
+      throw new CustError(400, 'Invalid credentialRequest: issuers must be an array.');
+    }
+
+    const totIssuers = credentialRequest.issuers.length;
+    if (totIssuers === 0) {
+      throw new CustError(400, 'Invalid credentialRequest: issuers array must not be empty.');
+    }
+
+    for (const issuer of credentialRequest.issuers) {
+      if (typeof issuer !== 'string') {
+        throw new CustError(400, 'Invalid credentialRequest: issuers array element must be a string.');
+      }
+    }
+  }
+
+  // ECC Private Key is mandatory input parameter
+  if (!eccPrivateKey) {
+    throw new CustError(400, 'Invalid PresentationRequest options: signingPrivateKey is required.');
+  }
+
+  // Ensure that metadata object is keyed on fields for Struct protobuf definition
+  if (!metadata) {
+    sendRequestBody.metadata = {
+      fields: {}
+    };
+  }
+
+  if (!id) {
+    throw new CustError(400, 'Invalid PresentationRequest options: id is required.');
+  }
+
+  return sendRequestBody;
+};
+
 /**
  * Handler for sending a PresentationRequest to UnumID's SaaS.
  * Middleware function where one can add requests of multiple versions to be encrypted and stored in the SaaS db for versioning needs.
@@ -316,7 +405,7 @@ export const sendRequestDeprecated = async (
     const body: SendRequestReqBody = { verifier, credentialRequests, eccPrivateKey, holderAppUuid, expiresAt: expirationDate, metadata, id };
 
     // Validate inputs
-    validateSendRequestBody(body);
+    validateSendRequestBodyDeprecated(body);
 
     const unsignedPresentationRequest: UnsignedPresentationRequestDeprecatedV2 = constructUnsignedPresentationRequest(body);
 
