@@ -54,6 +54,7 @@ var error_1 = require("../utils/error");
 var didHelper_1 = require("../utils/didHelper");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var verify_1 = require("../utils/verify");
+var convertCredentialSubject_1 = require("../utils/convertCredentialSubject");
 /**
  * Validates the attributes for a credential request to UnumID's SaaS.
  * @param credentials JSONObj
@@ -128,7 +129,8 @@ var validateCredentialInput = function (credentials) {
             break;
         }
         // Check credentialSubject object has id element.
-        if (!credential.credentialSubject.id) {
+        var credentialSubject = convertCredentialSubject_1.convertCredentialSubject(credential.credentialSubject);
+        if (!credentialSubject.id) {
             retObj.valid = false;
             retObj.msg = invalidMsg + " credentialSubject must contain id property.";
             break;
