@@ -1,6 +1,6 @@
 import { registerVerifier } from './verifier/registerVerifier';
 import { sendEmail } from './verifier/sendEmail';
-import { sendRequest } from './verifier/sendRequest';
+import { sendRequest, SendRequestResult } from './verifier/sendRequest';
 import { sendSms } from './verifier/sendSms';
 import { UnumDto, RegisteredVerifier, RegisteredIssuer, VerifiedStatus, DecryptedPresentation, CredentialInfo, CredentialStatusInfo } from './types';
 import { verifyPresentation } from './verifier/verifyPresentation';
@@ -36,6 +36,7 @@ export {
   CredentialSubject,
   DecryptedPresentation,
   CredentialStatusInfo,
+  SendRequestResult,
   // Util Types
   CustError,
   Proof,

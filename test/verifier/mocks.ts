@@ -1,5 +1,7 @@
 import { sign } from '@unumid/library-crypto';
-import { UnsignedCredentialPb, CredentialPb, DidDocument, HolderApp, IssuerInfo, IssuerInfoMap, JSONObj, PresentationRequestPostDto, UnsignedCredential, UnsignedPresentationRequest, Verifier, VerifierInfo, Credential, CredentialSubject, Proof, CredentialRequest, PresentationPb, UnsignedPresentationPb } from '@unumid/types';
+import { WithVersion, PresentationRequestDto, UnsignedCredentialPb, CredentialPb, DidDocument, HolderApp, IssuerInfo, IssuerInfoMap, JSONObj, PresentationRequestPostDto, UnsignedCredential, UnsignedPresentationRequest, Verifier, VerifierInfo, Credential, CredentialSubject, Proof, CredentialRequest, PresentationPb, UnsignedPresentationPb } from '@unumid/types';
+
+import { PresentationRequestDto as PresentationRequestDtoV2 } from '@unumid/types-v2';
 
 import stringify from 'fast-json-stable-stringify';
 
@@ -285,6 +287,48 @@ export const makeDummyHolderAppInfo = (options: Partial<HolderAppInfo> = {}): Ho
 
 // formerly called makeDummyPresentationRequestResponse
 // renamed it to align better with names from the types package
+export const makeDummyPresentationRequestDtoV2 = async (options: MakeDummyPresentationRequestOptions = {}): Promise<PresentationRequestDtoV2> => {
+  const unsignedPresentationRequest = options.unsignedPresentationRequest || makeDummyUnsignedPresentationRequest();
+  const privateKeyId = options.privateKeyId || getUUID();
+  const encoding = options.encoding || 'pem';
+
+  const now = new Date();
+  const createdAt = options.createdAt || now;
+  const updatedAt = options.updatedAt || now;
+  const deeplink = options.deeplink || `https://unumid.org/${unsignedPresentationRequest.uuid}`;
+  const qrCode = options.qrCode || 'Dummy QR Code data url';
+  const verifier = options.verifier || makeDummyVerifierInfo({ did: unsignedPresentationRequest.verifier });
+
+  const issuers = options.issuers || makeDummyIssuerInfoMap();
+  const holderApp = makeDummyHolderAppInfo(options.holderApp);
+
+  let { privateKey } = options;
+
+  if (!privateKey) {
+    const keypairs = await createKeyPairSet();
+    privateKey = keypairs.signing.privateKey;
+  }
+
+  const verifierDidWithKeyFragment = `${unsignedPresentationRequest.verifier}#${privateKeyId}`;
+  const proof = createProof(unsignedPresentationRequest, privateKey, verifierDidWithKeyFragment, encoding);
+  return {
+    presentationRequest: {
+      ...unsignedPresentationRequest,
+      proof,
+      createdAt,
+      updatedAt,
+      version: '2.0.0'
+    },
+    qrCode,
+    deeplink,
+    verifier,
+    issuers,
+    holderApp
+  };
+};
+
+// formerly called makeDummyPresentationRequestResponse
+// renamed it to align better with names from the types package
 export const makeDummyPresentationRequestDto = async (options: MakeDummyPresentationRequestOptions = {}): Promise<PresentationRequestDto> => {
   const unsignedPresentationRequest = options.unsignedPresentationRequest || makeDummyUnsignedPresentationRequest();
   const privateKeyId = options.privateKeyId || getUUID();
@@ -314,7 +358,8 @@ export const makeDummyPresentationRequestDto = async (options: MakeDummyPresenta
       ...unsignedPresentationRequest,
       proof,
       createdAt,
-      updatedAt
+      updatedAt,
+      version: '3.0.0'
     },
     qrCode,
     deeplink,

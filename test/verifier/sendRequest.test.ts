@@ -1,5 +1,5 @@
 import { CredentialRequest, PresentationRequestPostDto, PresentationRequest } from '@unumid/types';
-import { sendRequest } from '../../src/index';
+import { sendRequest, SendRequestResult } from '../../src/index';
 import { UnumDto } from '../../src/types';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { dummyAuthToken, makeDummyPresentationRequestResponse } from './mocks';
@@ -26,7 +26,7 @@ const callSendRequests = (
   eccPrivateKey: string,
   holderAppUuid: string,
   authToken: string
-): Promise<UnumDto<PresentationRequestPostDto>> => {
+): Promise<UnumDto<SendRequestResult>> => {
   return sendRequest(authToken, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expiresAt, metadata);
 };
 
@@ -53,6 +53,7 @@ describe('sendRequest', () => {
   let apiResponse: UnumDto<PresentationRequestPostDto>, apiResponseAuthToken: string;
   let metadata: Record<string, unknown>, expiresAt: Date;
   let presentationRequestResponse: PresentationRequestPostDto;
+  let requests: SendRequestResult[];
   let presentationRequest: PresentationRequest;
 
   const {
@@ -71,7 +72,8 @@ describe('sendRequest', () => {
     apiResponse = await callSendRequests(verifier, credentialRequests, metadata, expiresAt, eccPrivateKey, holderAppUuid, authToken);
     apiResponseAuthToken = apiResponse.authToken;
 
-    presentationRequestResponse = apiResponse.body;
+    requests = apiResponse.body;
+    presentationRequestResponse = requests[requests.length - 1];
     presentationRequest = presentationRequestResponse.presentationRequest;
   });
 
@@ -97,6 +99,10 @@ describe('sendRequest', () => {
     data.credentialRequests.forEach(cr => {
       expect(cr.required).toBeDefined();
     });
+  });
+
+  it('returns both versions of the created PresentationRequest', () => {
+    expect(requests.length).toEqual(2);
   });
 
   it('returns the created PresentationRequest', () => {

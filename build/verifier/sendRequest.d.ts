@@ -18,6 +18,7 @@ export declare const constructSignedPresentationRequestDeprecatedV2: (unsignedPr
  * @param privateKey String
  */
 export declare const constructSignedPresentationRequest: (unsignedPresentationRequest: UnsignedPresentationRequestPb, privateKey: string) => PresentationRequestPb;
+export declare type SendRequestResponse = PresentationRequestPostDtoDeprecatedV2 | PresentationRequestPostDto;
 /**
  * Handler for sending a PresentationRequest to UnumID's SaaS.
  * Middleware function where one can add requests of multiple versions to be encrypted and stored in the SaaS db for versioning needs.
@@ -27,7 +28,7 @@ export declare const constructSignedPresentationRequest: (unsignedPresentationRe
  * @param eccPrivateKey
  * @param holderAppUuid
  */
-export declare const sendRequest: (authorization: string, verifier: string, credentialRequests: CredentialRequestPb[] | CredentialRequest[], eccPrivateKey: string, holderAppUuid: string, expirationDate?: Date | undefined, metadata?: Record<string, unknown> | undefined) => Promise<UnumDto<PresentationRequestPostDto>>;
+export declare const sendRequest: (authorization: string, verifier: string, credentialRequests: CredentialRequestPb[] | CredentialRequest[], eccPrivateKey: string, holderAppUuid: string, expirationDate?: Date | undefined, metadata?: Record<string, unknown> | undefined) => Promise<UnumDto<SendRequestResponse[]>>;
 /**
  * Handler for sending a PresentationRequest to UnumID's SaaS.
  * @param authorization

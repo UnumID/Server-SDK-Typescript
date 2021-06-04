@@ -11,6 +11,9 @@ import { getUUID } from '../utils/helpers';
 import { makeNetworkRequest, handleAuthTokenHeader } from '../utils/networkRequestHelper';
 import { CustError } from '../utils/error';
 
+// a type to encapsulate the various versions on possible PresentationRequestPostDto responses from UnumID SaaS.
+export type SendRequestResult = PresentationRequestPostDtoDeprecatedV2 | PresentationRequestPostDto
+
 /**
  * Constructs an unsigned PresentationRequest from the incoming request body.
  * @param reqBody SendRequestReqBody
@@ -317,7 +320,8 @@ export const sendRequest = async (
   holderAppUuid: string,
   expirationDate?: Date,
   metadata?: Record<string, unknown>
-): Promise<UnumDto<PresentationRequestPostDto>> => {
+// ): Promise<UnumDto<PresentationRequestPostDto>> => {
+): Promise<UnumDto<SendRequestResult[]>> => {
   // create an indentifier that ties together these related requests of different versions.
   const id = getUUID();
 
@@ -325,8 +329,12 @@ export const sendRequest = async (
   const responseV2 = await sendRequestDeprecated(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata);
   authorization = responseV2.authToken ? responseV2.authToken : authorization;
 
-  const response = sendRequestV3(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata);
-  return response;
+  const responseV3 = await sendRequestV3(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata);
+
+  // create the result consisting of all the presentation requests created and sent to the saas along with the last authToken returned
+  const result: UnumDto<SendRequestResult[]> = { body: [responseV2.body, responseV3.body], authToken: responseV3.authToken };
+
+  return result;
 };
 
 /**

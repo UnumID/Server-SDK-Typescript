@@ -277,8 +277,10 @@ var validateSendRequestBodyDeprecated = function (sendRequestBody) {
  * @param eccPrivateKey
  * @param holderAppUuid
  */
-exports.sendRequest = function (authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata) { return __awaiter(void 0, void 0, void 0, function () {
-    var id, responseV2, response;
+exports.sendRequest = function (authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata
+// ): Promise<UnumDto<PresentationRequestPostDto>> => {
+) { return __awaiter(void 0, void 0, void 0, function () {
+    var id, responseV2, responseV3, result;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -287,8 +289,11 @@ exports.sendRequest = function (authorization, verifier, credentialRequests, ecc
             case 1:
                 responseV2 = _a.sent();
                 authorization = responseV2.authToken ? responseV2.authToken : authorization;
-                response = exports.sendRequestV3(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata);
-                return [2 /*return*/, response];
+                return [4 /*yield*/, exports.sendRequestV3(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata)];
+            case 2:
+                responseV3 = _a.sent();
+                result = { body: [responseV2.body, responseV3.body], authToken: responseV3.authToken };
+                return [2 /*return*/, result];
         }
     });
 }); };
