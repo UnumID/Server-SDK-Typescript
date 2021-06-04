@@ -1,6 +1,6 @@
 import { registerVerifier } from './verifier/registerVerifier';
 import { sendEmail } from './verifier/sendEmail';
-import { sendRequest } from './verifier/sendRequest';
+import { sendRequest, SendRequestResult } from './verifier/sendRequest';
 import { sendSms } from './verifier/sendSms';
 import { UnumDto, RegisteredVerifier, RegisteredIssuer, VerifiedStatus, DecryptedPresentation, CredentialInfo, CredentialStatusInfo } from './types';
 import { verifyPresentation } from './verifier/verifyPresentation';
@@ -14,5 +14,5 @@ import { CustError } from './utils/error';
 import { createProof, createProofPb } from './utils/createProof';
 import { convertCredentialSubject } from './utils/convertCredentialSubject';
 import { getRequest } from './verifier/getRequest';
-export { registerIssuer, issueCredential, updateCredentialStatus, registerVerifier, sendEmail, sendRequest, sendSms, verifyPresentation, checkCredentialStatus, UnumDto, RegisteredVerifier, VerifiedStatus, Presentation, RegisteredIssuer, CredentialSubject, DecryptedPresentation, CredentialStatusInfo, CustError, Proof, Credential, CredentialInfo, extractCredentialInfo, createProof, createProofPb, convertCredentialSubject, getRequest };
+export { registerIssuer, issueCredential, updateCredentialStatus, registerVerifier, sendEmail, sendRequest, sendSms, verifyPresentation, checkCredentialStatus, UnumDto, RegisteredVerifier, VerifiedStatus, Presentation, RegisteredIssuer, CredentialSubject, DecryptedPresentation, CredentialStatusInfo, SendRequestResult, CustError, Proof, Credential, CredentialInfo, extractCredentialInfo, createProof, createProofPb, convertCredentialSubject, getRequest };
 //# sourceMappingURL=index.d.ts.map

@@ -1,6 +1,7 @@
 import { PresentationRequestPostDto as PresentationRequestPostDtoDeprecatedV2, UnsignedPresentationRequest as UnsignedPresentationRequestDeprecatedV2, SignedPresentationRequest as SignedPresentationRequestDeprecatedV2 } from '@unumid/types-v2';
 import { CredentialRequest, PresentationRequestPostDto, UnsignedPresentationRequestPb, PresentationRequestPb, CredentialRequestPb } from '@unumid/types';
 import { SendRequestReqBody, UnumDto } from '../types';
+export declare type SendRequestResult = PresentationRequestPostDtoDeprecatedV2 | PresentationRequestPostDto;
 /**
  * Constructs an unsigned PresentationRequest from the incoming request body.
  * @param reqBody SendRequestReqBody
@@ -18,7 +19,6 @@ export declare const constructSignedPresentationRequestDeprecatedV2: (unsignedPr
  * @param privateKey String
  */
 export declare const constructSignedPresentationRequest: (unsignedPresentationRequest: UnsignedPresentationRequestPb, privateKey: string) => PresentationRequestPb;
-export declare type SendRequestResponse = PresentationRequestPostDtoDeprecatedV2 | PresentationRequestPostDto;
 /**
  * Handler for sending a PresentationRequest to UnumID's SaaS.
  * Middleware function where one can add requests of multiple versions to be encrypted and stored in the SaaS db for versioning needs.
@@ -28,7 +28,7 @@ export declare type SendRequestResponse = PresentationRequestPostDtoDeprecatedV2
  * @param eccPrivateKey
  * @param holderAppUuid
  */
-export declare const sendRequest: (authorization: string, verifier: string, credentialRequests: CredentialRequestPb[] | CredentialRequest[], eccPrivateKey: string, holderAppUuid: string, expirationDate?: Date | undefined, metadata?: Record<string, unknown> | undefined) => Promise<UnumDto<SendRequestResponse[]>>;
+export declare const sendRequest: (authorization: string, verifier: string, credentialRequests: CredentialRequestPb[] | CredentialRequest[], eccPrivateKey: string, holderAppUuid: string, expirationDate?: Date | undefined, metadata?: Record<string, unknown> | undefined) => Promise<UnumDto<SendRequestResult[]>>;
 /**
  * Handler for sending a PresentationRequest to UnumID's SaaS.
  * @param authorization
