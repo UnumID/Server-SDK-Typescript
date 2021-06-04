@@ -74,7 +74,6 @@ var validateCredentialInput = function (credentials) {
         var credential = credentials[i];
         // Validate the existence of elements in Credential object
         var invalidMsg = "Invalid verifiableCredential" + credPosStr + ":";
-        // if (!credential['@context']) {
         if (!credential.context) {
             retObj.valid = false;
             retObj.msg = invalidMsg + " context is required.";
