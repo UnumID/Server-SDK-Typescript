@@ -141,26 +141,16 @@ var validatePresentationRequest = function (presentationRequest) {
 };
 /**
  * Validates the attributes for a credential request to UnumID's SaaS.
- * @param credentials JSONObj
+ * @param requests CredentialRequest
  */
-// const validateCredentialInput = (credentials: JSONObj): JSONObj => {
-// TODO return a VerifiedStatus type with additional any array for passing back the type conforming objects
 var validateCredentialRequests = function (requests) {
-    // const retObj: JSONObj = { valid: true };
-    // const retObj: JSONObj = { valid: true, stringifiedDates: false, resultantCredentials: [] };
-    // const result: CredentialRequestPb[] = [];
-    // const retObj: JSONObj = { valid: true, resultantCredentials: [] };
     if (helpers_1.isArrayEmpty(requests)) {
-        // retObj.valid = false;
-        // retObj.msg = 'Invalid PresentationRequest: credentialRequests must be a non-empty array.';
-        // return (retObj);
         throw new error_1.CustError(400, 'Invalid PresentationRequest: verifiableCredential must be a non-empty array.');
     }
     var totCred = requests.length;
     for (var i = 0; i < totCred; i++) {
         var credPosStr = '[' + i + ']';
         var request = requests[i];
-        // const convertedRequest = request;
         if (!request.type) {
             throw new error_1.CustError(400, "Invalid PresentationRequest CredentialRequest" + credPosStr + ": type must be defined.");
         }
@@ -170,97 +160,6 @@ var validateCredentialRequests = function (requests) {
         if (!request.issuers) {
             throw new error_1.CustError(400, "Invalid PresentationRequest CredentialRequest" + credPosStr + ": issuers must be defined.");
         }
-        // if (typeof credential === 'string') {
-        //   retObj.stringifiedCredentials = true; // setting so know to add the object version of the stringified vc's
-        //   credential = JSON.parse(credential);
-        // }
-        // Validate the existence of elements in Credential object
-        // const invalidMsg = `Invalid verifiableCredential${credPosStr}:`;
-        // if (!credential['@context']) {
-        // if (!request.context) {
-        //   retObj.valid = false;
-        //   retObj.msg = `${invalidMsg} @context is required.`;
-        //   break;
-        // }
-        // if (!credential.credentialStatus) {
-        //   retObj.valid = false;
-        //   retObj.msg = `${invalidMsg} credentialStatus is required.`;
-        //   break;
-        // }
-        // if (!credential.credentialSubject) {
-        //   retObj.valid = false;
-        //   retObj.msg = `${invalidMsg} credentialSubject is required.`;
-        //   break;
-        // }
-        // if (!credential.issuer) {
-        //   retObj.valid = false;
-        //   retObj.msg = `${invalidMsg} issuer is required.`;
-        //   break;
-        // }
-        // if (!credential.type) {
-        //   retObj.valid = false;
-        //   retObj.msg = `${invalidMsg} type is required.`;
-        //   break;
-        // }
-        // if (!credential.id) {
-        //   retObj.valid = false;
-        //   retObj.msg = `${invalidMsg} id is required.`;
-        //   break;
-        // }
-        // if (!credential.issuanceDate) {
-        //   retObj.valid = false;
-        //   retObj.msg = `${invalidMsg} issuanceDate is required.`;
-        //   break;
-        // }
-        // // HACK ALERT: Handling converting string dates to Date. Note: only needed for now when using Protos with Date attributes
-        // // when we move to full grpc this will not be needed because not longer using json.
-        // if (typeof credential.expirationDate === 'string') {
-        //   retObj.stringifiedDates = true;
-        //   credential.issuanceDate = new Date(credential.issuanceDate);
-        // }
-        // if (typeof credential.expirationDate === 'string') {
-        //   retObj.stringifiedDates = true;
-        //   credential.expirationDate = new Date(credential.expirationDate);
-        // }
-        // if (!credential.proof) {
-        //   retObj.valid = false;
-        //   retObj.msg = `${invalidMsg} proof is required.`;
-        //   break;
-        // }
-        // // Check @context is an array and not empty
-        // if (isArrayEmpty(credential.context)) {
-        //   retObj.valid = false;
-        //   retObj.msg = `${invalidMsg} @context must be a non-empty array.`;
-        //   break;
-        // }
-        // // Check CredentialStatus object has id and type elements.
-        // if (!credential.credentialStatus.id || !credential.credentialStatus.type) {
-        //   retObj.valid = false;
-        //   retObj.msg = `${invalidMsg} credentialStatus must contain id and type properties.`;
-        //   break;
-        // }
-        // // Check credentialSubject object has id element.
-        // // if (!credential.credentialSubject.id) {
-        // const credentialSubject: CredentialSubject = convertCredentialSubject(credential.credentialSubject);
-        // if (!credentialSubject.id) {
-        //   retObj.valid = false;
-        //   retObj.msg = `${invalidMsg} credentialSubject must contain id property.`;
-        //   break;
-        // }
-        // // Check type is an array and not empty
-        // if (isArrayEmpty(credential.type)) {
-        //   retObj.valid = false;
-        //   retObj.msg = `${invalidMsg} type must be a non-empty array.`;
-        //   break;
-        // }
-        // // Check that proof object is valid
-        // credential.proof = validateProof(credential.proof);
-        // // HACK ALERT continued: this is assuming that if one credential date attribute is a string then all of them are.
-        // // this resultantCredentials array is then take the place of the creds in the presentation
-        // if (retObj.stringifiedDates) {
-        //   // Adding the credential to the result list so can use the fully created objects downstream
-        //   retObj.resultantCredentials.push(credential);
-        // }
     }
 };
 /**
@@ -272,7 +171,6 @@ function verifyPresentationRequest(authorization, presentationRequest) {
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
-                    // async function verifyPresentationRequest (authorization: string, presentationRequest: PresentationRequest): Promise<UnumDto<VerifiedStatus>> {
                     if (!presentationRequest.proof) {
                         throw new error_1.CustError(400, 'Invalid PresentationRequest: proof is required.');
                     }
