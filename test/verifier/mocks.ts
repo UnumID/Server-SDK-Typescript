@@ -1,5 +1,26 @@
 import { sign } from '@unumid/library-crypto';
-import { UnsignedCredentialPb, CredentialPb, DidDocument, HolderApp, IssuerInfo, IssuerInfoMap, JSONObj, PresentationRequestPostDto, UnsignedCredential, UnsignedPresentationRequest, Verifier, VerifierInfo, Credential, CredentialSubject, Proof, CredentialRequest, PresentationPb, UnsignedPresentationPb } from '@unumid/types';
+import {
+  UnsignedCredentialPb,
+  CredentialPb,
+  DidDocument,
+  HolderApp,
+  IssuerInfo,
+  IssuerInfoMap,
+  JSONObj,
+  PresentationRequestPostDto,
+  UnsignedCredential,
+  UnsignedPresentationRequest,
+  Verifier,
+  VerifierInfo,
+  Credential,
+  CredentialSubject,
+  Proof,
+  CredentialRequest,
+  PresentationPb,
+  UnsignedPresentationPb,
+  VersionedPresentationRequestDto,
+  PresentationRequestDto
+} from '@unumid/types';
 
 import stringify from 'fast-json-stable-stringify';
 
@@ -327,6 +348,15 @@ export const makeDummyPresentationRequestDto = async (options: MakeDummyPresenta
 // leaving this in as an alias so I don't have to go update all the files importing it by this name yet
 // TODO: remove this and use makeDummyPresentationRequestDto everywhere
 export const makeDummyPresentationRequestResponse = makeDummyPresentationRequestDto;
+
+export const makeDummyVersionedPresentationRequestDto = async (
+  options: MakeDummyPresentationRequestOptions = {}
+): Promise<VersionedPresentationRequestDto> => {
+  const presentationRequestDto = await makeDummyPresentationRequestDto(options);
+  return {
+    '3.0.0': presentationRequestDto
+  };
+};
 
 export const makeDummyVerifierApiKey = (): VerifierApiKey => {
   const now = new Date();
