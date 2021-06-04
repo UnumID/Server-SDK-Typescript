@@ -5,7 +5,7 @@ import { RESTData, UnumDto } from '../types';
 import logger from '../logger';
 import { CredentialStatusOptions, JSONObj, _CredentialStatusOptions } from '@unumid/types';
 import { CustError } from '../utils/error';
-import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
+import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
 
 /**
  * Helper to validate request inputs.
@@ -47,7 +47,7 @@ export const updateCredentialStatus = async (authorization: string, credentialId
     // make request to SaaS to update the CredentialStatus
     const response: JSONObj = await makeNetworkRequest<{ success: boolean }>(restData);
 
-    const authToken: string = handleAuthToken(response, authorization);
+    const authToken: string = handleAuthTokenHeader(response, authorization);
 
     const revokedCredential: UnumDto<undefined> = {
       authToken,

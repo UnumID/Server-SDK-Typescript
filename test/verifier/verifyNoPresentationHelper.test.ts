@@ -1,12 +1,12 @@
 import { omit } from 'lodash';
 
 import { VerifiedStatus, UnumDto } from '../../src/types';
-import { dummyAuthToken, dummyVerifierDid, makeDummyDidDocument } from './mocks';
-import { NoPresentation } from '@unumid/types';
+import { dummyAuthToken, dummyVerifierDid, makeDummyDidDocument, makeDummyPresentation } from './mocks';
 import { verifyNoPresentationHelper as verifyNoPresentation } from '../../src/verifier/verifyNoPresentationHelper';
 import { getDIDDoc } from '../../src/utils/didHelper';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { doVerify } from '../../src/utils/verify';
+import { PresentationPb } from '@unumid/types';
 
 jest.mock('../../src/utils/didHelper', () => {
   const actual = jest.requireActual('../../src/utils/didHelper');
@@ -34,7 +34,7 @@ const mockDoVerify = doVerify as jest.Mock;
 const mockMakeNetworkRequest = makeNetworkRequest as jest.Mock;
 
 const callVerifyNoPresentation = (
-  noPresentation: NoPresentation,
+  noPresentation: PresentationPb,
   verifier: string,
   authHeader?: string
 ): Promise<UnumDto<VerifiedStatus>> => {
@@ -42,39 +42,39 @@ const callVerifyNoPresentation = (
 };
 
 const verifier = 'did:unum:dd407b1a-ee7f-46a2-af2a-ccbb48cbb0dc';
-const dummyNoPresentation: NoPresentation = {
-  presentationRequestUuid: 'd5cc3673-d72f-45fa-bc87-36c305f8d0a5',
-  type: [
-    'NoPresentation',
-    'NoPresentation'
-  ],
-  verifierDid: verifier,
-  proof: {
-    signatureValue: 'AN1rKvtGeqaB4L16dr2gwF9jZF77hdhrb8iBsTgUTt2XqUyoJYnfQQmczxMuKLM2zWU6E6DSSaqzWVsisbD3VhG8taLWGx6BY',
-    unsignedValue: 'unsigned sig value',
-    created: '2020-09-29T00:05:57.107Z',
-    type: 'secp256r1signature2020',
-    verificationMethod: 'did:unum:50fb0b5b-79ff-4db9-9f33-d93feab702db',
-    proofPurpose: 'assertionMethod'
-  }
-};
-
-const dummyNoPresentationWithoutType = omit(dummyNoPresentation, 'type') as NoPresentation;
-const dummyNoPresentationWithoutRequestUuid = omit(dummyNoPresentation, 'presentationRequestUuid') as NoPresentation;
-const dummyNoPresentationWithoutHolder = omit(dummyNoPresentation, 'holder') as NoPresentation;
-const dummyNoPresentationWithoutProof = omit(dummyNoPresentation, 'proof') as NoPresentation;
-
-const dummyNoPresentationBadType = { ...dummyNoPresentation, type: {} } as NoPresentation;
-const dummyNoPresentationBadTypeKeywordMissing = { ...dummyNoPresentation, type: ['No No Presenation'] } as NoPresentation;
-const dummyNoPresentationBadRequestUuid = { ...dummyNoPresentation, presentationRequestUuid: {} } as NoPresentation;
-const dummyNoPresentationBadHolder = { ...dummyNoPresentation, holder: {} } as NoPresentation;
-const dummyNoPresentationBadProof = { ...dummyNoPresentation, proof: {} } as NoPresentation;
-
-const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
 
 describe('verifyNoPresentation', () => {
+  let dummyNoPresentation;
+
+  let dummyNoPresentationWithoutType;
+  let dummyNoPresentationWithoutRequestUuid;
+  let dummyNoPresentationWithoutHolder;
+  let dummyNoPresentationWithoutProof;
+
+  let dummyNoPresentationBadType;
+  let dummyNoPresentationBadTypeKeywordMissing;
+  let dummyNoPresentationBadRequestUuid;
+  let dummyNoPresentationBadHolder;
+  let dummyNoPresentationBadProof;
+
+  const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
+
   beforeAll(async () => {
-    const dummyDidDoc = await makeDummyDidDocument({ id: dummyNoPresentation.holder });
+    const dummyNoPresentation = await makeDummyPresentation({ verifierDid: verifier, context: [], type: ['NoPresentation', 'NoPresentation'], verifiableCredential: [] });
+
+    dummyNoPresentationWithoutType = omit(dummyNoPresentation, 'type') as PresentationPb;
+    dummyNoPresentationWithoutRequestUuid = omit(dummyNoPresentation, 'presentationRequestUuid') as PresentationPb;
+    dummyNoPresentationWithoutHolder = omit(dummyNoPresentation, 'holder') as PresentationPb;
+    dummyNoPresentationWithoutProof = omit(dummyNoPresentation, 'proof') as PresentationPb;
+
+    dummyNoPresentationBadType = { ...dummyNoPresentation, type: {} } as PresentationPb;
+    dummyNoPresentationBadTypeKeywordMissing = { ...dummyNoPresentation, type: ['No No Presenation'] } as PresentationPb;
+    dummyNoPresentationBadRequestUuid = { ...dummyNoPresentation, presentationRequestUuid: {} } as PresentationPb;
+    dummyNoPresentationBadHolder = { ...dummyNoPresentation, holder: {} } as PresentationPb;
+    dummyNoPresentationBadProof = { ...dummyNoPresentation, proof: {} } as PresentationPb;
+
+    // const dummyDidDoc = await makeDummyDidDocument({ id: dummyNoPresentation.holder });
+    const dummyDidDoc = await makeDummyDidDocument({ });
     const headers = { 'x-auth-token': dummyAuthToken };
     mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
     mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers });
@@ -89,7 +89,8 @@ describe('verifyNoPresentation', () => {
 
     beforeEach(async () => {
       mockDoVerify.mockReturnValue(true);
-      response = await callVerifyNoPresentation(dummyNoPresentation, verifier, authHeader);
+      const dummyNoPresentationLocal = await makeDummyPresentation({ verifierDid: verifier, context: [], type: ['NoPresentation', 'NoPresentation'], verifiableCredential: [] });
+      response = await callVerifyNoPresentation(dummyNoPresentationLocal, verifier, authHeader);
       responseAuthToken = response.authToken;
     });
 
@@ -114,7 +115,8 @@ describe('verifyNoPresentation', () => {
       const dummyApiResponse = { body: dummySubjectDidDoc };
       mockMakeNetworkRequest.mockResolvedValueOnce(dummyApiResponse);
       mockGetDIDDoc.mockResolvedValue({ body: dummySubjectDidDoc });
-      response = await callVerifyNoPresentation(dummyNoPresentation, verifier, authHeader);
+      const dummyNoPresentationLocal = await makeDummyPresentation({ context: [], type: ['NoPresentation', 'NoPresentation'], verifiableCredential: [] });
+      response = await callVerifyNoPresentation(dummyNoPresentationLocal, verifier, authHeader);
 
       expect(response.authToken).toBe(authHeader);
     });

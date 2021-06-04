@@ -51,7 +51,7 @@ export const makeNetworkRequest = async <T = unknown> (inputObj: RESTData): Prom
  * Helper to handle safe auth token handling in responses from UnumID's Saas via makeNetworkRequest
  * @param response JSONObj
  */
-export const handleAuthToken = (response:JSONObj, existingAuthToken?:string): string => {
+export const handleAuthTokenHeader = (response:JSONObj, existingAuthToken?:string): string => {
   const authTokenResp = response && response.headers && response.headers['x-auth-token'] ? response.headers['x-auth-token'] : '';
 
   // Ensuring that the authToken attribute is presented as a string or undefined. The header values can be a string | string[] so hence the complex ternary.

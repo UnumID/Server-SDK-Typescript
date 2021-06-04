@@ -49,6 +49,7 @@ var error_1 = require("../utils/error");
 var helpers_1 = require("../utils/helpers");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var verify_1 = require("../utils/verify");
+var types_1 = require("@unumid/types");
 var didHelper_1 = require("../utils/didHelper");
 /**
  * Validates the NoPresentation type to ensure the necessary attributes.
@@ -74,10 +75,11 @@ exports.validateNoPresentationParams = function (noPresentation) {
     if (typeof presentationRequestUuid !== 'string') {
         throw new error_1.CustError(400, 'Invalid presentationRequestUuid: must be a string.');
     }
-    if (verifiableCredential || helpers_1.isArrayNotEmpty(verifiableCredential)) {
+    if (verifiableCredential && helpers_1.isArrayNotEmpty(verifiableCredential)) {
         throw new error_1.CustError(400, 'Invalid Declined Presentation: verifiableCredential must be undefined or empty.'); // this should never happen base on upstream logic
     }
-    validateProof_1.validateProof(proof);
+    noPresentation.proof = validateProof_1.validateProof(proof);
+    return noPresentation;
 };
 /**
  * Handler for when a user does not agree to share the information in the credential request.
@@ -86,14 +88,17 @@ exports.validateNoPresentationParams = function (noPresentation) {
  * @param verifier
  */
 exports.verifyNoPresentationHelper = function (authorization, noPresentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, verificationMethod, signatureValue, unsignedValue, verifierDid, result_1, didDocumentResponse, authToken, publicKeyInfos, _b, publicKey, encoding, unsignedNoPresentation, isVerified, result_2, receiptOptions, receiptCallOptions, resp, result, e_1;
+    var _a, verificationMethod, signatureValue, verifierDid, result_1, didDocumentResponse, authToken, publicKeyInfos, _b, publicKey, encoding, unsignedNoPresentation, bytes, isVerified, result_2, receiptOptions, receiptCallOptions, resp, result, e_1;
     return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
                 _c.trys.push([0, 3, , 4]);
                 requireAuth_1.requireAuth(authorization);
-                exports.validateNoPresentationParams(noPresentation);
-                _a = noPresentation.proof, verificationMethod = _a.verificationMethod, signatureValue = _a.signatureValue, unsignedValue = _a.unsignedValue, verifierDid = noPresentation.verifierDid;
+                noPresentation = exports.validateNoPresentationParams(noPresentation);
+                if (!noPresentation.proof) {
+                    throw new error_1.CustError(400, 'Invalid Presentation: proof is required.');
+                }
+                _a = noPresentation.proof, verificationMethod = _a.verificationMethod, signatureValue = _a.signatureValue, verifierDid = noPresentation.verifierDid;
                 // validate that the verifier did provided matches the verifier did in the presentation
                 if (verifierDid !== verifier) {
                     result_1 = {
@@ -111,11 +116,12 @@ exports.verifyNoPresentationHelper = function (authorization, noPresentation, ve
                 if (didDocumentResponse instanceof Error) {
                     throw didDocumentResponse;
                 }
-                authToken = networkRequestHelper_1.handleAuthToken(didDocumentResponse, authorization);
+                authToken = networkRequestHelper_1.handleAuthTokenHeader(didDocumentResponse, authorization);
                 publicKeyInfos = didHelper_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 _b = publicKeyInfos[0], publicKey = _b.publicKey, encoding = _b.encoding;
                 unsignedNoPresentation = lodash_1.omit(noPresentation, 'proof');
-                isVerified = verify_1.doVerify(signatureValue, unsignedNoPresentation, publicKey, encoding, unsignedValue);
+                bytes = types_1.UnsignedPresentationPb.encode(unsignedNoPresentation).finish();
+                isVerified = verify_1.doVerify(signatureValue, bytes, publicKey, encoding);
                 if (!isVerified) {
                     result_2 = {
                         authToken: authToken,
@@ -144,7 +150,7 @@ exports.verifyNoPresentationHelper = function (authorization, noPresentation, ve
                 return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(receiptCallOptions)];
             case 2:
                 resp = _c.sent();
-                authToken = networkRequestHelper_1.handleAuthToken(resp, authToken);
+                authToken = networkRequestHelper_1.handleAuthTokenHeader(resp, authToken);
                 result = {
                     authToken: authToken,
                     body: {

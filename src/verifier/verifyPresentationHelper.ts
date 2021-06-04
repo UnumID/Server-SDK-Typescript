@@ -2,7 +2,7 @@ import { omit } from 'lodash';
 
 import { configData } from '../config';
 import { CredentialStatusInfo, RESTData, UnumDto, VerifiedStatus } from '../types';
-import { Presentation, Credential, CredentialRequest, Proof, PublicKeyInfo, JSONObj, CredentialSubject } from '@unumid/types';
+import { Presentation, Credential, CredentialRequest, Proof, PublicKeyInfo, JSONObj, PresentationPb, CredentialPb, ProofPb, UnsignedPresentationPb, CredentialSubject } from '@unumid/types';
 import { validateProof } from './validateProof';
 import { requireAuth } from '../requireAuth';
 import { verifyCredential } from './verifyCredential';
@@ -13,16 +13,17 @@ import { CryptoError } from '@unumid/library-crypto';
 import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
 import { CustError } from '../utils/error';
 import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
-import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
+import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
 import { convertCredentialSubject } from '../utils/convertCredentialSubject';
 
 /**
- * Validates the attributes for a credential request to UnumID's SaaS.
+ * Validates the attributes for a credential from UnumId's Saas
  * @param credentials JSONObj
  */
-const validateCredentialInput = (credentials: JSONObj): JSONObj => {
-  const retObj: JSONObj = { valid: true, stringifiedCredentials: false, resultantCredentials: [] };
+// TODO return a VerifiedStatus type with additional any array for passing back the type conforming objects
+const validateCredentialInput = (credentials: CredentialPb[]): JSONObj => {
+  const retObj: JSONObj = { valid: true, stringifiedDates: false, resultantCredentials: [] };
 
   if (isArrayEmpty(credentials)) {
     retObj.valid = false;
@@ -34,18 +35,14 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
   const totCred = credentials.length;
   for (let i = 0; i < totCred; i++) {
     const credPosStr = '[' + i + ']';
-    let credential = credentials[i];
-
-    if (typeof credential === 'string') {
-      retObj.stringifiedCredentials = true; // setting so know to add the object version of the stringified vc's
-      credential = JSON.parse(credential);
-    }
+    const credential = credentials[i];
 
     // Validate the existence of elements in Credential object
     const invalidMsg = `Invalid verifiableCredential${credPosStr}:`;
-    if (!credential['@context']) {
+    // if (!credential['@context']) {
+    if (!credential.context) {
       retObj.valid = false;
-      retObj.msg = `${invalidMsg} @context is required.`;
+      retObj.msg = `${invalidMsg} context is required.`;
       break;
     }
 
@@ -85,6 +82,18 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
       break;
     }
 
+    // HACK ALERT: Handling converting string dates to Date. Note: only needed for now when using Protos with Date attributes
+    // when we move to full grpc this will not be needed because not longer using json.
+    if (typeof credential.expirationDate === 'string') {
+      retObj.stringifiedDates = true;
+      credential.issuanceDate = new Date(credential.issuanceDate);
+    }
+
+    if (typeof credential.expirationDate === 'string') {
+      retObj.stringifiedDates = true;
+      credential.expirationDate = new Date(credential.expirationDate);
+    }
+
     if (!credential.proof) {
       retObj.valid = false;
       retObj.msg = `${invalidMsg} proof is required.`;
@@ -92,9 +101,9 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
     }
 
     // Check @context is an array and not empty
-    if (isArrayEmpty(credential['@context'])) {
+    if (isArrayEmpty(credential.context)) {
       retObj.valid = false;
-      retObj.msg = `${invalidMsg} @context must be a non-empty array.`;
+      retObj.msg = `${invalidMsg} context must be a non-empty array.`;
       break;
     }
 
@@ -121,9 +130,11 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
     }
 
     // Check that proof object is valid
-    validateProof(credential.proof);
+    credential.proof = validateProof(credential.proof);
 
-    if (retObj.stringifiedCredentials) {
+    // HACK ALERT continued: this is assuming that if one credential date attribute is a string then all of them are.
+    // this resultantCredentials array is then take the place of the creds in the presentation
+    if (retObj.stringifiedDates) {
       // Adding the credential to the result list so can use the fully created objects downstream
       retObj.resultantCredentials.push(credential);
     }
@@ -137,14 +148,13 @@ const validateCredentialInput = (credentials: JSONObj): JSONObj => {
  * Returns the fully formed verifiableCredential object list if applicable (if was sent as a stringified object)
  * @param presentation Presentation
  */
-const validatePresentation = (presentation: Presentation): Presentation => {
-  const context = presentation['@context'];
-  const { type, verifiableCredential, proof, presentationRequestUuid, verifierDid } = presentation;
+const validatePresentation = (presentation: PresentationPb): PresentationPb => {
+  const { type, verifiableCredential, proof, presentationRequestUuid, verifierDid, context } = presentation;
   let retObj: JSONObj = {};
 
   // validate required fields
   if (!context) {
-    throw new CustError(400, 'Invalid Presentation: @context is required.');
+    throw new CustError(400, 'Invalid Presentation: context is required.');
   }
 
   if (!type) {
@@ -168,23 +178,27 @@ const validatePresentation = (presentation: Presentation): Presentation => {
   }
 
   if (isArrayEmpty(context)) {
-    throw new CustError(400, 'Invalid Presentation: @context must be a non-empty array.');
+    throw new CustError(400, 'Invalid Presentation: context must be a non-empty array.');
   }
 
   if (isArrayEmpty(type)) {
     throw new CustError(400, 'Invalid Presentation: type must be a non-empty array.');
   }
 
+  if (type[0] !== 'VerifiablePresentation') {
+    throw new CustError(400, 'Invalid Presentation: type\'s first array element must be VerifiablePresentation.');
+  }
+
   retObj = validateCredentialInput(verifiableCredential);
   if (!retObj.valid) {
     throw new CustError(400, retObj.msg);
-  } else if (retObj.stringifiedCredentials) {
-    // adding the "objectified" vc, which were sent in string format to appease iOS variable keyed object limitation: https://developer.apple.com/forums/thread/100417
+  } else if (retObj.stringifiedDates) {
+    // adding the credentials, which which now have the proper date attributes, Date for proto encoding for signature verification.
     presentation.verifiableCredential = retObj.resultantCredentials;
   }
 
   // Check proof object is formatted correctly
-  validateProof(proof);
+  presentation.proof = validateProof(proof);
 
   return presentation;
 };
@@ -196,7 +210,7 @@ const validatePresentation = (presentation: Presentation): Presentation => {
  * @param presentation Presentation
  * @param credentialRequests CredentialRequest[]
  */
-function validatePresentationMeetsRequestedCredentials (presentation: Presentation, credentialRequests: CredentialRequest[]) {
+function validatePresentationMeetsRequestedCredentials (presentation: PresentationPb, credentialRequests: CredentialRequest[]) {
   if (!presentation.verifiableCredential) {
     return; // just skip because this is a declined presentation
   }
@@ -204,7 +218,7 @@ function validatePresentationMeetsRequestedCredentials (presentation: Presentati
   for (const requestedCred of credentialRequests) {
     if (requestedCred.required) {
       // check that the request credential is present in the presentation
-      const presentationCreds:Credential[] = presentation.verifiableCredential;
+      const presentationCreds:CredentialPb[] = presentation.verifiableCredential;
       let found = false;
       for (const presentationCred of presentationCreds) {
         // checking required credential types are presents
@@ -240,7 +254,7 @@ function validatePresentationMeetsRequestedCredentials (presentation: Presentati
  * @param presentation
  * @param verifier
  */
-export const verifyPresentationHelper = async (authorization: string, presentation: Presentation, verifier: string, credentialRequests?: CredentialRequest[]): Promise<UnumDto<VerifiedStatus>> => {
+export const verifyPresentationHelper = async (authorization: string, presentation: PresentationPb, verifier: string, credentialRequests?: CredentialRequest[]): Promise<UnumDto<VerifiedStatus>> => {
   try {
     requireAuth(authorization);
 
@@ -252,7 +266,8 @@ export const verifyPresentationHelper = async (authorization: string, presentati
       throw new CustError(400, 'verifier is required.');
     }
 
-    const data = omit(presentation, 'proof'); // Note: important that this data variable is created prior to the validation thanks to validatePresentation taking potentially stringified VerifiableCredentials objects array and converting them to proper objects.
+    // Note: important that this data variable is created prior to the validation thanks to validatePresentation taking potentially stringified VerifiableCredentials objects array and converting them to proper objects.
+    const data: UnsignedPresentationPb = omit(presentation, 'proof');
     presentation = validatePresentation(presentation);
 
     if (!presentation.verifiableCredential) {
@@ -277,7 +292,11 @@ export const verifyPresentationHelper = async (authorization: string, presentati
       validatePresentationMeetsRequestedCredentials(presentation, credentialRequests as CredentialRequest[]);
     }
 
-    const proof: Proof = presentation.proof;
+    if (!presentation.proof) {
+      throw new CustError(400, 'presentation proof is required.');
+    }
+
+    const proof: ProofPb = presentation.proof;
 
     // proof.verificationMethod is the subject's did
     const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, proof.verificationMethod);
@@ -286,7 +305,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
       throw didDocumentResponse;
     }
 
-    let authToken: string = handleAuthToken(didDocumentResponse, authorization); // Note: going to use authToken instead of authorization for subsequent requests in case saas rolls to token.
+    let authToken: string = handleAuthTokenHeader(didDocumentResponse, authorization); // Note: going to use authToken instead of authorization for subsequent requests in case saas rolls to token.
     const pubKeyObj: PublicKeyInfo[] = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
     if (pubKeyObj.length === 0) {
@@ -307,12 +326,16 @@ export const verifyPresentationHelper = async (authorization: string, presentati
     // this logic to verify each credential present separately.  We can take this up later.
     let isPresentationVerified = false;
     try {
-      isPresentationVerified = doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding, proof.unsignedValue);
+      // create byte array from protobuf helpers
+      const bytes = UnsignedPresentationPb.encode(data).finish();
+
+      // verify the signature
+      isPresentationVerified = doVerify(proof.signatureValue, bytes, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
     } catch (e) {
       if (e instanceof CryptoError) {
-        logger.error(`CryptoError verifying presentation ${presentation.uuid} signature`, e);
+        logger.error(`CryptoError verifying presentation ${JSON.stringify(presentation)} signature`, e);
       } else {
-        logger.error(`Error verifying presentation ${presentation.uuid} signature`, e);
+        logger.error(`Error verifying presentation ${JSON.stringify(presentation)} signature`, e);
       }
 
       // need to return the UnumDto with the (potentially) updated authToken
@@ -401,7 +424,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
     };
 
     const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
-    authToken = handleAuthToken(resp, authToken);
+    authToken = handleAuthTokenHeader(resp, authToken);
 
     const result: UnumDto<VerifiedStatus> = {
       authToken,

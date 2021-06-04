@@ -8,16 +8,16 @@ import { requireAuth } from '../requireAuth';
 import logger from '../logger';
 import { CustError } from '../utils/error';
 import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
-import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
+import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
-import { Presentation, JSONObj } from '@unumid/types';
+import { Presentation, JSONObj, PresentationPb, UnsignedPresentationPb } from '@unumid/types';
 import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
 
 /**
  * Validates the NoPresentation type to ensure the necessary attributes.
  * @param noPresentation NoPresentation
  */
-export const validateNoPresentationParams = (noPresentation: Presentation): void => {
+export const validateNoPresentationParams = (noPresentation: PresentationPb): PresentationPb => {
   const {
     type,
     proof,
@@ -50,11 +50,13 @@ export const validateNoPresentationParams = (noPresentation: Presentation): void
     throw new CustError(400, 'Invalid presentationRequestUuid: must be a string.');
   }
 
-  if (verifiableCredential || isArrayNotEmpty(verifiableCredential)) {
+  if (verifiableCredential && isArrayNotEmpty(verifiableCredential)) {
     throw new CustError(400, 'Invalid Declined Presentation: verifiableCredential must be undefined or empty.'); // this should never happen base on upstream logic
   }
 
-  validateProof(proof);
+  noPresentation.proof = validateProof(proof);
+
+  return noPresentation;
 };
 
 /**
@@ -63,13 +65,17 @@ export const validateNoPresentationParams = (noPresentation: Presentation): void
  * @param noPresentation
  * @param verifier
  */
-export const verifyNoPresentationHelper = async (authorization: string, noPresentation: Presentation, verifier: string): Promise<UnumDto<VerifiedStatus>> => {
+export const verifyNoPresentationHelper = async (authorization: string, noPresentation: PresentationPb, verifier: string): Promise<UnumDto<VerifiedStatus>> => {
   try {
     requireAuth(authorization);
 
-    validateNoPresentationParams(noPresentation);
+    noPresentation = validateNoPresentationParams(noPresentation);
 
-    const { proof: { verificationMethod, signatureValue, unsignedValue }, verifierDid } = noPresentation;
+    if (!noPresentation.proof) {
+      throw new CustError(400, 'Invalid Presentation: proof is required.');
+    }
+
+    const { proof: { verificationMethod, signatureValue }, verifierDid } = noPresentation;
 
     // validate that the verifier did provided matches the verifier did in the presentation
     if (verifierDid !== verifier) {
@@ -89,14 +95,19 @@ export const verifyNoPresentationHelper = async (authorization: string, noPresen
       throw didDocumentResponse;
     }
 
-    let authToken: string = handleAuthToken(didDocumentResponse, authorization);
+    let authToken: string = handleAuthTokenHeader(didDocumentResponse, authorization);
     const publicKeyInfos = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
     const { publicKey, encoding } = publicKeyInfos[0];
 
-    const unsignedNoPresentation = omit(noPresentation, 'proof');
+    // remove the proof attribute
+    const unsignedNoPresentation: UnsignedPresentationPb = omit(noPresentation, 'proof');
 
-    const isVerified = doVerify(signatureValue, unsignedNoPresentation, publicKey, encoding, unsignedValue);
+    // create byte array from protobuf helpers
+    const bytes = UnsignedPresentationPb.encode(unsignedNoPresentation).finish();
+
+    // verify the signature
+    const isVerified = doVerify(signatureValue, bytes, publicKey, encoding);
 
     if (!isVerified) {
       const result: UnumDto<VerifiedStatus> = {
@@ -128,7 +139,7 @@ export const verifyNoPresentationHelper = async (authorization: string, noPresen
 
     const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
 
-    authToken = handleAuthToken(resp, authToken);
+    authToken = handleAuthTokenHeader(resp, authToken);
 
     const result: UnumDto<VerifiedStatus> = {
       authToken,

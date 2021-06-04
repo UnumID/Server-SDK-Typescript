@@ -1,20 +1,12 @@
-import {
-  DidDocument,
-  HolderApp,
-  IssuerInfo,
-  IssuerInfoMap,
-  PresentationRequestDto,
-  UnsignedCredential,
-  UnsignedPresentationRequest,
-  Verifier,
-  VerifierInfo,
-  Credential
-} from '@unumid/types';
+import { sign } from '@unumid/library-crypto';
+import { UnsignedCredentialPb, CredentialPb, DidDocument, HolderApp, IssuerInfo, IssuerInfoMap, JSONObj, PresentationRequestPostDto, UnsignedCredential, UnsignedPresentationRequest, Verifier, VerifierInfo, Credential, CredentialSubject, Proof, CredentialRequest, PresentationPb, UnsignedPresentationPb } from '@unumid/types';
+
+import stringify from 'fast-json-stable-stringify';
 
 import { configData } from '../../src/config';
 import { RESTResponse, VerifierApiKey } from '../../src/types';
 import { createKeyPairSet } from '../../src/utils/createKeyPairs';
-import { createProof } from '../../src/utils/createProof';
+import { createProof, createProofPb } from '../../src/utils/createProof';
 import { getUUID } from '../../src/utils/helpers';
 
 export const dummyIssuerDid = `did:unum:${getUUID()}`;
@@ -30,8 +22,15 @@ export const dummyRsaPrivateKey = '-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkq
 export const dummyEccPublicKey = 'aSq9DsNNvGhYxYyqA9wd2eduEAZ5AXWgJTbTKcK5rUyWBBvenyGeVgJFo2UQRRwcNhVQTAMYkzoWRNSaqxsvp6MTXLNiopgnmAMNCNV9AmnwGPHUpTpmzT5YTAVq';
 export const dummyEccPrivateKey = '2EPbyvKQKUaUPMF7Mm94FjEzvs5tsLWfesyc97W1dqYeeZFEG3RbKtndUZSYBdcp4xQtukTc6yUB4vyfWrxWqm1wPsY1g7uPaRftRJ57WaJ5zMWHpVagZdK7FVz2qUXHc7Fs5JwoxixcYwxDu4iL29y9KWyexi3CQKT2Ze3SSRqz9ZzTzhusitc7TjLBm';
 
-export interface DummyCredentialOptions {
+export interface DummyCredentialOptionsDeprecated {
   unsignedCredential: UnsignedCredential;
+  privateKey?: string;
+  privateKeyId?: string;
+  encoding?: 'base58' | 'pem'
+}
+
+export interface DummyCredentialOptions {
+  unsignedCredential: UnsignedCredentialPb;
   privateKey?: string;
   privateKeyId?: string;
   encoding?: 'base58' | 'pem'
@@ -45,7 +44,7 @@ export interface DummyUnsignedCredentialOptions {
   expirationDate?: Date;
 }
 
-export const makeDummyUnsignedCredential = (options: DummyUnsignedCredentialOptions = {}): UnsignedCredential => {
+export const makeDummyUnsignedCredentialDeprecated = (options: DummyUnsignedCredentialOptions = {}): UnsignedCredential => {
   const id = getUUID();
   const issuer = options.issuer || dummyIssuerDid;
   const subject = options.subject || dummySubjectDid;
@@ -68,7 +67,32 @@ export const makeDummyUnsignedCredential = (options: DummyUnsignedCredentialOpti
   };
 };
 
-export const makeDummyCredential = async (options: DummyCredentialOptions): Promise<Credential> => {
+export const makeDummyUnsignedCredential = (options: DummyUnsignedCredentialOptions = {}): UnsignedCredentialPb => {
+  const id = getUUID();
+  const issuer = options.issuer || dummyIssuerDid;
+  const subject = options.subject || dummySubjectDid;
+  const type = options.type || 'DummyCredential';
+  const claims = options.claims || { value: 'Dummy' };
+
+  return {
+    context: ['https://www.w3.org/2018/credentials/v1'],
+    id,
+    type: ['VerifiableCredential', type],
+    issuer,
+    credentialSubject: JSON.stringify({
+      id: subject,
+      ...claims
+    }),
+    credentialStatus: {
+      id: `${configData.SaaSUrl}/credentialStatus/${id}`,
+      type: 'CredentialStatus'
+    },
+    issuanceDate: new Date(),
+    expirationDate: options.expirationDate
+  };
+};
+
+export const makeDummyCredentialDeprecated = async (options: DummyCredentialOptionsDeprecated): Promise<Credential> => {
   const { unsignedCredential, encoding } = options;
   let { privateKey } = options;
   if (!privateKey) {
@@ -81,6 +105,28 @@ export const makeDummyCredential = async (options: DummyCredentialOptions): Prom
   const issuerDidWithKeyFragment = `${unsignedCredential.issuer}#${privateKeyId}`;
 
   const proof = createProof(unsignedCredential, privateKey, issuerDidWithKeyFragment, encoding);
+
+  return {
+    ...unsignedCredential,
+    proof
+  };
+};
+
+export const makeDummyCredential = async (options: DummyCredentialOptions): Promise<CredentialPb> => {
+  const { encoding } = options;
+  const unsignedCredential: UnsignedCredentialPb = options.unsignedCredential;
+  let { privateKey } = options;
+  if (!privateKey) {
+    const keys = await createKeyPairSet(encoding);
+    privateKey = keys.signing.privateKey;
+  }
+
+  const privateKeyId = options.privateKeyId || getUUID();
+
+  const issuerDidWithKeyFragment = `${unsignedCredential.issuer}#${privateKeyId}`;
+
+  const bytes = UnsignedCredentialPb.encode(unsignedCredential).finish();
+  const proof = createProofPb(bytes, privateKey, issuerDidWithKeyFragment, encoding);
 
   return {
     ...unsignedCredential,
@@ -175,9 +221,11 @@ export const dummyCredentialRequest = {
 export const makeDummyUnsignedPresentationRequest = (options: Partial<UnsignedPresentationRequest> = {}): UnsignedPresentationRequest => {
   const credentialRequests = options.credentialRequests || [dummyCredentialRequest];
   const uuid = options.uuid || getUUID();
-  const { expiresAt, metadata } = options;
+  const expiresAt = options.expiresAt;
   const holderAppUuid = options.holderAppUuid || getUUID();
   const verifier = options.verifier || dummyVerifierDid;
+  const id = options.id || getUUID();
+  const metadata = options.metadata || { fields: {} };
 
   return {
     uuid,
@@ -185,7 +233,8 @@ export const makeDummyUnsignedPresentationRequest = (options: Partial<UnsignedPr
     holderAppUuid,
     verifier,
     expiresAt,
-    metadata
+    metadata,
+    id
   };
 };
 
@@ -288,5 +337,102 @@ export const makeDummyVerifierApiKey = (): VerifierApiKey => {
     type: 'Verifier',
     createdAt: now,
     updatedAt: now
+  };
+};
+
+export interface MakeDummyPresentationOptions {
+  unsignedPresentationRequest?: UnsignedPresentationRequest;
+  privateKey?: string;
+  privateKeyId?: string;
+  encoding?: 'pem' | 'base58';
+  createdAt?: Date;
+  updatedAt?: Date;
+  verifierDid?: string;
+  context?: string[]
+  type?: string[]
+  presentationRequestUuid?: string
+  verifiableCredential?: CredentialPb[]
+
+  unsignedPresentationRequestLiteral?: boolean;
+  privateKeyLiteral?: boolean;
+  privateKeyIdLiteral?: boolean;
+  encodingLiteral?: boolean;
+  createdAtLiteral?: boolean;
+  updatedAtLiteral?: boolean;
+  verifierDidLiteral?: boolean;
+  contextLiteral?: boolean;
+  typeLiteral?: boolean;
+  presentationRequestUuidLiteral?: boolean;
+  verifiableCredentialLiteral?: boolean;
+}
+
+export const makeDummyUnsignedPresentation = async (options: MakeDummyPresentationOptions): Promise<PresentationPb> => {
+  const verifierDid = options.verifierDid || dummyVerifierDid;
+
+  const context = options.context || ['https://www.w3.org/2018/credentials/v1'];
+  const type = options.type || ['VerifiablePresentation'];
+  const presentationRequestUuid = options.presentationRequestUuid || getUUID();
+
+  const unsignedCredential: UnsignedCredentialPb = makeDummyUnsignedCredential();
+  const credOptions: DummyCredentialOptions = {
+    unsignedCredential
+  };
+  const credential = await makeDummyCredential(credOptions);
+  const credentials = [credential];
+
+  const verifiableCredential = options.verifiableCredential || credentials;
+
+  const unsignedPresentation: UnsignedPresentationPb = {
+    context,
+    type,
+    presentationRequestUuid,
+    verifierDid,
+    verifiableCredential
+  };
+
+  return unsignedPresentation;
+};
+
+export const makeDummyPresentation = async (options: MakeDummyPresentationOptions): Promise<PresentationPb> => {
+  const privateKeyId = options.privateKeyIdLiteral ? options.privateKeyId : options.privateKeyId || getUUID();
+  const encoding = options.encodingLiteral ? options.encoding : options.encoding || 'pem';
+
+  const verifierDid = options.verifierDidLiteral ? options.verifierDid : options.verifierDid || dummyVerifierDid;
+
+  const context = options.contextLiteral ? options.context : options.context || ['https://www.w3.org/2018/credentials/v1'];
+  const type = options.typeLiteral ? options.type : options.type || ['VerifiablePresentation'];
+  const presentationRequestUuid = options.presentationRequestUuidLiteral ? options.presentationRequestUuid : options.presentationRequestUuid || getUUID();
+
+  const unsignedCredential: UnsignedCredentialPb = makeDummyUnsignedCredential();
+  const credOptions: DummyCredentialOptions = {
+    unsignedCredential
+  };
+  const credential = await makeDummyCredential(credOptions);
+  const credentials = [credential];
+
+  const verifiableCredential = options.verifiableCredentialLiteral ? options.verifiableCredential : options.verifiableCredential || credentials;
+
+  const unsignedPresentation: UnsignedPresentationPb = {
+    context,
+    type,
+    presentationRequestUuid,
+    verifierDid,
+    verifiableCredential
+  };
+
+  let { privateKey } = options;
+
+  if (!privateKey) {
+    const keypairs = await createKeyPairSet();
+    privateKey = keypairs.signing.privateKey;
+  }
+
+  const verifierDidWithKeyFragment = `${unsignedPresentation.verifierDid}#${privateKeyId}`;
+  const bytes: Uint8Array = UnsignedPresentationPb.encode(unsignedPresentation).finish();
+  const proof = createProofPb(bytes, privateKey, verifierDidWithKeyFragment, encoding);
+
+  return {
+    ...unsignedPresentation,
+    proof
   };
 };

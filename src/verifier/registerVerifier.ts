@@ -5,7 +5,7 @@ import { DidKeyType, KeyPair, PublicKeyInfo, VerifierOptions, VersionInfo, JSONO
 import { CustError } from '..';
 import { createKeyPairSet } from '../utils/createKeyPairs';
 import { getUUID } from '../utils/helpers';
-import { makeNetworkRequest, handleAuthToken } from '../utils/networkRequestHelper';
+import { makeNetworkRequest, handleAuthTokenHeader } from '../utils/networkRequestHelper';
 
 /**
  * Creates an object to encapsulate key information.
@@ -80,7 +80,7 @@ export const registerVerifier = async (name: string, customerUuid: string, url: 
 
     const restResp: JSONObj = await makeNetworkRequest(restData);
 
-    const authToken: string = handleAuthToken(restResp);
+    const authToken: string = handleAuthTokenHeader(restResp);
 
     const verifierResp: UnumDto<RegisteredVerifier> = {
       authToken,

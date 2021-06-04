@@ -1,7 +1,7 @@
 import { PresentationRequestDto } from '@unumid/types';
 import { configData } from '../config';
 import { RESTData, UnumDto } from '../types';
-import { handleAuthToken, makeNetworkRequest } from '../utils/networkRequestHelper';
+import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
 import logger from '../logger';
 import { requireAuth } from '../requireAuth';
 
@@ -26,7 +26,7 @@ export const getRequest = async (
 
     const response = await makeNetworkRequest<PresentationRequestDto>(data);
     console.log('response', response);
-    const authToken = handleAuthToken(response, authorization);
+    const authToken = handleAuthTokenHeader(response, authorization);
 
     return { body: response.body, authToken };
   } catch (e) {

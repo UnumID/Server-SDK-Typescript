@@ -67,7 +67,7 @@ exports.getRequest = function (authorization, uuid) { return __awaiter(void 0, v
             case 1:
                 response = _a.sent();
                 console.log('response', response);
-                authToken = networkRequestHelper_1.handleAuthToken(response, authorization);
+                authToken = networkRequestHelper_1.handleAuthTokenHeader(response, authorization);
                 return [2 /*return*/, { body: response.body, authToken: authToken }];
             case 2:
                 e_1 = _a.sent();

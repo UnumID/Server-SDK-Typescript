@@ -17,7 +17,6 @@ var error_1 = require("./error");
 /**
  * Handler to convert the JSON representation of the CredentialSubject into a Typescript interface, CredentialSubject
  */
-// export const convertCredentialSubject = (input: JSON): CredentialSubject => {
 exports.convertCredentialSubject = function (input) {
     if (typeof input !== 'string') {
         throw new error_1.CustError(400, "CredentialSubject is not a string: " + input);

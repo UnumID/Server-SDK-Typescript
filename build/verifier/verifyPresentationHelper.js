@@ -42,6 +42,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyPresentationHelper = void 0;
 var lodash_1 = require("lodash");
 var config_1 = require("../config");
+var types_1 = require("@unumid/types");
 var validateProof_1 = require("./validateProof");
 var requireAuth_1 = require("../requireAuth");
 var verifyCredential_1 = require("./verifyCredential");
@@ -56,11 +57,12 @@ var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var verify_1 = require("../utils/verify");
 var convertCredentialSubject_1 = require("../utils/convertCredentialSubject");
 /**
- * Validates the attributes for a credential request to UnumID's SaaS.
+ * Validates the attributes for a credential from UnumId's Saas
  * @param credentials JSONObj
  */
+// TODO return a VerifiedStatus type with additional any array for passing back the type conforming objects
 var validateCredentialInput = function (credentials) {
-    var retObj = { valid: true, stringifiedCredentials: false, resultantCredentials: [] };
+    var retObj = { valid: true, stringifiedDates: false, resultantCredentials: [] };
     if (helpers_1.isArrayEmpty(credentials)) {
         retObj.valid = false;
         retObj.msg = 'Invalid Presentation: verifiableCredential must be a non-empty array.';
@@ -70,15 +72,12 @@ var validateCredentialInput = function (credentials) {
     for (var i = 0; i < totCred; i++) {
         var credPosStr = '[' + i + ']';
         var credential = credentials[i];
-        if (typeof credential === 'string') {
-            retObj.stringifiedCredentials = true; // setting so know to add the object version of the stringified vc's
-            credential = JSON.parse(credential);
-        }
         // Validate the existence of elements in Credential object
         var invalidMsg = "Invalid verifiableCredential" + credPosStr + ":";
-        if (!credential['@context']) {
+        // if (!credential['@context']) {
+        if (!credential.context) {
             retObj.valid = false;
-            retObj.msg = invalidMsg + " @context is required.";
+            retObj.msg = invalidMsg + " context is required.";
             break;
         }
         if (!credential.credentialStatus) {
@@ -111,15 +110,25 @@ var validateCredentialInput = function (credentials) {
             retObj.msg = invalidMsg + " issuanceDate is required.";
             break;
         }
+        // HACK ALERT: Handling converting string dates to Date. Note: only needed for now when using Protos with Date attributes
+        // when we move to full grpc this will not be needed because not longer using json.
+        if (typeof credential.expirationDate === 'string') {
+            retObj.stringifiedDates = true;
+            credential.issuanceDate = new Date(credential.issuanceDate);
+        }
+        if (typeof credential.expirationDate === 'string') {
+            retObj.stringifiedDates = true;
+            credential.expirationDate = new Date(credential.expirationDate);
+        }
         if (!credential.proof) {
             retObj.valid = false;
             retObj.msg = invalidMsg + " proof is required.";
             break;
         }
         // Check @context is an array and not empty
-        if (helpers_1.isArrayEmpty(credential['@context'])) {
+        if (helpers_1.isArrayEmpty(credential.context)) {
             retObj.valid = false;
-            retObj.msg = invalidMsg + " @context must be a non-empty array.";
+            retObj.msg = invalidMsg + " context must be a non-empty array.";
             break;
         }
         // Check CredentialStatus object has id and type elements.
@@ -142,8 +151,10 @@ var validateCredentialInput = function (credentials) {
             break;
         }
         // Check that proof object is valid
-        validateProof_1.validateProof(credential.proof);
-        if (retObj.stringifiedCredentials) {
+        credential.proof = validateProof_1.validateProof(credential.proof);
+        // HACK ALERT continued: this is assuming that if one credential date attribute is a string then all of them are.
+        // this resultantCredentials array is then take the place of the creds in the presentation
+        if (retObj.stringifiedDates) {
             // Adding the credential to the result list so can use the fully created objects downstream
             retObj.resultantCredentials.push(credential);
         }
@@ -156,12 +167,11 @@ var validateCredentialInput = function (credentials) {
  * @param presentation Presentation
  */
 var validatePresentation = function (presentation) {
-    var context = presentation['@context'];
-    var type = presentation.type, verifiableCredential = presentation.verifiableCredential, proof = presentation.proof, presentationRequestUuid = presentation.presentationRequestUuid, verifierDid = presentation.verifierDid;
+    var type = presentation.type, verifiableCredential = presentation.verifiableCredential, proof = presentation.proof, presentationRequestUuid = presentation.presentationRequestUuid, verifierDid = presentation.verifierDid, context = presentation.context;
     var retObj = {};
     // validate required fields
     if (!context) {
-        throw new error_1.CustError(400, 'Invalid Presentation: @context is required.');
+        throw new error_1.CustError(400, 'Invalid Presentation: context is required.');
     }
     if (!type) {
         throw new error_1.CustError(400, 'Invalid Presentation: type is required.');
@@ -179,21 +189,24 @@ var validatePresentation = function (presentation) {
         throw new error_1.CustError(400, 'Invalid Presentation: verifierDid is required.');
     }
     if (helpers_1.isArrayEmpty(context)) {
-        throw new error_1.CustError(400, 'Invalid Presentation: @context must be a non-empty array.');
+        throw new error_1.CustError(400, 'Invalid Presentation: context must be a non-empty array.');
     }
     if (helpers_1.isArrayEmpty(type)) {
         throw new error_1.CustError(400, 'Invalid Presentation: type must be a non-empty array.');
+    }
+    if (type[0] !== 'VerifiablePresentation') {
+        throw new error_1.CustError(400, 'Invalid Presentation: type\'s first array element must be VerifiablePresentation.');
     }
     retObj = validateCredentialInput(verifiableCredential);
     if (!retObj.valid) {
         throw new error_1.CustError(400, retObj.msg);
     }
-    else if (retObj.stringifiedCredentials) {
-        // adding the "objectified" vc, which were sent in string format to appease iOS variable keyed object limitation: https://developer.apple.com/forums/thread/100417
+    else if (retObj.stringifiedDates) {
+        // adding the credentials, which which now have the proper date attributes, Date for proto encoding for signature verification.
         presentation.verifiableCredential = retObj.resultantCredentials;
     }
     // Check proof object is formatted correctly
-    validateProof_1.validateProof(proof);
+    presentation.proof = validateProof_1.validateProof(proof);
     return presentation;
 };
 /**
@@ -245,7 +258,7 @@ function validatePresentationMeetsRequestedCredentials(presentation, credentialR
  * @param verifier
  */
 exports.verifyPresentationHelper = function (authorization, presentation, verifier, credentialRequests) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, result_1, proof, didDocumentResponse, authToken, pubKeyObj, result_2, isPresentationVerified, result_3, result_4, areCredentialsValid, _i, _a, credential, isExpired, isStatusValidResponse, isStatusValid, isVerifiedResponse, isVerified_1, result_5, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, result, error_2;
+    var data, result_1, proof, didDocumentResponse, authToken, pubKeyObj, result_2, isPresentationVerified, bytes, result_3, result_4, areCredentialsValid, _i, _a, credential, isExpired, isStatusValidResponse, isStatusValid, isVerifiedResponse, isVerified_1, result_5, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, result, error_2;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -278,6 +291,9 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 if (helpers_1.isArrayNotEmpty(credentialRequests)) {
                     validatePresentationMeetsRequestedCredentials(presentation, credentialRequests);
                 }
+                if (!presentation.proof) {
+                    throw new error_1.CustError(400, 'presentation proof is required.');
+                }
                 proof = presentation.proof;
                 return [4 /*yield*/, didHelper_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, proof.verificationMethod)];
             case 1:
@@ -285,7 +301,7 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 if (didDocumentResponse instanceof Error) {
                     throw didDocumentResponse;
                 }
-                authToken = networkRequestHelper_1.handleAuthToken(didDocumentResponse, authorization);
+                authToken = networkRequestHelper_1.handleAuthTokenHeader(didDocumentResponse, authorization);
                 pubKeyObj = didHelper_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 if (pubKeyObj.length === 0) {
                     result_2 = {
@@ -299,14 +315,16 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 }
                 isPresentationVerified = false;
                 try {
-                    isPresentationVerified = verify_1.doVerify(proof.signatureValue, data, pubKeyObj[0].publicKey, pubKeyObj[0].encoding, proof.unsignedValue);
+                    bytes = types_1.UnsignedPresentationPb.encode(data).finish();
+                    // verify the signature
+                    isPresentationVerified = verify_1.doVerify(proof.signatureValue, bytes, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
                 }
                 catch (e) {
                     if (e instanceof library_crypto_1.CryptoError) {
-                        logger_1.default.error("CryptoError verifying presentation " + presentation.uuid + " signature", e);
+                        logger_1.default.error("CryptoError verifying presentation " + JSON.stringify(presentation) + " signature", e);
                     }
                     else {
-                        logger_1.default.error("Error verifying presentation " + presentation.uuid + " signature", e);
+                        logger_1.default.error("Error verifying presentation " + JSON.stringify(presentation) + " signature", e);
                     }
                     result_3 = {
                         authToken: authToken,
@@ -395,7 +413,7 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(receiptCallOptions)];
             case 7:
                 resp = _b.sent();
-                authToken = networkRequestHelper_1.handleAuthToken(resp, authToken);
+                authToken = networkRequestHelper_1.handleAuthTokenHeader(resp, authToken);
                 result = {
                     authToken: authToken,
                     body: {
