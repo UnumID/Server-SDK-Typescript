@@ -1,4 +1,3 @@
-import { sign } from '@unumid/library-crypto';
 import {
   UnsignedCredentialPb,
   CredentialPb,
@@ -6,23 +5,16 @@ import {
   HolderApp,
   IssuerInfo,
   IssuerInfoMap,
-  JSONObj,
-  PresentationRequestPostDto,
   UnsignedCredential,
   UnsignedPresentationRequest,
   Verifier,
   VerifierInfo,
   Credential,
-  CredentialSubject,
-  Proof,
-  CredentialRequest,
   PresentationPb,
   UnsignedPresentationPb,
   VersionedPresentationRequestDto,
   PresentationRequestDto
 } from '@unumid/types';
-
-import stringify from 'fast-json-stable-stringify';
 
 import { configData } from '../../src/config';
 import { RESTResponse, VerifierApiKey } from '../../src/types';
@@ -396,7 +388,7 @@ export interface MakeDummyPresentationOptions {
   verifiableCredentialLiteral?: boolean;
 }
 
-export const makeDummyUnsignedPresentation = async (options: MakeDummyPresentationOptions): Promise<PresentationPb> => {
+export const makeDummyUnsignedPresentation = async (options: MakeDummyPresentationOptions): Promise<UnsignedPresentationPb> => {
   const verifierDid = options.verifierDid || dummyVerifierDid;
 
   const context = options.context || ['https://www.w3.org/2018/credentials/v1'];
