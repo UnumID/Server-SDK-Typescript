@@ -1,7 +1,20 @@
-import { sign } from '@unumid/library-crypto';
-import { UnsignedCredentialPb, CredentialPb, DidDocument, HolderApp, IssuerInfo, IssuerInfoMap, JSONObj, PresentationRequestPostDto, UnsignedCredential, UnsignedPresentationRequest, Verifier, VerifierInfo, Credential, CredentialSubject, Proof, CredentialRequest, PresentationPb, UnsignedPresentationPb } from '@unumid/types';
-
-import stringify from 'fast-json-stable-stringify';
+import {
+  UnsignedCredentialPb,
+  CredentialPb,
+  DidDocument,
+  HolderApp,
+  IssuerInfo,
+  IssuerInfoMap,
+  UnsignedCredential,
+  UnsignedPresentationRequest,
+  Verifier,
+  VerifierInfo,
+  Credential,
+  PresentationPb,
+  UnsignedPresentationPb,
+  VersionedPresentationRequestDto,
+  PresentationRequestDto
+} from '@unumid/types';
 
 import { configData } from '../../src/config';
 import { RESTResponse, VerifierApiKey } from '../../src/types';
@@ -328,6 +341,17 @@ export const makeDummyPresentationRequestDto = async (options: MakeDummyPresenta
 // TODO: remove this and use makeDummyPresentationRequestDto everywhere
 export const makeDummyPresentationRequestResponse = makeDummyPresentationRequestDto;
 
+export const makeDummyVersionedPresentationRequestDto = async (
+  options: MakeDummyPresentationRequestOptions = {}
+): Promise<VersionedPresentationRequestDto> => {
+  const presentationRequestDto = await makeDummyPresentationRequestDto(options);
+  return {
+    presentationRequests: {
+      '3.0.0': presentationRequestDto
+    }
+  };
+};
+
 export const makeDummyVerifierApiKey = (): VerifierApiKey => {
   const now = new Date();
   return {
@@ -366,7 +390,7 @@ export interface MakeDummyPresentationOptions {
   verifiableCredentialLiteral?: boolean;
 }
 
-export const makeDummyUnsignedPresentation = async (options: MakeDummyPresentationOptions): Promise<PresentationPb> => {
+export const makeDummyUnsignedPresentation = async (options: MakeDummyPresentationOptions): Promise<UnsignedPresentationPb> => {
   const verifierDid = options.verifierDid || dummyVerifierDid;
 
   const context = options.context || ['https://www.w3.org/2018/credentials/v1'];

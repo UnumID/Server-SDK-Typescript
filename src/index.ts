@@ -14,6 +14,7 @@ import { CustError } from './utils/error';
 import { createProof, createProofPb } from './utils/createProof';
 import { convertCredentialSubject } from './utils/convertCredentialSubject';
 import { getRequest } from './verifier/getRequest';
+import { getVersionedRequest } from './verifier/getVersionedRequest';
 
 export {
   // Issuer Functions
@@ -27,6 +28,8 @@ export {
   sendSms,
   verifyPresentation,
   checkCredentialStatus,
+  getRequest,
+  getVersionedRequest,
   // Types
   UnumDto,
   RegisteredVerifier,
@@ -45,6 +48,5 @@ export {
   extractCredentialInfo,
   createProof,
   createProofPb,
-  convertCredentialSubject,
-  getRequest
+  convertCredentialSubject
 };
