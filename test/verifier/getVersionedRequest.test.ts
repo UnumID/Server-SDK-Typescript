@@ -30,7 +30,7 @@ describe('getVersionedRequest', () => {
       body: dummyVersionedPresentationRequestDto,
       headers: { 'x-auth-token': dummyAuthToken }
     });
-    const id = dummyVersionedPresentationRequestDto['3.0.0'].presentationRequest.id;
+    const id = dummyVersionedPresentationRequestDto.presentationRequests['3.0.0'].presentationRequest.id;
     await getVersionedRequest(dummyAuthToken, id);
     const expected = {
       method: 'GET',
@@ -46,7 +46,7 @@ describe('getVersionedRequest', () => {
       body: dummyVersionedPresentationRequestDto,
       headers: { 'x-auth-token': dummyAuthToken }
     });
-    const id = dummyVersionedPresentationRequestDto['3.0.0'].presentationRequest.id;
+    const id = dummyVersionedPresentationRequestDto.presentationRequests['3.0.0'].presentationRequest.id;
     const response = await getVersionedRequest(dummyAuthToken, id);
     expect(response.body).toEqual(dummyVersionedPresentationRequestDto);
   });
@@ -56,7 +56,7 @@ describe('getVersionedRequest', () => {
       body: dummyVersionedPresentationRequestDto,
       headers: { 'x-auth-token': dummyAuthToken }
     });
-    const id = dummyVersionedPresentationRequestDto['3.0.0'].presentationRequest.id;
+    const id = dummyVersionedPresentationRequestDto.presentationRequests['3.0.0'].presentationRequest.id;
     const response = await getVersionedRequest(dummyAuthToken, id);
     expect(response.authToken).toEqual(dummyAuthToken);
   });
@@ -64,7 +64,7 @@ describe('getVersionedRequest', () => {
   it('logs and re-throws errors', async () => {
     const err = new CustError(404, 'not found.');
     mockMakeNetworkRequest.mockRejectedValueOnce(err);
-    const id = dummyVersionedPresentationRequestDto['3.0.0'].presentationRequest.id;
+    const id = dummyVersionedPresentationRequestDto.presentationRequests['3.0.0'].presentationRequest.id;
     try {
       await getVersionedRequest(dummyAuthToken, id);
       fail();

@@ -346,7 +346,9 @@ export const makeDummyVersionedPresentationRequestDto = async (
 ): Promise<VersionedPresentationRequestDto> => {
   const presentationRequestDto = await makeDummyPresentationRequestDto(options);
   return {
-    '3.0.0': presentationRequestDto
+    presentationRequests: {
+      '3.0.0': presentationRequestDto
+    }
   };
 };
 
