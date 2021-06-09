@@ -47,13 +47,13 @@ describe('verifyNoPresentation', () => {
   let dummyNoPresentation;
 
   let dummyNoPresentationWithoutType;
-  let dummyNoPresentationWithoutRequestUuid;
+  let dummyNoPresentationWithoutRequestId;
   let dummyNoPresentationWithoutHolder;
   let dummyNoPresentationWithoutProof;
 
   let dummyNoPresentationBadType;
   let dummyNoPresentationBadTypeKeywordMissing;
-  let dummyNoPresentationBadRequestUuid;
+  let dummyNoPresentationBadRequestId;
   let dummyNoPresentationBadHolder;
   let dummyNoPresentationBadProof;
 
@@ -63,13 +63,13 @@ describe('verifyNoPresentation', () => {
     const dummyNoPresentation = await makeDummyPresentation({ verifierDid: verifier, context: [], type: ['NoPresentation', 'NoPresentation'], verifiableCredential: [] });
 
     dummyNoPresentationWithoutType = omit(dummyNoPresentation, 'type') as PresentationPb;
-    dummyNoPresentationWithoutRequestUuid = omit(dummyNoPresentation, 'presentationRequestUuid') as PresentationPb;
+    dummyNoPresentationWithoutRequestId = omit(dummyNoPresentation, 'presentationRequestId') as PresentationPb;
     dummyNoPresentationWithoutHolder = omit(dummyNoPresentation, 'holder') as PresentationPb;
     dummyNoPresentationWithoutProof = omit(dummyNoPresentation, 'proof') as PresentationPb;
 
     dummyNoPresentationBadType = { ...dummyNoPresentation, type: {} } as PresentationPb;
     dummyNoPresentationBadTypeKeywordMissing = { ...dummyNoPresentation, type: ['No No Presenation'] } as PresentationPb;
-    dummyNoPresentationBadRequestUuid = { ...dummyNoPresentation, presentationRequestUuid: {} } as PresentationPb;
+    dummyNoPresentationBadRequestId = { ...dummyNoPresentation, presentationRequestId: {} } as PresentationPb;
     dummyNoPresentationBadHolder = { ...dummyNoPresentation, holder: {} } as PresentationPb;
     dummyNoPresentationBadProof = { ...dummyNoPresentation, proof: {} } as PresentationPb;
 
@@ -154,11 +154,11 @@ describe('verifyNoPresentation', () => {
 
     it('returns a 400 status code with a descriptive error presentationRequestUuid if holder is missing', async () => {
       try {
-        await callVerifyNoPresentation(dummyNoPresentationWithoutRequestUuid, verifier, authHeader);
+        await callVerifyNoPresentation(dummyNoPresentationWithoutRequestId, verifier, authHeader);
         fail();
       } catch (e) {
         expect(e.code).toEqual(400);
-        expect(e.message).toEqual('Invalid Presentation: presentationRequestUuid is required.');
+        expect(e.message).toEqual('Invalid Presentation: presentationRequestId is required.');
       }
     });
 
@@ -171,12 +171,12 @@ describe('verifyNoPresentation', () => {
       }
     });
 
-    it('returns a 400 status code with a descriptive error message if presentationRequestUuid is invalid', async () => {
+    it('returns a 400 status code with a descriptive error message if presentationRequestId is invalid', async () => {
       try {
-        await callVerifyNoPresentation(dummyNoPresentationBadRequestUuid, verifier, authHeader);
+        await callVerifyNoPresentation(dummyNoPresentationBadRequestId, verifier, authHeader);
       } catch (e) {
         expect(e.code).toEqual(400);
-        expect(e.message).toEqual('Invalid presentationRequestUuid: must be a string.');
+        expect(e.message).toEqual('Invalid presentationRequestId: must be a string.');
       }
     });
 

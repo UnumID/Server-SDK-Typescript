@@ -1,8 +1,6 @@
 
 import { DecryptedPresentation, UnumDto, VerifiedStatus } from '../types';
 import { Presentation, CredentialRequest, PresentationRequestDto, EncryptedData, PresentationRequest, PresentationPb, PresentationRequestPb, ProofPb, UnsignedPresentationRequestPb, JSONObj, CredentialRequestPb } from '@unumid/types';
-// import { Presentation, EncryptedData, PresentationPb, PresentationRequestPb, ProofPb, UnsignedPresentationRequestPb, JSONObj, CredentialRequestPb } from '@unumid/types';
-// import { PresentationRequestDto, PresentationRequest, CredentialRequest } from '@unumid/types-v2';
 import { requireAuth } from '../requireAuth';
 import { CryptoError, decrypt, decryptBytes } from '@unumid/library-crypto';
 import logger from '../logger';
@@ -28,7 +26,7 @@ function isDeclinedPresentation (presentation: Presentation | PresentationPb): p
  */
 const validatePresentation = (presentation: PresentationPb): PresentationPb => {
   // const context = (presentation as Presentation)['@context'] ? (presentation as Presentation)['@context'] : (presentation as PresentationPb).context;
-  const { type, proof, presentationRequestUuid, verifierDid, context } = presentation;
+  const { type, proof, presentationRequestId, verifierDid, context } = presentation;
 
   // validate required fields
   if (!context) {
@@ -43,8 +41,8 @@ const validatePresentation = (presentation: PresentationPb): PresentationPb => {
     throw new CustError(400, 'Invalid Presentation: proof is required.');
   }
 
-  if (!presentationRequestUuid) {
-    throw new CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
+  if (!presentationRequestId) {
+    throw new CustError(400, 'Invalid Presentation: presentationRequestId is required.');
   }
 
   if (!verifierDid) {
@@ -223,8 +221,8 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
     validatePresentation(presentation);
 
     // verify the presentation request uuid match
-    if (presentationRequest && presentationRequest.presentationRequest.uuid !== presentation.presentationRequestUuid) {
-      throw new CustError(400, `presentation request uuid provided, ${presentationRequest.presentationRequest.uuid}, does not match the presentationRequestUuid that the presentation was in response to, ${presentation.presentationRequestUuid}.`);
+    if (presentationRequest && presentationRequest.presentationRequest.id !== presentation.presentationRequestId) {
+      throw new CustError(400, `presentation request id provided, ${presentationRequest.presentationRequest.id}, does not match the presentationRequestId that the presentation was in response to, ${presentation.presentationRequestId}.`);
     }
 
     // verify the presentation request signature if present

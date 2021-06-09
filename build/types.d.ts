@@ -154,7 +154,7 @@ export interface VerifiedStatus {
  */
 export interface DecryptedPresentation extends VerifiedStatus {
   type: 'VerifiablePresentation' | 'DeclinedPresentation'
-  presentation: Presentation | PresentationPb
+  presentation: PresentationPb
 }
 
 /**

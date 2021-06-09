@@ -374,7 +374,7 @@ export interface MakeDummyPresentationOptions {
   verifierDid?: string;
   context?: string[]
   type?: string[]
-  presentationRequestUuid?: string
+  presentationRequestId?: string
   verifiableCredential?: CredentialPb[]
 
   unsignedPresentationRequestLiteral?: boolean;
@@ -386,7 +386,7 @@ export interface MakeDummyPresentationOptions {
   verifierDidLiteral?: boolean;
   contextLiteral?: boolean;
   typeLiteral?: boolean;
-  presentationRequestUuidLiteral?: boolean;
+  presentationRequestIdLiteral?: boolean;
   verifiableCredentialLiteral?: boolean;
 }
 
@@ -395,7 +395,7 @@ export const makeDummyUnsignedPresentation = async (options: MakeDummyPresentati
 
   const context = options.context || ['https://www.w3.org/2018/credentials/v1'];
   const type = options.type || ['VerifiablePresentation'];
-  const presentationRequestUuid = options.presentationRequestUuid || getUUID();
+  const presentationRequestId = options.presentationRequestId || getUUID();
 
   const unsignedCredential: UnsignedCredentialPb = makeDummyUnsignedCredential();
   const credOptions: DummyCredentialOptions = {
@@ -409,7 +409,7 @@ export const makeDummyUnsignedPresentation = async (options: MakeDummyPresentati
   const unsignedPresentation: UnsignedPresentationPb = {
     context,
     type,
-    presentationRequestUuid,
+    presentationRequestId,
     verifierDid,
     verifiableCredential
   };
@@ -425,7 +425,7 @@ export const makeDummyPresentation = async (options: MakeDummyPresentationOption
 
   const context = options.contextLiteral ? options.context : options.context || ['https://www.w3.org/2018/credentials/v1'];
   const type = options.typeLiteral ? options.type : options.type || ['VerifiablePresentation'];
-  const presentationRequestUuid = options.presentationRequestUuidLiteral ? options.presentationRequestUuid : options.presentationRequestUuid || getUUID();
+  const presentationRequestId = options.presentationRequestIdLiteral ? options.presentationRequestId : options.presentationRequestId || getUUID();
 
   const unsignedCredential: UnsignedCredentialPb = makeDummyUnsignedCredential();
   const credOptions: DummyCredentialOptions = {
@@ -439,7 +439,7 @@ export const makeDummyPresentation = async (options: MakeDummyPresentationOption
   const unsignedPresentation: UnsignedPresentationPb = {
     context,
     type,
-    presentationRequestUuid,
+    presentationRequestId,
     verifierDid,
     verifiableCredential
   };

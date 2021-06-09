@@ -21,7 +21,7 @@ export const validateNoPresentationParams = (noPresentation: PresentationPb): Pr
   const {
     type,
     proof,
-    presentationRequestUuid,
+    presentationRequestId,
     verifiableCredential,
     verifierDid
   } = noPresentation;
@@ -42,12 +42,12 @@ export const validateNoPresentationParams = (noPresentation: PresentationPb): Pr
     throw new CustError(400, 'Invalid Presentation: verifierDid is required.');
   }
 
-  if (!presentationRequestUuid) {
-    throw new CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
+  if (!presentationRequestId) {
+    throw new CustError(400, 'Invalid Presentation: presentationRequestId is required.');
   }
 
-  if (typeof presentationRequestUuid !== 'string') {
-    throw new CustError(400, 'Invalid presentationRequestUuid: must be a string.');
+  if (typeof presentationRequestId !== 'string') {
+    throw new CustError(400, 'Invalid presentationRequestId: must be a string.');
   }
 
   if (verifiableCredential && isArrayNotEmpty(verifiableCredential)) {
