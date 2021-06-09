@@ -66,6 +66,7 @@ var error_1 = require("../utils/error");
 exports.constructUnsignedPresentationRequest = function (reqBody) {
     var verifier = reqBody.verifier, holderAppUuid = reqBody.holderAppUuid, credentialRequests = reqBody.credentialRequests, metadata = reqBody.metadata, expiresAt = reqBody.expiresAt, createdAt = reqBody.createdAt, updatedAt = reqBody.updatedAt;
     var uuid = helpers_1.getUUID();
+    var id = helpers_1.getUUID();
     // any/all default values must be set before signing, or signature will always fail to verify
     var now = new Date();
     var tenMinutesFromNow = new Date(now.getTime() + 10 * 60 * 1000);
@@ -83,6 +84,7 @@ exports.constructUnsignedPresentationRequest = function (reqBody) {
         holderAppUuid: holderAppUuid,
         metadata: metadata || { fields: {} },
         uuid: uuid,
+        id: id,
         verifier: verifier
     };
 };

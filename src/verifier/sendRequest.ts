@@ -26,6 +26,7 @@ export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody
   } = reqBody;
 
   const uuid = getUUID();
+  const id = getUUID();
 
   // any/all default values must be set before signing, or signature will always fail to verify
   const now = new Date();
@@ -45,6 +46,7 @@ export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody
     holderAppUuid,
     metadata: metadata || { fields: {} },
     uuid,
+    id,
     verifier
   };
 };
