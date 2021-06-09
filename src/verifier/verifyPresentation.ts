@@ -1,8 +1,6 @@
 
 import { DecryptedPresentation, UnumDto, VerifiedStatus } from '../types';
 import { Presentation, CredentialRequest, PresentationRequestDto, EncryptedData, PresentationRequest, PresentationPb, PresentationRequestPb, ProofPb, UnsignedPresentationRequestPb, JSONObj, CredentialRequestPb } from '@unumid/types';
-// import { Presentation, EncryptedData, PresentationPb, PresentationRequestPb, ProofPb, UnsignedPresentationRequestPb, JSONObj, CredentialRequestPb } from '@unumid/types';
-// import { PresentationRequestDto, PresentationRequest, CredentialRequest } from '@unumid/types-v2';
 import { requireAuth } from '../requireAuth';
 import { CryptoError, decrypt, decryptBytes } from '@unumid/library-crypto';
 import logger from '../logger';
