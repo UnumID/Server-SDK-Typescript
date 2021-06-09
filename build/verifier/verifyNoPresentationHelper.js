@@ -55,7 +55,7 @@ var didHelper_1 = require("../utils/didHelper");
  * @param noPresentation NoPresentation
  */
 exports.validateNoPresentationParams = function (noPresentation) {
-    var type = noPresentation.type, proof = noPresentation.proof, presentationRequestUuid = noPresentation.presentationRequestUuid, verifiableCredential = noPresentation.verifiableCredential, verifierDid = noPresentation.verifierDid;
+    var type = noPresentation.type, proof = noPresentation.proof, presentationRequestId = noPresentation.presentationRequestId, verifiableCredential = noPresentation.verifiableCredential, verifierDid = noPresentation.verifierDid;
     if (!type) {
         throw new error_1.CustError(400, 'Invalid Presentation: type is required.');
     }
@@ -68,11 +68,11 @@ exports.validateNoPresentationParams = function (noPresentation) {
     if (!verifierDid) {
         throw new error_1.CustError(400, 'Invalid Presentation: verifierDid is required.');
     }
-    if (!presentationRequestUuid) {
-        throw new error_1.CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
+    if (!presentationRequestId) {
+        throw new error_1.CustError(400, 'Invalid Presentation: presentationRequestId is required.');
     }
-    if (typeof presentationRequestUuid !== 'string') {
-        throw new error_1.CustError(400, 'Invalid presentationRequestUuid: must be a string.');
+    if (typeof presentationRequestId !== 'string') {
+        throw new error_1.CustError(400, 'Invalid presentationRequestId: must be a string.');
     }
     if (verifiableCredential || helpers_1.isArrayNotEmpty(verifiableCredential)) {
         throw new error_1.CustError(400, 'Invalid Declined Presentation: verifiableCredential must be undefined or empty.'); // this should never happen base on upstream logic

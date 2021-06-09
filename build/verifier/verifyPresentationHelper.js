@@ -157,7 +157,7 @@ var validateCredentialInput = function (credentials) {
  */
 var validatePresentation = function (presentation) {
     var context = presentation['@context'];
-    var type = presentation.type, verifiableCredential = presentation.verifiableCredential, proof = presentation.proof, presentationRequestUuid = presentation.presentationRequestUuid, verifierDid = presentation.verifierDid;
+    var type = presentation.type, verifiableCredential = presentation.verifiableCredential, proof = presentation.proof, presentationRequestId = presentation.presentationRequestId, verifierDid = presentation.verifierDid;
     var retObj = {};
     // validate required fields
     if (!context) {
@@ -169,8 +169,8 @@ var validatePresentation = function (presentation) {
     if (!proof) {
         throw new error_1.CustError(400, 'Invalid Presentation: proof is required.');
     }
-    if (!presentationRequestUuid) {
-        throw new error_1.CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
+    if (!presentationRequestId) {
+        throw new error_1.CustError(400, 'Invalid Presentation: presentationRequestId is required.');
     }
     if (!verifiableCredential || helpers_1.isArrayEmpty(verifiableCredential)) {
         throw new error_1.CustError(400, 'Invalid Presentation: verifiableCredential must be a non-empty array.'); // it should never make it here, ought to be in the NoPresentationHelper

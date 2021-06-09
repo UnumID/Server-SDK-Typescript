@@ -73,7 +73,7 @@ function isDeclinedPresentation(presentation) {
  */
 var validatePresentation = function (presentation) {
     var context = presentation['@context'];
-    var type = presentation.type, proof = presentation.proof, presentationRequestUuid = presentation.presentationRequestUuid, verifierDid = presentation.verifierDid;
+    var type = presentation.type, proof = presentation.proof, presentationRequestId = presentation.presentationRequestId, verifierDid = presentation.verifierDid;
     // const retObj: JSONObj = {};
     // validate required fields
     if (!context) {
@@ -85,8 +85,8 @@ var validatePresentation = function (presentation) {
     if (!proof) {
         throw new error_1.CustError(400, 'Invalid Presentation: proof is required.');
     }
-    if (!presentationRequestUuid) {
-        throw new error_1.CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
+    if (!presentationRequestId) {
+        throw new error_1.CustError(400, 'Invalid Presentation: presentationRequestId is required.');
     }
     // if (!verifiableCredential || isArrayEmpty(verifiableCredential)) {
     //   throw new CustError(400, 'Invalid Presentation: verifiableCredentials must be a non-empty array.');
@@ -174,8 +174,8 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                 // validate presentation
                 validatePresentation(presentation);
                 // verify the presentation request uuid match
-                if (presentationRequest && presentationRequest.presentationRequest.uuid !== presentation.presentationRequestUuid) {
-                    throw new error_1.CustError(400, "presentation request uuid provided, " + presentationRequest.presentationRequest.uuid + ", does not match the presentationRequestUuid that the presentation was in response to, " + presentation.presentationRequestUuid + ".");
+                if (presentationRequest && presentationRequest.presentationRequest.id !== presentation.presentationRequestId) {
+                    throw new error_1.CustError(400, "presentation request id provided, " + presentationRequest.presentationRequest.id + ", does not match the presentationRequestId that the presentation was in response to, " + presentation.presentationRequestId + ".");
                 }
                 if (!(presentationRequest && presentationRequest.presentationRequest)) return [3 /*break*/, 2];
                 presentationRequestWithoutVersion = lodash_1.omit(presentationRequest.presentationRequest, 'version');

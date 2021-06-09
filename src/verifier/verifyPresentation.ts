@@ -25,7 +25,7 @@ function isDeclinedPresentation (presentation: Presentation): presentation is Pr
  */
 const validatePresentation = (presentation: Presentation): void => {
   const context = presentation['@context'];
-  const { type, proof, presentationRequestUuid, verifierDid } = presentation;
+  const { type, proof, presentationRequestId, verifierDid } = presentation;
   // const retObj: JSONObj = {};
 
   // validate required fields
@@ -41,8 +41,8 @@ const validatePresentation = (presentation: Presentation): void => {
     throw new CustError(400, 'Invalid Presentation: proof is required.');
   }
 
-  if (!presentationRequestUuid) {
-    throw new CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
+  if (!presentationRequestId) {
+    throw new CustError(400, 'Invalid Presentation: presentationRequestId is required.');
   }
 
   // if (!verifiableCredential || isArrayEmpty(verifiableCredential)) {
@@ -138,8 +138,8 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
     validatePresentation(presentation);
 
     // verify the presentation request uuid match
-    if (presentationRequest && presentationRequest.presentationRequest.uuid !== presentation.presentationRequestUuid) {
-      throw new CustError(400, `presentation request uuid provided, ${presentationRequest.presentationRequest.uuid}, does not match the presentationRequestUuid that the presentation was in response to, ${presentation.presentationRequestUuid}.`);
+    if (presentationRequest && presentationRequest.presentationRequest.id !== presentation.presentationRequestId) {
+      throw new CustError(400, `presentation request id provided, ${presentationRequest.presentationRequest.id}, does not match the presentationRequestId that the presentation was in response to, ${presentation.presentationRequestId}.`);
     }
 
     // verify the presentation request signature if present
