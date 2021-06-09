@@ -239,7 +239,7 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                 validatePresentation(presentation);
                 // verify the presentation request uuid match
                 if (presentationRequest && presentationRequest.presentationRequest.id !== presentation.presentationRequestId) {
-                    throw new error_1.CustError(400, "presentation request uuid provided, " + presentationRequest.presentationRequest.id + ", does not match the presentationRequestId that the presentation was in response to, " + presentation.presentationRequestId + ".");
+                    throw new error_1.CustError(400, "presentation request id provided, " + presentationRequest.presentationRequest.id + ", does not match the presentationRequestId that the presentation was in response to, " + presentation.presentationRequestId + ".");
                 }
                 if (!(presentationRequest && presentationRequest.presentationRequest)) return [3 /*break*/, 2];
                 presentationRequestPb = validatePresentationRequest(presentationRequest.presentationRequest);

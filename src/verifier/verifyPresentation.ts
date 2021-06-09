@@ -224,7 +224,7 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
 
     // verify the presentation request uuid match
     if (presentationRequest && presentationRequest.presentationRequest.id !== presentation.presentationRequestId) {
-      throw new CustError(400, `presentation request uuid provided, ${presentationRequest.presentationRequest.id}, does not match the presentationRequestId that the presentation was in response to, ${presentation.presentationRequestId}.`);
+      throw new CustError(400, `presentation request id provided, ${presentationRequest.presentationRequest.id}, does not match the presentationRequestId that the presentation was in response to, ${presentation.presentationRequestId}.`);
     }
 
     // verify the presentation request signature if present
