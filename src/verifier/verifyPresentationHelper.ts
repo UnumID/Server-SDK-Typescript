@@ -148,7 +148,7 @@ const validateCredentialInput = (credentials: CredentialPb[]): JSONObj => {
  * @param presentation Presentation
  */
 const validatePresentation = (presentation: PresentationPb): PresentationPb => {
-  const { type, verifiableCredential, proof, presentationRequestUuid, verifierDid, context } = presentation;
+  const { type, verifiableCredential, proof, presentationRequestId, verifierDid, context } = presentation;
   let retObj: JSONObj = {};
 
   // validate required fields
@@ -164,8 +164,8 @@ const validatePresentation = (presentation: PresentationPb): PresentationPb => {
     throw new CustError(400, 'Invalid Presentation: proof is required.');
   }
 
-  if (!presentationRequestUuid) {
-    throw new CustError(400, 'Invalid Presentation: presentationRequestUuid is required.');
+  if (!presentationRequestId) {
+    throw new CustError(400, 'Invalid Presentation: presentationRequestId is required.');
   }
 
   if (!verifiableCredential || isArrayEmpty(verifiableCredential)) {
