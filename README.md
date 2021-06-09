@@ -1,3 +1,5 @@
+**Note**: This branch was a modification that was necessary as part of version 2 of the sdk. It was made after version 3 had already been merged into main. Thus it will live as this special branch for perpetuity or until the use of the sdk version 2 is no more.
+
 This SDK combines the functionality of an [**Issuer**](#issuer) and [**Verifier**](#verifier) entities to work with UnumID's SaaS. For necessary account creation and API keys please email admin@unum.id.
 ## Distribution
 
