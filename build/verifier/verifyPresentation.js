@@ -171,6 +171,9 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                     throw new error_1.CustError(400, "verifier provided, " + verifierDid + ", does not match the presentation request verifier, " + presentationRequest.verifier.did + ".");
                 }
                 presentation = library_crypto_1.decrypt(encryptionPrivateKey, encryptedPresentation);
+                if (process.env.NODE_ENV === 'debug') {
+                    logger_1.default.debug("Decrypted Presentation: " + JSON.stringify(presentation));
+                }
                 // validate presentation
                 validatePresentation(presentation);
                 // verify the presentation request uuid match
