@@ -217,6 +217,10 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
     const presentationBytes = decryptBytes(encryptionPrivateKey, encryptedPresentation);
     const presentation: PresentationPb = PresentationPb.decode(presentationBytes);
 
+    if (process.env.NODE_ENV === 'debug') {
+      logger.debug(`Decrypted Presentation: ${JSON.stringify(presentation)}`);
+    }
+
     // validate presentation
     validatePresentation(presentation);
 
