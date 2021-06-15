@@ -233,6 +233,9 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                 }
                 presentationBytes = library_crypto_1.decryptBytes(encryptionPrivateKey, encryptedPresentation);
                 presentation = types_1.PresentationPb.decode(presentationBytes);
+                if (process.env.NODE_ENV === 'debug') {
+                    logger_1.default.debug("Decrypted Presentation: " + JSON.stringify(presentation));
+                }
                 // validate presentation
                 validatePresentation(presentation);
                 // verify the presentation request uuid match

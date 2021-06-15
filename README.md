@@ -16,6 +16,9 @@ Logs level defaults to Info. One can set to debug for more information via the e
 
 The logs default to stdout so can be aggregated using any log provider you would like from disk.
 
+## Debugging
+The `NODE_ENV` environment variable defaults to `sandbox`. However while debugging one can use the `debug` environment setting. This enables logging of decrypted presentations at the `debug` level. Due to presentations containing sensitive information it is not advised to use in a production environment.
+
 ## Documentation
 High level technical documentation can be found [here](https://https://docs.unum.id/server-sdk) which is served via [Docusaurus](https://github.com/UnumID/UnumID.github.io). More detailed generated from source documentation can be found [here](https://docs.unum.id/Server-SDK-Typescript/index.html) which is served via repo specific Github pages via the /docs folder of the main branch.
 
