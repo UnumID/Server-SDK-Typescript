@@ -127,7 +127,7 @@ exports.verifyNoPresentationHelper = function (authorization, noPresentation, ve
                     return [2 /*return*/, result_2];
                 }
                 receiptOptions = {
-                    type: noPresentation.type,
+                    type: ['NoPresentation'],
                     verifier: verifier,
                     subject: noPresentation.proof.verificationMethod,
                     data: {
