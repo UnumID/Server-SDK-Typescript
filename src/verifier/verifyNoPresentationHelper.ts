@@ -121,7 +121,7 @@ export const verifyNoPresentationHelper = async (authorization: string, noPresen
     }
 
     const receiptOptions = {
-      type: noPresentation.type,
+      type: ['NoPresentation'],
       verifier,
       subject: noPresentation.proof.verificationMethod,
       data: {
