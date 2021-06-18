@@ -80,6 +80,10 @@
 				</a>
 				<p>Logs level defaults to Info. One can set to debug for more information via the environment variable LOG_LEVEL, i.e. LOG_LEVEL=debug. We are using standard NPM log levels. More details on the various log levels <a href="https://github.com/winstonjs/winston#logging-levels">here</a>.</p>
 				<p>The logs default to stdout so can be aggregated using any log provider you would like from disk.</p>
+				<a href="#debugging" id="debugging" style="color: inherit; text-decoration: none;">
+					<h2>Debugging</h2>
+				</a>
+				<p>The <code>NODE_ENV</code> environment variable defaults to <code>sandbox</code>. However while debugging one can use the <code>debug</code> environment setting. This enables logging of decrypted presentations at the <code>debug</code> level. Due to presentations containing sensitive information it is not advised to use in a production environment.</p>
 				<a href="#documentation" id="documentation" style="color: inherit; text-decoration: none;">
 					<h2>Documentation</h2>
 				</a>
