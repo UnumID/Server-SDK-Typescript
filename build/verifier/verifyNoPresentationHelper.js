@@ -74,7 +74,7 @@ exports.validateNoPresentationParams = function (noPresentation) {
     if (typeof presentationRequestId !== 'string') {
         throw new error_1.CustError(400, 'Invalid presentationRequestId: must be a string.');
     }
-    if (verifiableCredential || helpers_1.isArrayNotEmpty(verifiableCredential)) {
+    if (verifiableCredential && helpers_1.isArrayNotEmpty(verifiableCredential)) {
         throw new error_1.CustError(400, 'Invalid Declined Presentation: verifiableCredential must be undefined or empty.'); // this should never happen base on upstream logic
     }
     validateProof_1.validateProof(proof);
