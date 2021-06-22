@@ -349,7 +349,7 @@ export const issueCredential = async (authorization: string | undefined, type: s
      * However only care to return the most recent Credential type for customers to use.
      */
     // TODO need to make this credential handling more generic
-    for (let v = 0; v < versionList.length - 1; v++) { // note: purposely terminating one index early, which ought to be the most recent version.
+    for (let v = 0; v < versionList.length; v++) { // note: purposely terminating one index early, which ought to be the most recent version.
       const version: string = versionList[v];
 
       // Create the UnsignedCredential object
