@@ -369,7 +369,7 @@ exports.issueCredential = function (authorization, type, issuer, credentialSubje
                 v = 0;
                 _a.label = 1;
             case 1:
-                if (!(v < versionList_1.versionList.length - 1)) return [3 /*break*/, 8];
+                if (!(v < versionList_1.versionList.length)) return [3 /*break*/, 8];
                 version = versionList_1.versionList[v];
                 unsignedCredential_1 = constructUnsignedCredentialV1Obj(credentialOptions, version);
                 if (!semver_1.lt(version, '2.0.0')) return [3 /*break*/, 4];
