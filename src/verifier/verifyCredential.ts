@@ -5,12 +5,11 @@ import { omit } from 'lodash';
 import { UnumDto } from '../types';
 import { configData } from '../config';
 import logger from '../logger';
-import { Credential, CredentialPb, Proof, UnsignedCredentialPb } from '@unumid/types';
+import { CredentialPb, Proof, UnsignedCredentialPb } from '@unumid/types';
 import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
 import { handleAuthTokenHeader } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
 import { CustError } from '..';
-import { UnsignedCredential } from '@unumid/types/build/protos/credential';
 
 /**
  * Used to verify the credential signature given the corresponding Did document's public key.
