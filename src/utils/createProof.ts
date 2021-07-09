@@ -25,7 +25,7 @@ export const createProof = (data: JSONObj, privateKey: string, method: string, e
     proofPurpose: 'AssertionMethod'
   };
 
-  logger.debug(`Successfully created proof ${proof}`);
+  logger.debug(`Successfully created proof ${JSON.stringify(proof)}`);
   return (proof);
 };
 
@@ -47,6 +47,6 @@ export const createProofPb = (data: Uint8Array, privateKey: string, method: stri
     proofPurpose: 'AssertionMethod'
   };
 
-  logger.debug(`Successfully created proof ${proof}`);
+  logger.debug(`Successfully created proof ${JSON.stringify(proof)}`);
   return (proof);
 };
