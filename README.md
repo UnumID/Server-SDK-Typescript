@@ -1,4 +1,9 @@
-This SDK combines the functionality of an [**Issuer**](#issuer) and [**Verifier**](#verifier) entities to work with UnumID's SaaS. For necessary account creation and API keys please email admin@unum.id.
+# Unum ID Typescript Server-SDK
+
+This SDK combines the functionality of an [**Issuer**](https://docs.unum.id/terminology#issuer) and [**Verifier**](https://docs.unum.id/terminology#verifier) entities to work with UnumID's SaaS. For necessary account creation and API keys please email admin@unum.id.
+
+## Documentation
+High level technical documentation can be found [here](https://docs.unum.id/server-sdk) which is served via [Docusaurus](https://github.com/UnumID/UnumID.github.io). More detailed generated from source documentation can be found [here](https://docs.unum.id/Server-SDK-Typescript/index.html) which is served via repo specific Github pages via the /docs folder of the main branch.
 ## Distribution
 
 This project is publicly published on the official npm [registry](https://www.npmjs.com/package/@unumid/server-sdk). For example it can be pulled with, `npm i @unumid/server-sdk` or `yarn add @unumid/server-sdk`.
@@ -19,10 +24,12 @@ The logs default to stdout so can be aggregated using any log provider you would
 ## Debugging
 The `NODE_ENV` environment variable defaults to `sandbox`. However while debugging one can use the `debug` environment setting. This enables logging of decrypted presentations at the `debug` level. Due to presentations containing sensitive information it is not advised to use in a production environment.
 
-## Documentation
-High level technical documentation can be found [here](https://docs.unum.id/server-sdk) which is served via [Docusaurus](https://github.com/UnumID/UnumID.github.io). More detailed generated from source documentation can be found [here](https://docs.unum.id/Server-SDK-Typescript/index.html) which is served via repo specific Github pages via the /docs folder of the main branch.
-
 In order to generate the Typedoc documentation from the source code run the `createTypedocs.sh` script.
+
+## Versioning
+Information regarding the suggested versioning strategy can be found [here](https://docs.unum.id/deployment-overview#versioning-strategy).
+Breaking versions of this SDK will be denoted as such with an incremented major version. However all versions of the SDK will be fully backwards compatible with the other Unum ID SDKs. If there is a need to referencing an older version of the SDK within your applications for other applications specific backwards compatibility we recommend this syntax for simplicity: 
+`@unumid/server-sdk-v2": "npm:@unumid/server-sdk@2.1.4`.
 
 
 ## SDK Functionality
