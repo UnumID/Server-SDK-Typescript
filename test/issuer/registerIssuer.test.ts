@@ -63,20 +63,9 @@ describe('registerIssuer - Failure cases', () => {
   const name = 'First Unumid Issuer';
   const customerUuid = '5e46f1ba-4c82-471d-bbc7-251924a90532';
 
-  it('returns a CustError with a descriptive error message if name is missing', async () => {
-    try {
-      await registerIssuer('', customerUuid, dummyIssuerApiKey);
-      fail();
-    } catch (e) {
-      expect(e).toEqual(new CustError(400, 'Invalid Issuer: name is required.'));
-      expect(e.code).toEqual(400);
-      expect(e.message).toEqual('Invalid Issuer: name is required.');
-    }
-  });
-
   it('returns a CustError with a descriptive error message if customerUuid is missing', async () => {
     try {
-      await registerIssuer(name, '', dummyIssuerApiKey);
+      await registerIssuer('', dummyIssuerApiKey);
       fail();
     } catch (e) {
       expect(e).toEqual(new CustError(400, 'Invalid Issuer: customerUuid is required.'));
@@ -87,7 +76,7 @@ describe('registerIssuer - Failure cases', () => {
 
   it('returns a CustError with a descriptive error message if apiKey is missing', async () => {
     try {
-      await registerIssuer(name, customerUuid, '');
+      await registerIssuer(customerUuid, '');
       fail();
     } catch (e) {
       expect(e).toEqual(new CustError(401, 'Not authenticated: apiKey is required'));
@@ -104,7 +93,7 @@ describe('registerIssuer - Failure cases - SaaS Errors', () => {
   it('Response code should be 403 when uuid is not valid', async () => {
     mockMakeNetworkRequest.mockRejectedValueOnce(new CustError(403, 'Forbidden'));
     try {
-      await registerIssuer(name, '123', dummyIssuerApiKey);
+      await registerIssuer('123', dummyIssuerApiKey);
     } catch (e) {
       expect(e.code).toBe(403);
     }
@@ -114,7 +103,7 @@ describe('registerIssuer - Failure cases - SaaS Errors', () => {
     mockMakeNetworkRequest.mockRejectedValueOnce(new CustError(403, 'Forbidden'));
 
     try {
-      await registerIssuer(name, customerUuid, 'abc');
+      await registerIssuer(customerUuid, 'abc');
     } catch (e) {
       expect(e.code).toBe(403);
     }

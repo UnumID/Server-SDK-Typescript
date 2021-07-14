@@ -74,10 +74,7 @@ var constructKeyObjs = function (kpSet) {
  * Validates request input parameters.
  * @param req Request
  */
-var validateInParams = function (name, customerUuid, url, apiKey) {
-    if (!name) {
-        throw new __1.CustError(400, 'Invalid Verifier Options: name is required.');
-    }
+var validateInParams = function (customerUuid, url, apiKey) {
     if (!customerUuid) {
         throw new __1.CustError(400, 'Invalid Verifier Options: customerUuid is required.');
     }
@@ -90,13 +87,12 @@ var validateInParams = function (name, customerUuid, url, apiKey) {
 };
 /**
  * Handler for registering a Verifier with UnumID's SaaS.
- * @param name
  * @param customerUuid
  * @param url
  * @param apiKey
  * @param versionInfo
  */
-exports.registerVerifier = function (name, customerUuid, url, apiKey, versionInfo) {
+exports.registerVerifier = function (customerUuid, url, apiKey, versionInfo) {
     if (versionInfo === void 0) { versionInfo = [{ target: { version: '1.0.0' }, sdkVersion: '2.0.0' }]; }
     return __awaiter(void 0, void 0, void 0, function () {
         var kpSet, verifierOpt, restData, restResp, authToken, verifierResp, error_1;
@@ -104,11 +100,11 @@ exports.registerVerifier = function (name, customerUuid, url, apiKey, versionInf
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 3, , 4]);
-                    validateInParams(name, customerUuid, url, apiKey);
+                    validateInParams(customerUuid, url, apiKey);
                     return [4 /*yield*/, createKeyPairs_1.createKeyPairSet()];
                 case 1:
                     kpSet = _a.sent();
-                    verifierOpt = { name: name, customerUuid: customerUuid, url: url, publicKeyInfo: constructKeyObjs(kpSet), versionInfo: versionInfo };
+                    verifierOpt = { customerUuid: customerUuid, url: url, publicKeyInfo: constructKeyObjs(kpSet), versionInfo: versionInfo };
                     restData = {
                         method: 'POST',
                         baseUrl: config_1.configData.SaaSUrl,
@@ -138,7 +134,7 @@ exports.registerVerifier = function (name, customerUuid, url, apiKey, versionInf
                     return [2 /*return*/, verifierResp];
                 case 3:
                     error_1 = _a.sent();
-                    logger_1.default.error("Error registering verifier " + name + ". " + error_1);
+                    logger_1.default.error("Error registering verifier " + apiKey + ". " + error_1);
                     throw error_1;
                 case 4: return [2 /*return*/];
             }
