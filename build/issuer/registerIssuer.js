@@ -71,14 +71,10 @@ var constructKeyObjs = function (kpSet) {
 };
 /**
  * Validates request input parameters.
- * @param name: string
  * @param customerUuid string
  * @param apiKey string
  */
-var validateInParams = function (name, customerUuid, apiKey) {
-    if (!name) {
-        throw new error_1.CustError(400, 'Invalid Issuer: name is required.');
-    }
+var validateInParams = function (customerUuid, apiKey) {
     if (!customerUuid) {
         throw new error_1.CustError(400, 'Invalid Issuer: customerUuid is required.');
     }
@@ -88,22 +84,20 @@ var validateInParams = function (name, customerUuid, apiKey) {
 };
 /**
  * Handles registering an Issuer with UnumID's SaaS.
- * @param name
  * @param customerUuid
  * @param apiKey
  */
-exports.registerIssuer = function (name, customerUuid, apiKey) { return __awaiter(void 0, void 0, void 0, function () {
+exports.registerIssuer = function (customerUuid, apiKey) { return __awaiter(void 0, void 0, void 0, function () {
     var kpSet, issuerOpt, restData, restResp, authToken, issuerResp, error_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 3, , 4]);
-                validateInParams(name, customerUuid, apiKey);
+                validateInParams(customerUuid, apiKey);
                 return [4 /*yield*/, createKeyPairs_1.createKeyPairSet()];
             case 1:
                 kpSet = _a.sent();
                 issuerOpt = {
-                    name: name,
                     customerUuid: customerUuid,
                     publicKeyInfo: constructKeyObjs(kpSet)
                 };

@@ -36,15 +36,10 @@ const constructKeyObjs = (kpSet: KeyPairSet): Array<PublicKeyInfo> => {
 
 /**
  * Validates request input parameters.
- * @param name: string
  * @param customerUuid string
  * @param apiKey string
  */
-const validateInParams = (name: string, customerUuid: string, apiKey: string) => {
-  if (!name) {
-    throw new CustError(400, 'Invalid Issuer: name is required.');
-  }
-
+const validateInParams = (customerUuid: string, apiKey: string) => {
   if (!customerUuid) {
     throw new CustError(400, 'Invalid Issuer: customerUuid is required.');
   }
@@ -56,17 +51,15 @@ const validateInParams = (name: string, customerUuid: string, apiKey: string) =>
 
 /**
  * Handles registering an Issuer with UnumID's SaaS.
- * @param name
  * @param customerUuid
  * @param apiKey
  */
-export const registerIssuer = async (name: string, customerUuid: string, apiKey: string): Promise<UnumDto<RegisteredIssuer>> => {
+export const registerIssuer = async (customerUuid: string, apiKey: string): Promise<UnumDto<RegisteredIssuer>> => {
   try {
-    validateInParams(name, customerUuid, apiKey);
+    validateInParams(customerUuid, apiKey);
 
     const kpSet: KeyPairSet = await createKeyPairSet();
     const issuerOpt: IssuerOptions = {
-      name,
       customerUuid,
       publicKeyInfo: constructKeyObjs(kpSet)
     };

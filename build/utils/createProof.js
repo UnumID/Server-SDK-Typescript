@@ -24,7 +24,7 @@ exports.createProof = function (data, privateKey, method, encoding) {
         verificationMethod: method,
         proofPurpose: 'AssertionMethod'
     };
-    logger_1.default.debug("Successfully created proof " + proof);
+    logger_1.default.debug("Successfully created proof " + JSON.stringify(proof));
     return (proof);
 };
 /**
@@ -43,7 +43,7 @@ exports.createProofPb = function (data, privateKey, method, encoding) {
         verificationMethod: method,
         proofPurpose: 'AssertionMethod'
     };
-    logger_1.default.debug("Successfully created proof " + proof);
+    logger_1.default.debug("Successfully created proof " + JSON.stringify(proof));
     return (proof);
 };
 //# sourceMappingURL=createProof.js.map

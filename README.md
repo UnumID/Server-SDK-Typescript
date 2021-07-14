@@ -57,7 +57,6 @@ You should store the DID (`did`) and encryption and signing key pairs (`keys`) t
 
 Parameters:
 ```typescript
-"name": string, // human readable name for issuer. Displayed to users in mobile apps when verifiers request credentials.
 "customerUuid": string, // your customer UUID
 "apiKey": string // your issuer API key
 ```
@@ -68,7 +67,7 @@ Response Body:  [**RegisteredIssuer**](https://docs.unum.id/Server-SDK-Typescrip
   "uuid": string, // identifies issuer in Unum ID database
   "customerUuid": string, // identifies customer in Unum ID database
   "did": string, // identifies issuer in Unum ID ecosystem
-  "name": string, // human-readable name for issuer
+  "name": string, // human-readable name for issuer, which comes from the name of the ApiKey used to register the Issuer
   "createdAt": string, // when issuer was registered
   "updatedAt": string, // when issuer was last updated
   "keys": {
