@@ -45,7 +45,7 @@ describe('registerVerifier', () => {
     const dummyVerifierResponse = makeDummyVerifierResponse({ verifier: dummyVerifier, authToken: dummyAuthToken });
     mockMakeNetworkRequest.mockResolvedValue(dummyVerifierResponse);
 
-    responseDto = await registerVerifier(name, customerUuid, url, dummyVerifierApiKey, versionInfo);
+    responseDto = await registerVerifier(customerUuid, url, dummyVerifierApiKey, versionInfo);
     response = responseDto.body;
     responseAuthToken = responseDto.authToken;
   });
@@ -84,20 +84,9 @@ describe('registerVerifier - Failure cases', () => {
   const customerUuid = '5e46f1ba-4c82-471d-bbc7-251924a90532';
   const url = 'https://customer-api.dev-unumid.org/presentation';
 
-  it('returns a CustError with a descriptive error message if name is missing', async () => {
-    try {
-      await registerVerifier('', customerUuid, url, dummyVerifierApiKey);
-      fail();
-    } catch (e) {
-      expect(e).toEqual(new CustError(400, 'Invalid Verifier Options: name is required.'));
-      expect(e.code).toEqual(400);
-      expect(e.message).toEqual('Invalid Verifier Options: name is required.');
-    }
-  });
-
   it('returns a CustError with a descriptive error message if customerUuid is missing', async () => {
     try {
-      await registerVerifier(name, '', url, dummyVerifierApiKey);
+      await registerVerifier('', url, dummyVerifierApiKey);
       fail();
     } catch (e) {
       expect(e).toEqual(new CustError(400, 'Invalid Verifier Options: customerUuid is required.'));
@@ -108,7 +97,7 @@ describe('registerVerifier - Failure cases', () => {
 
   it('returns a CustError with a descriptive error message if url is missing', async () => {
     try {
-      await registerVerifier(name, customerUuid, '', dummyVerifierApiKey);
+      await registerVerifier(customerUuid, '', dummyVerifierApiKey);
       fail();
     } catch (e) {
       expect(e).toEqual(new CustError(400, 'Invalid Verifier Options: url is required.'));
@@ -119,7 +108,7 @@ describe('registerVerifier - Failure cases', () => {
 
   it('returns a CustError with a descriptive error message if apiKey is missing', async () => {
     try {
-      await registerVerifier(name, customerUuid, url, '');
+      await registerVerifier(customerUuid, url, '');
       fail();
     } catch (e) {
       expect(e).toEqual(new CustError(401, 'Not authenticated: apiKey is required.'));
@@ -137,7 +126,7 @@ describe('registerVerifier - Failure cases - SaaS Errors', () => {
   it('Response code should be 403 when uuid is not valid', async () => {
     mockMakeNetworkRequest.mockRejectedValueOnce(new CustError(403, 'Forbidden'));
     try {
-      await registerVerifier(name, '123', url, dummyVerifierApiKey);
+      await registerVerifier('123', url, dummyVerifierApiKey);
     } catch (e) {
       expect(e.code).toBe(403);
     }
@@ -147,7 +136,7 @@ describe('registerVerifier - Failure cases - SaaS Errors', () => {
     mockMakeNetworkRequest.mockRejectedValueOnce(new CustError(403, 'Forbidden'));
 
     try {
-      await registerVerifier(name, customerUuid, url, 'abc');
+      await registerVerifier(customerUuid, url, 'abc');
     } catch (e) {
       expect(e.code).toBe(403);
     }

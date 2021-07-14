@@ -37,14 +37,6 @@ export interface RESTResponse<T = Record<string, unknown>> {
 }
 
 /**
- * Encapsulates necessary Issuer entity attributes during creation.
- */
-export interface IssuerOptions {
-  customerUuid: string;
-  publicKeyInfo: Array<PublicKeyInfo>;
-}
-
-/**
  * Encapsulates necessary Credential entity attributes during creation.
  */
 export interface CredentialOptions {

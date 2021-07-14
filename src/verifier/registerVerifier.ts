@@ -38,11 +38,7 @@ const constructKeyObjs = (kpSet: KeyPairSet): Array<PublicKeyInfo> => {
  * Validates request input parameters.
  * @param req Request
  */
-const validateInParams = (name: string, customerUuid: string, url: string, apiKey: string): void => {
-  if (!name) {
-    throw new CustError(400, 'Invalid Verifier Options: name is required.');
-  }
-
+const validateInParams = (customerUuid: string, url: string, apiKey: string): void => {
   if (!customerUuid) {
     throw new CustError(400, 'Invalid Verifier Options: customerUuid is required.');
   }
@@ -58,18 +54,17 @@ const validateInParams = (name: string, customerUuid: string, url: string, apiKe
 
 /**
  * Handler for registering a Verifier with UnumID's SaaS.
- * @param name
  * @param customerUuid
  * @param url
  * @param apiKey
  * @param versionInfo
  */
-export const registerVerifier = async (name: string, customerUuid: string, url: string, apiKey: string, versionInfo: VersionInfo[] = [{ target: { version: '1.0.0' }, sdkVersion: '2.0.0' }]): Promise<UnumDto<RegisteredVerifier>> => {
+export const registerVerifier = async (customerUuid: string, url: string, apiKey: string, versionInfo: VersionInfo[] = [{ target: { version: '1.0.0' }, sdkVersion: '2.0.0' }]): Promise<UnumDto<RegisteredVerifier>> => {
   try {
-    validateInParams(name, customerUuid, url, apiKey);
+    validateInParams(customerUuid, url, apiKey);
 
     const kpSet: KeyPairSet = await createKeyPairSet();
-    const verifierOpt: VerifierOptions = { name, customerUuid, url, publicKeyInfo: constructKeyObjs(kpSet), versionInfo };
+    const verifierOpt: VerifierOptions = { customerUuid, url, publicKeyInfo: constructKeyObjs(kpSet), versionInfo };
     const restData: RESTData = {
       method: 'POST',
       baseUrl: configData.SaaSUrl,
@@ -100,7 +95,7 @@ export const registerVerifier = async (name: string, customerUuid: string, url: 
 
     return verifierResp;
   } catch (error) {
-    logger.error(`Error registering verifier ${name}. ${error}`);
+    logger.error(`Error registering verifier ${apiKey}. ${error}`);
     throw error;
   }
 };
