@@ -67,7 +67,7 @@ Response Body:  [**RegisteredIssuer**](https://docs.unum.id/Server-SDK-Typescrip
   "uuid": string, // identifies issuer in Unum ID database
   "customerUuid": string, // identifies customer in Unum ID database
   "did": string, // identifies issuer in Unum ID ecosystem
-  "name": string, // human-readable name for issuer, which comes from the name of the ApiKey used to register the Issuer
+  "name": string, // human-readable name for issuer. Displayed to users in mobile apps when verifiers request credentials. Comes from the name of the ApiKey used to register the Issuer.
   "createdAt": string, // when issuer was registered
   "updatedAt": string, // when issuer was last updated
   "keys": {
@@ -157,7 +157,6 @@ You should store the DID (`did`) and signing key pair (`keys`) that this returns
 
 Parameters
 ```typescript
-"name": string, // human readable name for verifier. Displayed to users in mobile apps when you make requests.
 "customerUuid": string, // your customer UUID
 "url": string, // the url of which UnumID's SaaS will interface with
 "apiKey": string // your verifier API key
@@ -169,7 +168,7 @@ Response body: [**RegisteredVerifier**](https://docs.unum.id/Server-SDK-Typescri
   "uuid": string, // identifies verifier in Unum ID database
   "customerUuid": string, // identifies customer in Unum ID database
   "did": string, // identifiers verifier in Unum ID ecosystem
-  "name": string, // human-readable name for verifier
+  "name": string, // human-readable name for verifier. Displayed to users in mobile apps when you make requests. Comes from the name of the ApiKey used to register the Verifier.
   "createdAt": string, // when verifier was registered (ISO 8601 date/time)
   "updatedAt": string, // when verifier was last updated (ISO 8601 date/time)
   "keys": {
