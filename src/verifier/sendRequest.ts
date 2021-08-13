@@ -48,7 +48,8 @@ export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody
     metadata: metadata || { fields: {} }, // fields is necessary for the protobuf Struct definition
     uuid,
     id,
-    verifier
+    verifier,
+    version: '3.0.0'
   };
 };
 
@@ -426,7 +427,7 @@ export const sendRequestDeprecated = async (
 
     const presentationRequestResponse: UnumDto<PresentationRequestPostDto> = { body: { ...restResp.body }, authToken };
 
-    return presentationRequestResponse;
+    return presentationRequestResponse as UnumDto<PresentationRequestPostDtoDeprecatedV2>;
   } catch (error) {
     logger.error(`Error sending request to use UnumID Saas. ${error}`);
     throw error;

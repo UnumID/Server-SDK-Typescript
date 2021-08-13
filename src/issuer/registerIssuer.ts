@@ -9,17 +9,20 @@ import { createKeyPairSet } from '../utils/createKeyPairs';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
 
 /**
- * Creates an object to encapsulate key information.
+ * Creates an object to encapsulate key information after key pair creation.
  * @param kp KeyPair
  * @param type DidKeyType
  */
 const constructKeyObj = (kp: KeyPair, type: DidKeyType): PublicKeyInfo => {
+  const now = new Date().toISOString();
   return {
     id: getUUID(),
     encoding: 'pem',
     type: type,
     status: 'valid',
-    publicKey: kp.publicKey
+    publicKey: kp.publicKey,
+    createdAt: now,
+    updatedAt: now
   };
 };
 
@@ -85,7 +88,8 @@ export const registerIssuer = async (customerUuid: string, apiKey: string): Prom
         createdAt: restResp.body.createdAt,
         updatedAt: restResp.body.updatedAt,
         isAuthorized: restResp.body.isAuthorized,
-        keys: kpSet
+        keys: kpSet,
+        apiKey
       }
     };
 

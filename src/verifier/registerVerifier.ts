@@ -8,17 +8,20 @@ import { getUUID } from '../utils/helpers';
 import { makeNetworkRequest, handleAuthTokenHeader } from '../utils/networkRequestHelper';
 
 /**
- * Creates an object to encapsulate key information.
+ * Creates an object to encapsulate key information after key pair creation.
  * @param kp KeyPair
  * @param type DidKeyType
  */
 const constructKeyObj = (kp: KeyPair, type: DidKeyType): PublicKeyInfo => {
+  const now = new Date().toISOString();
   return {
     id: getUUID(),
     encoding: 'pem',
     type: type,
     status: 'valid',
-    publicKey: kp.publicKey
+    publicKey: kp.publicKey,
+    createdAt: now,
+    updatedAt: now
   };
 };
 
@@ -89,7 +92,8 @@ export const registerVerifier = async (customerUuid: string, url: string, apiKey
         isAuthorized: restResp.body.isAuthorized,
         keys: kpSet,
         url,
-        versionInfo
+        versionInfo,
+        apiKey
       }
     };
 

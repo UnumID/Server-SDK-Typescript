@@ -85,7 +85,8 @@ exports.constructUnsignedPresentationRequest = function (reqBody) {
         metadata: metadata || { fields: {} },
         uuid: uuid,
         id: id,
-        verifier: verifier
+        verifier: verifier,
+        version: '3.0.0'
     };
 };
 /**
