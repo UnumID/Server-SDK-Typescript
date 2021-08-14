@@ -1,1 +1,1 @@
-{"version":3,"file":"registerIssuer.d.ts","sourceRoot":"","sources":["../../src/issuer/registerIssuer.ts"],"names":[],"mappings":"AACA,OAAO,EAAc,gBAAgB,EAAY,OAAO,EAAE,MAAM,UAAU,CAAC;AAkD3E;;;;GAIG;AACH,eAAO,MAAM,cAAc,iBAAwB,MAAM,UAAU,MAAM,KAAG,OAAO,CAAC,OAAO,CAAC,gBAAgB,CAAC,CAwC5G,CAAC"}
+{"version":3,"file":"registerIssuer.d.ts","sourceRoot":"","sources":["../../src/issuer/registerIssuer.ts"],"names":[],"mappings":"AACA,OAAO,EAAc,gBAAgB,EAAY,OAAO,EAAE,MAAM,UAAU,CAAC;AAqD3E;;;;GAIG;AACH,eAAO,MAAM,cAAc,iBAAwB,MAAM,UAAU,MAAM,KAAG,OAAO,CAAC,OAAO,CAAC,gBAAgB,CAAC,CAyC5G,CAAC"}

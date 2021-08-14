@@ -1,6 +1,6 @@
 
 import { DecryptedPresentation, UnumDto, VerifiedStatus } from '../types';
-import { Presentation, CredentialRequest, PresentationRequestDto, EncryptedData, PresentationRequest, PresentationPb, PresentationRequestPb, ProofPb, UnsignedPresentationRequestPb, JSONObj, CredentialRequestPb } from '@unumid/types';
+import { Presentation, CredentialRequest, PresentationRequestDto, EncryptedData, PresentationRequest, PresentationPb, PresentationRequestPb, ProofPb, UnsignedPresentationRequestPb, JSONObj, CredentialRequestPb, WithVersion } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
 import { CryptoError, decrypt, decryptBytes } from '@unumid/library-crypto';
 import logger from '../logger';
@@ -74,7 +74,7 @@ const validatePresentation = (presentation: PresentationPb): PresentationPb => {
  * Validates the presentation object has the proper attributes.
  * @param presentation Presentation
  */
-const validatePresentationRequest = (presentationRequest: PresentationRequest): PresentationRequestPb => {
+const validatePresentationRequest = (presentationRequest: WithVersion<PresentationRequest>): PresentationRequestPb => {
   const { proof, credentialRequests, holderAppUuid, verifier } = presentationRequest;
 
   // validate required fields

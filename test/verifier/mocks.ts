@@ -13,7 +13,8 @@ import {
   PresentationPb,
   UnsignedPresentationPb,
   VersionedPresentationRequestDto,
-  PresentationRequestDto
+  PresentationRequestDto,
+  WithVersion
 } from '@unumid/types';
 
 import { configData } from '../../src/config';
@@ -231,7 +232,7 @@ export const dummyCredentialRequest = {
   required: true
 };
 
-export const makeDummyUnsignedPresentationRequest = (options: Partial<UnsignedPresentationRequest> = {}): UnsignedPresentationRequest => {
+export const makeDummyUnsignedPresentationRequest = (options: Partial<UnsignedPresentationRequest> = {}): WithVersion<UnsignedPresentationRequest> => {
   const credentialRequests = options.credentialRequests || [dummyCredentialRequest];
   const uuid = options.uuid || getUUID();
   const expiresAt = options.expiresAt;
@@ -247,7 +248,8 @@ export const makeDummyUnsignedPresentationRequest = (options: Partial<UnsignedPr
     verifier,
     expiresAt,
     metadata,
-    id
+    id,
+    version: '3.0.0'
   };
 };
 

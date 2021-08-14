@@ -47,17 +47,20 @@ var createKeyPairs_1 = require("../utils/createKeyPairs");
 var helpers_1 = require("../utils/helpers");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 /**
- * Creates an object to encapsulate key information.
+ * Creates an object to encapsulate key information after key pair creation.
  * @param kp KeyPair
  * @param type DidKeyType
  */
 var constructKeyObj = function (kp, type) {
+    var now = new Date().toISOString();
     return {
         id: helpers_1.getUUID(),
         encoding: 'pem',
         type: type,
         status: 'valid',
-        publicKey: kp.publicKey
+        publicKey: kp.publicKey,
+        createdAt: now,
+        updatedAt: now
     };
 };
 /**
@@ -128,7 +131,8 @@ exports.registerVerifier = function (customerUuid, url, apiKey, versionInfo) {
                             isAuthorized: restResp.body.isAuthorized,
                             keys: kpSet,
                             url: url,
-                            versionInfo: versionInfo
+                            versionInfo: versionInfo,
+                            apiKey: apiKey
                         }
                     };
                     return [2 /*return*/, verifierResp];
