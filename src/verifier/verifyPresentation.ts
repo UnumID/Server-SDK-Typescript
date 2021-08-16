@@ -149,8 +149,8 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
     // verify the presentation request signature if present
     if (presentationRequest && presentationRequest.presentationRequest) {
       // removing the version attribute that the saas adds
-      const presentationRequestWithoutVersion: PresentationRequest = omit(presentationRequest.presentationRequest, 'version');
-      const requestVerificationResult = await verifyPresentationRequest(authorization, presentationRequestWithoutVersion);
+      // const presentationRequestWithoutVersion: PresentationRequest = omit(presentationRequest.presentationRequest, 'version');
+      const requestVerificationResult = await verifyPresentationRequest(authorization, presentationRequest.presentationRequest);
       authorization = requestVerificationResult.authToken;
 
       // if invalid then can stop here but still send back the decrypted presentation with the verification results
