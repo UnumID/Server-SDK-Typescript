@@ -64,7 +64,7 @@ var error_1 = require("../utils/error");
  * Constructs an unsigned PresentationRequest from the incoming request body.
  * @param reqBody SendRequestReqBody
  */
-exports.constructUnsignedPresentationRequest = function (reqBody) {
+exports.constructUnsignedPresentationRequest = function (reqBody, version) {
     var verifier = reqBody.verifier, holderAppUuid = reqBody.holderAppUuid, credentialRequests = reqBody.credentialRequests, metadata = reqBody.metadata, expiresAt = reqBody.expiresAt, createdAt = reqBody.createdAt, updatedAt = reqBody.updatedAt, id = reqBody.id;
     var uuid = helpers_1.getUUID();
     // any/all default values must be set before signing, or signature will always fail to verify
@@ -86,7 +86,7 @@ exports.constructUnsignedPresentationRequest = function (reqBody) {
         uuid: uuid,
         id: id,
         verifier: verifier,
-        version: '3.0.0'
+        version: version
     };
 };
 /**
@@ -311,7 +311,7 @@ exports.sendRequestV3 = function (authorization, verifier, credentialRequests, e
                 body = { verifier: verifier, credentialRequests: credentialRequests, eccPrivateKey: eccPrivateKey, holderAppUuid: holderAppUuid, expiresAt: expirationDate, metadata: metadata, id: id };
                 // Validate inputs
                 body = validateSendRequestBody(body);
-                unsignedPresentationRequest = exports.constructUnsignedPresentationRequest(body);
+                unsignedPresentationRequest = exports.constructUnsignedPresentationRequest(body, '3.0.0');
                 signedPR = exports.constructSignedPresentationRequest(unsignedPresentationRequest, eccPrivateKey);
                 restData = {
                     method: 'POST',
@@ -352,7 +352,7 @@ exports.sendRequestDeprecated = function (authorization, verifier, credentialReq
                 body = { verifier: verifier, credentialRequests: credentialRequests, eccPrivateKey: eccPrivateKey, holderAppUuid: holderAppUuid, expiresAt: expirationDate, metadata: metadata, id: id };
                 // Validate inputs
                 validateSendRequestBodyDeprecated(body);
-                unsignedPresentationRequest = exports.constructUnsignedPresentationRequest(body);
+                unsignedPresentationRequest = exports.constructUnsignedPresentationRequest(body, '2.0.0');
                 signedPR = exports.constructSignedPresentationRequestDeprecatedV2(unsignedPresentationRequest, eccPrivateKey);
                 restData = {
                     method: 'POST',
