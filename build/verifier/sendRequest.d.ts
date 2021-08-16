@@ -5,7 +5,7 @@ import { SendRequestReqBody, UnumDto } from '../types';
  * Constructs an unsigned PresentationRequest from the incoming request body.
  * @param reqBody SendRequestReqBody
  */
-export declare const constructUnsignedPresentationRequest: (reqBody: SendRequestReqBody) => UnsignedPresentationRequestPb;
+export declare const constructUnsignedPresentationRequest: (reqBody: SendRequestReqBody, version: string) => UnsignedPresentationRequestPb;
 /**
  * Signs an unsigned PresentationRequest and attaches the resulting Proof
  * @param unsignedPresentationRequest UnsignedPresentationRequest

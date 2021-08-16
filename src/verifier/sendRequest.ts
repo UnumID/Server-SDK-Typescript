@@ -15,7 +15,7 @@ import { CustError } from '../utils/error';
  * Constructs an unsigned PresentationRequest from the incoming request body.
  * @param reqBody SendRequestReqBody
  */
-export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody): UnsignedPresentationRequestPb => {
+export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody, version: string): UnsignedPresentationRequestPb => {
   const {
     verifier,
     holderAppUuid,
@@ -49,7 +49,7 @@ export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody
     uuid,
     id,
     verifier,
-    version: '3.0.0'
+    version
   };
 };
 
@@ -356,7 +356,7 @@ export const sendRequestV3 = async (
     // Validate inputs
     body = validateSendRequestBody(body);
 
-    const unsignedPresentationRequest = constructUnsignedPresentationRequest(body);
+    const unsignedPresentationRequest = constructUnsignedPresentationRequest(body, '3.0.0');
 
     // Create the signed presentation object from the unsignedPresentation object
     const signedPR: PresentationRequestPb = constructSignedPresentationRequest(unsignedPresentationRequest, eccPrivateKey);
@@ -408,7 +408,7 @@ export const sendRequestDeprecated = async (
     // Validate inputs
     validateSendRequestBodyDeprecated(body);
 
-    const unsignedPresentationRequest: UnsignedPresentationRequestDeprecatedV2 = constructUnsignedPresentationRequest(body);
+    const unsignedPresentationRequest: UnsignedPresentationRequestDeprecatedV2 = constructUnsignedPresentationRequest(body, '2.0.0');
 
     // Create the signed presentation object from the unsignedPresentation object
     const signedPR = constructSignedPresentationRequestDeprecatedV2(unsignedPresentationRequest, eccPrivateKey);
