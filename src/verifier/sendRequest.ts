@@ -2,7 +2,7 @@ import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
 import { CryptoError } from '@unumid/library-crypto';
 import { PresentationRequestPostDto as PresentationRequestPostDtoDeprecatedV2, UnsignedPresentationRequest as UnsignedPresentationRequestDeprecatedV2, SignedPresentationRequest as SignedPresentationRequestDeprecatedV2, Proof } from '@unumid/types-v2';
-import { CredentialRequest, PresentationRequestPostDto, UnsignedPresentationRequestPb, PresentationRequestPb, ProofPb, SignedPresentationRequest, CredentialRequestPb } from '@unumid/types';
+import { CredentialRequest, PresentationRequestPostDto, UnsignedPresentationRequestPb, PresentationRequestPb, ProofPb, SignedPresentationRequest, CredentialRequestPb, JSONObj } from '@unumid/types';
 
 import { RESTData, SendRequestReqBody, UnumDto } from '../types';
 import logger from '../logger';
@@ -346,7 +346,7 @@ export const sendRequestV3 = async (
   holderAppUuid: string,
   id: string,
   expirationDate?: Date,
-  metadata?: Record<string, unknown>
+  metadata?: JSONObj
 ): Promise<UnumDto<PresentationRequestPostDto>> => {
   try {
     requireAuth(authorization);
