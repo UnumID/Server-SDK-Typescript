@@ -1,5 +1,5 @@
 import { PresentationRequestPostDto as PresentationRequestPostDtoDeprecatedV2, UnsignedPresentationRequest as UnsignedPresentationRequestDeprecatedV2, SignedPresentationRequest as SignedPresentationRequestDeprecatedV2 } from '@unumid/types-v2';
-import { CredentialRequest, PresentationRequestPostDto, UnsignedPresentationRequestPb, PresentationRequestPb, CredentialRequestPb, JSONObj } from '@unumid/types';
+import { CredentialRequest, PresentationRequestPostDto, UnsignedPresentationRequestPb, PresentationRequestPb, CredentialRequestPb } from '@unumid/types';
 import { SendRequestReqBody, UnumDto } from '../types';
 /**
  * Constructs an unsigned PresentationRequest from the incoming request body.
@@ -36,7 +36,7 @@ export declare const sendRequest: (authorization: string, verifier: string, cred
  * @param eccPrivateKey
  * @param holderAppUuid
  */
-export declare const sendRequestV3: (authorization: string, verifier: string, credentialRequests: CredentialRequestPb[], eccPrivateKey: string, holderAppUuid: string, id: string, expirationDate?: Date | undefined, metadata?: JSONObj | undefined) => Promise<UnumDto<PresentationRequestPostDto>>;
+export declare const sendRequestV3: (authorization: string, verifier: string, credentialRequests: CredentialRequestPb[], eccPrivateKey: string, holderAppUuid: string, id: string, expirationDate?: Date | undefined, metadata?: any) => Promise<UnumDto<PresentationRequestPostDto>>;
 /**
  * Handler for sending a PresentationRequest to UnumID's SaaS.
  * @param authorization

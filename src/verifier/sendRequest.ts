@@ -45,8 +45,9 @@ export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody
     updatedAt: updatedAt || defaultUpdatedAt,
     expiresAt: expiresAt || defaultExpiresAt,
     holderAppUuid,
+    metadata: metadata ? JSON.stringify(metadata) : '{}',
     // metadata: metadata ? JSON.stringify(metadata) : {} as JSONObj,
-    metadata: JSON.stringify(metadata),
+    // metadata: JSON.stringify(metadata),
     uuid,
     id,
     verifier,
@@ -347,7 +348,7 @@ export const sendRequestV3 = async (
   holderAppUuid: string,
   id: string,
   expirationDate?: Date,
-  metadata?: JSONObj
+  metadata?: any
 ): Promise<UnumDto<PresentationRequestPostDto>> => {
   try {
     requireAuth(authorization);

@@ -74,7 +74,7 @@ export interface PresentationRequestParams {
   createdAt?: Date;
   updatedAt?: Date;
   expiresAt?: Date;
-  metadata?: JSONObj;
+  metadata?: any;
 }
 
 /**

@@ -239,7 +239,7 @@ export const makeDummyUnsignedPresentationRequest = (options: Partial<UnsignedPr
   const holderAppUuid = options.holderAppUuid || getUUID();
   const verifier = options.verifier || dummyVerifierDid;
   const id = options.id || getUUID();
-  const metadata = options.metadata || { fields: {} };
+  const metadata = options.metadata || '{ fields: {} }';
 
   return {
     uuid,
