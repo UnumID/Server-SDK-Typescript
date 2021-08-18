@@ -45,7 +45,7 @@ export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody
     updatedAt: updatedAt || defaultUpdatedAt,
     expiresAt: expiresAt || defaultExpiresAt,
     holderAppUuid,
-    metadata: metadata || { fields: {} }, // fields is necessary for the protobuf Struct definition
+    metadata: metadata ? JSON.stringify(metadata) : '',
     uuid,
     id,
     verifier,
@@ -193,17 +193,17 @@ const validateSendRequestBody = (sendRequestBody: SendRequestReqBody): SendReque
     throw new CustError(400, 'Invalid PresentationRequest options: signingPrivateKey is required.');
   }
 
-  // Ensure that metadata object is keyed on fields for Struct protobuf definition
-  if (!metadata) {
-    sendRequestBody.metadata = {
-      fields: {}
-    };
-  } else if (metadata && !metadata.fields) {
-    logger.debug('Adding the root \'fields\' key to the presentation request metadata.');
-    sendRequestBody.metadata = {
-      fields: sendRequestBody.metadata
-    };
-  }
+  // // Ensure that metadata object is keyed on fields for Struct protobuf definition
+  // if (!metadata) {
+  //   sendRequestBody.metadata = {
+  //     fields: {}
+  //   };
+  // } else if (metadata && !metadata.fields) {
+  //   logger.debug('Adding the root \'fields\' key to the presentation request metadata.');
+  //   sendRequestBody.metadata = {
+  //     fields: sendRequestBody.metadata
+  //   };
+  // }
 
   if (!id) {
     throw new CustError(400, 'Invalid PresentationRequest options: id is required.');
@@ -287,12 +287,12 @@ const validateSendRequestBodyDeprecated = (sendRequestBody: SendRequestReqBody):
     throw new CustError(400, 'Invalid PresentationRequest options: signingPrivateKey is required.');
   }
 
-  // Ensure that metadata object is keyed on fields for Struct protobuf definition
-  if (!metadata) {
-    sendRequestBody.metadata = {
-      fields: {}
-    };
-  }
+  // // Ensure that metadata object is keyed on fields for Struct protobuf definition
+  // if (!metadata) {
+  //   sendRequestBody.metadata = {
+  //     fields: {}
+  //   };
+  // }
 
   if (!id) {
     throw new CustError(400, 'Invalid PresentationRequest options: id is required.');

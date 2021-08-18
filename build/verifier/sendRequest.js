@@ -82,7 +82,7 @@ exports.constructUnsignedPresentationRequest = function (reqBody, version) {
         updatedAt: updatedAt || defaultUpdatedAt,
         expiresAt: expiresAt || defaultExpiresAt,
         holderAppUuid: holderAppUuid,
-        metadata: metadata || { fields: {} },
+        metadata: metadata ? JSON.stringify(metadata) : '',
         uuid: uuid,
         id: id,
         verifier: verifier,
@@ -187,18 +187,17 @@ var validateSendRequestBody = function (sendRequestBody) {
     if (!eccPrivateKey) {
         throw new error_1.CustError(400, 'Invalid PresentationRequest options: signingPrivateKey is required.');
     }
-    // Ensure that metadata object is keyed on fields for Struct protobuf definition
-    if (!metadata) {
-        sendRequestBody.metadata = {
-            fields: {}
-        };
-    }
-    else if (metadata && !metadata.fields) {
-        logger_1.default.debug('Adding the root \'fields\' key to the presentation request metadata.');
-        sendRequestBody.metadata = {
-            fields: sendRequestBody.metadata
-        };
-    }
+    // // Ensure that metadata object is keyed on fields for Struct protobuf definition
+    // if (!metadata) {
+    //   sendRequestBody.metadata = {
+    //     fields: {}
+    //   };
+    // } else if (metadata && !metadata.fields) {
+    //   logger.debug('Adding the root \'fields\' key to the presentation request metadata.');
+    //   sendRequestBody.metadata = {
+    //     fields: sendRequestBody.metadata
+    //   };
+    // }
     if (!id) {
         throw new error_1.CustError(400, 'Invalid PresentationRequest options: id is required.');
     }
@@ -258,12 +257,12 @@ var validateSendRequestBodyDeprecated = function (sendRequestBody) {
     if (!eccPrivateKey) {
         throw new error_1.CustError(400, 'Invalid PresentationRequest options: signingPrivateKey is required.');
     }
-    // Ensure that metadata object is keyed on fields for Struct protobuf definition
-    if (!metadata) {
-        sendRequestBody.metadata = {
-            fields: {}
-        };
-    }
+    // // Ensure that metadata object is keyed on fields for Struct protobuf definition
+    // if (!metadata) {
+    //   sendRequestBody.metadata = {
+    //     fields: {}
+    //   };
+    // }
     if (!id) {
         throw new error_1.CustError(400, 'Invalid PresentationRequest options: id is required.');
     }
