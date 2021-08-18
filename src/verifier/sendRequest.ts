@@ -45,7 +45,7 @@ export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody
     updatedAt: updatedAt || defaultUpdatedAt,
     expiresAt: expiresAt || defaultExpiresAt,
     holderAppUuid,
-    metadata: metadata ? JSON.stringify(metadata) : '',
+    metadata: metadata ? JSON.stringify(metadata) : '{}',
     uuid,
     id,
     verifier,
