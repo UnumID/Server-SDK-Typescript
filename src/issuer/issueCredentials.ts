@@ -308,9 +308,9 @@ const validateInputs = (type: string|string[], issuer: string, credentialSubject
   }
 };
 
-const constructCredentialOptions = (type: string|string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, expirationDate?: Date): CredentialOptions => {
+const constructCredentialOptions = (type: string|string[], issuer: string, credentialSubject: CredentialSubject, expirationDate?: Date): CredentialOptions => {
   // HACK ALERT: removing duplicate 'VerifiableCredential' if present in type string[]
-  const typeList: string[] = ['VerifiableCredential'].concat(type); // Need to have some value in the "base" array so just just the keyword we are going to filter over.
+  const typeList: string[] = ['VerifiableCredential'].concat(type); // Need to have some value in the "base" array so just using the keyword we are going to filter over.
   const types = typeList.filter(t => t !== 'VerifiableCredential');
 
   const credOpt: CredentialOptions = {
@@ -342,7 +342,7 @@ export const issueCredential = async (authorization: string | undefined, type: s
     validateInputs(type, issuer, credentialSubject, signingPrivateKey, expirationDate);
 
     // Construct CredentialOptions object
-    const credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, signingPrivateKey, expirationDate);
+    const credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, expirationDate);
 
     /**
      * Need to loop through all versions except most recent so that can issued credentials could be backwards compatible with older holder versions.
@@ -413,7 +413,7 @@ export const issueCredential = async (authorization: string | undefined, type: s
       }
     }
 
-    // Grabbing the latest version as defined in the version list, 2.0.0
+    // Grabbing the latest version as defined in the version list, 3.0.0
     const latestVersion: string = versionList[versionList.length - 1];
 
     // Create latest version of the UnsignedCredential object

@@ -220,7 +220,7 @@ function validatePresentationMeetsRequestedCredentials (presentation: Presentati
       const presentationCreds:CredentialPb[] = presentation.verifiableCredential;
       let found = false;
       for (const presentationCred of presentationCreds) {
-        // checking required credential types are presents
+        // checking required credential types are present
         if (presentationCred.type.includes(requestedCred.type)) {
           found = true;
         }
@@ -228,7 +228,7 @@ function validatePresentationMeetsRequestedCredentials (presentation: Presentati
         if (found) {
           // checking required issuers are present
           if (isArrayNotEmpty(requestedCred.issuers) && !requestedCred.issuers.includes(presentationCred.issuer)) {
-            const errMessage = `Invalid Presentation: credentials provided did not meet issuer requirements, [${presentationCred.issuer}], per the presentation request, [${requestedCred.issuers}].`;
+            const errMessage = `Invalid Presentation: credentials provided did not meet issuer requirements. Issuers requested: [${requestedCred.issuers}]. Issuer of the credential received: [${presentationCred.issuer}].`;
             logger.warn(errMessage);
             throw new CustError(400, errMessage);
           }
@@ -239,7 +239,7 @@ function validatePresentationMeetsRequestedCredentials (presentation: Presentati
       }
 
       if (!found) {
-        const errMessage = `Invalid Presentation: credentials provided did not meet type requirements, [${presentationCreds.map(pc => pc.type.filter(t => t !== 'VerifiableCredential'))}], per the presentation request, [${credentialRequests.map(cr => cr.type)}].`;
+        const errMessage = `Invalid Presentation: credentials provided did not meet type requirements. Presented credentials: [${presentationCreds.map(pc => pc.type.filter(t => t !== 'VerifiableCredential'))}]. Requested credentials: [${credentialRequests.map(cr => cr.type)}].`;
         logger.warn(errMessage);
         throw new CustError(400, errMessage);
       }

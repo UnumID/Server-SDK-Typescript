@@ -71,7 +71,7 @@ const validatePresentation = (presentation: PresentationPb): PresentationPb => {
 };
 
 /**
- * Validates the presentation object has the proper attributes.
+ * Validates the presentation request object has the proper attributes.
  * @param presentation Presentation
  */
 const validatePresentationRequest = (presentationRequest: WithVersion<PresentationRequest>): PresentationRequestPb => {
@@ -94,11 +94,7 @@ const validatePresentationRequest = (presentationRequest: WithVersion<Presentati
     throw new CustError(400, 'Invalid PresentationRequest: verifier is required.');
   }
 
-  if (isArrayEmpty(credentialRequests)) {
-    throw new CustError(400, 'Invalid Presentation: credentialRequests must be a non-empty array.');
-  } else {
-    validateCredentialRequests(presentationRequest.credentialRequests);
-  }
+  validateCredentialRequests(presentationRequest.credentialRequests);
 
   // Check proof object is formatted correctly while converting to protobuf type
   const result: PresentationRequestPb = {
@@ -234,7 +230,6 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
       // validate the provided presentation request
       const presentationRequestPb: PresentationRequestPb = validatePresentationRequest(presentationRequest.presentationRequest);
 
-      // const requestVerificationResult = await verifyPresentationRequest(authorization, presentationRequest.presentationRequest);
       const requestVerificationResult = await verifyPresentationRequest(authorization, presentationRequestPb);
       authorization = requestVerificationResult.authToken;
 
@@ -252,6 +247,8 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
 
         return result;
       }
+    } else {
+      // TODO grab presentation request from saas
     }
 
     if (isDeclinedPresentation(presentation)) {
