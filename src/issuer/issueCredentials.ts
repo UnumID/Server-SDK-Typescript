@@ -362,11 +362,15 @@ export const issueCredential = async (authorization: string | undefined, type: s
         // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
         const encryptedCredentialOptions = await constructEncryptedCredentialV1Opts(credential, authorization as string);
 
+        // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
+        const encryptedCredentialTypeFiltered = credential.type.filter(t => t !== 'VerifiableCredential');
+
         const encryptedCredentialUploadOptions = {
           credentialId: credential.id,
           subject: credentialSubject.id,
           issuer: credential.issuer,
-          type: credential.type,
+          // type: credential.type,
+          type: encryptedCredentialTypeFiltered,
           encryptedCredentials: encryptedCredentialOptions
         };
 
@@ -391,11 +395,15 @@ export const issueCredential = async (authorization: string | undefined, type: s
         // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
         const encryptedCredentialOptions = await constructEncryptedCredentialOpts(credential, authorization as string);
 
+        // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
+        const encryptedCredentialTypeFiltered = credential.type.filter(t => t !== 'VerifiableCredential');
+
         const encryptedCredentialUploadOptions = {
           credentialId: credential.id,
           subject: credentialSubject.id,
           issuer: credential.issuer,
-          type: credential.type,
+          // type: credential.type,
+          type: encryptedCredentialTypeFiltered,
           encryptedCredentials: encryptedCredentialOptions
         };
 
@@ -425,11 +433,15 @@ export const issueCredential = async (authorization: string | undefined, type: s
     // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
     const encryptedCredentialOptions = await constructEncryptedCredentialOpts(credential, authorization as string);
 
+    // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
+    const encryptedCredentialTypeFiltered = credential.type.filter(t => t !== 'VerifiableCredential');
+
     const encryptedCredentialUploadOptions = {
       credentialId: credential.id,
       subject: credentialSubject.id,
       issuer: credential.issuer,
-      type: credential.type,
+      // type: credential.type,
+      type: encryptedCredentialTypeFiltered,
       encryptedCredentials: encryptedCredentialOptions
     };
 
