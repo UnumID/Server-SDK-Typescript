@@ -54,7 +54,7 @@ export const validateNoPresentationParams = (noPresentation: PresentationPb): Pr
     throw new CustError(400, 'Invalid Declined Presentation: verifiableCredential must be undefined or empty.'); // this should never happen base on upstream logic
   }
 
-  noPresentation.proof = validateProof(proof);
+  validateProof(proof);
 
   return noPresentation;
 };

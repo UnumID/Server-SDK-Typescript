@@ -109,7 +109,7 @@ var validatePresentation = function (presentation) {
     return presentation;
 };
 /**
- * Validates the presentation object has the proper attributes.
+ * Validates the presentation request object has the proper attributes.
  * @param presentation Presentation
  */
 var validatePresentationRequest = function (presentationRequest) {
@@ -127,12 +127,7 @@ var validatePresentationRequest = function (presentationRequest) {
     if (!verifier) {
         throw new error_1.CustError(400, 'Invalid PresentationRequest: verifier is required.');
     }
-    if (helpers_1.isArrayEmpty(credentialRequests)) {
-        throw new error_1.CustError(400, 'Invalid Presentation: credentialRequests must be a non-empty array.');
-    }
-    else {
-        validateCredentialRequests(presentationRequest.credentialRequests);
-    }
+    validateCredentialRequests(presentationRequest.credentialRequests);
     // Check proof object is formatted correctly while converting to protobuf type
     var result = __assign(__assign({}, presentationRequest), { proof: validateProof_1.validateProof(convertToProtobuf_1.convertProof(proof)), expiresAt: presentationRequest.expiresAt ? presentationRequest.expiresAt : undefined, metadata: presentationRequest.metadata ? presentationRequest.metadata : undefined });
     return result;
@@ -257,7 +252,7 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                     };
                     return [2 /*return*/, result_2];
                 }
-                _a.label = 2;
+                return [3 /*break*/, 2];
             case 2:
                 if (!isDeclinedPresentation(presentation)) return [3 /*break*/, 4];
                 return [4 /*yield*/, verifyNoPresentationHelper_1.verifyNoPresentationHelper(authorization, presentation, verifierDid)];

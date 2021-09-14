@@ -358,9 +358,10 @@ export const sendRequestV3 = async (
     // Validate inputs
     body = validateSendRequestBody(body);
 
+    // Create the unsigned presentation request object from the unsignedPresentation object
     const unsignedPresentationRequest = constructUnsignedPresentationRequest(body, '3.0.0');
 
-    // Create the signed presentation object from the unsignedPresentation object
+    // Create the signed presentation request object from the unsignedPresentation object
     const signedPR: PresentationRequestPb = constructSignedPresentationRequest(unsignedPresentationRequest, eccPrivateKey);
 
     const restData: RESTData = {
