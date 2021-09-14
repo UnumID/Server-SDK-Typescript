@@ -626,7 +626,7 @@ describe('verifyPresentationHelper', () => {
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
-        expect(e.message).toBe('Invalid Presentation: credentials provided did not meet type requirements, [AddressCredential], per the presentation request, [DummyCredential].');
+        expect(e.message).toBe('Invalid Presentation: credentials provided did not meet type requirements. Presented credentials: [AddressCredential]. Requested credentials: [DummyCredential].');
       }
     });
 
@@ -638,7 +638,7 @@ describe('verifyPresentationHelper', () => {
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
-        expect(e.message).toBe(`Invalid Presentation: credentials provided did not meet issuer requirements, [dummyIssuerDid], per the presentation request, [${dummyIssuerDid}].`);
+        expect(e.message).toBe(`Invalid Presentation: credentials provided did not meet issuer requirements. Issuers requested: [${dummyIssuerDid}]. Issuer of the credential received: [dummyIssuerDid].`);
       }
     });
   });

@@ -333,9 +333,9 @@ var validateInputs = function (type, issuer, credentialSubject, signingPrivateKe
         throw new error_1.CustError(400, 'expirationDate must be in the future.');
     }
 };
-var constructCredentialOptions = function (type, issuer, credentialSubject, signingPrivateKey, expirationDate) {
+var constructCredentialOptions = function (type, issuer, credentialSubject, expirationDate) {
     // HACK ALERT: removing duplicate 'VerifiableCredential' if present in type string[]
-    var typeList = ['VerifiableCredential'].concat(type); // Need to have some value in the "base" array so just just the keyword we are going to filter over.
+    var typeList = ['VerifiableCredential'].concat(type); // Need to have some value in the "base" array so just using the keyword we are going to filter over.
     var types = typeList.filter(function (t) { return t !== 'VerifiableCredential'; });
     var credOpt = {
         credentialSubject: credentialSubject,
@@ -365,7 +365,7 @@ exports.issueCredential = function (authorization, type, issuer, credentialSubje
                 requireAuth_1.requireAuth(authorization);
                 // Validate the inputs
                 validateInputs(type, issuer, credentialSubject, signingPrivateKey, expirationDate);
-                credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, signingPrivateKey, expirationDate);
+                credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, expirationDate);
                 v = 0;
                 _a.label = 1;
             case 1:

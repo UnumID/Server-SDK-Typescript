@@ -227,14 +227,14 @@ function validatePresentationMeetsRequestedCredentials(presentation, credentialR
             var found = false;
             for (var _a = 0, presentationCreds_1 = presentationCreds; _a < presentationCreds_1.length; _a++) {
                 var presentationCred = presentationCreds_1[_a];
-                // checking required credential types are presents
+                // checking required credential types are present
                 if (presentationCred.type.includes(requestedCred.type)) {
                     found = true;
                 }
                 if (found) {
                     // checking required issuers are present
                     if (helpers_1.isArrayNotEmpty(requestedCred.issuers) && !requestedCred.issuers.includes(presentationCred.issuer)) {
-                        var errMessage = "Invalid Presentation: credentials provided did not meet issuer requirements, [" + presentationCred.issuer + "], per the presentation request, [" + requestedCred.issuers + "].";
+                        var errMessage = "Invalid Presentation: credentials provided did not meet issuer requirements. Issuers requested: [" + requestedCred.issuers + "]. Issuer of the credential received: [" + presentationCred.issuer + "].";
                         logger_1.default.warn(errMessage);
                         throw new error_1.CustError(400, errMessage);
                     }
@@ -243,7 +243,7 @@ function validatePresentationMeetsRequestedCredentials(presentation, credentialR
                 }
             }
             if (!found) {
-                var errMessage = "Invalid Presentation: credentials provided did not meet type requirements, [" + presentationCreds.map(function (pc) { return pc.type.filter(function (t) { return t !== 'VerifiableCredential'; }); }) + "], per the presentation request, [" + credentialRequests.map(function (cr) { return cr.type; }) + "].";
+                var errMessage = "Invalid Presentation: credentials provided did not meet type requirements. Presented credentials: [" + presentationCreds.map(function (pc) { return pc.type.filter(function (t) { return t !== 'VerifiableCredential'; }); }) + "]. Requested credentials: [" + credentialRequests.map(function (cr) { return cr.type; }) + "].";
                 logger_1.default.warn(errMessage);
                 throw new error_1.CustError(400, errMessage);
             }

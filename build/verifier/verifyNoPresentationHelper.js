@@ -78,7 +78,7 @@ exports.validateNoPresentationParams = function (noPresentation) {
     if (verifiableCredential && helpers_1.isArrayNotEmpty(verifiableCredential)) {
         throw new error_1.CustError(400, 'Invalid Declined Presentation: verifiableCredential must be undefined or empty.'); // this should never happen base on upstream logic
     }
-    noPresentation.proof = validateProof_1.validateProof(proof);
+    validateProof_1.validateProof(proof);
     return noPresentation;
 };
 /**
