@@ -72,6 +72,7 @@ var convertCredentialSubject_1 = require("../utils/convertCredentialSubject");
 var semver_1 = require("semver");
 var versionList_1 = require("../utils/versionList");
 var library_crypto_1 = require("@unumid/library-crypto");
+var getCredentialType_1 = require("../utils/getCredentialType");
 /**
  * Creates an object of type EncryptedCredentialOptions which encapsulates information relating to the encrypted credential data
  * @param cred Credential
@@ -98,11 +99,13 @@ var constructEncryptedCredentialOpts = function (cred, authorization) { return _
                 return [2 /*return*/, publicKeyInfos.map(function (publicKeyInfo) {
                         var subjectDidWithKeyFragment = subjectDid + "#" + publicKeyInfo.id;
                         var encryptedData = encrypt_1.doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, cred);
+                        // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
+                        var credentialType = getCredentialType_1.getCredentialType(cred.type);
                         var encryptedCredentialOptions = {
                             credentialId: cred.id,
                             subject: subjectDidWithKeyFragment,
                             issuer: cred.issuer,
-                            type: cred.type,
+                            type: credentialType,
                             data: encryptedData
                         };
                         return encryptedCredentialOptions;
@@ -136,11 +139,13 @@ var constructEncryptedCredentialV1Opts = function (cred, authorization) { return
                 return [2 /*return*/, publicKeyInfos.map(function (publicKeyInfo) {
                         var subjectDidWithKeyFragment = subjectDid + "#" + publicKeyInfo.id;
                         var encryptedData = encrypt_1.doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, cred);
+                        // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
+                        var credentialType = getCredentialType_1.getCredentialType(cred.type);
                         var encryptedCredentialOptions = {
                             credentialId: cred.id,
                             subject: subjectDidWithKeyFragment,
                             issuer: cred.issuer,
-                            type: cred.type,
+                            type: credentialType,
                             data: encryptedData
                             // version: '1.0.0'
                         };
@@ -356,7 +361,7 @@ var constructCredentialOptions = function (type, issuer, credentialSubject, expi
  * @param expirationDate
  */
 exports.issueCredential = function (authorization, type, issuer, credentialSubject, signingPrivateKey, expirationDate) { return __awaiter(void 0, void 0, void 0, function () {
-    var credentialOptions, v, version, unsignedCredential_1, credential_1, encryptedCredentialOptions_1, encryptedCredentialTypeFiltered_1, encryptedCredentialUploadOptions_1, restData_1, restResp_1, unsignedCredential_2, credential_2, encryptedCredentialOptions_2, encryptedCredentialTypeFiltered_2, encryptedCredentialUploadOptions_2, restData_2, restResp_2, latestVersion, unsignedCredential, credential, encryptedCredentialOptions, encryptedCredentialTypeFiltered, encryptedCredentialUploadOptions, restData, restResp, authToken, issuedCredential, error_2;
+    var credentialOptions, v, version, unsignedCredential_1, credential_1, encryptedCredentialOptions_1, credentialType_1, encryptedCredentialUploadOptions_1, restData_1, restResp_1, unsignedCredential_2, credential_2, encryptedCredentialOptions_2, credentialType_2, encryptedCredentialUploadOptions_2, restData_2, restResp_2, latestVersion, unsignedCredential, credential, encryptedCredentialOptions, credentialType, encryptedCredentialUploadOptions, restData, restResp, authToken, issuedCredential, error_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -377,13 +382,12 @@ exports.issueCredential = function (authorization, type, issuer, credentialSubje
                 return [4 /*yield*/, constructEncryptedCredentialV1Opts(credential_1, authorization)];
             case 2:
                 encryptedCredentialOptions_1 = _a.sent();
-                encryptedCredentialTypeFiltered_1 = credential_1.type.filter(function (t) { return t !== 'VerifiableCredential'; });
+                credentialType_1 = getCredentialType_1.getCredentialType(credential_1.type);
                 encryptedCredentialUploadOptions_1 = {
                     credentialId: credential_1.id,
                     subject: credentialSubject.id,
                     issuer: credential_1.issuer,
-                    // type: credential.type,
-                    type: encryptedCredentialTypeFiltered_1,
+                    type: credentialType_1,
                     encryptedCredentials: encryptedCredentialOptions_1
                 };
                 restData_1 = {
@@ -405,13 +409,12 @@ exports.issueCredential = function (authorization, type, issuer, credentialSubje
                 return [4 /*yield*/, constructEncryptedCredentialOpts(credential_2, authorization)];
             case 5:
                 encryptedCredentialOptions_2 = _a.sent();
-                encryptedCredentialTypeFiltered_2 = credential_2.type.filter(function (t) { return t !== 'VerifiableCredential'; });
+                credentialType_2 = getCredentialType_1.getCredentialType(credential_2.type);
                 encryptedCredentialUploadOptions_2 = {
                     credentialId: credential_2.id,
                     subject: credentialSubject.id,
                     issuer: credential_2.issuer,
-                    // type: credential.type,
-                    type: encryptedCredentialTypeFiltered_2,
+                    type: credentialType_2,
                     encryptedCredentials: encryptedCredentialOptions_2
                 };
                 restData_2 = {
@@ -436,13 +439,12 @@ exports.issueCredential = function (authorization, type, issuer, credentialSubje
                 return [4 /*yield*/, constructEncryptedCredentialOpts(credential, authorization)];
             case 9:
                 encryptedCredentialOptions = _a.sent();
-                encryptedCredentialTypeFiltered = credential.type.filter(function (t) { return t !== 'VerifiableCredential'; });
+                credentialType = getCredentialType_1.getCredentialType(credential.type);
                 encryptedCredentialUploadOptions = {
                     credentialId: credential.id,
                     subject: credentialSubject.id,
                     issuer: credential.issuer,
-                    // type: credential.type,
-                    type: encryptedCredentialTypeFiltered,
+                    type: credentialType,
                     encryptedCredentials: encryptedCredentialOptions
                 };
                 restData = {
