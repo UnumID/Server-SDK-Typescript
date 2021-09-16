@@ -16,6 +16,7 @@ import { convertCredentialSubject } from '../utils/convertCredentialSubject';
 import { gte, lt } from 'semver';
 import { versionList } from '../utils/versionList';
 import { CryptoError } from '@unumid/library-crypto';
+import { getCredentialType } from '../utils/getCredentialType';
 
 /**
  * Creates an object of type EncryptedCredentialOptions which encapsulates information relating to the encrypted credential data
@@ -45,11 +46,14 @@ const constructEncryptedCredentialOpts = async (cred: Credential | CredentialPb,
     const subjectDidWithKeyFragment = `${subjectDid}#${publicKeyInfo.id}`;
     const encryptedData: EncryptedData = doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, cred);
 
+    // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
+    const credentialType = getCredentialType(cred.type);
+
     const encryptedCredentialOptions: EncryptedCredentialOptions = {
       credentialId: cred.id,
       subject: subjectDidWithKeyFragment,
       issuer: cred.issuer,
-      type: cred.type,
+      type: credentialType,
       data: encryptedData
     };
 
@@ -85,11 +89,14 @@ const constructEncryptedCredentialV1Opts = async (cred: CredentialV1, authorizat
     const subjectDidWithKeyFragment = `${subjectDid}#${publicKeyInfo.id}`;
     const encryptedData: EncryptedData = doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, cred);
 
+    // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
+    const credentialType = getCredentialType(cred.type);
+
     const encryptedCredentialOptions: EncryptedCredentialOptions = {
       credentialId: cred.id,
       subject: subjectDidWithKeyFragment,
       issuer: cred.issuer,
-      type: cred.type,
+      type: credentialType,
       data: encryptedData
       // version: '1.0.0'
     };
@@ -362,11 +369,14 @@ export const issueCredential = async (authorization: string | undefined, type: s
         // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
         const encryptedCredentialOptions = await constructEncryptedCredentialV1Opts(credential, authorization as string);
 
+        // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
+        const credentialType = getCredentialType(credential.type);
+
         const encryptedCredentialUploadOptions = {
           credentialId: credential.id,
           subject: credentialSubject.id,
           issuer: credential.issuer,
-          type: credential.type,
+          type: credentialType,
           encryptedCredentials: encryptedCredentialOptions
         };
 
@@ -391,11 +401,14 @@ export const issueCredential = async (authorization: string | undefined, type: s
         // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
         const encryptedCredentialOptions = await constructEncryptedCredentialOpts(credential, authorization as string);
 
+        // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
+        const credentialType = getCredentialType(credential.type);
+
         const encryptedCredentialUploadOptions = {
           credentialId: credential.id,
           subject: credentialSubject.id,
           issuer: credential.issuer,
-          type: credential.type,
+          type: credentialType,
           encryptedCredentials: encryptedCredentialOptions
         };
 
@@ -425,11 +438,14 @@ export const issueCredential = async (authorization: string | undefined, type: s
     // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
     const encryptedCredentialOptions = await constructEncryptedCredentialOpts(credential, authorization as string);
 
+    // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
+    const credentialType = getCredentialType(credential.type);
+
     const encryptedCredentialUploadOptions = {
       credentialId: credential.id,
       subject: credentialSubject.id,
       issuer: credential.issuer,
-      type: credential.type,
+      type: credentialType,
       encryptedCredentials: encryptedCredentialOptions
     };
 
