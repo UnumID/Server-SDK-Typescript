@@ -410,7 +410,8 @@ export const verifyPresentationHelper = async (authorization: string, presentati
       data: {
         credentialTypes,
         issuers,
-        isVerified
+        isVerified,
+        reply: 'approved'
       }
     };
 
