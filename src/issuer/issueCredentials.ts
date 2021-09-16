@@ -98,7 +98,6 @@ const constructEncryptedCredentialV1Opts = async (cred: CredentialV1, authorizat
       issuer: cred.issuer,
       type: credentialType,
       data: encryptedData
-      // version: '1.0.0'
     };
 
     return encryptedCredentialOptions;
