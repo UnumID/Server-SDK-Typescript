@@ -67,6 +67,7 @@ var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var validateProof_1 = require("./validateProof");
 var convertToProtobuf_1 = require("../utils/convertToProtobuf");
 var sendPresentationVerifiedReceipt_1 = require("./sendPresentationVerifiedReceipt");
+var getPresentationRequest_1 = require("./getPresentationRequest");
 function isDeclinedPresentation(presentation) {
     return helpers_1.isArrayEmpty(presentation.verifiableCredential);
 }
@@ -209,11 +210,11 @@ function verifyPresentationRequest(authorization, presentationRequest) {
  * @param verifierDid: string
  */
 exports.verifyPresentation = function (authorization, encryptedPresentation, verifierDid, encryptionPrivateKey, presentationRequest) { return __awaiter(void 0, void 0, void 0, function () {
-    var presentationBytes, presentation, presentationRequestPb, requestVerificationResult, authToken, type, result_2, verificationResult_1, result_3, credentialRequests, verificationResult, result, error_2;
+    var presentationBytes, presentation, presentationRequestResponse, presentationRequestPb, requestVerificationResult, authToken, type, result_2, verificationResult_1, result_3, credentialRequests, verificationResult, result, error_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                _a.trys.push([0, 7, , 8]);
+                _a.trys.push([0, 9, , 10]);
                 requireAuth_1.requireAuth(authorization);
                 if (!encryptedPresentation) {
                     throw new error_1.CustError(400, 'encryptedPresentation is required.');
@@ -234,22 +235,32 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                 }
                 // validate presentation
                 validatePresentation(presentation);
-                if (!presentationRequest) {
-                    // TODO grab the request from the saas
+                if (!!presentationRequest) return [3 /*break*/, 2];
+                return [4 /*yield*/, getPresentationRequest_1.getPresentationRequest(authorization, presentation.presentationRequestId)];
+            case 1:
+                presentationRequestResponse = _a.sent();
+                authorization = networkRequestHelper_1.handleAuthTokenHeader(presentationRequestResponse, authorization);
+                if (presentationRequestResponse.body.length !== 1) {
+                    logger_1.default.warn('Presentation returned was not as expected. Not able to preform request verification.');
                 }
+                else {
+                    presentationRequest = presentationRequestResponse.body[0];
+                }
+                _a.label = 2;
+            case 2:
                 // verify the presentation request uuid match
                 if (presentationRequest && presentationRequest.presentationRequest.id !== presentation.presentationRequestId) {
                     throw new error_1.CustError(400, "presentation request id provided, " + presentationRequest.presentationRequest.id + ", does not match the presentationRequestId that the presentation was in response to, " + presentation.presentationRequestId + ".");
                 }
-                if (!(presentationRequest && presentationRequest.presentationRequest)) return [3 /*break*/, 3];
+                if (!(presentationRequest && presentationRequest.presentationRequest)) return [3 /*break*/, 5];
                 presentationRequestPb = validatePresentationRequest(presentationRequest.presentationRequest);
                 return [4 /*yield*/, verifyPresentationRequest(authorization, presentationRequestPb)];
-            case 1:
+            case 3:
                 requestVerificationResult = _a.sent();
                 authorization = requestVerificationResult.authToken;
-                if (!!requestVerificationResult.body.isVerified) return [3 /*break*/, 3];
+                if (!!requestVerificationResult.body.isVerified) return [3 /*break*/, 5];
                 return [4 /*yield*/, handlePresentationVerificationReceipt(requestVerificationResult.authToken, presentation, verifierDid, requestVerificationResult.body.message)];
-            case 2:
+            case 4:
                 authToken = _a.sent();
                 type = isDeclinedPresentation(presentation) ? 'DeclinedPresentation' : 'VerifiablePresentation';
                 result_2 = {
@@ -257,27 +268,27 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                     body: __assign(__assign({}, requestVerificationResult.body), { type: type, presentation: presentation })
                 };
                 return [2 /*return*/, result_2];
-            case 3:
-                if (!isDeclinedPresentation(presentation)) return [3 /*break*/, 5];
+            case 5:
+                if (!isDeclinedPresentation(presentation)) return [3 /*break*/, 7];
                 return [4 /*yield*/, verifyNoPresentationHelper_1.verifyNoPresentationHelper(authorization, presentation, verifierDid)];
-            case 4:
+            case 6:
                 verificationResult_1 = _a.sent();
                 result_3 = {
                     authToken: verificationResult_1.authToken,
                     body: __assign(__assign({}, verificationResult_1.body), { type: 'DeclinedPresentation', presentation: presentation })
                 };
                 return [2 /*return*/, result_3];
-            case 5:
+            case 7:
                 credentialRequests = presentationRequest === null || presentationRequest === void 0 ? void 0 : presentationRequest.presentationRequest.credentialRequests;
                 return [4 /*yield*/, verifyPresentationHelper_1.verifyPresentationHelper(authorization, presentation, verifierDid, credentialRequests)];
-            case 6:
+            case 8:
                 verificationResult = _a.sent();
                 result = {
                     authToken: verificationResult.authToken,
                     body: __assign(__assign({}, verificationResult.body), { type: 'VerifiablePresentation', presentation: presentation })
                 };
                 return [2 /*return*/, result];
-            case 7:
+            case 9:
                 error_2 = _a.sent();
                 if (error_2 instanceof library_crypto_1.CryptoError) {
                     logger_1.default.error("Crypto error handling encrypted presentation " + error_2);
@@ -289,7 +300,7 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                     logger_1.default.error("Error handling encrypted presentation. " + error_2);
                 }
                 throw error_2;
-            case 8: return [2 /*return*/];
+            case 10: return [2 /*return*/];
         }
     });
 }); };
@@ -300,11 +311,17 @@ function handlePresentationVerificationReceipt(authToken, presentation, verifier
     return __awaiter(this, void 0, void 0, function () {
         var credentialTypes, issuers, reply, proof;
         return __generator(this, function (_a) {
-            credentialTypes = presentation.verifiableCredential && helpers_1.isArrayNotEmpty(presentation.verifiableCredential) ? presentation.verifiableCredential.flatMap(function (cred) { return cred.type.slice(1); }) : [];
-            issuers = presentation.verifiableCredential && helpers_1.isArrayNotEmpty(presentation.verifiableCredential) ? presentation.verifiableCredential.map(function (cred) { return cred.issuer; }) : [];
-            reply = isDeclinedPresentation(presentation) ? 'declined' : 'approved';
-            proof = presentation.proof;
-            return [2 /*return*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authToken, verifier, proof.verificationMethod, reply, false, message, issuers, credentialTypes)];
+            try {
+                credentialTypes = presentation.verifiableCredential && helpers_1.isArrayNotEmpty(presentation.verifiableCredential) ? presentation.verifiableCredential.flatMap(function (cred) { return cred.type.slice(1); }) : [];
+                issuers = presentation.verifiableCredential && helpers_1.isArrayNotEmpty(presentation.verifiableCredential) ? presentation.verifiableCredential.map(function (cred) { return cred.issuer; }) : [];
+                reply = isDeclinedPresentation(presentation) ? 'declined' : 'approved';
+                proof = presentation.proof;
+                return [2 /*return*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authToken, verifier, proof.verificationMethod, reply, false, message, issuers, credentialTypes)];
+            }
+            catch (e) {
+                logger_1.default.error('Something went wrong handling the PresentationVerification receipt for the a failed request verification');
+            }
+            return [2 /*return*/, authToken];
         });
     });
 }
