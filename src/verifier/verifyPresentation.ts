@@ -300,10 +300,16 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
  * Handle sending back the PresentationVerified receipt with the request verification failure reason
  */
 async function handlePresentationVerificationReceipt (authToken: string, presentation: PresentationPb, verifier: string, message: string) {
-  const credentialTypes = presentation.verifiableCredential && isArrayNotEmpty(presentation.verifiableCredential) ? presentation.verifiableCredential.flatMap(cred => cred.type.slice(1)) : []; // cut off the preceding 'VerifiableCredential' string in each array
-  const issuers = presentation.verifiableCredential && isArrayNotEmpty(presentation.verifiableCredential) ? presentation.verifiableCredential.map(cred => cred.issuer) : [];
-  const reply = isDeclinedPresentation(presentation) ? 'declined' : 'approved';
-  const proof = presentation.proof as ProofPb; // existence has already been validated
+  try {
+    const credentialTypes = presentation.verifiableCredential && isArrayNotEmpty(presentation.verifiableCredential) ? presentation.verifiableCredential.flatMap(cred => cred.type.slice(1)) : []; // cut off the preceding 'VerifiableCredential' string in each array
+    const issuers = presentation.verifiableCredential && isArrayNotEmpty(presentation.verifiableCredential) ? presentation.verifiableCredential.map(cred => cred.issuer) : [];
+    const reply = isDeclinedPresentation(presentation) ? 'declined' : 'approved';
+    const proof = presentation.proof as ProofPb; // existence has already been validated
 
-  return sendPresentationVerifiedReceipt(authToken, verifier, proof.verificationMethod, reply, false, message, issuers, credentialTypes);
+    return sendPresentationVerifiedReceipt(authToken, verifier, proof.verificationMethod, reply, false, message, issuers, credentialTypes);
+  } catch (e) {
+    logger.error('Something went wrong handling the PresentationVerification receipt for the a failed request verification');
+  }
+
+  return authToken;
 }
