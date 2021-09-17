@@ -1,8 +1,8 @@
 import { omit } from 'lodash';
 
 import { configData } from '../config';
-import { CredentialStatusInfo, RESTData, UnumDto, VerifiedStatus } from '../types';
-import { Presentation, Credential, CredentialRequest, Proof, PublicKeyInfo, JSONObj, PresentationPb, CredentialPb, ProofPb, UnsignedPresentationPb, CredentialSubject } from '@unumid/types';
+import { CredentialStatusInfo, UnumDto, VerifiedStatus } from '../types';
+import { CredentialRequest, PublicKeyInfo, JSONObj, PresentationPb, CredentialPb, ProofPb, UnsignedPresentationPb, CredentialSubject } from '@unumid/types';
 import { validateProof } from './validateProof';
 import { requireAuth } from '../requireAuth';
 import { verifyCredential } from './verifyCredential';
@@ -13,7 +13,7 @@ import { CryptoError } from '@unumid/library-crypto';
 import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
 import { CustError } from '../utils/error';
 import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
-import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
+import { handleAuthTokenHeader } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
 import { convertCredentialSubject } from '../utils/convertCredentialSubject';
 import { sendPresentationVerifiedReceipt } from './sendPresentationVerifiedReceipt';
@@ -367,7 +367,6 @@ export const verifyPresentationHelper = async (authorization: string, presentati
     }
 
     let areCredentialsValid = true;
-    // let indexOfInvalidCredential = -1;
     let credentialInvalidMessage;
 
     for (const credential of presentation.verifiableCredential) {
@@ -377,7 +376,6 @@ export const verifyPresentationHelper = async (authorization: string, presentati
 
       if (isExpired) {
         areCredentialsValid = false;
-        // indexOfInvalidCredential = i;
         credentialInvalidMessage = `Credential ${credential.type} ${credential.id} is expired.`;
         break;
       }
@@ -388,7 +386,6 @@ export const verifyPresentationHelper = async (authorization: string, presentati
 
       if (!isStatusValid) {
         areCredentialsValid = false;
-        // indexOfInvalidCredential = i;
         credentialInvalidMessage = `Credential ${credential.type} ${credential.id} status is invalid.`;
         break;
       }
@@ -399,7 +396,6 @@ export const verifyPresentationHelper = async (authorization: string, presentati
 
       if (!isVerified) {
         areCredentialsValid = false;
-        // indexOfInvalidCredential = i;
         credentialInvalidMessage = `Credential ${credential.type} ${credential.id} signature can not be verified.`;
         break;
       }
@@ -420,32 +416,6 @@ export const verifyPresentationHelper = async (authorization: string, presentati
     }
 
     const isVerified = isPresentationVerified && areCredentialsValid; // always true if here
-    // const credentialTypes = presentation.verifiableCredential.flatMap(cred => cred.type.slice(1)); // cut off the preceding 'VerifiableCredential' string in each array
-    // const issuers = presentation.verifiableCredential.map(cred => cred.issuer);
-    // const subject = proof.verificationMethod;
-
-    // const receiptOptions = {
-    //   type: ['PresentationVerified'],
-    //   verifier,
-    //   subject,
-    //   data: {
-    //     credentialTypes,
-    //     issuers,
-    //     isVerified,
-    //     reply: 'approved'
-    //   }
-    // };
-
-    // const receiptCallOptions: RESTData = {
-    //   method: 'POST',
-    //   baseUrl: configData.SaaSUrl,
-    //   endPoint: 'receipt',
-    //   header: { Authorization: authToken },
-    //   data: receiptOptions
-    // };
-
-    // const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
-    // authToken = handleAuthTokenHeader(resp, authToken);
 
     authToken = await sendPresentationVerifiedReceipt(authToken, verifier, subject, 'approved', isVerified, undefined, issuers, credentialTypes);
 

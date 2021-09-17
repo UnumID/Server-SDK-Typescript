@@ -1,16 +1,16 @@
 
 import { omit } from 'lodash';
 
-import { RESTData, UnumDto, VerifiedStatus } from '../types';
+import { UnumDto, VerifiedStatus } from '../types';
 import { validateProof } from './validateProof';
 import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
 import logger from '../logger';
 import { CustError } from '../utils/error';
 import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
-import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
+import { handleAuthTokenHeader } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
-import { Presentation, JSONObj, PresentationPb, UnsignedPresentationPb } from '@unumid/types';
+import { PresentationPb, UnsignedPresentationPb } from '@unumid/types';
 import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
 import { sendPresentationVerifiedReceipt } from './sendPresentationVerifiedReceipt';
 
@@ -116,40 +116,6 @@ export const verifyNoPresentationHelper = async (authorization: string, noPresen
     const isVerified = doVerify(signatureValue, bytes, publicKey, encoding);
 
     const message = isVerified ? undefined : 'Presentation signature can not be verified.'; // the receipt reason, only populated if not verified
-    // if (!isVerified) {
-    // const result: UnumDto<VerifiedStatus> = {
-    //   authToken,
-    //   body: {
-    //     isVerified: false,
-    //     message: 'Presentation signature can not be verified.'
-    //   }
-    // };
-    // return result;
-    // message = 'Presentation signature can not be verified.';
-    // }
-
-    // const receiptOptions = {
-    //   type: 'PresentationVerified',
-    //   verifier,
-    //   subject: noPresentation.proof.verificationMethod,
-    //   data: {
-    //     reply: 'declined',
-    //     isVerified,
-    //     reason
-    //   }
-    // };
-
-    // const receiptCallOptions: RESTData = {
-    //   method: 'POST',
-    //   baseUrl: configData.SaaSUrl,
-    //   endPoint: 'receipt',
-    //   header: { Authorization: authorization },
-    //   data: receiptOptions
-    // };
-
-    // const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
-
-    // authToken = handleAuthTokenHeader(resp, authToken);
 
     authToken = await sendPresentationVerifiedReceipt(authToken, verifier, noPresentation.proof.verificationMethod, 'declined', isVerified, message);
 
