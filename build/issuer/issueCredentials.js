@@ -147,7 +147,6 @@ var constructEncryptedCredentialV1Opts = function (cred, authorization) { return
                             issuer: cred.issuer,
                             type: credentialType,
                             data: encryptedData
-                            // version: '1.0.0'
                         };
                         return encryptedCredentialOptions;
                     })];

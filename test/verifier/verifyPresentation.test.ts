@@ -215,16 +215,18 @@ describe('verifyPresentation', () => {
       expect(response.authToken).toEqual(dummyAuthToken);
     });
 
-    it('does not return an x-auth-token header if the SaaS does not return an x-auth-token header', async () => {
-      const dummySubjectDidDoc = await makeDummyDidDocument();
-      const dummyApiResponse = { body: dummySubjectDidDoc };
-      mockMakeNetworkRequest.mockResolvedValueOnce(dummyApiResponse);
-      mockGetDIDDoc.mockResolvedValue({ body: dummySubjectDidDoc, authToken: undefined });
-      mockCheckCredentialStatus.mockReturnValue({ authToken: undefined, body: true });
-      mockVerifyCredential.mockResolvedValue({ authToken: undefined, body: true });
-      response = await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestId, proof, verifier, authHeader);
-      expect(response.authToken).toBeUndefined();
-    });
+    // Actually just returning the old authToken in this case now.
+    // it('does not return an x-auth-token header if the SaaS does not return an x-auth-token header', async () => {
+    //   const dummySubjectDidDoc = await makeDummyDidDocument();
+    //   const dummyApiResponse = { body: dummySubjectDidDoc };
+    //   mockMakeNetworkRequest.mockResolvedValueOnce(dummyApiResponse);
+    //   mockGetDIDDoc.mockResolvedValue({ body: dummySubjectDidDoc, authToken: undefined });
+    //   mockCheckCredentialStatus.mockReturnValue({ authToken: undefined, body: true });
+    //   mockVerifyCredential.mockResolvedValue({ authToken: undefined, body: true });
+    //   mockMakeNetworkRequest.mockResolvedValueOnce({ body: dummyApiResponse.body, authToken: undefined });
+    //   response = await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestId, proof, verifier, authHeader);
+    //   expect(response.authToken).toBeUndefined();
+    // });
   });
 
   describe('verifyEncryptedPresentation - Failure Scenarios', () => {

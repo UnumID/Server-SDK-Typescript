@@ -56,6 +56,7 @@ var didHelper_1 = require("../utils/didHelper");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var verify_1 = require("../utils/verify");
 var convertCredentialSubject_1 = require("../utils/convertCredentialSubject");
+var sendPresentationVerifiedReceipt_1 = require("./sendPresentationVerifiedReceipt");
 /**
  * Validates the attributes for a credential from UnumId's Saas
  * @param credentials JSONObj
@@ -257,11 +258,11 @@ function validatePresentationMeetsRequestedCredentials(presentation, credentialR
  * @param verifier
  */
 exports.verifyPresentationHelper = function (authorization, presentation, verifier, credentialRequests) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, result_1, proof, didDocumentResponse, authToken, pubKeyObj, result_2, isPresentationVerified, bytes, result_3, result_4, areCredentialsValid, _i, _a, credential, isExpired, isStatusValidResponse, isStatusValid, isVerifiedResponse, isVerified_1, result_5, isVerified, credentialTypes, issuers, subject, receiptOptions, receiptCallOptions, resp, result, error_2;
+    var data, proof, subject, credentialTypes, issuers, message, authToken_1, result_1, didDocumentResponse, authToken, pubKeyObj, result_2, isPresentationVerified, bytes, e_1, message, authToken_2, result_3, message, authToken_3, result_4, areCredentialsValid, credentialInvalidMessage, _i, _a, credential, isExpired, isStatusValidResponse, isStatusValid, isVerifiedResponse, isVerified_1, authToken_4, result_5, isVerified, result, error_2;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
-                _b.trys.push([0, 8, , 9]);
+                _b.trys.push([0, 18, , 19]);
                 requireAuth_1.requireAuth(authorization);
                 if (!presentation) {
                     throw new error_1.CustError(400, 'presentation is required.');
@@ -271,31 +272,30 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 }
                 data = lodash_1.omit(presentation, 'proof');
                 presentation = validatePresentation(presentation);
-                if (!presentation.verifiableCredential) {
-                    logger_1.default.error('The presentation has undefined verifiableCredential attribute, this should have already be checked.');
-                    throw new error_1.CustError(500, 'presentation as an undefined verifiableCredentials'); // this should have already been checked.
-                }
-                // validate that the verifier did provided matches the verifier did in the presentation
-                if (presentation.verifierDid !== verifier) {
-                    result_1 = {
-                        authToken: authorization,
-                        body: {
-                            isVerified: false,
-                            message: "The presentation was meant for verifier, " + presentation.verifierDid + ", not the provided verifier, " + verifier + "."
-                        }
-                    };
-                    return [2 /*return*/, result_1];
-                }
+                proof = presentation.proof;
+                subject = proof.verificationMethod;
+                credentialTypes = presentation.verifiableCredential.flatMap(function (cred) { return cred.type.slice(1); });
+                issuers = presentation.verifiableCredential.map(function (cred) { return cred.issuer; });
+                if (!(presentation.verifierDid !== verifier)) return [3 /*break*/, 2];
+                message = "The presentation was meant for verifier, " + presentation.verifierDid + ", not the provided verifier, " + verifier + ".";
+                return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, message, issuers, credentialTypes)];
+            case 1:
+                authToken_1 = _b.sent();
+                result_1 = {
+                    authToken: authToken_1,
+                    body: {
+                        isVerified: false,
+                        message: message
+                    }
+                };
+                return [2 /*return*/, result_1];
+            case 2:
                 // if specific credential requests, then need to confirm the presentation provided meets the requirements
                 if (helpers_1.isArrayNotEmpty(credentialRequests)) {
                     validatePresentationMeetsRequestedCredentials(presentation, credentialRequests);
                 }
-                if (!presentation.proof) {
-                    throw new error_1.CustError(400, 'presentation proof is required.');
-                }
-                proof = presentation.proof;
                 return [4 /*yield*/, didHelper_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, proof.verificationMethod)];
-            case 1:
+            case 3:
                 didDocumentResponse = _b.sent();
                 if (didDocumentResponse instanceof Error) {
                     throw didDocumentResponse;
@@ -313,106 +313,103 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                     return [2 /*return*/, result_2];
                 }
                 isPresentationVerified = false;
-                try {
-                    bytes = types_1.UnsignedPresentationPb.encode(data).finish();
-                    // verify the signature
-                    isPresentationVerified = verify_1.doVerify(proof.signatureValue, bytes, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
+                _b.label = 4;
+            case 4:
+                _b.trys.push([4, 5, , 7]);
+                bytes = types_1.UnsignedPresentationPb.encode(data).finish();
+                // verify the signature
+                isPresentationVerified = verify_1.doVerify(proof.signatureValue, bytes, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
+                return [3 /*break*/, 7];
+            case 5:
+                e_1 = _b.sent();
+                if (e_1 instanceof library_crypto_1.CryptoError) {
+                    logger_1.default.error("CryptoError verifying presentation " + JSON.stringify(presentation) + " signature", e_1);
                 }
-                catch (e) {
-                    if (e instanceof library_crypto_1.CryptoError) {
-                        logger_1.default.error("CryptoError verifying presentation " + JSON.stringify(presentation) + " signature", e);
+                else {
+                    logger_1.default.error("Error verifying presentation " + JSON.stringify(presentation) + " signature", e_1);
+                }
+                message = "Exception verifying presentation signature. " + e_1.message;
+                return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, message, issuers, credentialTypes)];
+            case 6:
+                authToken_2 = _b.sent();
+                result_3 = {
+                    authToken: authToken_2,
+                    body: {
+                        isVerified: false,
+                        message: message
                     }
-                    else {
-                        logger_1.default.error("Error verifying presentation " + JSON.stringify(presentation) + " signature", e);
+                };
+                return [2 /*return*/, result_3];
+            case 7:
+                if (!!isPresentationVerified) return [3 /*break*/, 9];
+                message = 'Presentation signature can not be verified';
+                return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, message, issuers, credentialTypes)];
+            case 8:
+                authToken_3 = _b.sent();
+                result_4 = {
+                    authToken: authToken_3,
+                    body: {
+                        isVerified: false,
+                        message: message
                     }
-                    result_3 = {
-                        authToken: authToken,
-                        body: {
-                            isVerified: false,
-                            message: "Exception verifying presentation signature. " + e.message
-                        }
-                    };
-                    return [2 /*return*/, result_3];
-                }
-                if (!isPresentationVerified) {
-                    result_4 = {
-                        authToken: authToken,
-                        body: {
-                            isVerified: false,
-                            message: 'Presentation signature can not be verified'
-                        }
-                    };
-                    return [2 /*return*/, result_4];
-                }
+                };
+                return [2 /*return*/, result_4];
+            case 9:
                 areCredentialsValid = true;
+                credentialInvalidMessage = void 0;
                 _i = 0, _a = presentation.verifiableCredential;
-                _b.label = 2;
-            case 2:
-                if (!(_i < _a.length)) return [3 /*break*/, 6];
+                _b.label = 10;
+            case 10:
+                if (!(_i < _a.length)) return [3 /*break*/, 14];
                 credential = _a[_i];
                 isExpired = isCredentialExpired_1.isCredentialExpired(credential);
                 if (isExpired) {
                     areCredentialsValid = false;
-                    return [3 /*break*/, 6];
+                    credentialInvalidMessage = "Credential " + credential.type + " " + credential.id + " is expired.";
+                    return [3 /*break*/, 14];
                 }
                 return [4 /*yield*/, checkCredentialStatus_1.checkCredentialStatus(authToken, credential.id)];
-            case 3:
+            case 11:
                 isStatusValidResponse = _b.sent();
                 isStatusValid = isStatusValidResponse.body.status === 'valid';
                 authToken = isStatusValidResponse.authToken;
                 if (!isStatusValid) {
                     areCredentialsValid = false;
-                    return [3 /*break*/, 6];
+                    credentialInvalidMessage = "Credential " + credential.type + " " + credential.id + " status is invalid.";
+                    return [3 /*break*/, 14];
                 }
                 return [4 /*yield*/, verifyCredential_1.verifyCredential(credential, authToken)];
-            case 4:
+            case 12:
                 isVerifiedResponse = _b.sent();
                 isVerified_1 = isVerifiedResponse.body;
                 authToken = isVerifiedResponse.authToken;
                 if (!isVerified_1) {
                     areCredentialsValid = false;
-                    return [3 /*break*/, 6];
+                    credentialInvalidMessage = "Credential " + credential.type + " " + credential.id + " signature can not be verified.";
+                    return [3 /*break*/, 14];
                 }
-                _b.label = 5;
-            case 5:
+                _b.label = 13;
+            case 13:
                 _i++;
-                return [3 /*break*/, 2];
-            case 6:
-                if (!areCredentialsValid) {
-                    result_5 = {
-                        authToken: authToken,
-                        body: {
-                            isVerified: false,
-                            message: 'Credential signature can not be verified.'
-                        }
-                    };
-                    return [2 /*return*/, result_5];
-                }
-                isVerified = isPresentationVerified && areCredentialsValid;
-                credentialTypes = presentation.verifiableCredential.flatMap(function (cred) { return cred.type.slice(1); });
-                issuers = presentation.verifiableCredential.map(function (cred) { return cred.issuer; });
-                subject = proof.verificationMethod;
-                receiptOptions = {
-                    type: ['PresentationVerified'],
-                    verifier: verifier,
-                    subject: subject,
-                    data: {
-                        credentialTypes: credentialTypes,
-                        issuers: issuers,
-                        isVerified: isVerified
+                return [3 /*break*/, 10];
+            case 14:
+                if (!!areCredentialsValid) return [3 /*break*/, 16];
+                return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, credentialInvalidMessage, issuers, credentialTypes)];
+            case 15:
+                authToken_4 = _b.sent();
+                result_5 = {
+                    authToken: authToken_4,
+                    body: {
+                        isVerified: false,
+                        message: credentialInvalidMessage
                     }
                 };
-                receiptCallOptions = {
-                    method: 'POST',
-                    baseUrl: config_1.configData.SaaSUrl,
-                    endPoint: 'receipt',
-                    header: { Authorization: authToken },
-                    data: receiptOptions
-                };
-                return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(receiptCallOptions)];
-            case 7:
-                resp = _b.sent();
-                authToken = networkRequestHelper_1.handleAuthTokenHeader(resp, authToken);
+                return [2 /*return*/, result_5];
+            case 16:
+                isVerified = isPresentationVerified && areCredentialsValid;
+                return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authToken, verifier, subject, 'approved', isVerified, undefined, issuers, credentialTypes)];
+            case 17:
+                authToken = _b.sent();
                 result = {
                     authToken: authToken,
                     body: {
@@ -420,11 +417,11 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                     }
                 };
                 return [2 /*return*/, result];
-            case 8:
+            case 18:
                 error_2 = _b.sent();
-                logger_1.default.error('Error sending a verifyPresentation request to UnumID Saas.', error_2);
+                logger_1.default.error('Error verifying Presentation.', error_2);
                 throw error_2;
-            case 9: return [2 /*return*/];
+            case 19: return [2 /*return*/];
         }
     });
 }); };

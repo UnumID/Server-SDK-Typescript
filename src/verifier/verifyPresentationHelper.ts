@@ -1,8 +1,8 @@
 import { omit } from 'lodash';
 
 import { configData } from '../config';
-import { CredentialStatusInfo, RESTData, UnumDto, VerifiedStatus } from '../types';
-import { Presentation, Credential, CredentialRequest, Proof, PublicKeyInfo, JSONObj, PresentationPb, CredentialPb, ProofPb, UnsignedPresentationPb, CredentialSubject } from '@unumid/types';
+import { CredentialStatusInfo, UnumDto, VerifiedStatus } from '../types';
+import { CredentialRequest, PublicKeyInfo, JSONObj, PresentationPb, CredentialPb, ProofPb, UnsignedPresentationPb, CredentialSubject } from '@unumid/types';
 import { validateProof } from './validateProof';
 import { requireAuth } from '../requireAuth';
 import { verifyCredential } from './verifyCredential';
@@ -13,9 +13,10 @@ import { CryptoError } from '@unumid/library-crypto';
 import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
 import { CustError } from '../utils/error';
 import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
-import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
+import { handleAuthTokenHeader } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
 import { convertCredentialSubject } from '../utils/convertCredentialSubject';
+import { sendPresentationVerifiedReceipt } from './sendPresentationVerifiedReceipt';
 
 /**
  * Validates the attributes for a credential from UnumId's Saas
@@ -265,22 +266,26 @@ export const verifyPresentationHelper = async (authorization: string, presentati
       throw new CustError(400, 'verifier is required.');
     }
 
-    // Note: important that this data variable is created prior to the validation thanks to validatePresentation taking potentially stringified VerifiableCredentials objects array and converting them to proper objects.
     const data: UnsignedPresentationPb = omit(presentation, 'proof');
     presentation = validatePresentation(presentation);
 
-    if (!presentation.verifiableCredential) {
-      logger.error('The presentation has undefined verifiableCredential attribute, this should have already be checked.');
-      throw new CustError(500, 'presentation as an undefined verifiableCredentials'); // this should have already been checked.
-    }
+    const proof: ProofPb = presentation.proof as ProofPb; // already validated existence in validatePresentation
+    const subject = proof.verificationMethod;
+    const credentialTypes = presentation.verifiableCredential.flatMap(cred => cred.type.slice(1)); // cut off the preceding 'VerifiableCredential' string in each array
+    const issuers = presentation.verifiableCredential.map(cred => cred.issuer);
 
     // validate that the verifier did provided matches the verifier did in the presentation
     if (presentation.verifierDid !== verifier) {
+      const message = `The presentation was meant for verifier, ${presentation.verifierDid}, not the provided verifier, ${verifier}.`;
+
+      // send PresentationVerified receipt
+      const authToken = await sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, message, issuers, credentialTypes);
+
       const result: UnumDto<VerifiedStatus> = {
-        authToken: authorization,
+        authToken,
         body: {
           isVerified: false,
-          message: `The presentation was meant for verifier, ${presentation.verifierDid}, not the provided verifier, ${verifier}.`
+          message
         }
       };
       return result;
@@ -290,12 +295,6 @@ export const verifyPresentationHelper = async (authorization: string, presentati
     if (isArrayNotEmpty(credentialRequests)) {
       validatePresentationMeetsRequestedCredentials(presentation, credentialRequests as CredentialRequest[]);
     }
-
-    if (!presentation.proof) {
-      throw new CustError(400, 'presentation proof is required.');
-    }
-
-    const proof: ProofPb = presentation.proof;
 
     // proof.verificationMethod is the subject's did
     const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, proof.verificationMethod);
@@ -320,9 +319,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
 
     // Verify the data given.  As of now only one secp256r1 public key is expected.
     // In future, there is a possibility that, more than one secp256r1 public key can be there for a given DID.
-    // The same scenario would be handled later.
-    // verifiableCredential is an array.  As of now we are verifying the entire credential object together.  We will have to modify
-    // this logic to verify each credential present separately.  We can take this up later.
+    // This scenario will be handled later.
     let isPresentationVerified = false;
     try {
       // create byte array from protobuf helpers
@@ -337,35 +334,47 @@ export const verifyPresentationHelper = async (authorization: string, presentati
         logger.error(`Error verifying presentation ${JSON.stringify(presentation)} signature`, e);
       }
 
+      const message = `Exception verifying presentation signature. ${e.message}`;
+
+      // send PresentationVerified receipt
+      const authToken = await sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, message, issuers, credentialTypes);
+
       // need to return the UnumDto with the (potentially) updated authToken
       const result: UnumDto<VerifiedStatus> = {
         authToken,
         body: {
           isVerified: false,
-          message: `Exception verifying presentation signature. ${e.message}`
+          message
         }
       };
       return result;
     }
 
     if (!isPresentationVerified) {
+      const message = 'Presentation signature can not be verified';
+
+      // send PresentationVerified receipt
+      const authToken = await sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, message, issuers, credentialTypes);
+
       const result: UnumDto<VerifiedStatus> = {
         authToken,
         body: {
           isVerified: false,
-          message: 'Presentation signature can not be verified'
+          message
         }
       };
       return result;
     }
 
     let areCredentialsValid = true;
+    let credentialInvalidMessage;
 
     for (const credential of presentation.verifiableCredential) {
       const isExpired = isCredentialExpired(credential);
 
       if (isExpired) {
         areCredentialsValid = false;
+        credentialInvalidMessage = `Credential ${credential.type} ${credential.id} is expired.`;
         break;
       }
 
@@ -375,6 +384,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
 
       if (!isStatusValid) {
         areCredentialsValid = false;
+        credentialInvalidMessage = `Credential ${credential.type} ${credential.id} status is invalid.`;
         break;
       }
 
@@ -384,46 +394,28 @@ export const verifyPresentationHelper = async (authorization: string, presentati
 
       if (!isVerified) {
         areCredentialsValid = false;
+        credentialInvalidMessage = `Credential ${credential.type} ${credential.id} signature can not be verified.`;
         break;
       }
     }
 
     if (!areCredentialsValid) {
+      // send PresentationVerified receipt
+      const authToken = await sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, credentialInvalidMessage, issuers, credentialTypes);
+
       const result: UnumDto<VerifiedStatus> = {
         authToken,
         body: {
           isVerified: false,
-          message: 'Credential signature can not be verified.'
+          message: credentialInvalidMessage
         }
       };
       return result;
     }
 
     const isVerified = isPresentationVerified && areCredentialsValid; // always true if here
-    const credentialTypes = presentation.verifiableCredential.flatMap(cred => cred.type.slice(1)); // cut off the preceding 'VerifiableCredential' string in each array
-    const issuers = presentation.verifiableCredential.map(cred => cred.issuer);
-    const subject = proof.verificationMethod;
-    const receiptOptions = {
-      type: ['PresentationVerified'],
-      verifier,
-      subject,
-      data: {
-        credentialTypes,
-        issuers,
-        isVerified
-      }
-    };
 
-    const receiptCallOptions: RESTData = {
-      method: 'POST',
-      baseUrl: configData.SaaSUrl,
-      endPoint: 'receipt',
-      header: { Authorization: authToken },
-      data: receiptOptions
-    };
-
-    const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
-    authToken = handleAuthTokenHeader(resp, authToken);
+    authToken = await sendPresentationVerifiedReceipt(authToken, verifier, subject, 'approved', isVerified, undefined, issuers, credentialTypes);
 
     const result: UnumDto<VerifiedStatus> = {
       authToken,
@@ -434,7 +426,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
 
     return result;
   } catch (error) {
-    logger.error('Error sending a verifyPresentation request to UnumID Saas.', error);
+    logger.error('Error verifying Presentation.', error);
     throw error;
   }
 };
