@@ -399,7 +399,8 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                     data: {
                         credentialTypes: credentialTypes,
                         issuers: issuers,
-                        isVerified: isVerified
+                        isVerified: isVerified,
+                        reply: 'approved'
                     }
                 };
                 receiptCallOptions = {

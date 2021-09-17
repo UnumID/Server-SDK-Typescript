@@ -51,6 +51,7 @@ var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var verify_1 = require("../utils/verify");
 var types_1 = require("@unumid/types");
 var didHelper_1 = require("../utils/didHelper");
+var sendPresentationVerifiedReceipt_1 = require("./sendPresentationVerifiedReceipt");
 /**
  * Validates the NoPresentation type to ensure the necessary attributes.
  * @param noPresentation NoPresentation
@@ -88,30 +89,32 @@ exports.validateNoPresentationParams = function (noPresentation) {
  * @param verifier
  */
 exports.verifyNoPresentationHelper = function (authorization, noPresentation, verifier) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, verificationMethod, signatureValue, verifierDid, result_1, didDocumentResponse, authToken, publicKeyInfos, _b, publicKey, encoding, unsignedNoPresentation, bytes, isVerified, result_2, receiptOptions, receiptCallOptions, resp, result, e_1;
+    var _a, verificationMethod, signatureValue, verifierDid, message_1, authToken_1, result_1, didDocumentResponse, authToken, publicKeyInfos, _b, publicKey, encoding, unsignedNoPresentation, bytes, isVerified, message, result, e_1;
     return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
-                _c.trys.push([0, 3, , 4]);
+                _c.trys.push([0, 5, , 6]);
                 requireAuth_1.requireAuth(authorization);
                 noPresentation = exports.validateNoPresentationParams(noPresentation);
                 if (!noPresentation.proof) {
                     throw new error_1.CustError(400, 'Invalid Presentation: proof is required.');
                 }
                 _a = noPresentation.proof, verificationMethod = _a.verificationMethod, signatureValue = _a.signatureValue, verifierDid = noPresentation.verifierDid;
-                // validate that the verifier did provided matches the verifier did in the presentation
-                if (verifierDid !== verifier) {
-                    result_1 = {
-                        authToken: authorization,
-                        body: {
-                            isVerified: false,
-                            message: "The presentation was meant for verifier, " + verifierDid + ", not the provided verifier, " + verifier + "."
-                        }
-                    };
-                    return [2 /*return*/, result_1];
-                }
-                return [4 /*yield*/, didHelper_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, verificationMethod)];
+                if (!(verifierDid !== verifier)) return [3 /*break*/, 2];
+                message_1 = "The presentation was meant for verifier, " + verifierDid + ", not the provided verifier, " + verifier + ".";
+                return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authorization, verifier, noPresentation.proof.verificationMethod, 'declined', false, message_1)];
             case 1:
+                authToken_1 = _c.sent();
+                result_1 = {
+                    authToken: authToken_1,
+                    body: {
+                        isVerified: false,
+                        message: message_1
+                    }
+                };
+                return [2 /*return*/, result_1];
+            case 2: return [4 /*yield*/, didHelper_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, verificationMethod)];
+            case 3:
                 didDocumentResponse = _c.sent();
                 if (didDocumentResponse instanceof Error) {
                     throw didDocumentResponse;
@@ -122,47 +125,53 @@ exports.verifyNoPresentationHelper = function (authorization, noPresentation, ve
                 unsignedNoPresentation = lodash_1.omit(noPresentation, 'proof');
                 bytes = types_1.UnsignedPresentationPb.encode(unsignedNoPresentation).finish();
                 isVerified = verify_1.doVerify(signatureValue, bytes, publicKey, encoding);
-                if (!isVerified) {
-                    result_2 = {
-                        authToken: authToken,
-                        body: {
-                            isVerified: false,
-                            message: 'Presentation signature can not be verified.'
-                        }
-                    };
-                    return [2 /*return*/, result_2];
-                }
-                receiptOptions = {
-                    type: ['NoPresentation'],
-                    verifier: verifier,
-                    subject: noPresentation.proof.verificationMethod,
-                    data: {
-                        isVerified: isVerified
-                    }
-                };
-                receiptCallOptions = {
-                    method: 'POST',
-                    baseUrl: config_1.configData.SaaSUrl,
-                    endPoint: 'receipt',
-                    header: { Authorization: authorization },
-                    data: receiptOptions
-                };
-                return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(receiptCallOptions)];
-            case 2:
-                resp = _c.sent();
-                authToken = networkRequestHelper_1.handleAuthTokenHeader(resp, authToken);
+                message = isVerified ? undefined : 'Presentation signature can not be verified.';
+                return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authToken, verifier, noPresentation.proof.verificationMethod, 'declined', isVerified, message)];
+            case 4:
+                // if (!isVerified) {
+                // const result: UnumDto<VerifiedStatus> = {
+                //   authToken,
+                //   body: {
+                //     isVerified: false,
+                //     message: 'Presentation signature can not be verified.'
+                //   }
+                // };
+                // return result;
+                // message = 'Presentation signature can not be verified.';
+                // }
+                // const receiptOptions = {
+                //   type: 'PresentationVerified',
+                //   verifier,
+                //   subject: noPresentation.proof.verificationMethod,
+                //   data: {
+                //     reply: 'declined',
+                //     isVerified,
+                //     reason
+                //   }
+                // };
+                // const receiptCallOptions: RESTData = {
+                //   method: 'POST',
+                //   baseUrl: configData.SaaSUrl,
+                //   endPoint: 'receipt',
+                //   header: { Authorization: authorization },
+                //   data: receiptOptions
+                // };
+                // const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
+                // authToken = handleAuthTokenHeader(resp, authToken);
+                authToken = _c.sent();
                 result = {
                     authToken: authToken,
                     body: {
-                        isVerified: isVerified
+                        isVerified: isVerified,
+                        message: message
                     }
                 };
                 return [2 /*return*/, result];
-            case 3:
+            case 5:
                 e_1 = _c.sent();
-                logger_1.default.error("Error sending a verifyNoPresentation request to UnumID Saas. Error " + e_1);
+                logger_1.default.error("Error handling a declined presentation verification. Error " + e_1);
                 throw e_1;
-            case 4: return [2 /*return*/];
+            case 6: return [2 /*return*/];
         }
     });
 }); };

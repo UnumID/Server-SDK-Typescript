@@ -12,6 +12,7 @@ import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkReque
 import { doVerify } from '../utils/verify';
 import { Presentation, JSONObj, PresentationPb, UnsignedPresentationPb } from '@unumid/types';
 import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
+import { sendPresentationVerifiedReceipt } from './sendPresentationVerifiedReceipt';
 
 /**
  * Validates the NoPresentation type to ensure the necessary attributes.
@@ -79,11 +80,16 @@ export const verifyNoPresentationHelper = async (authorization: string, noPresen
 
     // validate that the verifier did provided matches the verifier did in the presentation
     if (verifierDid !== verifier) {
+      const message = `The presentation was meant for verifier, ${verifierDid}, not the provided verifier, ${verifier}.`;
+
+      // send PresentationVerified receipt
+      const authToken = await sendPresentationVerifiedReceipt(authorization, verifier, noPresentation.proof.verificationMethod, 'declined', false, message);
+
       const result: UnumDto<VerifiedStatus> = {
-        authToken: authorization,
+        authToken,
         body: {
           isVerified: false,
-          message: `The presentation was meant for verifier, ${verifierDid}, not the provided verifier, ${verifier}.`
+          message
         }
       };
       return result;
@@ -109,48 +115,55 @@ export const verifyNoPresentationHelper = async (authorization: string, noPresen
     // verify the signature
     const isVerified = doVerify(signatureValue, bytes, publicKey, encoding);
 
-    if (!isVerified) {
-      const result: UnumDto<VerifiedStatus> = {
-        authToken,
-        body: {
-          isVerified: false,
-          message: 'Presentation signature can not be verified.'
-        }
-      };
-      return result;
-    }
+    const message = isVerified ? undefined : 'Presentation signature can not be verified.'; // the receipt reason, only populated if not verified
+    // if (!isVerified) {
+    // const result: UnumDto<VerifiedStatus> = {
+    //   authToken,
+    //   body: {
+    //     isVerified: false,
+    //     message: 'Presentation signature can not be verified.'
+    //   }
+    // };
+    // return result;
+    // message = 'Presentation signature can not be verified.';
+    // }
 
-    const receiptOptions = {
-      type: ['NoPresentation'],
-      verifier,
-      subject: noPresentation.proof.verificationMethod,
-      data: {
-        isVerified
-      }
-    };
+    // const receiptOptions = {
+    //   type: 'PresentationVerified',
+    //   verifier,
+    //   subject: noPresentation.proof.verificationMethod,
+    //   data: {
+    //     reply: 'declined',
+    //     isVerified,
+    //     reason
+    //   }
+    // };
 
-    const receiptCallOptions: RESTData = {
-      method: 'POST',
-      baseUrl: configData.SaaSUrl,
-      endPoint: 'receipt',
-      header: { Authorization: authorization },
-      data: receiptOptions
-    };
+    // const receiptCallOptions: RESTData = {
+    //   method: 'POST',
+    //   baseUrl: configData.SaaSUrl,
+    //   endPoint: 'receipt',
+    //   header: { Authorization: authorization },
+    //   data: receiptOptions
+    // };
 
-    const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
+    // const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
 
-    authToken = handleAuthTokenHeader(resp, authToken);
+    // authToken = handleAuthTokenHeader(resp, authToken);
+
+    authToken = await sendPresentationVerifiedReceipt(authToken, verifier, noPresentation.proof.verificationMethod, 'declined', isVerified, message);
 
     const result: UnumDto<VerifiedStatus> = {
       authToken,
       body: {
-        isVerified
+        isVerified,
+        message
       }
     };
 
     return result;
   } catch (e) {
-    logger.error(`Error sending a verifyNoPresentation request to UnumID Saas. Error ${e}`);
+    logger.error(`Error handling a declined presentation verification. Error ${e}`);
     throw e;
   }
 };
