@@ -16,7 +16,7 @@ import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkReque
  * @param credentialTypes
  * @returns
  */
-export async function sendPresentationVerifiedReceipt (authorization: string, verifier: string, subject: string, reply: string, isVerified: boolean, reason?: string, issuers?: string[], credentialTypes?: string[]): Promise<string> {
+export async function sendPresentationVerifiedReceipt (authorization: string, verifier: string, subject: string, reply: string, isVerified: boolean, reason?: string, issuers: string[] = [], credentialTypes: string[] = []): Promise<string> {
   const receiptOptions = {
     type: 'PresentationVerified',
     verifier,
