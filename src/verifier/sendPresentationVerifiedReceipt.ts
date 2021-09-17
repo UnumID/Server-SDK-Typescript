@@ -13,7 +13,7 @@ import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkReque
  * @param reason
  * @returns
  */
-export async function sendPresentationVerifiedReceipt (authorization: string, verifier: string, subject: string, reply: string, isVerified: boolean, reason?: string): Promise<string> {
+export async function sendPresentationVerifiedReceipt (authorization: string, verifier: string, subject: string, reply: string, isVerified: boolean, reason?: string, issuers?: string[], credentialTypes?: string[]): Promise<string> {
   const receiptOptions = {
     type: 'PresentationVerified',
     verifier,
@@ -21,7 +21,9 @@ export async function sendPresentationVerifiedReceipt (authorization: string, ve
     data: {
       reply,
       isVerified,
-      reason
+      reason,
+      credentialTypes,
+      issuers
     }
   };
 

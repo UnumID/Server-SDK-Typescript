@@ -7,5 +7,5 @@
  * @param reason
  * @returns
  */
-export declare function sendPresentationVerifiedReceipt(authorization: string, verifier: string, subject: string, reply: string, isVerified: boolean, reason?: string): Promise<string>;
+export declare function sendPresentationVerifiedReceipt(authorization: string, verifier: string, subject: string, reply: string, isVerified: boolean, reason?: string, issuers?: string[], credentialTypes?: string[]): Promise<string>;
 //# sourceMappingURL=sendPresentationVerifiedReceipt.d.ts.map
