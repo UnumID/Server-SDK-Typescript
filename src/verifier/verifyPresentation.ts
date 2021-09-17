@@ -7,7 +7,7 @@ import logger from '../logger';
 import { verifyNoPresentationHelper } from './verifyNoPresentationHelper';
 import { verifyPresentationHelper } from './verifyPresentationHelper';
 import { CustError } from '../utils/error';
-import { isArrayEmpty } from '../utils/helpers';
+import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
 import { omit } from 'lodash';
 import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
 import { configData } from '../config';
@@ -15,6 +15,7 @@ import { doVerify } from '../utils/verify';
 import { handleAuthTokenHeader } from '../utils/networkRequestHelper';
 import { validateProof } from './validateProof';
 import { convertProof } from '../utils/convertToProtobuf';
+import { sendPresentationVerifiedReceipt } from './sendPresentationVerifiedReceipt';
 
 function isDeclinedPresentation (presentation: Presentation | PresentationPb): presentation is Presentation {
   return isArrayEmpty(presentation.verifiableCredential);
@@ -220,6 +221,10 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
     // validate presentation
     validatePresentation(presentation);
 
+    if (!presentationRequest) {
+      // TODO grab the request from the saas
+    }
+
     // verify the presentation request uuid match
     if (presentationRequest && presentationRequest.presentationRequest.id !== presentation.presentationRequestId) {
       throw new CustError(400, `presentation request id provided, ${presentationRequest.presentationRequest.id}, does not match the presentationRequestId that the presentation was in response to, ${presentation.presentationRequestId}.`);
@@ -235,9 +240,12 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
 
       // if invalid then can stop here but still send back the decrypted presentation with the verification results
       if (!requestVerificationResult.body.isVerified) {
+        // handle sending back the PresentationVerified receipt with the request verification failure reason
+        const authToken = await handlePresentationVerificationReceipt(requestVerificationResult.authToken, presentation, verifierDid, requestVerificationResult.body.message as string);
+
         const type = isDeclinedPresentation(presentation) ? 'DeclinedPresentation' : 'VerifiablePresentation';
         const result: UnumDto<DecryptedPresentation> = {
-          authToken: requestVerificationResult.authToken,
+          authToken,
           body: {
             ...requestVerificationResult.body,
             type,
@@ -247,8 +255,6 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
 
         return result;
       }
-    } else {
-      // TODO grab presentation request from saas
     }
 
     if (isDeclinedPresentation(presentation)) {
@@ -289,3 +295,21 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
     throw error;
   }
 };
+
+/**
+ * Handle sending back the PresentationVerified receipt with the request verification failure reason
+ */
+async function handlePresentationVerificationReceipt (authToken: string, presentation: PresentationPb, verifier: string, message: string) {
+  try {
+    const credentialTypes = presentation.verifiableCredential && isArrayNotEmpty(presentation.verifiableCredential) ? presentation.verifiableCredential.flatMap(cred => cred.type.slice(1)) : []; // cut off the preceding 'VerifiableCredential' string in each array
+    const issuers = presentation.verifiableCredential && isArrayNotEmpty(presentation.verifiableCredential) ? presentation.verifiableCredential.map(cred => cred.issuer) : [];
+    const reply = isDeclinedPresentation(presentation) ? 'declined' : 'approved';
+    const proof = presentation.proof as ProofPb; // existence has already been validated
+
+    return sendPresentationVerifiedReceipt(authToken, verifier, proof.verificationMethod, reply, false, message, issuers, credentialTypes);
+  } catch (e) {
+    logger.error('Something went wrong handling the PresentationVerification receipt for the a failed request verification');
+  }
+
+  return authToken;
+}
