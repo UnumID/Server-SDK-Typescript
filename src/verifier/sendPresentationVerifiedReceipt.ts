@@ -1,4 +1,4 @@
-import { JSONObj, presentationVerifiedReplyTypes } from '@unumid/types';
+import { JSONObj } from '@unumid/types';
 import { configData } from '../config';
 import logger from '../logger';
 import { RESTData } from '../types';

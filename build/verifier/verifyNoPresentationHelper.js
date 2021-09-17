@@ -128,36 +128,6 @@ exports.verifyNoPresentationHelper = function (authorization, noPresentation, ve
                 message = isVerified ? undefined : 'Presentation signature can not be verified.';
                 return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authToken, verifier, noPresentation.proof.verificationMethod, 'declined', isVerified, message)];
             case 4:
-                // if (!isVerified) {
-                // const result: UnumDto<VerifiedStatus> = {
-                //   authToken,
-                //   body: {
-                //     isVerified: false,
-                //     message: 'Presentation signature can not be verified.'
-                //   }
-                // };
-                // return result;
-                // message = 'Presentation signature can not be verified.';
-                // }
-                // const receiptOptions = {
-                //   type: 'PresentationVerified',
-                //   verifier,
-                //   subject: noPresentation.proof.verificationMethod,
-                //   data: {
-                //     reply: 'declined',
-                //     isVerified,
-                //     reason
-                //   }
-                // };
-                // const receiptCallOptions: RESTData = {
-                //   method: 'POST',
-                //   baseUrl: configData.SaaSUrl,
-                //   endPoint: 'receipt',
-                //   header: { Authorization: authorization },
-                //   data: receiptOptions
-                // };
-                // const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
-                // authToken = handleAuthTokenHeader(resp, authToken);
                 authToken = _c.sent();
                 result = {
                     authToken: authToken,

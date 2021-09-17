@@ -48,8 +48,11 @@ var networkRequestHelper_1 = require("../utils/networkRequestHelper");
  * @param authorization
  * @param verifier
  * @param subject
+ * @param reply
  * @param isVerified
  * @param reason
+ * @param issuers
+ * @param credentialTypes
  * @returns
  */
 function sendPresentationVerifiedReceipt(authorization, verifier, subject, reply, isVerified, reason, issuers, credentialTypes) {

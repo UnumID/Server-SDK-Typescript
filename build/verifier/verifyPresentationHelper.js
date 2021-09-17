@@ -365,7 +365,6 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 isExpired = isCredentialExpired_1.isCredentialExpired(credential);
                 if (isExpired) {
                     areCredentialsValid = false;
-                    // indexOfInvalidCredential = i;
                     credentialInvalidMessage = "Credential " + credential.type + " " + credential.id + " is expired.";
                     return [3 /*break*/, 14];
                 }
@@ -376,7 +375,6 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 authToken = isStatusValidResponse.authToken;
                 if (!isStatusValid) {
                     areCredentialsValid = false;
-                    // indexOfInvalidCredential = i;
                     credentialInvalidMessage = "Credential " + credential.type + " " + credential.id + " status is invalid.";
                     return [3 /*break*/, 14];
                 }
@@ -387,7 +385,6 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 authToken = isVerifiedResponse.authToken;
                 if (!isVerified_1) {
                     areCredentialsValid = false;
-                    // indexOfInvalidCredential = i;
                     credentialInvalidMessage = "Credential " + credential.type + " " + credential.id + " signature can not be verified.";
                     return [3 /*break*/, 14];
                 }
@@ -412,29 +409,6 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 isVerified = isPresentationVerified && areCredentialsValid;
                 return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authToken, verifier, subject, 'approved', isVerified, undefined, issuers, credentialTypes)];
             case 17:
-                // const credentialTypes = presentation.verifiableCredential.flatMap(cred => cred.type.slice(1)); // cut off the preceding 'VerifiableCredential' string in each array
-                // const issuers = presentation.verifiableCredential.map(cred => cred.issuer);
-                // const subject = proof.verificationMethod;
-                // const receiptOptions = {
-                //   type: ['PresentationVerified'],
-                //   verifier,
-                //   subject,
-                //   data: {
-                //     credentialTypes,
-                //     issuers,
-                //     isVerified,
-                //     reply: 'approved'
-                //   }
-                // };
-                // const receiptCallOptions: RESTData = {
-                //   method: 'POST',
-                //   baseUrl: configData.SaaSUrl,
-                //   endPoint: 'receipt',
-                //   header: { Authorization: authToken },
-                //   data: receiptOptions
-                // };
-                // const resp: JSONObj = await makeNetworkRequest<JSONObj>(receiptCallOptions);
-                // authToken = handleAuthTokenHeader(resp, authToken);
                 authToken = _b.sent();
                 result = {
                     authToken: authToken,
