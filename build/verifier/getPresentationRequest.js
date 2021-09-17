@@ -52,7 +52,7 @@ function getPresentationRequest(authorization, id) {
                     receiptCallOptions = {
                         method: 'GET',
                         baseUrl: config_1.configData.SaaSUrl,
-                        endPoint: "presentationRequest?id=" + id + "&version=3.0.0",
+                        endPoint: "presentationRequestRepository/" + id,
                         header: { Authorization: authorization }
                     };
                     _a.label = 1;

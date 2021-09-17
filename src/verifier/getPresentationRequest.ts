@@ -9,7 +9,7 @@ export async function getPresentationRequest (authorization: string, id: string)
   const receiptCallOptions: RESTData = {
     method: 'GET',
     baseUrl: configData.SaaSUrl,
-    endPoint: `presentationRequest?id=${id}&version=3.0.0`,
+    endPoint: `presentationRequestRepository/${id}`,
     header: { Authorization: authorization }
   };
 
