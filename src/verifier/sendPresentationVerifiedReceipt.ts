@@ -9,8 +9,11 @@ import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkReque
  * @param authorization
  * @param verifier
  * @param subject
+ * @param reply
  * @param isVerified
  * @param reason
+ * @param issuers
+ * @param credentialTypes
  * @returns
  */
 export async function sendPresentationVerifiedReceipt (authorization: string, verifier: string, subject: string, reply: string, isVerified: boolean, reason?: string, issuers?: string[], credentialTypes?: string[]): Promise<string> {

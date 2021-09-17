@@ -370,8 +370,6 @@ export const verifyPresentationHelper = async (authorization: string, presentati
     let credentialInvalidMessage;
 
     for (const credential of presentation.verifiableCredential) {
-    // for (let i = 0; i < presentation.verifiableCredential.length; i++) {
-      // const credential = presentation.verifiableCredential[i];
       const isExpired = isCredentialExpired(credential);
 
       if (isExpired) {
