@@ -5,7 +5,7 @@ import { RESTData, RESTResponse, UnumDto } from '../types';
 import { CustError } from '../utils/error';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
 
-export async function getPresentationRequest (authorization: string, id: string): Promise<RESTResponse<PresentationRequestDto[]>> {
+export async function getPresentationRequest (authorization: string, id: string): Promise<RESTResponse<Record<string, PresentationRequestDto>>> {
   const receiptCallOptions: RESTData = {
     method: 'GET',
     baseUrl: configData.SaaSUrl,
@@ -14,7 +14,7 @@ export async function getPresentationRequest (authorization: string, id: string)
   };
 
   try {
-    const resp = await makeNetworkRequest<PresentationRequestDto[]>(receiptCallOptions);
+    const resp = await makeNetworkRequest<Record<string, PresentationRequestDto>>(receiptCallOptions);
 
     return resp;
   } catch (e) {

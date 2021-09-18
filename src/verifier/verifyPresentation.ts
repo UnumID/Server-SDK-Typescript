@@ -227,11 +227,7 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
       const presentationRequestResponse = await getPresentationRequest(authorization, presentation.presentationRequestId);
 
       authorization = handleAuthTokenHeader(presentationRequestResponse, authorization);
-      if (presentationRequestResponse.body.length !== 1) {
-        logger.warn('Presentation returned was not as expected. Not able to preform request verification.');
-      } else {
-        presentationRequest = presentationRequestResponse.body[0];
-      }
+      presentationRequest = presentationRequestResponse.body['3.0.0'];
     }
 
     // verify the presentation request uuid match
