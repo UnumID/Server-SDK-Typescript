@@ -1,11 +1,11 @@
 import { JSONObj, PresentationRequestDto, PresentationRequestDtoPb } from '@unumid/types';
 import { configData } from '../config';
 import logger from '../logger';
-import { RESTData, RESTResponse, UnumDto } from '../types';
+import { PresentationRequestRepoDto, RESTData, RESTResponse, UnumDto } from '../types';
 import { CustError } from '../utils/error';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
 
-export async function getPresentationRequest (authorization: string, id: string): Promise<RESTResponse<Record<string, PresentationRequestDto>>> {
+export async function getPresentationRequest (authorization: string, id: string): Promise<RESTResponse<PresentationRequestRepoDto>> {
   const receiptCallOptions: RESTData = {
     method: 'GET',
     baseUrl: configData.SaaSUrl,
@@ -14,7 +14,7 @@ export async function getPresentationRequest (authorization: string, id: string)
   };
 
   try {
-    const resp = await makeNetworkRequest<Record<string, PresentationRequestDto>>(receiptCallOptions);
+    const resp = await makeNetworkRequest<PresentationRequestRepoDto>(receiptCallOptions);
 
     return resp;
   } catch (e) {

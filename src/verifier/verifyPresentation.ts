@@ -227,7 +227,7 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
       const presentationRequestResponse = await getPresentationRequest(authorization, presentation.presentationRequestId);
 
       authorization = handleAuthTokenHeader(presentationRequestResponse, authorization);
-      presentationRequest = presentationRequestResponse.body['3.0.0'];
+      presentationRequest = presentationRequestResponse.body.presentationRequests['3.0.0'];
     }
 
     // verify the presentation request uuid match
