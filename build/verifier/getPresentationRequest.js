@@ -83,10 +83,11 @@ function getPresentationRequest(authorization, id) {
     });
 }
 exports.getPresentationRequest = getPresentationRequest;
+// export function extractPresentationRequest (presentationRequestResponse: RESTResponse<PresentationRequestRepoDto>): WithVersion<PresentationRequest> {
 function extractPresentationRequest(presentationRequestResponse) {
-    var presentationRequest = presentationRequestResponse.body.presentationRequests['3.0.0'];
+    var presentationRequestDto = presentationRequestResponse.body.presentationRequests['3.0.0'];
     // need to convert the times to Date objects for proto handling
-    var result = __assign(__assign({}, presentationRequest), { createdAt: new Date(presentationRequest.createdAt), updateAt: new Date(presentationRequest.updatedAt) });
+    var result = __assign(__assign({}, presentationRequestDto), { presentationRequest: __assign(__assign({}, presentationRequestDto.presentationRequest), { createdAt: new Date(presentationRequestDto.presentationRequest.createdAt), updateAt: new Date(presentationRequestDto.presentationRequest.updatedAt), expiresAt: new Date(presentationRequestDto.presentationRequest.expiresAt) }) });
     return result;
 }
 exports.extractPresentationRequest = extractPresentationRequest;

@@ -24,14 +24,19 @@ export async function getPresentationRequest (authorization: string, id: string)
   }
 }
 
-export function extractPresentationRequest (presentationRequestResponse: RESTResponse<PresentationRequestRepoDto>): WithVersion<PresentationRequest> {
-  const presentationRequest = presentationRequestResponse.body.presentationRequests['3.0.0'];
+// export function extractPresentationRequest (presentationRequestResponse: RESTResponse<PresentationRequestRepoDto>): WithVersion<PresentationRequest> {
+export function extractPresentationRequest (presentationRequestResponse: RESTResponse<PresentationRequestRepoDto>): PresentationRequestDto {
+  const presentationRequestDto = presentationRequestResponse.body.presentationRequests['3.0.0'];
 
   // need to convert the times to Date objects for proto handling
   const result = {
-    ...presentationRequest,
-    createdAt: new Date(presentationRequest.createdAt),
-    updateAt: new Date(presentationRequest.updatedAt)
+    ...presentationRequestDto,
+    presentationRequest: {
+      ...presentationRequestDto.presentationRequest,
+      createdAt: new Date(presentationRequestDto.presentationRequest.createdAt),
+      updateAt: new Date(presentationRequestDto.presentationRequest.updatedAt),
+      expiresAt: new Date(presentationRequestDto.presentationRequest.expiresAt)
+    }
   };
 
   return result;

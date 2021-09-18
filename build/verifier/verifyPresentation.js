@@ -240,7 +240,8 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
             case 1:
                 presentationRequestResponse = _a.sent();
                 authorization = networkRequestHelper_1.handleAuthTokenHeader(presentationRequestResponse, authorization);
-                presentationRequest = presentationRequestResponse.body.presentationRequests['3.0.0'];
+                // presentationRequest = presentationRequestResponse.body.presentationRequests['3.0.0'];
+                presentationRequest = getPresentationRequest_1.extractPresentationRequest(presentationRequestResponse);
                 _a.label = 2;
             case 2:
                 // verify the presentation request uuid match
