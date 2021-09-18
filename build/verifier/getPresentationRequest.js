@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -39,7 +50,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPresentationRequest = void 0;
+exports.extractPresentationRequest = exports.getPresentationRequest = void 0;
 var config_1 = require("../config");
 var logger_1 = __importDefault(require("../logger"));
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
@@ -72,4 +83,11 @@ function getPresentationRequest(authorization, id) {
     });
 }
 exports.getPresentationRequest = getPresentationRequest;
+function extractPresentationRequest(presentationRequestResponse) {
+    var presentationRequest = presentationRequestResponse.body.presentationRequests['3.0.0'];
+    // need to convert the times to Date objects for proto handling
+    var result = __assign(__assign({}, presentationRequest), { createdAt: new Date(presentationRequest.createdAt), updateAt: new Date(presentationRequest.updatedAt) });
+    return result;
+}
+exports.extractPresentationRequest = extractPresentationRequest;
 //# sourceMappingURL=getPresentationRequest.js.map

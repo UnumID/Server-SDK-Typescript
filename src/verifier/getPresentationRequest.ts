@@ -1,4 +1,5 @@
-import { JSONObj, PresentationRequestDto, PresentationRequestDtoPb } from '@unumid/types';
+import { JSONObj, PresentationRequestDto, PresentationRequestDtoPb, WithVersion } from '@unumid/types';
+import { PresentationRequest } from '@unumid/types/build/protos/presentation';
 import { configData } from '../config';
 import logger from '../logger';
 import { PresentationRequestRepoDto, RESTData, RESTResponse, UnumDto } from '../types';
@@ -21,4 +22,17 @@ export async function getPresentationRequest (authorization: string, id: string)
     logger.error(`Error getting PresentationRequest ${id} from Unum ID SaaS, ${configData.SaaSUrl}. Error ${e}`);
     throw e;
   }
+}
+
+export function extractPresentationRequest (presentationRequestResponse: RESTResponse<PresentationRequestRepoDto>): WithVersion<PresentationRequest> {
+  const presentationRequest = presentationRequestResponse.body.presentationRequests['3.0.0'];
+
+  // need to convert the times to Date objects for proto handling
+  const result = {
+    ...presentationRequest,
+    createdAt: new Date(presentationRequest.createdAt),
+    updateAt: new Date(presentationRequest.updatedAt)
+  };
+
+  return result;
 }
