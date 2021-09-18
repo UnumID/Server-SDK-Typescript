@@ -2,7 +2,7 @@ import { Presentation, VerifiedStatus, UnumDto, CustError } from '../../src/inde
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { isCredentialExpired } from '../../src/verifier/isCredentialExpired';
 import { checkCredentialStatus } from '../../src/verifier/checkCredentialStatus';
-import { dummyAuthToken, dummyRsaPrivateKey, dummyRsaPublicKey, dummyVerifierDid, makeDummyCredential, makeDummyDidDocument, makeDummyPresentation, makeDummyPresentationRequestResponse, makeDummyUnsignedCredential, makeDummyUnsignedPresentation, makeDummyUnsignedPresentationRequest } from './mocks';
+import { dummyAuthToken, dummyIssuerDid, dummyRsaPrivateKey, dummyRsaPublicKey, dummyVerifierDid, makeDummyCredential, makeDummyDidDocument, makeDummyPresentation, makeDummyPresentationRequestResponse, makeDummyUnsignedCredential, makeDummyUnsignedPresentation, makeDummyUnsignedPresentationRequest } from './mocks';
 import { encrypt, encryptBytes } from '@unumid/library-crypto';
 import { omit } from 'lodash';
 import { DecryptedPresentation } from '../../src/types';
@@ -14,6 +14,15 @@ import { getUUID } from '../../src/utils/helpers';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { doVerify } from '../../src/utils/verify';
 import logger from '../../src/logger';
+import { getPresentationRequest } from '../../src/verifier/getPresentationRequest';
+
+jest.mock('../../src/verifier/getPresentationRequest', () => {
+  const actual = jest.requireActual('../../src/verifier/getPresentationRequest');
+  return {
+    ...actual,
+    getPresentationRequest: jest.fn()
+  };
+});
 
 jest.mock('../../src/utils/didHelper', () => {
   const actual = jest.requireActual('../../src/utils/didHelper');
@@ -44,6 +53,7 @@ const mockVerifyCredential = verifyCredential as jest.Mock;
 const mockIsCredentialExpired = isCredentialExpired as jest.Mock;
 const mockCheckCredentialStatus = checkCredentialStatus as jest.Mock;
 const mockGetDIDDoc = getDIDDoc as jest.Mock;
+const mockGetPresentationRequest = getPresentationRequest as jest.Mock;
 const mockDoVerify = doVerify as jest.Mock;
 const mockMakeNetworkRequest = makeNetworkRequest as jest.Mock;
 
@@ -116,6 +126,11 @@ const populateMockData = async (): Promise<JSONObj> => {
   const presentationRequest = await makeDummyUnsignedPresentationRequest({ uuid: presentationRequestUuid, id: presentationRequestId, verifier });
 
   const presentationRequestDto = await makeDummyPresentationRequestResponse({ unsignedPresentationRequest: presentationRequest });
+  const presentationRequestDtoResponse: Record<string, PresentationRequestDto> = {
+    presentationRequest: {
+      '3.0.0': presentationRequestDto
+    }
+  };
   const proof = (await presentationRequestDto).presentationRequest.proof;
 
   const unsignedPresentation = await makeDummyUnsignedPresentation({ verifierDid: verifier, context, type, verifiableCredential: verifiableCredentials, presentationRequestId });
@@ -135,7 +150,8 @@ const populateMockData = async (): Promise<JSONObj> => {
     authHeader,
     verifier,
     presentation,
-    unsignedPresentation
+    unsignedPresentation,
+    presentationRequestDtoResponse
   });
 };
 
@@ -143,7 +159,7 @@ describe('verifyPresentation', () => {
   let response: UnumDto<DecryptedPresentation>;
   let verStatus: boolean;
 
-  let context, type, verifiableCredentials, presentationRequestId, proof, authHeader, verifier, presentationRequestDto, presentationRequest, unsignedPresentationRequest, presentation, unsignedPresentation;
+  let context, type, verifiableCredentials, presentationRequestId, proof, authHeader, verifier, presentationRequestDto, presentationRequest, unsignedPresentationRequest, presentation, unsignedPresentation, presentationRequestDtoResponse;
 
   beforeAll(async () => {
     const dummyData = await populateMockData();
@@ -151,6 +167,7 @@ describe('verifyPresentation', () => {
     type = dummyData.type;
     verifiableCredentials = dummyData.verifiableCredentials;
     presentationRequestId = dummyData.presentationRequestId;
+    presentationRequestDtoResponse = dummyData.presentationRequestDtoResponse;
     proof = dummyData.proof;
     authHeader = dummyData.authHeader;
     verifier = dummyData.verifier;
@@ -169,8 +186,10 @@ describe('verifyPresentation', () => {
   describe('verifyEncryptedPresentation - Success Scenario', () => {
     beforeEach(async () => {
       const dummySubjectDidDoc = await makeDummyDidDocument();
+      // const dummyPresentationRequestRepoDto = await makeDummyPresentationRequestRepoDto(verifier);
       const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
       mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
+      mockGetPresentationRequest.mockResolvedValueOnce({ body: presentationRequestDtoResponse, headers: dummyResponseHeaders });
       mockDoVerify.mockReturnValueOnce(true);
       mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: true });
       mockIsCredentialExpired.mockReturnValue(false);
@@ -235,6 +254,7 @@ describe('verifyPresentation', () => {
 
       const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
       mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
+      mockGetPresentationRequest.mockResolvedValueOnce({ body: presentationRequestDtoResponse, headers: dummyResponseHeaders });
       mockDoVerify.mockReturnValueOnce(false);
       mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: false });
       mockIsCredentialExpired.mockReturnValue(true);
@@ -345,6 +365,7 @@ describe('verifyPresentation', () => {
       const dummyDidDoc = await makeDummyDidDocument();
       const headers = { 'x-auth-token': dummyAuthToken };
       mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
+      mockGetPresentationRequest.mockResolvedValueOnce({ body: presentationRequestDtoResponse, headers: headers });
       mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers });
       mockDoVerify.mockReturnValueOnce(false);
 
@@ -377,6 +398,7 @@ describe('verifyPresentation', () => {
       const dummySubjectDidDoc = await makeDummyDidDocument();
       const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
       mockGetDIDDoc.mockResolvedValue({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
+      mockGetPresentationRequest.mockResolvedValueOnce({ body: presentationRequestDtoResponse, headers: dummyResponseHeaders });
       mockDoVerify.mockReturnValueOnce(true);
       mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: true });
       mockIsCredentialExpired.mockReturnValue(false);
