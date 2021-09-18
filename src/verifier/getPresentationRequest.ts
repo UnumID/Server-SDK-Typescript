@@ -34,7 +34,7 @@ export function extractPresentationRequest (presentationRequestResponse: RESTRes
     presentationRequest: {
       ...presentationRequestDto.presentationRequest,
       createdAt: new Date(presentationRequestDto.presentationRequest.createdAt),
-      updateAt: new Date(presentationRequestDto.presentationRequest.updatedAt),
+      updatedAt: new Date(presentationRequestDto.presentationRequest.updatedAt),
       expiresAt: new Date(presentationRequestDto.presentationRequest.expiresAt)
     }
   };

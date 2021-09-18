@@ -87,7 +87,7 @@ exports.getPresentationRequest = getPresentationRequest;
 function extractPresentationRequest(presentationRequestResponse) {
     var presentationRequestDto = presentationRequestResponse.body.presentationRequests['3.0.0'];
     // need to convert the times to Date objects for proto handling
-    var result = __assign(__assign({}, presentationRequestDto), { presentationRequest: __assign(__assign({}, presentationRequestDto.presentationRequest), { createdAt: new Date(presentationRequestDto.presentationRequest.createdAt), updateAt: new Date(presentationRequestDto.presentationRequest.updatedAt), expiresAt: new Date(presentationRequestDto.presentationRequest.expiresAt) }) });
+    var result = __assign(__assign({}, presentationRequestDto), { presentationRequest: __assign(__assign({}, presentationRequestDto.presentationRequest), { createdAt: new Date(presentationRequestDto.presentationRequest.createdAt), updatedAt: new Date(presentationRequestDto.presentationRequest.updatedAt), expiresAt: new Date(presentationRequestDto.presentationRequest.expiresAt) }) });
     return result;
 }
 exports.extractPresentationRequest = extractPresentationRequest;
