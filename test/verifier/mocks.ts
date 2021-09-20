@@ -186,48 +186,48 @@ export const makeDummyVerifierResponse = (options: DummyVerifierResponseOptions)
   return { body: options.verifier, headers };
 };
 
-export const makeDummyPresentationRequestRepoDto(verifier: string): PresentationRequestRepoDto {
-  return {
-    presentationRequests: {
-      '3.0.0': {
-        presentationRequest: {            
-          "uuid": "43358e2f-7991-424d-b5f0-8539aae46de7",
-          "createdAt": "2021-05-27T00:52:42.087Z",
-          "updatedAt": "2021-05-27T00:52:42.087Z",
-          "expiresAt": "2021-05-27T01:02:42.087Z",
-          "verifier": "did:unum:f2054199-1069-4337-a588-83d099e79d44",
-          "credentialRequests": [
-              {
-                  "type": "FirstNameCredential",
-                  "issuers": [
-                      "did:unum:6b0e3082-2c3d-42e8-9af7-73f7920bfca9"
-                  ],
-                  "required": false
-              }
-          ],
-          "proof": {
-              "type": "secp256r1Signature2020",
-              "created": "2021-05-27T00:52:42.091Z",
-              "proofPurpose": "AssertionMethod",
-              "signatureValue": "AN1rKrWFPVnpFuCTeEpfcem6AAqC49AxRnqkEr4hBYHHcY4trAEwyfmC3gSfk5bx5ycAs8bBiXH4PB51URrs775LkSa4kAUbd",
-              "verificationMethod": "did:unum:f2054199-1069-4337-a588-83d099e79d44"
-          },
-          "metadata": {
-              "fields": {}
-          },
-          "version": "3.0.0",
-          "id": "b5cfec6d-37af-42c5-abaf-36e636b38a73",
-          "holderAppUuid": "91514d8e-b5b2-41d9-9744-3cbb2bb9a85d"
-      },
-      "issuers": {},
-        verifier: {
-          did: verifier,
-          name: 'test'
-        }
-      }
-    }
-  }
-}
+// export const makeDummyPresentationRequestRepoDto: (verifier: string): PresentationRequestRepoDto {
+//   return {
+//     presentationRequests: {
+//       '3.0.0': {
+//         presentationRequest: {
+//           uuid: "43358e2f-7991-424d-b5f0-8539aae46de7",
+//           createdAt: "2021-05-27T00:52:42.087Z",
+//           updatedAt: "2021-05-27T00:52:42.087Z",
+//           expiresAt: "2021-05-27T01:02:42.087Z",
+//           verifier,
+//           "credentialRequests": [
+//               {
+//                   "type": "FirstNameCredential",
+//                   "issuers": [
+//                       "did:unum:6b0e3082-2c3d-42e8-9af7-73f7920bfca9"
+//                   ],
+//                   "required": false
+//               }
+//           ],
+//           "proof": {
+//               "type": "secp256r1Signature2020",
+//               "created": "2021-05-27T00:52:42.091Z",
+//               "proofPurpose": "AssertionMethod",
+//               "signatureValue": "AN1rKrWFPVnpFuCTeEpfcem6AAqC49AxRnqkEr4hBYHHcY4trAEwyfmC3gSfk5bx5ycAs8bBiXH4PB51URrs775LkSa4kAUbd",
+//               "verificationMethod": "did:unum:f2054199-1069-4337-a588-83d099e79d44"
+//           },
+//           "metadata": {
+//               "fields": {}
+//           },
+//           "version": "3.0.0",
+//           "id": "b5cfec6d-37af-42c5-abaf-36e636b38a73",
+//           "holderAppUuid": "91514d8e-b5b2-41d9-9744-3cbb2bb9a85d"
+//       },
+//       "issuers": {},
+//         verifier: {
+//           did: verifier,
+//           name: 'test'
+//         }
+//       }
+//     }
+//   }
+// }
 
 export const makeDummyDidDocument = async (options: Partial<DidDocument> = {}): Promise<DidDocument> => {
   const id = options.id || `did:unum:${getUUID()}`;
