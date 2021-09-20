@@ -6,5 +6,5 @@ import { CredentialRequest, PresentationPb } from '@unumid/types';
  * @param presentation
  * @param verifier
  */
-export declare const verifyPresentationHelper: (authorization: string, presentation: PresentationPb, verifier: string, credentialRequests?: CredentialRequest[] | undefined) => Promise<UnumDto<VerifiedStatus>>;
+export declare const verifyPresentationHelper: (authorization: string, presentation: PresentationPb, verifier: string, credentialRequests: CredentialRequest[], requestUuid: string) => Promise<UnumDto<VerifiedStatus>>;
 //# sourceMappingURL=verifyPresentationHelper.d.ts.map
