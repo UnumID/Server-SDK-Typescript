@@ -245,7 +245,7 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                 _a.label = 2;
             case 2:
                 // verify the presentation request uuid match
-                if (presentationRequest && presentationRequest.presentationRequest.id !== presentation.presentationRequestId) {
+                if (presentationRequest.presentationRequest.id !== presentation.presentationRequestId) {
                     throw new error_1.CustError(400, "presentation request id provided, " + presentationRequest.presentationRequest.id + ", does not match the presentationRequestId that the presentation was in response to, " + presentation.presentationRequestId + ".");
                 }
                 if (!(presentationRequest && presentationRequest.presentationRequest)) return [3 /*break*/, 5];

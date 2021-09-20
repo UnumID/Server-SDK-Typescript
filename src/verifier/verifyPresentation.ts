@@ -223,15 +223,15 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
     validatePresentation(presentation);
 
     if (!presentationRequest) {
+      // grab the presentation request from Unum ID SaaS for verification purposes
       const presentationRequestResponse = await getPresentationRequest(authorization, presentation.presentationRequestId);
 
       authorization = handleAuthTokenHeader(presentationRequestResponse, authorization);
-      // presentationRequest = presentationRequestResponse.body.presentationRequests['3.0.0'];
       presentationRequest = extractPresentationRequest(presentationRequestResponse.body);
     }
 
     // verify the presentation request uuid match
-    if (presentationRequest && presentationRequest.presentationRequest.id !== presentation.presentationRequestId) {
+    if (presentationRequest.presentationRequest.id !== presentation.presentationRequestId) {
       throw new CustError(400, `presentation request id provided, ${presentationRequest.presentationRequest.id}, does not match the presentationRequestId that the presentation was in response to, ${presentation.presentationRequestId}.`);
     }
 
