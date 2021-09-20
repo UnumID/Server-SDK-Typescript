@@ -14,7 +14,7 @@ import { getUUID } from '../../src/utils/helpers';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { doVerify } from '../../src/utils/verify';
 import logger from '../../src/logger';
-import { getPresentationRequest } from '../../src/verifier/getPresentationRequest';
+import { extractPresentationRequest, getPresentationRequest } from '../../src/verifier/getPresentationRequest';
 
 jest.mock('../../src/verifier/getPresentationRequest', () => {
   const actual = jest.requireActual('../../src/verifier/getPresentationRequest');
@@ -521,6 +521,41 @@ describe('verifyPresentation', () => {
         expect(e.code).toBe(400);
         expect(e.message).toBe('Invalid Presentation: proof.proofPurpose is required.');
       }
+    });
+  });
+
+  describe('verifyPresentation - presentationRequest grabbing', () => {
+    it('extracts request as expected', async () => {
+      const dummyDidDoc = await makeDummyDidDocument();
+      const headers = { 'x-auth-token': dummyAuthToken };
+      mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
+      mockGetPresentationRequest.mockResolvedValueOnce({ body: presentationRequestDtoResponse, headers: headers });
+      // mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers });
+      mockMakeNetworkRequest.mockImplementation(() => { throw new Error('test'); });
+      mockDoVerify.mockReturnValueOnce(false);
+
+      const bytes: Uint8Array = PresentationPb.encode(presentation).finish();
+      const encryptedPresentation = encryptBytes(`did:unum:${getUUID()}`, dummyRsaPublicKey, bytes, 'pem');
+
+      const fakeBadPresentationRequestDto = {
+        presentationRequest: {
+          // uuid: presentationRequestId,
+          ...presentationRequest,
+          proof: {
+            ...presentationRequest.proof,
+            signatureValue: 'signature'
+          }
+        },
+        verifier: {
+          did: verifier
+        }
+      };
+
+      // const response = await verifyPresentation(authHeader, encryptedPresentation, verifier, dummyRsaPrivateKey);
+      const response = extractPresentationRequest(presentationRequestDtoResponse);
+
+      expect(response).toEqual(presentationRequestDto);
+      // expect(response.body.message).toBe('PresentationRequest signature can not be verified.');
     });
   });
 });

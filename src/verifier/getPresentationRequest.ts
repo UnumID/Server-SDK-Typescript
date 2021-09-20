@@ -25,17 +25,17 @@ export async function getPresentationRequest (authorization: string, id: string)
 }
 
 // export function extractPresentationRequest (presentationRequestResponse: RESTResponse<PresentationRequestRepoDto>): WithVersion<PresentationRequest> {
-export function extractPresentationRequest (presentationRequestResponse: RESTResponse<PresentationRequestRepoDto>): PresentationRequestDto {
-  const presentationRequestDto = presentationRequestResponse.body.presentationRequests['3.0.0'];
+export function extractPresentationRequest (presentationRequestResponse: PresentationRequestRepoDto): PresentationRequestDto {
+  const presentationRequestDto = presentationRequestResponse.presentationRequests['3.0.0'];
 
   // need to convert the times to Date objects for proto handling
   const result = {
     ...presentationRequestDto,
     presentationRequest: {
       ...presentationRequestDto.presentationRequest,
-      createdAt: new Date(presentationRequestDto.presentationRequest.createdAt),
-      updatedAt: new Date(presentationRequestDto.presentationRequest.updatedAt),
-      expiresAt: new Date(presentationRequestDto.presentationRequest.expiresAt)
+      createdAt: presentationRequestDto.presentationRequest.createdAt ? new Date(presentationRequestDto.presentationRequest.createdAt) : undefined,
+      updatedAt: presentationRequestDto.presentationRequest.updatedAt ? new Date(presentationRequestDto.presentationRequest.updatedAt) : undefined,
+      expiresAt: presentationRequestDto.presentationRequest.expiresAt ? new Date(presentationRequestDto.presentationRequest.expiresAt) : undefined
     }
   };
 
