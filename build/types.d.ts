@@ -164,6 +164,6 @@ export interface UnumDto<T = Record<string, unknown>> {
   body: T;
 }
 
-export interface PresentationRequestRepoDto {
-  presentationRequests: Record<string, PresentationRequestDto> ;
-}
+// export interface PresentationRequestRepoDto {
+//   presentationRequests: Record<string, PresentationRequestDto> ;
+// }

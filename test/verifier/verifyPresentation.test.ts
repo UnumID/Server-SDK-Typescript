@@ -5,10 +5,10 @@ import { checkCredentialStatus } from '../../src/verifier/checkCredentialStatus'
 import { dummyAuthToken, dummyIssuerDid, dummyRsaPrivateKey, dummyRsaPublicKey, dummyVerifierDid, makeDummyCredential, makeDummyDidDocument, makeDummyPresentation, makeDummyPresentationRequestResponse, makeDummyUnsignedCredential, makeDummyUnsignedPresentation, makeDummyUnsignedPresentationRequest } from './mocks';
 import { encrypt, encryptBytes } from '@unumid/library-crypto';
 import { omit } from 'lodash';
-import { DecryptedPresentation, PresentationRequestRepoDto } from '../../src/types';
+import { DecryptedPresentation } from '../../src/types';
 import { verifyPresentation } from '../../src/verifier/verifyPresentation';
 import { verifyNoPresentationHelper } from '../../src/verifier/verifyNoPresentationHelper';
-import { JSONObj, PresentationPb, PresentationRequestDto } from '@unumid/types';
+import { JSONObj, PresentationPb, PresentationRequestDto, PresentationRequestRepoDto } from '@unumid/types';
 import { getDIDDoc } from '../../src/utils/didHelper';
 import { getUUID } from '../../src/utils/helpers';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';

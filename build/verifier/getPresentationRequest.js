@@ -84,7 +84,6 @@ function getPresentationRequest(authorization, id) {
     });
 }
 exports.getPresentationRequest = getPresentationRequest;
-// export function extractPresentationRequest (presentationRequestResponse: RESTResponse<PresentationRequestRepoDto>): WithVersion<PresentationRequest> {
 function extractPresentationRequest(presentationRequestResponse) {
     try {
         var presentationRequestDto = presentationRequestResponse.presentationRequests['3.0.0'];

@@ -14,11 +14,12 @@ import {
   UnsignedPresentationPb,
   VersionedPresentationRequestDto,
   PresentationRequestDto,
-  WithVersion
+  WithVersion,
+  PresentationRequestRepoDto
 } from '@unumid/types';
 
 import { configData } from '../../src/config';
-import { PresentationRequestRepoDto, RESTResponse, VerifierApiKey } from '../../src/types';
+import { RESTResponse, VerifierApiKey } from '../../src/types';
 import { createKeyPairSet } from '../../src/utils/createKeyPairs';
 import { createProof, createProofPb } from '../../src/utils/createProof';
 import { getUUID } from '../../src/utils/helpers';
