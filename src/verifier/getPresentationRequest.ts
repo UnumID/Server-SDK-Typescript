@@ -1,5 +1,4 @@
 import { JSONObj, PresentationRequestDto, PresentationRequestDtoPb, WithVersion, PresentationRequestRepoDto } from '@unumid/types';
-import { PresentationRequest } from '@unumid/types/build/protos/presentation';
 import { configData } from '../config';
 import logger from '../logger';
 import { RESTData, RESTResponse, UnumDto } from '../types';

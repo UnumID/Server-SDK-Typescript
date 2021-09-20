@@ -17,7 +17,6 @@ import { handleAuthTokenHeader } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
 import { convertCredentialSubject } from '../utils/convertCredentialSubject';
 import { sendPresentationVerifiedReceipt } from './sendPresentationVerifiedReceipt';
-import { PresentationRequest } from '@unumid/types/build/protos/presentation';
 
 /**
  * Validates the attributes for a credential from UnumId's Saas
