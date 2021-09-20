@@ -55,7 +55,7 @@ var networkRequestHelper_1 = require("../utils/networkRequestHelper");
  * @param credentialTypes
  * @returns
  */
-function sendPresentationVerifiedReceipt(authorization, verifier, subject, reply, isVerified, reason, issuers, credentialTypes) {
+function sendPresentationVerifiedReceipt(authorization, verifier, subject, reply, isVerified, requestId, reason, issuers, credentialTypes) {
     if (issuers === void 0) { issuers = []; }
     if (credentialTypes === void 0) { credentialTypes = []; }
     return __awaiter(this, void 0, void 0, function () {

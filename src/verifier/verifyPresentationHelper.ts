@@ -279,7 +279,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
       const message = `The presentation was meant for verifier, ${presentation.verifierDid}, not the provided verifier, ${verifier}.`;
 
       // send PresentationVerified receipt
-      const authToken = await sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, message, issuers, credentialTypes);
+      const authToken = await sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, presentation.presentationRequestId, message, issuers, credentialTypes);
 
       const result: UnumDto<VerifiedStatus> = {
         authToken,
@@ -337,7 +337,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
       const message = `Exception verifying presentation signature. ${e.message}`;
 
       // send PresentationVerified receipt
-      const authToken = await sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, message, issuers, credentialTypes);
+      const authToken = await sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, presentation.presentationRequestId, message, issuers, credentialTypes);
 
       // need to return the UnumDto with the (potentially) updated authToken
       const result: UnumDto<VerifiedStatus> = {
@@ -354,7 +354,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
       const message = 'Presentation signature can not be verified';
 
       // send PresentationVerified receipt
-      const authToken = await sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, message, issuers, credentialTypes);
+      const authToken = await sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, presentation.presentationRequestId, message, issuers, credentialTypes);
 
       const result: UnumDto<VerifiedStatus> = {
         authToken,
@@ -401,7 +401,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
 
     if (!areCredentialsValid) {
       // send PresentationVerified receipt
-      const authToken = await sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, credentialInvalidMessage, issuers, credentialTypes);
+      const authToken = await sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, presentation.presentationRequestId, credentialInvalidMessage, issuers, credentialTypes);
 
       const result: UnumDto<VerifiedStatus> = {
         authToken,
@@ -415,7 +415,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
 
     const isVerified = isPresentationVerified && areCredentialsValid; // always true if here
 
-    authToken = await sendPresentationVerifiedReceipt(authToken, verifier, subject, 'approved', isVerified, undefined, issuers, credentialTypes);
+    authToken = await sendPresentationVerifiedReceipt(authToken, verifier, subject, 'approved', isVerified, presentation.presentationRequestId, undefined, issuers, credentialTypes);
 
     const result: UnumDto<VerifiedStatus> = {
       authToken,

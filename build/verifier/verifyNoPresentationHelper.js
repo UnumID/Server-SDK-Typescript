@@ -102,7 +102,7 @@ exports.verifyNoPresentationHelper = function (authorization, noPresentation, ve
                 _a = noPresentation.proof, verificationMethod = _a.verificationMethod, signatureValue = _a.signatureValue, verifierDid = noPresentation.verifierDid;
                 if (!(verifierDid !== verifier)) return [3 /*break*/, 2];
                 message_1 = "The presentation was meant for verifier, " + verifierDid + ", not the provided verifier, " + verifier + ".";
-                return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authorization, verifier, noPresentation.proof.verificationMethod, 'declined', false, message_1)];
+                return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authorization, verifier, noPresentation.proof.verificationMethod, 'declined', false, noPresentation.presentationRequestId, message_1)];
             case 1:
                 authToken_1 = _c.sent();
                 result_1 = {
@@ -126,7 +126,7 @@ exports.verifyNoPresentationHelper = function (authorization, noPresentation, ve
                 bytes = types_1.UnsignedPresentationPb.encode(unsignedNoPresentation).finish();
                 isVerified = verify_1.doVerify(signatureValue, bytes, publicKey, encoding);
                 message = isVerified ? undefined : 'Presentation signature can not be verified.';
-                return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authToken, verifier, noPresentation.proof.verificationMethod, 'declined', isVerified, message)];
+                return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authToken, verifier, noPresentation.proof.verificationMethod, 'declined', isVerified, noPresentation.presentationRequestId, message)];
             case 4:
                 authToken = _c.sent();
                 result = {

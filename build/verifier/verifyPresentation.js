@@ -240,7 +240,6 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
             case 1:
                 presentationRequestResponse = _a.sent();
                 authorization = networkRequestHelper_1.handleAuthTokenHeader(presentationRequestResponse, authorization);
-                // presentationRequest = presentationRequestResponse.body.presentationRequests['3.0.0'];
                 presentationRequest = getPresentationRequest_1.extractPresentationRequest(presentationRequestResponse.body);
                 _a.label = 2;
             case 2:
@@ -312,7 +311,7 @@ function handlePresentationVerificationReceipt(authToken, presentation, verifier
                 issuers = presentation.verifiableCredential && helpers_1.isArrayNotEmpty(presentation.verifiableCredential) ? presentation.verifiableCredential.map(function (cred) { return cred.issuer; }) : [];
                 reply = isDeclinedPresentation(presentation) ? 'declined' : 'approved';
                 proof = presentation.proof;
-                return [2 /*return*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authToken, verifier, proof.verificationMethod, reply, false, message, issuers, credentialTypes)];
+                return [2 /*return*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authToken, verifier, proof.verificationMethod, reply, false, presentation.presentationRequestId, message, issuers, credentialTypes)];
             }
             catch (e) {
                 logger_1.default.error('Something went wrong handling the PresentationVerification receipt for the a failed request verification');

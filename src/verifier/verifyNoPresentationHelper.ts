@@ -83,7 +83,7 @@ export const verifyNoPresentationHelper = async (authorization: string, noPresen
       const message = `The presentation was meant for verifier, ${verifierDid}, not the provided verifier, ${verifier}.`;
 
       // send PresentationVerified receipt
-      const authToken = await sendPresentationVerifiedReceipt(authorization, verifier, noPresentation.proof.verificationMethod, 'declined', false, message);
+      const authToken = await sendPresentationVerifiedReceipt(authorization, verifier, noPresentation.proof.verificationMethod, 'declined', false, noPresentation.presentationRequestId, message);
 
       const result: UnumDto<VerifiedStatus> = {
         authToken,
@@ -117,7 +117,7 @@ export const verifyNoPresentationHelper = async (authorization: string, noPresen
 
     const message = isVerified ? undefined : 'Presentation signature can not be verified.'; // the receipt reason, only populated if not verified
 
-    authToken = await sendPresentationVerifiedReceipt(authToken, verifier, noPresentation.proof.verificationMethod, 'declined', isVerified, message);
+    authToken = await sendPresentationVerifiedReceipt(authToken, verifier, noPresentation.proof.verificationMethod, 'declined', isVerified, noPresentation.presentationRequestId, message);
 
     const result: UnumDto<VerifiedStatus> = {
       authToken,

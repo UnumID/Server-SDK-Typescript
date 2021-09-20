@@ -311,7 +311,7 @@ async function handlePresentationVerificationReceipt (authToken: string, present
     const reply = isDeclinedPresentation(presentation) ? 'declined' : 'approved';
     const proof = presentation.proof as ProofPb; // existence has already been validated
 
-    return sendPresentationVerifiedReceipt(authToken, verifier, proof.verificationMethod, reply, false, message, issuers, credentialTypes);
+    return sendPresentationVerifiedReceipt(authToken, verifier, proof.verificationMethod, reply, false, presentation.presentationRequestId, message, issuers, credentialTypes);
   } catch (e) {
     logger.error('Something went wrong handling the PresentationVerification receipt for the a failed request verification');
   }
