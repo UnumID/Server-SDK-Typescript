@@ -1,8 +1,8 @@
-import { JSONObj, PresentationRequestDto, PresentationRequestDtoPb, WithVersion } from '@unumid/types';
+import { JSONObj, PresentationRequestDto, PresentationRequestDtoPb, WithVersion, PresentationRequestRepoDto } from '@unumid/types';
 import { PresentationRequest } from '@unumid/types/build/protos/presentation';
 import { configData } from '../config';
 import logger from '../logger';
-import { PresentationRequestRepoDto, RESTData, RESTResponse, UnumDto } from '../types';
+import { RESTData, RESTResponse, UnumDto } from '../types';
 import { CustError } from '../utils/error';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
 
@@ -24,7 +24,6 @@ export async function getPresentationRequest (authorization: string, id: string)
   }
 }
 
-// export function extractPresentationRequest (presentationRequestResponse: RESTResponse<PresentationRequestRepoDto>): WithVersion<PresentationRequest> {
 export function extractPresentationRequest (presentationRequestResponse: PresentationRequestRepoDto): PresentationRequestDto {
   try {
     const presentationRequestDto = presentationRequestResponse.presentationRequests['3.0.0'];
@@ -34,9 +33,9 @@ export function extractPresentationRequest (presentationRequestResponse: Present
       ...presentationRequestDto,
       presentationRequest: {
         ...presentationRequestDto.presentationRequest,
-        createdAt: presentationRequestDto.presentationRequest.createdAt ? new Date(presentationRequestDto.presentationRequest.createdAt) : undefined,
-        updatedAt: presentationRequestDto.presentationRequest.updatedAt ? new Date(presentationRequestDto.presentationRequest.updatedAt) : undefined,
-        expiresAt: presentationRequestDto.presentationRequest.expiresAt ? new Date(presentationRequestDto.presentationRequest.expiresAt) : undefined
+        createdAt: presentationRequestDto.presentationRequest.createdAt ? new Date(presentationRequestDto.presentationRequest.createdAt) : undefined as any as Date, // Despite this ugliness, rather check for presence and handle the undefined directly while not dealing with a whole new type
+        updatedAt: presentationRequestDto.presentationRequest.updatedAt ? new Date(presentationRequestDto.presentationRequest.updatedAt) : undefined as any as Date,
+        expiresAt: presentationRequestDto.presentationRequest.expiresAt ? new Date(presentationRequestDto.presentationRequest.expiresAt) : undefined as any as Date
       }
     };
 
