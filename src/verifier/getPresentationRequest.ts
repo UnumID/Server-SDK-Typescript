@@ -26,18 +26,22 @@ export async function getPresentationRequest (authorization: string, id: string)
 
 // export function extractPresentationRequest (presentationRequestResponse: RESTResponse<PresentationRequestRepoDto>): WithVersion<PresentationRequest> {
 export function extractPresentationRequest (presentationRequestResponse: PresentationRequestRepoDto): PresentationRequestDto {
-  const presentationRequestDto = presentationRequestResponse.presentationRequests['3.0.0'];
+  try {
+    const presentationRequestDto = presentationRequestResponse.presentationRequests['3.0.0'];
 
-  // need to convert the times to Date objects for proto handling
-  const result = {
-    ...presentationRequestDto,
-    presentationRequest: {
-      ...presentationRequestDto.presentationRequest,
-      createdAt: presentationRequestDto.presentationRequest.createdAt ? new Date(presentationRequestDto.presentationRequest.createdAt) : undefined,
-      updatedAt: presentationRequestDto.presentationRequest.updatedAt ? new Date(presentationRequestDto.presentationRequest.updatedAt) : undefined,
-      expiresAt: presentationRequestDto.presentationRequest.expiresAt ? new Date(presentationRequestDto.presentationRequest.expiresAt) : undefined
-    }
-  };
+    // need to convert the times to Date objects for proto handling
+    const result = {
+      ...presentationRequestDto,
+      presentationRequest: {
+        ...presentationRequestDto.presentationRequest,
+        createdAt: presentationRequestDto.presentationRequest.createdAt ? new Date(presentationRequestDto.presentationRequest.createdAt) : undefined,
+        updatedAt: presentationRequestDto.presentationRequest.updatedAt ? new Date(presentationRequestDto.presentationRequest.updatedAt) : undefined,
+        expiresAt: presentationRequestDto.presentationRequest.expiresAt ? new Date(presentationRequestDto.presentationRequest.expiresAt) : undefined
+      }
+    };
 
-  return result;
+    return result;
+  } catch (e) {
+    throw new CustError(500, `Error handling presentation request from Saas: Error ${e}`);
+  }
 }

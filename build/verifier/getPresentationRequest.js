@@ -53,6 +53,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.extractPresentationRequest = exports.getPresentationRequest = void 0;
 var config_1 = require("../config");
 var logger_1 = __importDefault(require("../logger"));
+var error_1 = require("../utils/error");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 function getPresentationRequest(authorization, id) {
     return __awaiter(this, void 0, void 0, function () {
@@ -85,10 +86,15 @@ function getPresentationRequest(authorization, id) {
 exports.getPresentationRequest = getPresentationRequest;
 // export function extractPresentationRequest (presentationRequestResponse: RESTResponse<PresentationRequestRepoDto>): WithVersion<PresentationRequest> {
 function extractPresentationRequest(presentationRequestResponse) {
-    var presentationRequestDto = presentationRequestResponse.body.presentationRequests['3.0.0'];
-    // need to convert the times to Date objects for proto handling
-    var result = __assign(__assign({}, presentationRequestDto), { presentationRequest: __assign(__assign({}, presentationRequestDto.presentationRequest), { createdAt: new Date(presentationRequestDto.presentationRequest.createdAt), updatedAt: new Date(presentationRequestDto.presentationRequest.updatedAt), expiresAt: new Date(presentationRequestDto.presentationRequest.expiresAt) }) });
-    return result;
+    try {
+        var presentationRequestDto = presentationRequestResponse.presentationRequests['3.0.0'];
+        // need to convert the times to Date objects for proto handling
+        var result = __assign(__assign({}, presentationRequestDto), { presentationRequest: __assign(__assign({}, presentationRequestDto.presentationRequest), { createdAt: presentationRequestDto.presentationRequest.createdAt ? new Date(presentationRequestDto.presentationRequest.createdAt) : undefined, updatedAt: presentationRequestDto.presentationRequest.updatedAt ? new Date(presentationRequestDto.presentationRequest.updatedAt) : undefined, expiresAt: presentationRequestDto.presentationRequest.expiresAt ? new Date(presentationRequestDto.presentationRequest.expiresAt) : undefined }) });
+        return result;
+    }
+    catch (e) {
+        throw new error_1.CustError(500, "Error handling presentation request from Saas: Error " + e);
+    }
 }
 exports.extractPresentationRequest = extractPresentationRequest;
 //# sourceMappingURL=getPresentationRequest.js.map

@@ -530,32 +530,35 @@ describe('verifyPresentation', () => {
       const headers = { 'x-auth-token': dummyAuthToken };
       mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
       mockGetPresentationRequest.mockResolvedValueOnce({ body: presentationRequestDtoResponse, headers: headers });
-      // mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers });
-      mockMakeNetworkRequest.mockImplementation(() => { throw new Error('test'); });
+      // mockMakeNetworkRequest.mockImplementation(() => { throw new Error('test'); });
       mockDoVerify.mockReturnValueOnce(false);
-
-      const bytes: Uint8Array = PresentationPb.encode(presentation).finish();
-      const encryptedPresentation = encryptBytes(`did:unum:${getUUID()}`, dummyRsaPublicKey, bytes, 'pem');
-
-      const fakeBadPresentationRequestDto = {
-        presentationRequest: {
-          // uuid: presentationRequestId,
-          ...presentationRequest,
-          proof: {
-            ...presentationRequest.proof,
-            signatureValue: 'signature'
-          }
-        },
-        verifier: {
-          did: verifier
-        }
-      };
 
       // const response = await verifyPresentation(authHeader, encryptedPresentation, verifier, dummyRsaPrivateKey);
       const response = extractPresentationRequest(presentationRequestDtoResponse);
 
       expect(response).toEqual(presentationRequestDto);
-      // expect(response.body.message).toBe('PresentationRequest signature can not be verified.');
+    });
+
+    it('response not extractable', async () => {
+      const dummyDidDoc = await makeDummyDidDocument();
+      const headers = { 'x-auth-token': dummyAuthToken };
+      mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
+      mockMakeNetworkRequest.mockImplementation(() => { throw new Error('test'); });
+      mockDoVerify.mockReturnValueOnce(false);
+
+      const badPresentationRequestDtoResponse = {
+        pr: presentationRequestDtoResponse.presentationRequests
+      };
+      mockGetPresentationRequest.mockResolvedValueOnce({ body: badPresentationRequestDtoResponse, headers: headers });
+
+      try {
+        extractPresentationRequest(badPresentationRequestDtoResponse);
+        fail();
+      } catch (e) {
+        expect(e).toEqual(new CustError(500, 'Error handling presentation request from Saas: Error TypeError: Cannot read property \'3.0.0\' of undefined'));
+        expect(e.code).toEqual(500);
+        expect(e.message).toEqual('Error handling presentation request from Saas: Error TypeError: Cannot read property \'3.0.0\' of undefined');
+      }
     });
   });
 });
