@@ -2,10 +2,10 @@ import { Presentation, VerifiedStatus, UnumDto, CustError } from '../../src/inde
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { isCredentialExpired } from '../../src/verifier/isCredentialExpired';
 import { checkCredentialStatus } from '../../src/verifier/checkCredentialStatus';
-import { dummyAuthToken, dummyRsaPrivateKey, dummyRsaPublicKey, dummyVerifierDid, makeDummyCredential, makeDummyDidDocument, makeDummyPresentation, makeDummyPresentationRequestResponse, makeDummyUnsignedCredential, makeDummyUnsignedPresentation, makeDummyUnsignedPresentationRequest } from './mocks';
+import { dummyAuthToken, dummyIssuerDid, dummyRsaPrivateKey, dummyRsaPublicKey, dummyVerifierDid, makeDummyCredential, makeDummyDidDocument, makeDummyPresentation, makeDummyPresentationRequestResponse, makeDummyUnsignedCredential, makeDummyUnsignedPresentation, makeDummyUnsignedPresentationRequest } from './mocks';
 import { encrypt, encryptBytes } from '@unumid/library-crypto';
 import { omit } from 'lodash';
-import { DecryptedPresentation } from '../../src/types';
+import { DecryptedPresentation, PresentationRequestRepoDto } from '../../src/types';
 import { verifyPresentation } from '../../src/verifier/verifyPresentation';
 import { verifyNoPresentationHelper } from '../../src/verifier/verifyNoPresentationHelper';
 import { JSONObj, PresentationPb, PresentationRequestDto } from '@unumid/types';
@@ -14,6 +14,15 @@ import { getUUID } from '../../src/utils/helpers';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { doVerify } from '../../src/utils/verify';
 import logger from '../../src/logger';
+import { extractPresentationRequest, getPresentationRequest } from '../../src/verifier/getPresentationRequest';
+
+jest.mock('../../src/verifier/getPresentationRequest', () => {
+  const actual = jest.requireActual('../../src/verifier/getPresentationRequest');
+  return {
+    ...actual,
+    getPresentationRequest: jest.fn()
+  };
+});
 
 jest.mock('../../src/utils/didHelper', () => {
   const actual = jest.requireActual('../../src/utils/didHelper');
@@ -44,6 +53,7 @@ const mockVerifyCredential = verifyCredential as jest.Mock;
 const mockIsCredentialExpired = isCredentialExpired as jest.Mock;
 const mockCheckCredentialStatus = checkCredentialStatus as jest.Mock;
 const mockGetDIDDoc = getDIDDoc as jest.Mock;
+const mockGetPresentationRequest = getPresentationRequest as jest.Mock;
 const mockDoVerify = doVerify as jest.Mock;
 const mockMakeNetworkRequest = makeNetworkRequest as jest.Mock;
 
@@ -116,6 +126,11 @@ const populateMockData = async (): Promise<JSONObj> => {
   const presentationRequest = await makeDummyUnsignedPresentationRequest({ uuid: presentationRequestUuid, id: presentationRequestId, verifier });
 
   const presentationRequestDto = await makeDummyPresentationRequestResponse({ unsignedPresentationRequest: presentationRequest });
+  const presentationRequestDtoResponse: PresentationRequestRepoDto = {
+    presentationRequests: {
+      '3.0.0': presentationRequestDto
+    }
+  };
   const proof = (await presentationRequestDto).presentationRequest.proof;
 
   const unsignedPresentation = await makeDummyUnsignedPresentation({ verifierDid: verifier, context, type, verifiableCredential: verifiableCredentials, presentationRequestId });
@@ -135,7 +150,8 @@ const populateMockData = async (): Promise<JSONObj> => {
     authHeader,
     verifier,
     presentation,
-    unsignedPresentation
+    unsignedPresentation,
+    presentationRequestDtoResponse
   });
 };
 
@@ -143,7 +159,7 @@ describe('verifyPresentation', () => {
   let response: UnumDto<DecryptedPresentation>;
   let verStatus: boolean;
 
-  let context, type, verifiableCredentials, presentationRequestId, proof, authHeader, verifier, presentationRequestDto, presentationRequest, unsignedPresentationRequest, presentation, unsignedPresentation;
+  let context, type, verifiableCredentials, presentationRequestId, proof, authHeader, verifier, presentationRequestDto, presentationRequest, unsignedPresentationRequest, presentation, unsignedPresentation, presentationRequestDtoResponse;
 
   beforeAll(async () => {
     const dummyData = await populateMockData();
@@ -151,6 +167,7 @@ describe('verifyPresentation', () => {
     type = dummyData.type;
     verifiableCredentials = dummyData.verifiableCredentials;
     presentationRequestId = dummyData.presentationRequestId;
+    presentationRequestDtoResponse = dummyData.presentationRequestDtoResponse;
     proof = dummyData.proof;
     authHeader = dummyData.authHeader;
     verifier = dummyData.verifier;
@@ -169,19 +186,25 @@ describe('verifyPresentation', () => {
   describe('verifyEncryptedPresentation - Success Scenario', () => {
     beforeEach(async () => {
       const dummySubjectDidDoc = await makeDummyDidDocument();
+      // const dummyPresentationRequestRepoDto = await makeDummyPresentationRequestRepoDto(verifier);
       const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
-      mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
+      mockGetDIDDoc.mockResolvedValue({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
+      mockGetPresentationRequest.mockResolvedValue({ body: presentationRequestDtoResponse, headers: dummyResponseHeaders });
       mockDoVerify.mockReturnValueOnce(true);
       mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: true });
       mockIsCredentialExpired.mockReturnValue(false);
       mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: { status: 'valid' } });
       mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers: dummyResponseHeaders });
-      response = await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestId, proof, verifier, authHeader);
+      response = await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestId, proof, verifier, authHeader, presentationRequestDto);
       verStatus = response.body.isVerified;
     });
 
     it('gets the subject did document', () => {
       expect(mockGetDIDDoc).toBeCalled();
+    });
+
+    it('verifies the presentation', () => {
+      expect(mockGetPresentationRequest).not.toBeCalled();
     });
 
     it('verifies the presentation', () => {
@@ -229,23 +252,81 @@ describe('verifyPresentation', () => {
     // });
   });
 
+  describe('verifyEncryptedPresentation - Success Scenario - presentation request not supplied', () => {
+    beforeEach(async () => {
+      const dummySubjectDidDoc = await makeDummyDidDocument();
+      // const dummyPresentationRequestRepoDto = await makeDummyPresentationRequestRepoDto(verifier);
+      const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
+      mockGetDIDDoc.mockResolvedValue({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
+      mockGetPresentationRequest.mockResolvedValue({ body: presentationRequestDtoResponse, headers: dummyResponseHeaders });
+      mockDoVerify.mockReturnValueOnce(true);
+      mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: true });
+      mockIsCredentialExpired.mockReturnValue(false);
+      mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: { status: 'valid' } });
+      mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers: dummyResponseHeaders });
+      response = await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestId, proof, verifier, authHeader);
+      verStatus = response.body.isVerified;
+    });
+
+    it('gets the subject did document', () => {
+      expect(mockGetDIDDoc).toBeCalled();
+    });
+
+    it('verifies the presentation', () => {
+      expect(mockDoVerify).toBeCalled();
+    });
+
+    it('verifies the presentation', () => {
+      expect(mockGetPresentationRequest).toBeCalled();
+    });
+
+    it('verifies each credential', () => {
+      verifiableCredentials.forEach((vc) => {
+        expect(mockVerifyCredential).toBeCalledWith(vc, authHeader);
+      });
+    });
+
+    it('checks if each credential is expired', () => {
+      verifiableCredentials.forEach((vc) => {
+        expect(mockIsCredentialExpired).toBeCalledWith(vc);
+      });
+    });
+
+    it('checks the status of each credential', () => {
+      verifiableCredentials.forEach((vc) => {
+        expect(mockCheckCredentialStatus).toBeCalledWith(authHeader, vc.id);
+      });
+    });
+
+    it('Result should be true', () => {
+      expect(verStatus).toBeDefined();
+      expect(verStatus).toBe(true);
+    });
+
+    it('returns the x-auth-token header returned from the SaaS api in the x-auth-token header', () => {
+      expect(response.authToken).toEqual(dummyAuthToken);
+    });
+  });
+
   describe('verifyEncryptedPresentation - Failure Scenarios', () => {
     beforeAll(async () => {
       const dummySubjectDidDoc = await makeDummyDidDocument();
 
       const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
       mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
+      mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
+      mockGetPresentationRequest.mockResolvedValueOnce({ body: presentationRequestDtoResponse, headers: dummyResponseHeaders });
       mockDoVerify.mockReturnValueOnce(false);
       mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: false });
       mockIsCredentialExpired.mockReturnValue(true);
       mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: false });
       verifiableCredentials[0].proof.verificationMethod = proof.verificationMethod;
-      response = await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestId, proof, verifier, authHeader);
+      response = await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestId, proof, verifier, authHeader, presentationRequestDto);
       verStatus = response.body.isVerified;
     });
 
     afterAll(() => {
-      jest.clearAllMocks();
+      // jest.clearAllMocks();
     });
 
     it('gets the subject did document', () => {
@@ -263,12 +344,12 @@ describe('verifyPresentation', () => {
 
     it('returns a 404 status code if the did document has no public keys', async () => {
       const dummyDidDocWithoutKeys = {
-        ...makeDummyDidDocument(),
+        // ...await makeDummyDidDocument(),
         publicKey: []
       };
       const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
       mockGetDIDDoc.mockResolvedValueOnce({ body: dummyDidDocWithoutKeys, headers: dummyResponseHeaders });
-      const response = await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestId, proof, verifier, authHeader);
+      const response = await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestId, proof, verifier, authHeader, presentationRequestDto);
       expect(response.body.isVerified).toBe(false);
       expect(response.body.message).toBe('Public key not found for the DID associated with the proof.verificationMethod');
     });
@@ -277,7 +358,7 @@ describe('verifyPresentation', () => {
       mockGetDIDDoc.mockResolvedValueOnce(new CustError(404, 'DID Document not found.'));
 
       try {
-        await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestId, proof, verifier, authHeader);
+        await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestId, proof, verifier, authHeader, presentationRequestDto);
         fail();
       } catch (e) {
         expect(e.code).toEqual(404);
@@ -345,6 +426,7 @@ describe('verifyPresentation', () => {
       const dummyDidDoc = await makeDummyDidDocument();
       const headers = { 'x-auth-token': dummyAuthToken };
       mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
+      mockGetPresentationRequest.mockResolvedValueOnce({ body: presentationRequestDtoResponse, headers: headers });
       mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers });
       mockDoVerify.mockReturnValueOnce(false);
 
@@ -377,6 +459,7 @@ describe('verifyPresentation', () => {
       const dummySubjectDidDoc = await makeDummyDidDocument();
       const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
       mockGetDIDDoc.mockResolvedValue({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
+      mockGetPresentationRequest.mockResolvedValueOnce({ body: presentationRequestDtoResponse, headers: dummyResponseHeaders });
       mockDoVerify.mockReturnValueOnce(true);
       mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: true });
       mockIsCredentialExpired.mockReturnValue(false);
@@ -388,7 +471,7 @@ describe('verifyPresentation', () => {
       try {
         const invalidProof = { created: undefined, signatureValue: proof.signatureValue, type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
 
-        await callVerifyEncryptedPresentationManual(context, type, verifiableCredentials, presentationRequestId, invalidProof, verifier, authHeader);
+        await callVerifyEncryptedPresentationManual(context, type, verifiableCredentials, presentationRequestId, invalidProof, verifier, authHeader, presentationRequestDto);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -399,7 +482,7 @@ describe('verifyPresentation', () => {
     it('returns a 400 status code with a descriptive error message when signatureValue is missing', async () => {
       const invalidProof = { created: new Date(proof.created), signatureValue: '', type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
       try {
-        await callVerifyEncryptedPresentationManual(context, type, verifiableCredentials, presentationRequestId, invalidProof, verifier, authHeader);
+        await callVerifyEncryptedPresentationManual(context, type, verifiableCredentials, presentationRequestId, invalidProof, verifier, authHeader, presentationRequestDto);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -410,7 +493,7 @@ describe('verifyPresentation', () => {
     it('returns a 400 status code with a descriptive error message when type is missing', async () => {
       const invalidProof = { created: new Date(proof.created), signatureValue: proof.signatureValue, type: '', verificationMethod: proof.verificationMethod, proofPurpose: proof.proofPurpose };
       try {
-        await callVerifyEncryptedPresentationManual(context, type, verifiableCredentials, presentationRequestId, invalidProof, verifier, authHeader);
+        await callVerifyEncryptedPresentationManual(context, type, verifiableCredentials, presentationRequestId, invalidProof, verifier, authHeader, presentationRequestDto);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -421,7 +504,7 @@ describe('verifyPresentation', () => {
     it('returns a 400 status code with a descriptive error message when verificationMethod is missing', async () => {
       const invalidProof = { created: new Date(proof.created), signatureValue: proof.signatureValue, type: proof.type, verificationMethod: '', proofPurpose: proof.proofPurpose };
       try {
-        await callVerifyEncryptedPresentationManual(context, type, verifiableCredentials, presentationRequestId, invalidProof, verifier, authHeader);
+        await callVerifyEncryptedPresentationManual(context, type, verifiableCredentials, presentationRequestId, invalidProof, verifier, authHeader, presentationRequestDto);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -432,11 +515,49 @@ describe('verifyPresentation', () => {
     it('returns a 400 status code with a descriptive error message when proofPurpose is missing', async () => {
       const invalidProof = { created: new Date(proof.created), signatureValue: proof.signatureValue, type: proof.type, verificationMethod: proof.verificationMethod, proofPurpose: '' };
       try {
-        await callVerifyEncryptedPresentationManual(context, type, verifiableCredentials, presentationRequestId, invalidProof, verifier, authHeader);
+        await callVerifyEncryptedPresentationManual(context, type, verifiableCredentials, presentationRequestId, invalidProof, verifier, authHeader, presentationRequestDto);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
         expect(e.message).toBe('Invalid Presentation: proof.proofPurpose is required.');
+      }
+    });
+  });
+
+  describe('verifyPresentation - presentationRequest grabbing', () => {
+    it('extracts request as expected', async () => {
+      const dummyDidDoc = await makeDummyDidDocument();
+      const headers = { 'x-auth-token': dummyAuthToken };
+      mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
+      mockGetPresentationRequest.mockResolvedValueOnce({ body: presentationRequestDtoResponse, headers: headers });
+      // mockMakeNetworkRequest.mockImplementation(() => { throw new Error('test'); });
+      mockDoVerify.mockReturnValueOnce(false);
+
+      // const response = await verifyPresentation(authHeader, encryptedPresentation, verifier, dummyRsaPrivateKey);
+      const response = extractPresentationRequest(presentationRequestDtoResponse);
+
+      expect(response).toEqual(presentationRequestDto);
+    });
+
+    it('response not extractable', async () => {
+      const dummyDidDoc = await makeDummyDidDocument();
+      const headers = { 'x-auth-token': dummyAuthToken };
+      mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
+      mockMakeNetworkRequest.mockImplementation(() => { throw new Error('test'); });
+      mockDoVerify.mockReturnValueOnce(false);
+
+      const badPresentationRequestDtoResponse = {
+        pr: presentationRequestDtoResponse.presentationRequests
+      };
+      mockGetPresentationRequest.mockResolvedValueOnce({ body: badPresentationRequestDtoResponse, headers: headers });
+
+      try {
+        extractPresentationRequest(badPresentationRequestDtoResponse);
+        fail();
+      } catch (e) {
+        expect(e).toEqual(new CustError(500, 'Error handling presentation request from Saas: Error TypeError: Cannot read property \'3.0.0\' of undefined'));
+        expect(e.code).toEqual(500);
+        expect(e.message).toEqual('Error handling presentation request from Saas: Error TypeError: Cannot read property \'3.0.0\' of undefined');
       }
     });
   });

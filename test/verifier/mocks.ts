@@ -18,7 +18,7 @@ import {
 } from '@unumid/types';
 
 import { configData } from '../../src/config';
-import { RESTResponse, VerifierApiKey } from '../../src/types';
+import { PresentationRequestRepoDto, RESTResponse, VerifierApiKey } from '../../src/types';
 import { createKeyPairSet } from '../../src/utils/createKeyPairs';
 import { createProof, createProofPb } from '../../src/utils/createProof';
 import { getUUID } from '../../src/utils/helpers';

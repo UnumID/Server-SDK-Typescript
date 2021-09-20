@@ -16,6 +16,7 @@ import { handleAuthTokenHeader } from '../utils/networkRequestHelper';
 import { validateProof } from './validateProof';
 import { convertProof } from '../utils/convertToProtobuf';
 import { sendPresentationVerifiedReceipt } from './sendPresentationVerifiedReceipt';
+import { extractPresentationRequest, getPresentationRequest } from './getPresentationRequest';
 
 function isDeclinedPresentation (presentation: Presentation | PresentationPb): presentation is Presentation {
   return isArrayEmpty(presentation.verifiableCredential);
@@ -222,7 +223,11 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
     validatePresentation(presentation);
 
     if (!presentationRequest) {
-      // TODO grab the request from the saas
+      const presentationRequestResponse = await getPresentationRequest(authorization, presentation.presentationRequestId);
+
+      authorization = handleAuthTokenHeader(presentationRequestResponse, authorization);
+      // presentationRequest = presentationRequestResponse.body.presentationRequests['3.0.0'];
+      presentationRequest = extractPresentationRequest(presentationRequestResponse.body);
     }
 
     // verify the presentation request uuid match
