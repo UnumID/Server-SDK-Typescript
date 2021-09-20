@@ -223,20 +223,20 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
     validatePresentation(presentation);
 
     if (!presentationRequest) {
+      // grab the presentation request from Unum ID SaaS for verification purposes
       const presentationRequestResponse = await getPresentationRequest(authorization, presentation.presentationRequestId);
 
       authorization = handleAuthTokenHeader(presentationRequestResponse, authorization);
-      // presentationRequest = presentationRequestResponse.body.presentationRequests['3.0.0'];
       presentationRequest = extractPresentationRequest(presentationRequestResponse.body);
     }
 
     // verify the presentation request uuid match
-    if (presentationRequest && presentationRequest.presentationRequest.id !== presentation.presentationRequestId) {
+    if (presentationRequest.presentationRequest.id !== presentation.presentationRequestId) {
       throw new CustError(400, `presentation request id provided, ${presentationRequest.presentationRequest.id}, does not match the presentationRequestId that the presentation was in response to, ${presentation.presentationRequestId}.`);
     }
 
-    // verify the presentation request signature if present
-    if (presentationRequest && presentationRequest.presentationRequest) {
+    // verify the presentation request signature
+    if (presentationRequest.presentationRequest) {
       // validate the provided presentation request
       const presentationRequestPb: PresentationRequestPb = validatePresentationRequest(presentationRequest.presentationRequest);
 
@@ -246,7 +246,7 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
       // if invalid then can stop here but still send back the decrypted presentation with the verification results
       if (!requestVerificationResult.body.isVerified) {
         // handle sending back the PresentationVerified receipt with the request verification failure reason
-        const authToken = await handlePresentationVerificationReceipt(requestVerificationResult.authToken, presentation, verifierDid, requestVerificationResult.body.message as string);
+        const authToken = await handlePresentationVerificationReceipt(requestVerificationResult.authToken, presentation, verifierDid, requestVerificationResult.body.message as string, presentationRequest.presentationRequest.uuid);
 
         const type = isDeclinedPresentation(presentation) ? 'DeclinedPresentation' : 'VerifiablePresentation';
         const result: UnumDto<DecryptedPresentation> = {
@@ -263,7 +263,7 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
     }
 
     if (isDeclinedPresentation(presentation)) {
-      const verificationResult: UnumDto<VerifiedStatus> = await verifyNoPresentationHelper(authorization, presentation, verifierDid);
+      const verificationResult: UnumDto<VerifiedStatus> = await verifyNoPresentationHelper(authorization, presentation, verifierDid, presentationRequest.presentationRequest.uuid);
       const result: UnumDto<DecryptedPresentation> = {
         authToken: verificationResult.authToken,
         body: {
@@ -276,8 +276,8 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
       return result;
     }
 
-    const credentialRequests: CredentialRequest[] | undefined = presentationRequest?.presentationRequest.credentialRequests;
-    const verificationResult: UnumDto<VerifiedStatus> = await verifyPresentationHelper(authorization, presentation, verifierDid, credentialRequests);
+    const credentialRequests: CredentialRequest[] = presentationRequest.presentationRequest.credentialRequests;
+    const verificationResult: UnumDto<VerifiedStatus> = await verifyPresentationHelper(authorization, presentation, verifierDid, credentialRequests, presentationRequest.presentationRequest.uuid);
     const result: UnumDto<DecryptedPresentation> = {
       authToken: verificationResult.authToken,
       body: {
@@ -304,14 +304,14 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
 /**
  * Handle sending back the PresentationVerified receipt with the request verification failure reason
  */
-async function handlePresentationVerificationReceipt (authToken: string, presentation: PresentationPb, verifier: string, message: string) {
+async function handlePresentationVerificationReceipt (authToken: string, presentation: PresentationPb, verifier: string, message: string, requestUuid: string) {
   try {
     const credentialTypes = presentation.verifiableCredential && isArrayNotEmpty(presentation.verifiableCredential) ? presentation.verifiableCredential.flatMap(cred => cred.type.slice(1)) : []; // cut off the preceding 'VerifiableCredential' string in each array
     const issuers = presentation.verifiableCredential && isArrayNotEmpty(presentation.verifiableCredential) ? presentation.verifiableCredential.map(cred => cred.issuer) : [];
     const reply = isDeclinedPresentation(presentation) ? 'declined' : 'approved';
     const proof = presentation.proof as ProofPb; // existence has already been validated
 
-    return sendPresentationVerifiedReceipt(authToken, verifier, proof.verificationMethod, reply, false, message, issuers, credentialTypes);
+    return sendPresentationVerifiedReceipt(authToken, verifier, proof.verificationMethod, reply, false, presentation.presentationRequestId, requestUuid, message, issuers, credentialTypes);
   } catch (e) {
     logger.error('Something went wrong handling the PresentationVerification receipt for the a failed request verification');
   }

@@ -66,7 +66,7 @@ export const validateNoPresentationParams = (noPresentation: PresentationPb): Pr
  * @param noPresentation
  * @param verifier
  */
-export const verifyNoPresentationHelper = async (authorization: string, noPresentation: PresentationPb, verifier: string): Promise<UnumDto<VerifiedStatus>> => {
+export const verifyNoPresentationHelper = async (authorization: string, noPresentation: PresentationPb, verifier: string, requestUuid: string): Promise<UnumDto<VerifiedStatus>> => {
   try {
     requireAuth(authorization);
 
@@ -83,7 +83,7 @@ export const verifyNoPresentationHelper = async (authorization: string, noPresen
       const message = `The presentation was meant for verifier, ${verifierDid}, not the provided verifier, ${verifier}.`;
 
       // send PresentationVerified receipt
-      const authToken = await sendPresentationVerifiedReceipt(authorization, verifier, noPresentation.proof.verificationMethod, 'declined', false, message);
+      const authToken = await sendPresentationVerifiedReceipt(authorization, verifier, noPresentation.proof.verificationMethod, 'declined', false, noPresentation.presentationRequestId, requestUuid, message);
 
       const result: UnumDto<VerifiedStatus> = {
         authToken,
@@ -117,7 +117,7 @@ export const verifyNoPresentationHelper = async (authorization: string, noPresen
 
     const message = isVerified ? undefined : 'Presentation signature can not be verified.'; // the receipt reason, only populated if not verified
 
-    authToken = await sendPresentationVerifiedReceipt(authToken, verifier, noPresentation.proof.verificationMethod, 'declined', isVerified, message);
+    authToken = await sendPresentationVerifiedReceipt(authToken, verifier, noPresentation.proof.verificationMethod, 'declined', isVerified, noPresentation.presentationRequestId, requestUuid, message);
 
     const result: UnumDto<VerifiedStatus> = {
       authToken,

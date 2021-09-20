@@ -257,7 +257,7 @@ function validatePresentationMeetsRequestedCredentials(presentation, credentialR
  * @param presentation
  * @param verifier
  */
-exports.verifyPresentationHelper = function (authorization, presentation, verifier, credentialRequests) { return __awaiter(void 0, void 0, void 0, function () {
+exports.verifyPresentationHelper = function (authorization, presentation, verifier, credentialRequests, requestUuid) { return __awaiter(void 0, void 0, void 0, function () {
     var data, proof, subject, credentialTypes, issuers, message, authToken_1, result_1, didDocumentResponse, authToken, pubKeyObj, result_2, isPresentationVerified, bytes, e_1, message, authToken_2, result_3, message, authToken_3, result_4, areCredentialsValid, credentialInvalidMessage, _i, _a, credential, isExpired, isStatusValidResponse, isStatusValid, isVerifiedResponse, isVerified_1, authToken_4, result_5, isVerified, result, error_2;
     return __generator(this, function (_b) {
         switch (_b.label) {
@@ -278,7 +278,7 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 issuers = presentation.verifiableCredential.map(function (cred) { return cred.issuer; });
                 if (!(presentation.verifierDid !== verifier)) return [3 /*break*/, 2];
                 message = "The presentation was meant for verifier, " + presentation.verifierDid + ", not the provided verifier, " + verifier + ".";
-                return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, message, issuers, credentialTypes)];
+                return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, presentation.presentationRequestId, requestUuid, message, issuers, credentialTypes)];
             case 1:
                 authToken_1 = _b.sent();
                 result_1 = {
@@ -329,7 +329,7 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                     logger_1.default.error("Error verifying presentation " + JSON.stringify(presentation) + " signature", e_1);
                 }
                 message = "Exception verifying presentation signature. " + e_1.message;
-                return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, message, issuers, credentialTypes)];
+                return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, presentation.presentationRequestId, requestUuid, message, issuers, credentialTypes)];
             case 6:
                 authToken_2 = _b.sent();
                 result_3 = {
@@ -343,7 +343,7 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
             case 7:
                 if (!!isPresentationVerified) return [3 /*break*/, 9];
                 message = 'Presentation signature can not be verified';
-                return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, message, issuers, credentialTypes)];
+                return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, presentation.presentationRequestId, requestUuid, message, issuers, credentialTypes)];
             case 8:
                 authToken_3 = _b.sent();
                 result_4 = {
@@ -394,7 +394,7 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 return [3 /*break*/, 10];
             case 14:
                 if (!!areCredentialsValid) return [3 /*break*/, 16];
-                return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, credentialInvalidMessage, issuers, credentialTypes)];
+                return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, presentation.presentationRequestId, requestUuid, credentialInvalidMessage, issuers, credentialTypes)];
             case 15:
                 authToken_4 = _b.sent();
                 result_5 = {
@@ -407,7 +407,7 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 return [2 /*return*/, result_5];
             case 16:
                 isVerified = isPresentationVerified && areCredentialsValid;
-                return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authToken, verifier, subject, 'approved', isVerified, undefined, issuers, credentialTypes)];
+                return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authToken, verifier, subject, 'approved', isVerified, presentation.presentationRequestId, requestUuid, undefined, issuers, credentialTypes)];
             case 17:
                 authToken = _b.sent();
                 result = {
