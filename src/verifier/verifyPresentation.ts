@@ -223,7 +223,6 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
     validatePresentation(presentation);
 
     if (!presentationRequest) {
-      // TODO grab the request from the saas
       const presentationRequestResponse = await getPresentationRequest(authorization, presentation.presentationRequestId);
 
       authorization = handleAuthTokenHeader(presentationRequestResponse, authorization);

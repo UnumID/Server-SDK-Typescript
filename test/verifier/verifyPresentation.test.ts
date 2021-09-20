@@ -204,6 +204,10 @@ describe('verifyPresentation', () => {
     });
 
     it('verifies the presentation', () => {
+      expect(mockGetPresentationRequest).not.toBeCalled();
+    });
+
+    it('verifies the presentation', () => {
       expect(mockDoVerify).toBeCalled();
     });
 
@@ -246,6 +250,62 @@ describe('verifyPresentation', () => {
     //   response = await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestId, proof, verifier, authHeader);
     //   expect(response.authToken).toBeUndefined();
     // });
+  });
+
+  describe('verifyEncryptedPresentation - Success Scenario - presentation request not supplied', () => {
+    beforeEach(async () => {
+      const dummySubjectDidDoc = await makeDummyDidDocument();
+      // const dummyPresentationRequestRepoDto = await makeDummyPresentationRequestRepoDto(verifier);
+      const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
+      mockGetDIDDoc.mockResolvedValue({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
+      mockGetPresentationRequest.mockResolvedValue({ body: presentationRequestDtoResponse, headers: dummyResponseHeaders });
+      mockDoVerify.mockReturnValueOnce(true);
+      mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: true });
+      mockIsCredentialExpired.mockReturnValue(false);
+      mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: { status: 'valid' } });
+      mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers: dummyResponseHeaders });
+      response = await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestId, proof, verifier, authHeader);
+      verStatus = response.body.isVerified;
+    });
+
+    it('gets the subject did document', () => {
+      expect(mockGetDIDDoc).toBeCalled();
+    });
+
+    it('verifies the presentation', () => {
+      expect(mockDoVerify).toBeCalled();
+    });
+
+    it('verifies the presentation', () => {
+      expect(mockGetPresentationRequest).toBeCalled();
+    });
+
+    it('verifies each credential', () => {
+      verifiableCredentials.forEach((vc) => {
+        expect(mockVerifyCredential).toBeCalledWith(vc, authHeader);
+      });
+    });
+
+    it('checks if each credential is expired', () => {
+      verifiableCredentials.forEach((vc) => {
+        expect(mockIsCredentialExpired).toBeCalledWith(vc);
+      });
+    });
+
+    it('checks the status of each credential', () => {
+      verifiableCredentials.forEach((vc) => {
+        expect(mockCheckCredentialStatus).toBeCalledWith(authHeader, vc.id);
+      });
+    });
+
+    it('Result should be true', () => {
+      expect(verStatus).toBeDefined();
+      expect(verStatus).toBe(true);
+    });
+
+    it('returns the x-auth-token header returned from the SaaS api in the x-auth-token header', () => {
+      expect(response.authToken).toEqual(dummyAuthToken);
+    });
   });
 
   describe('verifyEncryptedPresentation - Failure Scenarios', () => {
