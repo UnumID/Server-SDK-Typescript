@@ -254,6 +254,7 @@ describe('verifyPresentation', () => {
 
       const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
       mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
+      mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
       mockGetPresentationRequest.mockResolvedValueOnce({ body: presentationRequestDtoResponse, headers: dummyResponseHeaders });
       mockDoVerify.mockReturnValueOnce(false);
       mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: false });
@@ -265,7 +266,7 @@ describe('verifyPresentation', () => {
     });
 
     afterAll(() => {
-      jest.clearAllMocks();
+      // jest.clearAllMocks();
     });
 
     it('gets the subject did document', () => {
@@ -283,11 +284,11 @@ describe('verifyPresentation', () => {
 
     it('returns a 404 status code if the did document has no public keys', async () => {
       const dummyDidDocWithoutKeys = {
-        ...makeDummyDidDocument(),
+        // ...await makeDummyDidDocument(),
         publicKey: []
       };
       const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
-      mockGetDIDDoc.mockResolvedValue({ body: dummyDidDocWithoutKeys, headers: dummyResponseHeaders });
+      mockGetDIDDoc.mockResolvedValueOnce({ body: dummyDidDocWithoutKeys, headers: dummyResponseHeaders });
       const response = await callVerifyEncryptedPresentation(context, type, verifiableCredentials, presentationRequestId, proof, verifier, authHeader, presentationRequestDto);
       expect(response.body.isVerified).toBe(false);
       expect(response.body.message).toBe('Public key not found for the DID associated with the proof.verificationMethod');
