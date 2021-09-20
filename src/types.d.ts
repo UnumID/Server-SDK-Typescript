@@ -163,7 +163,3 @@ export interface UnumDto<T = Record<string, unknown>> {
   authToken: string;
   body: T;
 }
-
-// export interface PresentationRequestRepoDto {
-//   presentationRequests: Record<string, PresentationRequestDto> ;
-// }
