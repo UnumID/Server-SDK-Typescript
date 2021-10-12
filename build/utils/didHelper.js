@@ -39,9 +39,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getKeyFromDIDDoc = exports.getDIDDoc = void 0;
+exports.getDidDocPublicKeys = exports.getKeyFromDIDDoc = exports.getDIDDoc = void 0;
+var error_1 = require("./error");
 var logger_1 = __importDefault(require("../logger"));
 var networkRequestHelper_1 = require("./networkRequestHelper");
+var config_1 = require("../config");
 /**
  * Get a Did document from the did and url provided.
  * @param baseUrl
@@ -49,7 +51,7 @@ var networkRequestHelper_1 = require("./networkRequestHelper");
  * @param did
  */
 exports.getDIDDoc = function (baseUrl, authorization, did) { return __awaiter(void 0, void 0, void 0, function () {
-    var restData, restResp, error_1;
+    var restData, restResp, error_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -66,9 +68,9 @@ exports.getDIDDoc = function (baseUrl, authorization, did) { return __awaiter(vo
                 logger_1.default.debug('Successfully retrieved did document', restResp.body);
                 return [2 /*return*/, (restResp)];
             case 2:
-                error_1 = _a.sent();
-                logger_1.default.error("Error getting did document " + did + " from " + baseUrl, error_1);
-                return [2 /*return*/, (error_1)];
+                error_2 = _a.sent();
+                logger_1.default.error("Error getting did document " + did + " from " + baseUrl, error_2);
+                return [2 /*return*/, (error_2)];
             case 3: return [2 /*return*/];
         }
     });
@@ -83,4 +85,22 @@ exports.getKeyFromDIDDoc = function (didDocument, type) {
     // return the key in the DID document which corresponds to the type specified.
     return didDocument.publicKey.filter(function (publicKeyInfo) { return publicKeyInfo.type === type; });
 };
+exports.getDidDocPublicKeys = function (authorization, subjectDid) { return __awaiter(void 0, void 0, void 0, function () {
+    var didDocResponse, publicKeyInfos;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, exports.getDIDDoc(config_1.configData.SaaSUrl, authorization, subjectDid)];
+            case 1:
+                didDocResponse = _a.sent();
+                if (didDocResponse instanceof Error) {
+                    throw didDocResponse;
+                }
+                publicKeyInfos = exports.getKeyFromDIDDoc(didDocResponse.body, 'RSA');
+                if (publicKeyInfos.length === 0) {
+                    throw new error_1.CustError(404, 'Public key not found for the DID');
+                }
+                return [2 /*return*/, publicKeyInfos];
+        }
+    });
+}); };
 //# sourceMappingURL=didHelper.js.map

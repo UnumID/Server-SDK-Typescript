@@ -55,6 +55,12 @@ var config_1 = require("../config");
 var logger_1 = __importDefault(require("../logger"));
 var error_1 = require("../utils/error");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
+/**
+ * Helper to get presentationRequests by id from Saas' PresentationRequestRepo
+ * @param authorization
+ * @param id
+ * @returns
+ */
 function getPresentationRequest(authorization, id) {
     return __awaiter(this, void 0, void 0, function () {
         var receiptCallOptions, resp, e_1;
@@ -84,6 +90,11 @@ function getPresentationRequest(authorization, id) {
     });
 }
 exports.getPresentationRequest = getPresentationRequest;
+/**
+ * Helper to extract the presentationRequest from the PresentationRequestRepo's response, which is a map keyed on version.
+ * @param presentationRequestResponse
+ * @returns
+ */
 function extractPresentationRequest(presentationRequestResponse) {
     try {
         var presentationRequestDto = presentationRequestResponse.presentationRequests['3.0.0'];

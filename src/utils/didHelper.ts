@@ -44,9 +44,6 @@ export const getKeyFromDIDDoc = (didDocument: DidDocument, type: DidKeyType): Pu
 };
 
 export const getDidDocPublicKeys = async (authorization: string, subjectDid: string): Promise<PublicKeyInfo[]> => {
-  const credentialSubject: CredentialSubject = convertCredentialSubject(cred.credentialSubject);
-  const subjectDid = credentialSubject.id;
-
   // resolve the subject's DID
   const didDocResponse = await getDIDDoc(configData.SaaSUrl, authorization, subjectDid);
 
