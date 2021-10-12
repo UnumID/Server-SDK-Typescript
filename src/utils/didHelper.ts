@@ -1,9 +1,11 @@
-import { DidDocument, DidKeyType, PublicKeyInfo } from '@unumid/types';
+import { CredentialSubject, DidDocument, DidKeyType, PublicKeyInfo, Credential, CredentialPb } from '@unumid/types';
 
 import { CustError } from './error';
 import logger from '../logger';
 import { makeNetworkRequest } from './networkRequestHelper';
 import { RESTData, RESTResponse } from '../types';
+import { convertCredentialSubject } from './convertCredentialSubject';
+import { configData } from '../config';
 
 /**
  * Get a Did document from the did and url provided.
@@ -39,4 +41,25 @@ export const getDIDDoc = async (baseUrl: string, authorization: string, did: str
 export const getKeyFromDIDDoc = (didDocument: DidDocument, type: DidKeyType): PublicKeyInfo[] => {
   // return the key in the DID document which corresponds to the type specified.
   return didDocument.publicKey.filter(publicKeyInfo => publicKeyInfo.type === type);
+};
+
+export const getDidDocPublicKeys = async (authorization: string, subjectDid: string): Promise<PublicKeyInfo[]> => {
+  const credentialSubject: CredentialSubject = convertCredentialSubject(cred.credentialSubject);
+  const subjectDid = credentialSubject.id;
+
+  // resolve the subject's DID
+  const didDocResponse = await getDIDDoc(configData.SaaSUrl, authorization, subjectDid);
+
+  if (didDocResponse instanceof Error) {
+    throw didDocResponse;
+  }
+
+  // get subject's public key info from its DID document
+  const publicKeyInfos = getKeyFromDIDDoc(didDocResponse.body, 'RSA');
+
+  if (publicKeyInfos.length === 0) {
+    throw new CustError(404, 'Public key not found for the DID');
+  }
+
+  return publicKeyInfos;
 };
