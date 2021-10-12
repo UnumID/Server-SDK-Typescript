@@ -5,6 +5,12 @@ import { RESTData, RESTResponse, UnumDto } from '../types';
 import { CustError } from '../utils/error';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
 
+/**
+ * Helper to get presentationRequests by id from Saas' PresentationRequestRepo
+ * @param authorization
+ * @param id
+ * @returns
+ */
 export async function getPresentationRequest (authorization: string, id: string): Promise<RESTResponse<PresentationRequestRepoDto>> {
   const receiptCallOptions: RESTData = {
     method: 'GET',
@@ -23,6 +29,11 @@ export async function getPresentationRequest (authorization: string, id: string)
   }
 }
 
+/**
+ * Helper to extract the presentationRequest from the PresentationRequestRepo's response, which is a map keyed on version.
+ * @param presentationRequestResponse
+ * @returns
+ */
 export function extractPresentationRequest (presentationRequestResponse: PresentationRequestRepoDto): PresentationRequestDto {
   try {
     const presentationRequestDto = presentationRequestResponse.presentationRequests['3.0.0'];
