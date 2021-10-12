@@ -10,7 +10,7 @@ import { CredentialSubject, CredentialPb } from '@unumid/types';
  * @param signingPrivateKey
  * @param expirationDate
  */
-export declare const issueCredentials: (authorization: string, type: string[], issuer: string, credentialSubjects: CredentialSubject[], signingPrivateKey: string, expirationDate?: Date | undefined) => Promise<UnumDto<CredentialPb[]>>;
+export declare const issueCredentials: (authorization: string, types: string[], issuer: string, credentialSubjects: CredentialSubject[], signingPrivateKey: string, expirationDate?: Date | undefined) => Promise<UnumDto<CredentialPb[]>>;
 /**
  * Handles issuing a credential with UnumID's SaaS.
  *

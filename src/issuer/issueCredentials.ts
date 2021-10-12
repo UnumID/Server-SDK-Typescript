@@ -231,9 +231,16 @@ const constructCredentialOptions = (type: string|string[], issuer: string, crede
  * @param signingPrivateKey
  * @param expirationDate
  */
-export const issueCredentials = async (authorization: string, type: string[], issuer: string, credentialSubjects: CredentialSubject[], signingPrivateKey: string, expirationDate?: Date): Promise<UnumDto<CredentialPb[]>> => {
+export const issueCredentials = async (authorization: string, types: string[], issuer: string, credentialSubjects: CredentialSubject[], signingPrivateKey: string, expirationDate?: Date): Promise<UnumDto<CredentialPb[]>> => {
+  if (types.length !== credentialSubjects.length) {
+    throw new CustError(400, 'Number of Credential types must match number of credentialSubjects.');
+  }
+
   const creds = [];
-  for (const credSubject of credentialSubjects) {
+  // for (const credSubject of credentialSubjects) {
+  for (let i = 0; i < types.length; i++) {
+    const credSubject = credentialSubjects[i];
+    const type = types[i];
     // creds.push(issueCredential(authorization, type, issuer, credSubject, signingPrivateKey, expirationDate));
     creds.push(await issueCredential(authorization, type, issuer, credSubject, signingPrivateKey, expirationDate));
   }

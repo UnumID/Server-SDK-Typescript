@@ -252,17 +252,21 @@ var constructCredentialOptions = function (type, issuer, credentialSubject, expi
  * @param signingPrivateKey
  * @param expirationDate
  */
-exports.issueCredentials = function (authorization, type, issuer, credentialSubjects, signingPrivateKey, expirationDate) { return __awaiter(void 0, void 0, void 0, function () {
-    var creds, _i, credentialSubjects_1, credSubject, _a, _b;
+exports.issueCredentials = function (authorization, types, issuer, credentialSubjects, signingPrivateKey, expirationDate) { return __awaiter(void 0, void 0, void 0, function () {
+    var creds, i, credSubject, type, _a, _b;
     return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
+                if (types.length !== credentialSubjects.length) {
+                    throw new error_1.CustError(400, 'Number of Credential types must match number of credentialSubjects.');
+                }
                 creds = [];
-                _i = 0, credentialSubjects_1 = credentialSubjects;
+                i = 0;
                 _c.label = 1;
             case 1:
-                if (!(_i < credentialSubjects_1.length)) return [3 /*break*/, 4];
-                credSubject = credentialSubjects_1[_i];
+                if (!(i < types.length)) return [3 /*break*/, 4];
+                credSubject = credentialSubjects[i];
+                type = types[i];
                 // creds.push(issueCredential(authorization, type, issuer, credSubject, signingPrivateKey, expirationDate));
                 _b = (_a = creds).push;
                 return [4 /*yield*/, exports.issueCredential(authorization, type, issuer, credSubject, signingPrivateKey, expirationDate)];
@@ -271,7 +275,7 @@ exports.issueCredentials = function (authorization, type, issuer, credentialSubj
                 _b.apply(_a, [_c.sent()]);
                 _c.label = 3;
             case 3:
-                _i++;
+                i++;
                 return [3 /*break*/, 1];
             case 4: 
             // await Promise.all(creds);
