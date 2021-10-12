@@ -2,11 +2,10 @@ import { configData } from '../config';
 import { CredentialOptions, RESTData, UnumDto } from '../types';
 import { requireAuth } from '../requireAuth';
 import { CredentialSubject, EncryptedCredentialOptions, EncryptedData, Proof, Credential, JSONObj, UnsignedCredentialPb, CredentialPb, ProofPb, PublicKeyInfo } from '@unumid/types';
-import { UnsignedCredential as UnsignedCredentialV1, Credential as CredentialV1 } from '@unumid/types-v1';
 import { UnsignedCredential as UnsignedCredentialV2, Credential as CredentialV2 } from '@unumid/types-v2';
 
 import logger from '../logger';
-import { getDIDDoc, getDidDocPublicKeys, getKeyFromDIDDoc } from '../utils/didHelper';
+import { getDidDocPublicKeys } from '../utils/didHelper';
 import { doEncrypt } from '../utils/encrypt';
 import { createProof, createProofPb } from '../utils/createProof';
 import { getUUID } from '../utils/helpers';
@@ -100,31 +99,6 @@ const constructSignedCredentialObj = (usCred: UnsignedCredentialV2, privateKey: 
     issuanceDate: usCred.issuanceDate,
     expirationDate: usCred.expirationDate,
     proof: proof
-  };
-
-  return (credential);
-};
-
-/**
- * Creates a signed credential with all the relevant information. The proof serves as a cryptographic signature.
- * @param usCred UnsignedCredential
- * @param privateKey String
- */
-const constructSignedCredentialV1Obj = (usCred: UnsignedCredentialV1, privateKey: string): CredentialV1 => {
-  const proof: Proof = createProof(usCred, privateKey, usCred.issuer, 'pem');
-  const credential: CredentialV1 = {
-    '@context': usCred['@context'],
-    credentialStatus: usCred.credentialStatus,
-    credentialSubject: usCred.credentialSubject,
-    issuer: usCred.issuer,
-    type: usCred.type,
-    id: usCred.id,
-    issuanceDate: usCred.issuanceDate,
-    expirationDate: usCred.expirationDate,
-    proof: {
-      ...proof,
-      created: proof.created.toString()
-    }
   };
 
   return (credential);

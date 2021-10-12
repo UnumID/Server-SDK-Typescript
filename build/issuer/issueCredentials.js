@@ -1,15 +1,4 @@
 "use strict";
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -150,26 +139,6 @@ var constructSignedCredentialObj = function (usCred, privateKey) {
         issuanceDate: usCred.issuanceDate,
         expirationDate: usCred.expirationDate,
         proof: proof
-    };
-    return (credential);
-};
-/**
- * Creates a signed credential with all the relevant information. The proof serves as a cryptographic signature.
- * @param usCred UnsignedCredential
- * @param privateKey String
- */
-var constructSignedCredentialV1Obj = function (usCred, privateKey) {
-    var proof = createProof_1.createProof(usCred, privateKey, usCred.issuer, 'pem');
-    var credential = {
-        '@context': usCred['@context'],
-        credentialStatus: usCred.credentialStatus,
-        credentialSubject: usCred.credentialSubject,
-        issuer: usCred.issuer,
-        type: usCred.type,
-        id: usCred.id,
-        issuanceDate: usCred.issuanceDate,
-        expirationDate: usCred.expirationDate,
-        proof: __assign(__assign({}, proof), { created: proof.created.toString() })
     };
     return (credential);
 };
