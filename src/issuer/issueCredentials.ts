@@ -1,7 +1,7 @@
 import { configData } from '../config';
 import { CredentialOptions, RESTData, UnumDto } from '../types';
 import { requireAuth } from '../requireAuth';
-import { CredentialSubject, EncryptedCredentialOptions, EncryptedData, Proof, Credential, JSONObj, UnsignedCredentialPb, CredentialPb, ProofPb, PublicKeyInfo } from '@unumid/types';
+import { CredentialSubject, EncryptedCredentialOptions, EncryptedData, Proof, Credential, JSONObj, UnsignedCredentialPb, CredentialPb, ProofPb, PublicKeyInfo, CredentialData } from '@unumid/types';
 import { UnsignedCredential as UnsignedCredentialV2, Credential as CredentialV2 } from '@unumid/types-v2';
 
 import logger from '../logger';
@@ -231,18 +231,24 @@ const constructCredentialOptions = (type: string|string[], issuer: string, crede
  * @param signingPrivateKey
  * @param expirationDate
  */
-export const issueCredentials = async (authorization: string, types: string[], issuer: string, credentialSubjects: CredentialSubject[], signingPrivateKey: string, expirationDate?: Date): Promise<UnumDto<CredentialPb[]>> => {
-  if (types.length !== credentialSubjects.length) {
+export const issueCredentials = async (authorization: string, types: string[], issuer: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date): Promise<UnumDto<CredentialPb[]>> => {
+  if (types.length !== credentialDataList.length) {
     throw new CustError(400, 'Number of Credential types must match number of credentialSubjects.');
   }
+
+  // Get target Subject's DID document public keys for encrypting all the credentials issued.
+  // const subjectDid = credentialSubject.id;
+  const publicKeyInfos = await getDidDocPublicKeys(authorization, subjectDid);
 
   const creds = [];
   // for (const credSubject of credentialSubjects) {
   for (let i = 0; i < types.length; i++) {
-    const credSubject = credentialSubjects[i];
+    // const credSubject = credentialSubjects[i];
+    const credData = credentialDataList[i];
     const type = types[i];
+    const credSubject: CredentialSubject = { id: subjectDid, ...credData };
     // creds.push(issueCredential(authorization, type, issuer, credSubject, signingPrivateKey, expirationDate));
-    creds.push(await issueCredential(authorization, type, issuer, credSubject, signingPrivateKey, expirationDate));
+    creds.push(await issueCredentialHelper(authorization, type, issuer, credSubject, signingPrivateKey, publicKeyInfos, expirationDate));
   }
 
   // await Promise.all(creds);
@@ -270,96 +276,100 @@ export const issueCredential = async (authorization: string, type: string | stri
     // Validate the inputs
     validateInputs(type, issuer, credentialSubject, signingPrivateKey, expirationDate);
 
-    // Construct CredentialOptions object
-    const credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, expirationDate);
-
     // Get target Subject's DID document public keys for encrypting all the credentials issued.
     const subjectDid = credentialSubject.id;
     const publicKeyInfos = await getDidDocPublicKeys(authorization, subjectDid);
 
-    /**
-     * Need to loop through all versions except most recent so that can issued credentials could be backwards compatible with older holder versions.
-     * However only care to return the most recent Credential type for customers to use.
-     */
-    // TODO need to make this credential handling more generic
-    for (let v = 0; v < versionList.length - 1; v++) { // note: purposely terminating one index early, which ought to be the most recent version.
-      const version: string = versionList[v];
-
-      if (gte(version, '2.0.0') && lt(version, '3.0.0')) {
-        // Create latest version of the UnsignedCredential object
-        const unsignedCredential: UnsignedCredentialV2 = constructUnsignedCredentialObj(credentialOptions);
-
-        // Create the signed Credential object from the unsignedCredential object
-        const credential: CredentialV2 = constructSignedCredentialObj(unsignedCredential, signingPrivateKey);
-
-        // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
-        const encryptedCredentialOptions = await constructEncryptedCredentialOpts(authorization as string, credential, publicKeyInfos);
-
-        // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
-        const credentialType = getCredentialType(credential.type);
-
-        const encryptedCredentialUploadOptions = {
-          credentialId: credential.id,
-          subject: credentialSubject.id,
-          issuer: credential.issuer,
-          type: credentialType,
-          encryptedCredentials: encryptedCredentialOptions
-        };
-
-        const restData: RESTData = {
-          method: 'POST',
-          baseUrl: configData.SaaSUrl,
-          endPoint: 'credentialRepository',
-          header: { Authorization: authorization, version: version },
-          data: encryptedCredentialUploadOptions
-        };
-
-        const restResp: JSONObj = await makeNetworkRequest(restData);
-
-        authorization = handleAuthTokenHeader(restResp, authorization as string);
-      }
-    }
-
-    // Grabbing the latest version as defined in the version list, 3.0.0
-    const latestVersion: string = versionList[versionList.length - 1];
-
-    // Create latest version of the UnsignedCredential object
-    const unsignedCredential = constructUnsignedCredentialPbObj(credentialOptions);
-
-    // Create the signed Credential object from the unsignedCredential object
-    const credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
-
-    // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
-    const encryptedCredentialOptions = await constructEncryptedCredentialOpts(authorization as string, credential, publicKeyInfos);
-
-    // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
-    const credentialType = getCredentialType(credential.type);
-
-    const encryptedCredentialUploadOptions = {
-      credentialId: credential.id,
-      subject: credentialSubject.id,
-      issuer: credential.issuer,
-      type: credentialType,
-      encryptedCredentials: encryptedCredentialOptions
-    };
-
-    const restData: RESTData = {
-      method: 'POST',
-      baseUrl: configData.SaaSUrl,
-      endPoint: 'credentialRepository',
-      header: { Authorization: authorization, version: latestVersion },
-      data: encryptedCredentialUploadOptions
-    };
-
-    const restResp: JSONObj = await makeNetworkRequest(restData);
-
-    const authToken: string = handleAuthTokenHeader(restResp, authorization as string);
-
-    const issuedCredential: UnumDto<CredentialPb> = { body: credential, authToken };
-
-    return issuedCredential;
+    return issueCredentialHelper(authorization, type, issuer, credentialSubject, signingPrivateKey, publicKeyInfos, expirationDate);
   } catch (error) {
     logger.error(`Error issuing a credential with UnumID SaaS. ${error}`);
     throw error;
   }
+};
+
+const issueCredentialHelper = async (authorization: string, type: string | string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, publicKeyInfos: PublicKeyInfo[], expirationDate?: Date): Promise<UnumDto<CredentialPb>> => {
+  // Construct CredentialOptions object
+  const credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, expirationDate);
+
+  /**
+     * Need to loop through all versions except most recent so that can issued credentials could be backwards compatible with older holder versions.
+     * However only care to return the most recent Credential type for customers to use.
+     */
+  // TODO need to make this credential handling more generic
+  for (let v = 0; v < versionList.length - 1; v++) { // note: purposely terminating one index early, which ought to be the most recent version.
+    const version: string = versionList[v];
+
+    if (gte(version, '2.0.0') && lt(version, '3.0.0')) {
+      // Create latest version of the UnsignedCredential object
+      const unsignedCredential: UnsignedCredentialV2 = constructUnsignedCredentialObj(credentialOptions);
+
+      // Create the signed Credential object from the unsignedCredential object
+      const credential: CredentialV2 = constructSignedCredentialObj(unsignedCredential, signingPrivateKey);
+
+      // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
+      const encryptedCredentialOptions = await constructEncryptedCredentialOpts(authorization as string, credential, publicKeyInfos);
+
+      // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
+      const credentialType = getCredentialType(credential.type);
+
+      const encryptedCredentialUploadOptions = {
+        credentialId: credential.id,
+        subject: credentialSubject.id,
+        issuer: credential.issuer,
+        type: credentialType,
+        encryptedCredentials: encryptedCredentialOptions
+      };
+
+      const restData: RESTData = {
+        method: 'POST',
+        baseUrl: configData.SaaSUrl,
+        endPoint: 'credentialRepository',
+        header: { Authorization: authorization, version: version },
+        data: encryptedCredentialUploadOptions
+      };
+
+      const restResp: JSONObj = await makeNetworkRequest(restData);
+
+      authorization = handleAuthTokenHeader(restResp, authorization as string);
+    }
+  }
+
+  // Grabbing the latest version as defined in the version list, 3.0.0
+  const latestVersion: string = versionList[versionList.length - 1];
+
+  // Create latest version of the UnsignedCredential object
+  const unsignedCredential = constructUnsignedCredentialPbObj(credentialOptions);
+
+  // Create the signed Credential object from the unsignedCredential object
+  const credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
+
+  // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
+  const encryptedCredentialOptions = await constructEncryptedCredentialOpts(authorization as string, credential, publicKeyInfos);
+
+  // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
+  const credentialType = getCredentialType(credential.type);
+
+  const encryptedCredentialUploadOptions = {
+    credentialId: credential.id,
+    subject: credentialSubject.id,
+    issuer: credential.issuer,
+    type: credentialType,
+    encryptedCredentials: encryptedCredentialOptions
+  };
+
+  const restData: RESTData = {
+    method: 'POST',
+    baseUrl: configData.SaaSUrl,
+    endPoint: 'credentialRepository',
+    header: { Authorization: authorization, version: latestVersion },
+    data: encryptedCredentialUploadOptions
+  };
+
+  const restResp: JSONObj = await makeNetworkRequest(restData);
+
+  const authToken: string = handleAuthTokenHeader(restResp, authorization as string);
+
+  const issuedCredential: UnumDto<CredentialPb> = { body: credential, authToken };
+
+  return issuedCredential;
 };

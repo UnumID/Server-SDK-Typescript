@@ -45,7 +45,7 @@ const mockMakeNetworkRequest = makeNetworkRequest as jest.Mock;
 const mockGetDIDDoc = getDIDDoc as jest.Mock;
 const mockDoEncrypt = doEncrypt as jest.Mock;
 
-function callIssueCreds (credentialSubject: CredentialSubject, type: string[], issuer: string, expirationDate: Date, eccPrivateKey: string, auth: string): Promise<UnumDto<Credential>> {
+function callIssueCred (credentialSubject: CredentialSubject, type: string[], issuer: string, expirationDate: Date, eccPrivateKey: string, auth: string): Promise<UnumDto<Credential>> {
   return issueCredential(auth, type, issuer, credentialSubject, eccPrivateKey, expirationDate);
 }
 
@@ -67,7 +67,7 @@ describe('issueCredential', () => {
     mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
     mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers });
 
-    responseDto = await callIssueCreds(credentialSubject, type, issuer, expirationDate, eccPrivateKey, authHeader);
+    responseDto = await callIssueCred(credentialSubject, type, issuer, expirationDate, eccPrivateKey, authHeader);
     response = responseDto.body;
     responseAuthToken = responseDto.authToken;
   });
@@ -93,16 +93,16 @@ describe('issueCredential', () => {
     expect(mockMakeNetworkRequest.mock.calls.length).toEqual(3);
   });
 
-  it('sends the encrypted credentials v1 to the saas', () => {
-    expect(mockMakeNetworkRequest).toBeCalled();
-    expect(mockMakeNetworkRequest.mock.calls[0][0].data.encryptedCredentials.length).toEqual(2);
-    expect(mockMakeNetworkRequest.mock.calls[0][0].header.version).toEqual('1.0.0');
-  });
+  // it('sends the encrypted credentials v1 to the saas', () => {
+  //   expect(mockMakeNetworkRequest).toBeCalled();
+  //   expect(mockMakeNetworkRequest.mock.calls[0][0].data.encryptedCredentials.length).toEqual(2);
+  //   expect(mockMakeNetworkRequest.mock.calls[0][0].header.version).toEqual('1.0.0');
+  // });
 
   it('sends the encrypted credentials v2 to the saas', () => {
     expect(mockMakeNetworkRequest).toBeCalled();
-    expect(mockMakeNetworkRequest.mock.calls[1][0].data.encryptedCredentials.length).toEqual(2);
-    expect(mockMakeNetworkRequest.mock.calls[1][0].header.version).toEqual('2.0.0');
+    expect(mockMakeNetworkRequest.mock.calls[0][0].data.encryptedCredentials.length).toEqual(2);
+    expect(mockMakeNetworkRequest.mock.calls[0][0].header.version).toEqual('2.0.0');
   });
 
   it('returns the credential', () => {
@@ -119,14 +119,14 @@ describe('issueCredential', () => {
 
   it('does not return an auth token if the SaaS does not return an auth token', async () => {
     mockMakeNetworkRequest.mockResolvedValue({ body: { success: true } });
-    response = await callIssueCreds(credentialSubject, type, issuer, expirationDate, eccPrivateKey, dummyAdminKey);
+    response = await callIssueCred(credentialSubject, type, issuer, expirationDate, eccPrivateKey, dummyAdminKey);
     responseAuthToken = response.authToken;
     expect(responseAuthToken).toBeUndefined();
   });
 
   it('type array starts with and contains only one `VerifiableCredential` string despite type of the credential options including the preceeding string', async () => {
     mockMakeNetworkRequest.mockResolvedValue({ body: { success: true } });
-    response = await callIssueCreds(credentialSubject, type, issuer, expirationDate, eccPrivateKey, dummyAdminKey);
+    response = await callIssueCred(credentialSubject, type, issuer, expirationDate, eccPrivateKey, dummyAdminKey);
     const types = response.body.type;
     expect(types[0]).toEqual('VerifiableCredential');
     expect(types[1]).toEqual('DummyCredential');

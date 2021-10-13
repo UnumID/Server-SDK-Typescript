@@ -52,7 +52,7 @@ var networkRequestHelper_1 = require("../utils/networkRequestHelper");
  * @param type DidKeyType
  */
 var constructKeyObj = function (kp, type) {
-    var now = new Date().toISOString();
+    var now = new Date();
     return {
         id: helpers_1.getUUID(),
         encoding: 'pem',
