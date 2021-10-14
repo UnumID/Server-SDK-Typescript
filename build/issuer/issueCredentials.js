@@ -83,6 +83,7 @@ var constructEncryptedCredentialOpts = function (authorization, cred, publicKeyI
     return __generator(this, function (_a) {
         credentialSubject = convertCredentialSubject_1.convertCredentialSubject(cred.credentialSubject);
         subjectDid = credentialSubject.id;
+        // console.log(publicKeyInfos);
         // create an encrypted copy of the credential with each RSA public key
         return [2 /*return*/, publicKeyInfos.map(function (publicKeyInfo) {
                 var subjectDidWithKeyFragment = subjectDid + "#" + publicKeyInfo.id;

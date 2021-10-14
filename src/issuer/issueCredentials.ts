@@ -26,6 +26,7 @@ const constructEncryptedCredentialOpts = async (authorization: string, cred: Cre
   const credentialSubject: CredentialSubject = convertCredentialSubject(cred.credentialSubject);
   const subjectDid = credentialSubject.id;
 
+  // console.log(publicKeyInfos);
   // create an encrypted copy of the credential with each RSA public key
   return publicKeyInfos.map(publicKeyInfo => {
     const subjectDidWithKeyFragment = `${subjectDid}#${publicKeyInfo.id}`;

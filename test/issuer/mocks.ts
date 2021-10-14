@@ -65,28 +65,36 @@ export const makeDummyDidDocument = async (options: Partial<DidDocument> = {}): 
         publicKey: keypairs.signing.publicKey,
         encoding: 'pem',
         type: 'secp256r1',
-        status: 'valid'
+        status: 'valid',
+        createdAt: new Date(),
+        updatedAt: new Date()
       },
       {
         id: getUUID(),
         publicKey: keypairs.encryption.publicKey,
         encoding: 'pem',
         type: 'RSA',
-        status: 'valid'
+        status: 'valid',
+        createdAt: new Date(),
+        updatedAt: new Date()
       },
       {
         id: getUUID(),
         publicKey: keypairs2.signing.publicKey,
         encoding: 'pem',
         type: 'secp256r1',
-        status: 'valid'
+        status: 'valid',
+        createdAt: new Date(),
+        updatedAt: new Date()
       },
       {
         id: getUUID(),
         publicKey: keypairs2.encryption.publicKey,
         encoding: 'pem',
         type: 'RSA',
-        status: 'valid'
+        status: 'valid',
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     ];
   }
