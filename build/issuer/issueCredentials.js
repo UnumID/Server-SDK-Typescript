@@ -83,7 +83,7 @@ var constructEncryptedCredentialOpts = function (authorization, cred, publicKeyI
     return __generator(this, function (_a) {
         credentialSubject = convertCredentialSubject_1.convertCredentialSubject(cred.credentialSubject);
         subjectDid = credentialSubject.id;
-        // console.log(publicKeyInfos);
+        logger_1.default.debug("Encrypting credential " + cred);
         // create an encrypted copy of the credential with each RSA public key
         return [2 /*return*/, publicKeyInfos.map(function (publicKeyInfo) {
                 var subjectDidWithKeyFragment = subjectDid + "#" + publicKeyInfo.id;
@@ -341,6 +341,7 @@ var issueCredentialHelper = function (authorization, type, issuer, credentialSub
         switch (_a.label) {
             case 0:
                 credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, expirationDate);
+                logger_1.default.debug("credentialOptions: " + credentialOptions);
                 v = 0;
                 _a.label = 1;
             case 1:
