@@ -51,7 +51,7 @@ export const makeDummyDidDocument = async (options: Partial<DidDocument> = {}): 
   const now = new Date();
   const created = options.created || now;
   const updated = options.updated || now;
-  const service = options.service || [{ id, serviceEndpoint: `https://api.dev-unumid.org/presentation/${id}`, type: 'CredentialRepository' }];
+  const service = options.service || [{ id, serviceEndpoint: `https://api.dev-unum.id/presentation/${id}`, type: 'CredentialRepository' }];
 
   let { publicKey } = options;
 
