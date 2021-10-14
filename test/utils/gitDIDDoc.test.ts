@@ -5,7 +5,7 @@ import { RESTResponse } from '../../src/types';
 import { getDIDDoc } from '../../src/utils/didHelper';
 
 describe('Get DID doc for the given did', () => {
-  const baseUrl = 'https://api.dev-unumid.org/';
+  const baseUrl = 'https://api.dev-unum.id/';
   const did = 'did:unum:3e48b969-5cf3-46c7-9c61-54de886d1382';
   const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiaXNzdWVyIiwidXVpZCI6ImRmYTllNmY5LWUyMGYtNGU2MS05ODZjLTEwYjRjZDFmMDQxOCIsImRpZCI6ImRpZDp1bnVtOjNlNDhiOTY5LTVjZjMtNDZjNy05YzYxLTU0ZGU4ODZkMTM4MiIsImV4cCI6MTU5Njc2NzAzNi45NjQsImlhdCI6MTU5NzA1MDY4MX0.I-t3mDBTBjKeO_GZDyiXwgKwvlUIy_B6zcB1V3hZ2c0';
   let restSpy;
@@ -38,7 +38,7 @@ describe('Get DID doc for the given did', () => {
 });
 
 describe('Failure scenario for getting the DID doc', () => {
-  const baseUrl = 'https://api.dev-unumid.org/';
+  const baseUrl = 'https://api.dev-unum.id/';
   const did = 'did:unum:3e48b969-5cf3-46c7-9c61-54de886d1382';
   const authKey = '';
   let didDocResponse: RESTResponse<DidDocument>;
