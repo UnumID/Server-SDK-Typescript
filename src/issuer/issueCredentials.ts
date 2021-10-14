@@ -26,7 +26,7 @@ const constructEncryptedCredentialOpts = async (authorization: string, cred: Cre
   const credentialSubject: CredentialSubject = convertCredentialSubject(cred.credentialSubject);
   const subjectDid = credentialSubject.id;
 
-  console.log(cred);
+  logger.debug(`Encrypting credential ${cred}`);
   // create an encrypted copy of the credential with each RSA public key
   return publicKeyInfos.map(publicKeyInfo => {
     const subjectDidWithKeyFragment = `${subjectDid}#${publicKeyInfo.id}`;
@@ -292,7 +292,7 @@ const issueCredentialHelper = async (authorization: string, type: string | strin
   // Construct CredentialOptions object
   const credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, expirationDate);
 
-  console.log(credentialOptions);
+  logger.debug(`credentialOptions: ${credentialOptions}`);
   /**
      * Need to loop through all versions except most recent so that can issued credentials could be backwards compatible with older holder versions.
      * However only care to return the most recent Credential type for customers to use.

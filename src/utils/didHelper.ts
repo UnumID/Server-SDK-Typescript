@@ -47,7 +47,7 @@ export const getDidDocPublicKeys = async (authorization: string, subjectDid: str
   // resolve the subject's DID
   const didDocResponse = await getDIDDoc(configData.SaaSUrl, authorization, subjectDid);
 
-  console.log(didDocResponse);
+  logger.debug(`DidDoc repsonse: ${didDocResponse}`);
   if (didDocResponse instanceof Error) {
     throw didDocResponse;
   }
