@@ -14,7 +14,7 @@ import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkReque
  * @param type DidKeyType
  */
 const constructKeyObj = (kp: KeyPair, type: DidKeyType): PublicKeyInfo => {
-  const now = new Date().toISOString();
+  const now = new Date();
   return {
     id: getUUID(),
     encoding: 'pem',

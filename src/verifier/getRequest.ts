@@ -25,7 +25,7 @@ export const getRequest = async (
     };
 
     const response = await makeNetworkRequest<PresentationRequestDto>(data);
-    console.log('response', response);
+    // console.log('response', response);
     const authToken = handleAuthTokenHeader(response, authorization);
 
     return { body: response.body, authToken };

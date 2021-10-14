@@ -5,7 +5,7 @@ import { sendSms } from './verifier/sendSms';
 import { UnumDto, RegisteredVerifier, RegisteredIssuer, VerifiedStatus, DecryptedPresentation, CredentialInfo, CredentialStatusInfo } from './types';
 import { verifyPresentation } from './verifier/verifyPresentation';
 import { registerIssuer } from './issuer/registerIssuer';
-import { issueCredential } from './issuer/issueCredentials';
+import { issueCredential, issueCredentials } from './issuer/issueCredentials';
 import { updateCredentialStatus } from './issuer/updateCredentialStatus';
 import { extractCredentialInfo } from './utils/extractCredentialInfo';
 import { CredentialSubject, Presentation, Proof, Credential } from '@unumid/types';
@@ -20,6 +20,7 @@ export {
   // Issuer Functions
   registerIssuer,
   issueCredential,
+  issueCredentials,
   updateCredentialStatus,
   // Verifier Functions
   registerVerifier,
