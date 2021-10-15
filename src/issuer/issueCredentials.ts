@@ -323,15 +323,6 @@ const issueCredentialHelper = async (authorization: string, type: string | strin
         encryptedCredentials: encryptedCredentialOptions
       };
 
-      // const restData: RESTData = {
-      //   method: 'POST',
-      //   baseUrl: configData.SaaSUrl,
-      //   endPoint: 'credentialRepository',
-      //   header: { Authorization: authorization, version: version },
-      //   data: encryptedCredentialUploadOptions
-      // };
-
-      // const restResp: JSONObj = await makeNetworkRequest(restData);
       const result = await sendEncryptedCredential(authorization, encryptedCredentialUploadOptions, version);
 
       // authorization = handleAuthTokenHeader(restResp, authorization as string);
@@ -361,18 +352,6 @@ const issueCredentialHelper = async (authorization: string, type: string | strin
     type: credentialType,
     encryptedCredentials: encryptedCredentialOptions
   };
-
-  // const restData: RESTData = {
-  //   method: 'POST',
-  //   baseUrl: configData.SaaSUrl,
-  //   endPoint: 'credentialRepository',
-  //   header: { Authorization: authorization, version: latestVersion },
-  //   data: encryptedCredentialUploadOptions
-  // };
-
-  // const restResp: JSONObj = await makeNetworkRequest(restData);
-
-  // const authToken: string = handleAuthTokenHeader(restResp, authorization as string);
 
   const result = await sendEncryptedCredential(authorization, encryptedCredentialUploadOptions, latestVersion);
 
