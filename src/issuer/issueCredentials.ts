@@ -272,8 +272,9 @@ export const issueCredentials = async (authorization: string, types: string[], i
     authorization = result.authToken;
   }
 
-  // grab all the credentials from the CredentialPairs for the response
-  const resultantCredentials: (Credential | CredentialPb)[] = creds.map(credPair => credPair.credential);
+  // grab all the credentials of the latest version from the CredentialPairs for the response
+  const latestVersion = versionList[versionList.length - 1];
+  const resultantCredentials: (Credential | CredentialPb)[] = creds.filter(credPair => credPair.version === latestVersion).map(credPair => credPair.credential);
 
   // await Promise.all(creds);
   return {

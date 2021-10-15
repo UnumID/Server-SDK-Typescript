@@ -262,7 +262,7 @@ var constructCredentialOptions = function (type, issuer, credentialSubject, expi
  * @param expirationDate
  */
 exports.issueCredentials = function (authorization, types, issuer, subjectDid, credentialDataList, signingPrivateKey, expirationDate) { return __awaiter(void 0, void 0, void 0, function () {
-    var publicKeyInfos, creds, i, credData, type, credSubject, credentialVersionPairs, _loop_1, _i, versionList_2, version, resultantCredentials;
+    var publicKeyInfos, creds, i, credData, type, credSubject, credentialVersionPairs, _loop_1, _i, versionList_2, version, latestVersion, resultantCredentials;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -308,7 +308,8 @@ exports.issueCredentials = function (authorization, types, issuer, subjectDid, c
                 _i++;
                 return [3 /*break*/, 2];
             case 5:
-                resultantCredentials = creds.map(function (credPair) { return credPair.credential; });
+                latestVersion = versionList_1.versionList[versionList_1.versionList.length - 1];
+                resultantCredentials = creds.filter(function (credPair) { return credPair.version === latestVersion; }).map(function (credPair) { return credPair.credential; });
                 // await Promise.all(creds);
                 return [2 /*return*/, {
                         authToken: authorization,
