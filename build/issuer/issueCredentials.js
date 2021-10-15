@@ -456,7 +456,7 @@ var sendEncryptedCredentials = function (authorization, encryptedCredentialUploa
                 restData = {
                     method: 'POST',
                     baseUrl: config_1.configData.SaaSUrl,
-                    endPoint: 'credentialRepository',
+                    endPoint: 'credentialsRepository',
                     header: { Authorization: authorization, version: version },
                     data: encryptedCredentialUploadOptions
                 };

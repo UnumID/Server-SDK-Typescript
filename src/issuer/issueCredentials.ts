@@ -464,7 +464,7 @@ const sendEncryptedCredentials = async (authorization: string, encryptedCredenti
   const restData: RESTData = {
     method: 'POST',
     baseUrl: configData.SaaSUrl,
-    endPoint: 'credentialRepository',
+    endPoint: 'credentialsRepository',
     header: { Authorization: authorization, version },
     data: encryptedCredentialUploadOptions
   };
