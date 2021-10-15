@@ -78,29 +78,26 @@ var getCredentialType_1 = require("../utils/getCredentialType");
  * @param cred Credential
  * @param authorization String
  */
-var constructEncryptedCredentialOpts = function (authorization, cred, publicKeyInfos) { return __awaiter(void 0, void 0, void 0, function () {
-    var credentialSubject, subjectDid;
-    return __generator(this, function (_a) {
-        credentialSubject = convertCredentialSubject_1.convertCredentialSubject(cred.credentialSubject);
-        subjectDid = credentialSubject.id;
-        logger_1.default.debug("Encrypting credential " + cred);
-        // create an encrypted copy of the credential with each RSA public key
-        return [2 /*return*/, publicKeyInfos.map(function (publicKeyInfo) {
-                var subjectDidWithKeyFragment = subjectDid + "#" + publicKeyInfo.id;
-                var encryptedData = encrypt_1.doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, cred);
-                // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
-                var credentialType = getCredentialType_1.getCredentialType(cred.type);
-                var encryptedCredentialOptions = {
-                    credentialId: cred.id,
-                    subject: subjectDidWithKeyFragment,
-                    issuer: cred.issuer,
-                    type: credentialType,
-                    data: encryptedData
-                };
-                return encryptedCredentialOptions;
-            })];
+var constructEncryptedCredentialOpts = function (cred, publicKeyInfos) {
+    var credentialSubject = convertCredentialSubject_1.convertCredentialSubject(cred.credentialSubject);
+    var subjectDid = credentialSubject.id;
+    logger_1.default.debug("Encrypting credential " + cred);
+    // create an encrypted copy of the credential with each RSA public key
+    return publicKeyInfos.map(function (publicKeyInfo) {
+        var subjectDidWithKeyFragment = subjectDid + "#" + publicKeyInfo.id;
+        var encryptedData = encrypt_1.doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, cred);
+        // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
+        var credentialType = getCredentialType_1.getCredentialType(cred.type);
+        var encryptedCredentialOptions = {
+            credentialId: cred.id,
+            subject: subjectDidWithKeyFragment,
+            issuer: cred.issuer,
+            type: credentialType,
+            data: encryptedData
+        };
+        return encryptedCredentialOptions;
     });
-}); };
+};
 /**
  * Creates a signed credential with all the relevant information. The proof serves as a cryptographic signature.
  * @param usCred UnsignedCredentialPb
@@ -336,7 +333,7 @@ exports.issueCredential = function (authorization, type, issuer, credentialSubje
     });
 }); };
 var issueCredentialHelper = function (authorization, type, issuer, credentialSubject, signingPrivateKey, publicKeyInfos, expirationDate) { return __awaiter(void 0, void 0, void 0, function () {
-    var credentialOptions, v, version, unsignedCredential_1, credential_1, encryptedCredentialOptions_1, credentialType_1, encryptedCredentialUploadOptions_1, restData_1, restResp_1, latestVersion, unsignedCredential, credential, encryptedCredentialOptions, credentialType, encryptedCredentialUploadOptions, restData, restResp, authToken, issuedCredential;
+    var credentialOptions, v, version, unsignedCredential_1, credential_1, encryptedCredentialOptions_1, credentialType_1, encryptedCredentialUploadOptions_1, result_1, latestVersion, unsignedCredential, credential, encryptedCredentialOptions, credentialType, encryptedCredentialUploadOptions, result, issuedCredential;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -345,14 +342,12 @@ var issueCredentialHelper = function (authorization, type, issuer, credentialSub
                 v = 0;
                 _a.label = 1;
             case 1:
-                if (!(v < versionList_1.versionList.length - 1)) return [3 /*break*/, 5];
+                if (!(v < versionList_1.versionList.length - 1)) return [3 /*break*/, 4];
                 version = versionList_1.versionList[v];
-                if (!(semver_1.gte(version, '2.0.0') && semver_1.lt(version, '3.0.0'))) return [3 /*break*/, 4];
+                if (!(semver_1.gte(version, '2.0.0') && semver_1.lt(version, '3.0.0'))) return [3 /*break*/, 3];
                 unsignedCredential_1 = constructUnsignedCredentialObj(credentialOptions);
                 credential_1 = constructSignedCredentialObj(unsignedCredential_1, signingPrivateKey);
-                return [4 /*yield*/, constructEncryptedCredentialOpts(authorization, credential_1, publicKeyInfos)];
-            case 2:
-                encryptedCredentialOptions_1 = _a.sent();
+                encryptedCredentialOptions_1 = constructEncryptedCredentialOpts(credential_1, publicKeyInfos);
                 credentialType_1 = getCredentialType_1.getCredentialType(credential_1.type);
                 encryptedCredentialUploadOptions_1 = {
                     credentialId: credential_1.id,
@@ -361,28 +356,20 @@ var issueCredentialHelper = function (authorization, type, issuer, credentialSub
                     type: credentialType_1,
                     encryptedCredentials: encryptedCredentialOptions_1
                 };
-                restData_1 = {
-                    method: 'POST',
-                    baseUrl: config_1.configData.SaaSUrl,
-                    endPoint: 'credentialRepository',
-                    header: { Authorization: authorization, version: version },
-                    data: encryptedCredentialUploadOptions_1
-                };
-                return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData_1)];
+                return [4 /*yield*/, sendEncryptedCredential(authorization, encryptedCredentialUploadOptions_1, version)];
+            case 2:
+                result_1 = _a.sent();
+                // authorization = handleAuthTokenHeader(restResp, authorization as string);
+                authorization = result_1.authToken;
+                _a.label = 3;
             case 3:
-                restResp_1 = _a.sent();
-                authorization = networkRequestHelper_1.handleAuthTokenHeader(restResp_1, authorization);
-                _a.label = 4;
-            case 4:
                 v++;
                 return [3 /*break*/, 1];
-            case 5:
+            case 4:
                 latestVersion = versionList_1.versionList[versionList_1.versionList.length - 1];
                 unsignedCredential = constructUnsignedCredentialPbObj(credentialOptions);
                 credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
-                return [4 /*yield*/, constructEncryptedCredentialOpts(authorization, credential, publicKeyInfos)];
-            case 6:
-                encryptedCredentialOptions = _a.sent();
+                encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos);
                 credentialType = getCredentialType_1.getCredentialType(credential.type);
                 encryptedCredentialUploadOptions = {
                     credentialId: credential.id,
@@ -391,18 +378,31 @@ var issueCredentialHelper = function (authorization, type, issuer, credentialSub
                     type: credentialType,
                     encryptedCredentials: encryptedCredentialOptions
                 };
+                return [4 /*yield*/, sendEncryptedCredential(authorization, encryptedCredentialUploadOptions, latestVersion)];
+            case 5:
+                result = _a.sent();
+                issuedCredential = { body: credential, authToken: result.authToken };
+                return [2 /*return*/, issuedCredential];
+        }
+    });
+}); };
+var sendEncryptedCredential = function (authorization, encryptedCredentialUploadOptions, version) { return __awaiter(void 0, void 0, void 0, function () {
+    var restData, restResp, authToken, issuedCredential;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
                 restData = {
                     method: 'POST',
                     baseUrl: config_1.configData.SaaSUrl,
                     endPoint: 'credentialRepository',
-                    header: { Authorization: authorization, version: latestVersion },
+                    header: { Authorization: authorization, version: version },
                     data: encryptedCredentialUploadOptions
                 };
                 return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];
-            case 7:
+            case 1:
                 restResp = _a.sent();
                 authToken = networkRequestHelper_1.handleAuthTokenHeader(restResp, authorization);
-                issuedCredential = { body: credential, authToken: authToken };
+                issuedCredential = { body: restResp.body, authToken: authToken };
                 return [2 /*return*/, issuedCredential];
         }
     });
