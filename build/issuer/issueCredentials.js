@@ -239,27 +239,16 @@ var validateInputs = function (type, issuer, credentialSubject, signingPrivateKe
         throw new error_1.CustError(400, 'expirationDate must be in the future.');
     }
 };
-var constructCredentialOptions = function (type, issuer, credentialSubject, expirationDate) {
-    // HACK ALERT: removing duplicate 'VerifiableCredential' if present in type string[]
-    var typeList = ['VerifiableCredential'].concat(type); // Need to have some value in the "base" array so just using the keyword we are going to filter over.
-    var types = typeList.filter(function (t) { return t !== 'VerifiableCredential'; });
-    var credOpt = {
-        credentialSubject: credentialSubject,
-        issuer: issuer,
-        type: types,
-        expirationDate: expirationDate
-    };
-    return (credOpt);
-};
 /**
  * Multiplexed handler for issuing credentials with UnumID's SaaS.
- *
  * @param authorization
- * @param type
+ * @param types
  * @param issuer
- * @param credentialSubject
+ * @param subjectDid
+ * @param credentialDataList
  * @param signingPrivateKey
  * @param expirationDate
+ * @returns
  */
 exports.issueCredentials = function (authorization, types, issuer, subjectDid, credentialDataList, signingPrivateKey, expirationDate) { return __awaiter(void 0, void 0, void 0, function () {
     var publicKeyInfos, creds, i, credData, type, credSubject, credentialVersionPairs, _loop_1, _i, versionList_2, version, latestVersion, resultantCredentials;
@@ -310,7 +299,6 @@ exports.issueCredentials = function (authorization, types, issuer, subjectDid, c
             case 5:
                 latestVersion = versionList_1.versionList[versionList_1.versionList.length - 1];
                 resultantCredentials = creds.filter(function (credPair) { return credPair.version === latestVersion; }).map(function (credPair) { return credPair.credential; });
-                // await Promise.all(creds);
                 return [2 /*return*/, {
                         authToken: authorization,
                         body: resultantCredentials
@@ -351,15 +339,45 @@ exports.issueCredential = function (authorization, type, issuer, credentialSubje
         }
     });
 }); };
+/**
+ * Helper to construct a Credential's CredentialOptions
+ * @param type
+ * @param issuer
+ * @param credentialSubject
+ * @param expirationDate
+ * @returns
+ */
+var constructCredentialOptions = function (type, issuer, credentialSubject, expirationDate) {
+    // HACK ALERT: removing duplicate 'VerifiableCredential' if present in type string[]
+    var typeList = ['VerifiableCredential'].concat(type); // Need to have some value in the "base" array so just using the keyword we are going to filter over.
+    var types = typeList.filter(function (t) { return t !== 'VerifiableCredential'; });
+    var credOpt = {
+        credentialSubject: credentialSubject,
+        issuer: issuer,
+        type: types,
+        expirationDate: expirationDate
+    };
+    return (credOpt);
+};
+/**
+ * Helper to construct versioned CredentialPairs
+ * @param authorization
+ * @param type
+ * @param issuer
+ * @param credentialSubject
+ * @param signingPrivateKey
+ * @param publicKeyInfos
+ * @param expirationDate
+ * @returns
+ */
 var constructEncryptedCredentialOfEachVersion = function (authorization, type, issuer, credentialSubject, signingPrivateKey, publicKeyInfos, expirationDate) {
     var credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, expirationDate);
     var results = [];
     logger_1.default.debug("credentialOptions: " + credentialOptions);
     /**
-       * Need to loop through all versions except most recent so that can issued credentials could be backwards compatible with older holder versions.
-       * However only care to return the most recent Credential type for customers to use.
-       */
-    // TODO need to make this credential handling more generic
+     * Need to loop through all versions except most recent so that can issued credentials could be backwards compatible with older holder versions.
+     * However only care to return the most recent Credential type for customers to use.
+     */
     for (var v = 0; v < versionList_1.versionList.length - 1; v++) { // note: purposely terminating one index early, which ought to be the most recent version.
         var version = versionList_1.versionList[v];
         if (semver_1.gte(version, '2.0.0') && semver_1.lt(version, '3.0.0')) {
@@ -375,10 +393,6 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
                 version: version
             };
             results.push(credPair_1);
-            // Send encrypted credential to Saas
-            // const result = await sendEncryptedCredential(authorization, encryptedCredentialUploadOptions, version);
-            // authorization = handleAuthTokenHeader(restResp, authorization as string);
-            // authorization = result.authToken;
         }
     }
     // Grabbing the latest version as defined in the version list, 3.0.0
@@ -395,12 +409,19 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
         version: latestVersion
     };
     results.push(credPair);
-    // Send encrypted credential to Saas
-    // const result = await sendEncryptedCredential(authorization, encryptedCredentialUploadOptions, latestVersion);
-    // const issuedCredential: UnumDto<CredentialPb> = { body: credential, authToken: result.authToken };
-    // return issuedCredential;
     return results;
 };
+/**
+ * Helper to handle creating and sending encrypted credentials to Saas while sending back the latest credential version
+ * @param authorization
+ * @param type
+ * @param issuer
+ * @param credentialSubject
+ * @param signingPrivateKey
+ * @param publicKeyInfos
+ * @param expirationDate
+ * @returns
+ */
 var issueCredentialHelper = function (authorization, type, issuer, credentialSubject, signingPrivateKey, publicKeyInfos, expirationDate) { return __awaiter(void 0, void 0, void 0, function () {
     var credentialOptions, v, version, unsignedCredential_2, credential_2, encryptedCredentialUploadOptions_2, result_1, latestVersion, unsignedCredential, credential, encryptedCredentialUploadOptions, result, issuedCredential;
     return __generator(this, function (_a) {
@@ -439,6 +460,13 @@ var issueCredentialHelper = function (authorization, type, issuer, credentialSub
         }
     });
 }); };
+/**
+ * Helper to construct a IssueCredentialRequest prior to sending to the Saas
+ * @param credential
+ * @param publicKeyInfos
+ * @param subjectDid
+ * @returns
+ */
 var constructIssueCredentialDto = function (credential, publicKeyInfos, subjectDid) {
     // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
     var encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos);
@@ -453,6 +481,13 @@ var constructIssueCredentialDto = function (credential, publicKeyInfos, subjectD
     };
     return encryptedCredentialUploadOptions;
 };
+/**
+ * Helper to handle sending a single encrypted credential, IssueCredentialRequest, to the Saas
+ * @param authorization
+ * @param encryptedCredentialUploadOptions
+ * @param version
+ * @returns
+ */
 var sendEncryptedCredential = function (authorization, encryptedCredentialUploadOptions, version) { return __awaiter(void 0, void 0, void 0, function () {
     var restData, restResp, authToken, issuedCredential;
     return __generator(this, function (_a) {
@@ -474,6 +509,13 @@ var sendEncryptedCredential = function (authorization, encryptedCredentialUpload
         }
     });
 }); };
+/**
+ * Helper to send multiple encrypted credentials, IssueCredentialsRequest, to the Saas
+ * @param authorization
+ * @param encryptedCredentialUploadOptions
+ * @param version
+ * @returns
+ */
 var sendEncryptedCredentials = function (authorization, encryptedCredentialUploadOptions, version) { return __awaiter(void 0, void 0, void 0, function () {
     var restData, restResp, authToken, issuedCredential;
     return __generator(this, function (_a) {

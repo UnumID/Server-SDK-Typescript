@@ -18,6 +18,12 @@ import { CryptoError } from '@unumid/library-crypto';
 import { getCredentialType } from '../utils/getCredentialType';
 import { IssueCredentialRequest } from '@unumid/types/build/protos/credential';
 
+// interface to handle grouping Credentials and their encrypted form
+interface CredentialPair {
+  encryptedCredential: IssueCredentialRequest,
+  credential: CredentialPb | Credential
+}
+
 /**
  * Creates an object of type EncryptedCredentialOptions which encapsulates information relating to the encrypted credential data
  * @param cred Credential
@@ -208,30 +214,16 @@ const validateInputs = (type: string|string[], issuer: string, credentialSubject
   }
 };
 
-const constructCredentialOptions = (type: string|string[], issuer: string, credentialSubject: CredentialSubject, expirationDate?: Date): CredentialOptions => {
-  // HACK ALERT: removing duplicate 'VerifiableCredential' if present in type string[]
-  const typeList: string[] = ['VerifiableCredential'].concat(type); // Need to have some value in the "base" array so just using the keyword we are going to filter over.
-  const types = typeList.filter(t => t !== 'VerifiableCredential');
-
-  const credOpt: CredentialOptions = {
-    credentialSubject,
-    issuer,
-    type: types,
-    expirationDate: expirationDate
-  };
-
-  return (credOpt);
-};
-
 /**
  * Multiplexed handler for issuing credentials with UnumID's SaaS.
- *
  * @param authorization
- * @param type
+ * @param types
  * @param issuer
- * @param credentialSubject
+ * @param subjectDid
+ * @param credentialDataList
  * @param signingPrivateKey
  * @param expirationDate
+ * @returns
  */
 export const issueCredentials = async (authorization: string, types: string[], issuer: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date): Promise<UnumDto<(CredentialPb | Credential)[]>> => {
   if (types.length !== credentialDataList.length) {
@@ -306,11 +298,40 @@ export const issueCredential = async (authorization: string, type: string | stri
   }
 };
 
-interface CredentialPair {
-  encryptedCredential: IssueCredentialRequest,
-  credential: CredentialPb | Credential
-}
+/**
+ * Helper to construct a Credential's CredentialOptions
+ * @param type
+ * @param issuer
+ * @param credentialSubject
+ * @param expirationDate
+ * @returns
+ */
+const constructCredentialOptions = (type: string|string[], issuer: string, credentialSubject: CredentialSubject, expirationDate?: Date): CredentialOptions => {
+  // HACK ALERT: removing duplicate 'VerifiableCredential' if present in type string[]
+  const typeList: string[] = ['VerifiableCredential'].concat(type); // Need to have some value in the "base" array so just using the keyword we are going to filter over.
+  const types = typeList.filter(t => t !== 'VerifiableCredential');
 
+  const credOpt: CredentialOptions = {
+    credentialSubject,
+    issuer,
+    type: types,
+    expirationDate: expirationDate
+  };
+
+  return (credOpt);
+};
+
+/**
+ * Helper to construct versioned CredentialPairs
+ * @param authorization
+ * @param type
+ * @param issuer
+ * @param credentialSubject
+ * @param signingPrivateKey
+ * @param publicKeyInfos
+ * @param expirationDate
+ * @returns
+ */
 const constructEncryptedCredentialOfEachVersion = (authorization: string, type: string | string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, publicKeyInfos: PublicKeyInfo[], expirationDate?: Date): WithVersion<CredentialPair>[] => {
   const credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, expirationDate);
 
@@ -367,6 +388,17 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
   return results;
 };
 
+/**
+ * Helper to handle creating and sending encrypted credentials to Saas while sending back the latest credential version
+ * @param authorization
+ * @param type
+ * @param issuer
+ * @param credentialSubject
+ * @param signingPrivateKey
+ * @param publicKeyInfos
+ * @param expirationDate
+ * @returns
+ */
 const issueCredentialHelper = async (authorization: string, type: string | string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, publicKeyInfos: PublicKeyInfo[], expirationDate?: Date): Promise<UnumDto<CredentialPb>> => {
   // Construct CredentialOptions object
   const credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, expirationDate);
@@ -417,6 +449,13 @@ const issueCredentialHelper = async (authorization: string, type: string | strin
   return issuedCredential;
 };
 
+/**
+ * Helper to construct a IssueCredentialRequest prior to sending to the Saas
+ * @param credential
+ * @param publicKeyInfos
+ * @param subjectDid
+ * @returns
+ */
 const constructIssueCredentialDto = (credential: Credential | CredentialPb, publicKeyInfos: PublicKeyInfo[], subjectDid: string): IssueCredentialRequest => {
   // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
   const encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos);
@@ -435,6 +474,13 @@ const constructIssueCredentialDto = (credential: Credential | CredentialPb, publ
   return encryptedCredentialUploadOptions;
 };
 
+/**
+ * Helper to handle sending a single encrypted credential, IssueCredentialRequest, to the Saas
+ * @param authorization
+ * @param encryptedCredentialUploadOptions
+ * @param version
+ * @returns
+ */
 const sendEncryptedCredential = async (authorization: string, encryptedCredentialUploadOptions: IssueCredentialRequest, version: string) :Promise<UnumDto<void>> => {
   const restData: RESTData = {
     method: 'POST',
@@ -453,6 +499,13 @@ const sendEncryptedCredential = async (authorization: string, encryptedCredentia
   return issuedCredential;
 };
 
+/**
+ * Helper to send multiple encrypted credentials, IssueCredentialsRequest, to the Saas
+ * @param authorization
+ * @param encryptedCredentialUploadOptions
+ * @param version
+ * @returns
+ */
 const sendEncryptedCredentials = async (authorization: string, encryptedCredentialUploadOptions: IssueCredentialsRequest, version: string) :Promise<UnumDto<void>> => {
   const restData: RESTData = {
     method: 'POST',
