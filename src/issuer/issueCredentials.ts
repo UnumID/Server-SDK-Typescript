@@ -239,19 +239,19 @@ export const issueCredentials = async (authorization: string, types: string[], i
   }
 
   // Get target Subject's DID document public keys for encrypting all the credentials issued.
-  // const subjectDid = credentialSubject.id;
   const publicKeyInfos = await getDidDocPublicKeys(authorization, subjectDid);
 
   // loop through the types and credential data lists inputted to create CredentialPairs of each supported version for each
   const creds: WithVersion<CredentialPair>[] = [];
 
   for (let i = 0; i < types.length; i++) {
-    // const credSubject = credentialSubjects[i];
     const credData = credentialDataList[i];
     const type = types[i];
+
+    // construct the Credential's credentialSubject
     const credSubject: CredentialSubject = { id: subjectDid, ...credData };
-    // creds.push(issueCredential(authorization, type, issuer, credSubject, signingPrivateKey, expirationDate));
-    // creds.push(await issueCredentialHelper(authorization, type, issuer, credSubject, signingPrivateKey, publicKeyInfos, expirationDate));
+
+    // construct the Credentials and their encrypted form for each supported version
     const credentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, type, issuer, credSubject, signingPrivateKey, publicKeyInfos, expirationDate);
 
     // add all credentialVersionPairs to creds array
@@ -260,11 +260,6 @@ export const issueCredentials = async (authorization: string, types: string[], i
 
   // loop through the versions list and send all the encrypted credentials to the saas grouped by version
   for (const version of versionList) {
-    // grab the encrypted credentials from the CredentialPairs to send to the Saas
-    // const resultantEncryptedCredentials: IssueCredentialRequest[] = creds.map(credPair => {
-    //   if (credPair.version === version) { return credPair.encryptedCredential; }
-    // });
-
     // only grab the encrypted credentials of the current version
     const resultantEncryptedCredentials: IssueCredentialRequest[] = creds.filter(credPair => credPair.version === version).map(credPair => credPair.encryptedCredential);
 
@@ -276,7 +271,6 @@ export const issueCredentials = async (authorization: string, types: string[], i
   const latestVersion = versionList[versionList.length - 1];
   const resultantCredentials: (Credential | CredentialPb)[] = creds.filter(credPair => credPair.version === latestVersion).map(credPair => credPair.credential);
 
-  // await Promise.all(creds);
   return {
     authToken: authorization,
     body: resultantCredentials
@@ -324,10 +318,9 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
 
   logger.debug(`credentialOptions: ${credentialOptions}`);
   /**
-     * Need to loop through all versions except most recent so that can issued credentials could be backwards compatible with older holder versions.
-     * However only care to return the most recent Credential type for customers to use.
-     */
-  // TODO need to make this credential handling more generic
+   * Need to loop through all versions except most recent so that can issued credentials could be backwards compatible with older holder versions.
+   * However only care to return the most recent Credential type for customers to use.
+   */
   for (let v = 0; v < versionList.length - 1; v++) { // note: purposely terminating one index early, which ought to be the most recent version.
     const version: string = versionList[v];
 
@@ -348,11 +341,6 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
       };
 
       results.push(credPair);
-      // Send encrypted credential to Saas
-      // const result = await sendEncryptedCredential(authorization, encryptedCredentialUploadOptions, version);
-
-      // authorization = handleAuthTokenHeader(restResp, authorization as string);
-      // authorization = result.authToken;
     }
   }
 
@@ -375,12 +363,6 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
   };
 
   results.push(credPair);
-  // Send encrypted credential to Saas
-  // const result = await sendEncryptedCredential(authorization, encryptedCredentialUploadOptions, latestVersion);
-
-  // const issuedCredential: UnumDto<CredentialPb> = { body: credential, authToken: result.authToken };
-
-  // return issuedCredential;
 
   return results;
 };
@@ -391,10 +373,9 @@ const issueCredentialHelper = async (authorization: string, type: string | strin
 
   logger.debug(`credentialOptions: ${credentialOptions}`);
   /**
-     * Need to loop through all versions except most recent so that can issued credentials could be backwards compatible with older holder versions.
-     * However only care to return the most recent Credential type for customers to use.
-     */
-  // TODO need to make this credential handling more generic
+   * Need to loop through all versions except most recent so that can issued credentials could be backwards compatible with older holder versions.
+   * However only care to return the most recent Credential type for customers to use.
+   */
   for (let v = 0; v < versionList.length - 1; v++) { // note: purposely terminating one index early, which ought to be the most recent version.
     const version: string = versionList[v];
 
