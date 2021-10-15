@@ -262,7 +262,7 @@ var constructCredentialOptions = function (type, issuer, credentialSubject, expi
  * @param expirationDate
  */
 exports.issueCredentials = function (authorization, types, issuer, subjectDid, credentialDataList, signingPrivateKey, expirationDate) { return __awaiter(void 0, void 0, void 0, function () {
-    var publicKeyInfos, creds, i, credData, type, credSubject, credentialVersionPairs, resultantEncryptedCredentials, resultantCredentials, result;
+    var publicKeyInfos, creds, i, credData, type, credSubject, credentialVersionPairs, _loop_1, _i, versionList_2, version, resultantCredentials;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -281,14 +281,37 @@ exports.issueCredentials = function (authorization, types, issuer, subjectDid, c
                     // add all credentialVersionPairs to creds array
                     Array.prototype.push.apply(creds, credentialVersionPairs);
                 }
-                resultantEncryptedCredentials = creds.map(function (credPair) { return credPair.encryptedCredential; });
-                resultantCredentials = creds.map(function (credPair) { return credPair.credential; });
-                return [4 /*yield*/, sendEncryptedCredentials(authorization, { credentialRequests: resultantEncryptedCredentials }, '3.0.0')];
+                _loop_1 = function (version) {
+                    var resultantEncryptedCredentials, result;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                resultantEncryptedCredentials = creds.filter(function (credPair) { return credPair.version === version; }).map(function (credPair) { return credPair.encryptedCredential; });
+                                return [4 /*yield*/, sendEncryptedCredentials(authorization, { credentialRequests: resultantEncryptedCredentials }, version)];
+                            case 1:
+                                result = _a.sent();
+                                authorization = result.authToken;
+                                return [2 /*return*/];
+                        }
+                    });
+                };
+                _i = 0, versionList_2 = versionList_1.versionList;
+                _a.label = 2;
             case 2:
-                result = _a.sent();
+                if (!(_i < versionList_2.length)) return [3 /*break*/, 5];
+                version = versionList_2[_i];
+                return [5 /*yield**/, _loop_1(version)];
+            case 3:
+                _a.sent();
+                _a.label = 4;
+            case 4:
+                _i++;
+                return [3 /*break*/, 2];
+            case 5:
+                resultantCredentials = creds.map(function (credPair) { return credPair.credential; });
                 // await Promise.all(creds);
                 return [2 /*return*/, {
-                        authToken: result.authToken,
+                        authToken: authorization,
                         body: resultantCredentials
                     }];
         }
@@ -347,7 +370,8 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
             var encryptedCredentialUploadOptions_1 = constructIssueCredentialDto(credential_1, publicKeyInfos, credentialSubject.id);
             var credPair_1 = {
                 credential: credential_1,
-                encryptedCredential: encryptedCredentialUploadOptions_1
+                encryptedCredential: encryptedCredentialUploadOptions_1,
+                version: version
             };
             results.push(credPair_1);
             // Send encrypted credential to Saas
@@ -366,7 +390,8 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
     var encryptedCredentialUploadOptions = constructIssueCredentialDto(credential, publicKeyInfos, credentialSubject.id);
     var credPair = {
         credential: credential,
-        encryptedCredential: encryptedCredentialUploadOptions
+        encryptedCredential: encryptedCredentialUploadOptions,
+        version: latestVersion
     };
     results.push(credPair);
     // Send encrypted credential to Saas

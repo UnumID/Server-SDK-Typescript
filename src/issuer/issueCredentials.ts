@@ -1,7 +1,7 @@
 import { configData } from '../config';
 import { CredentialOptions, RESTData, UnumDto } from '../types';
 import { requireAuth } from '../requireAuth';
-import { CredentialSubject, EncryptedCredentialOptions, EncryptedData, Proof, Credential, JSONObj, UnsignedCredentialPb, CredentialPb, ProofPb, PublicKeyInfo, CredentialData, IssueCredentialsRequest } from '@unumid/types';
+import { CredentialSubject, EncryptedCredentialOptions, EncryptedData, Proof, Credential, JSONObj, UnsignedCredentialPb, CredentialPb, ProofPb, PublicKeyInfo, CredentialData, IssueCredentialsRequest, WithVersion } from '@unumid/types';
 import { UnsignedCredential as UnsignedCredentialV2, Credential as CredentialV2 } from '@unumid/types-v2';
 
 import logger from '../logger';
@@ -243,7 +243,7 @@ export const issueCredentials = async (authorization: string, types: string[], i
   const publicKeyInfos = await getDidDocPublicKeys(authorization, subjectDid);
 
   // loop through the types and credential data lists inputted to create CredentialPairs of each supported version for each
-  const creds: CredentialPair[] = [];
+  const creds: WithVersion<CredentialPair>[] = [];
 
   for (let i = 0; i < types.length; i++) {
     // const credSubject = credentialSubjects[i];
@@ -258,17 +258,26 @@ export const issueCredentials = async (authorization: string, types: string[], i
     Array.prototype.push.apply(creds, credentialVersionPairs);
   }
 
-  // grab the encrypted credentials from the CredentialPairs to send to the Saas
-  const resultantEncryptedCredentials: IssueCredentialRequest[] = creds.map(credPair => credPair.encryptedCredential);
+  // loop through the versions list and send all the encrypted credentials to the saas grouped by version
+  for (const version of versionList) {
+    // grab the encrypted credentials from the CredentialPairs to send to the Saas
+    // const resultantEncryptedCredentials: IssueCredentialRequest[] = creds.map(credPair => {
+    //   if (credPair.version === version) { return credPair.encryptedCredential; }
+    // });
 
-  // grab the credentials from the CredentialPairs for the response
+    // only grab the encrypted credentials of the current version
+    const resultantEncryptedCredentials: IssueCredentialRequest[] = creds.filter(credPair => credPair.version === version).map(credPair => credPair.encryptedCredential);
+
+    const result = await sendEncryptedCredentials(authorization, { credentialRequests: resultantEncryptedCredentials }, version);
+    authorization = result.authToken;
+  }
+
+  // grab all the credentials from the CredentialPairs for the response
   const resultantCredentials: (Credential | CredentialPb)[] = creds.map(credPair => credPair.credential);
-
-  const result = await sendEncryptedCredentials(authorization, { credentialRequests: resultantEncryptedCredentials }, '3.0.0');
 
   // await Promise.all(creds);
   return {
-    authToken: result.authToken,
+    authToken: authorization,
     body: resultantCredentials
   };
 };
@@ -307,10 +316,10 @@ interface CredentialPair {
   credential: CredentialPb | Credential
 }
 
-const constructEncryptedCredentialOfEachVersion = (authorization: string, type: string | string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, publicKeyInfos: PublicKeyInfo[], expirationDate?: Date): CredentialPair[] => {
+const constructEncryptedCredentialOfEachVersion = (authorization: string, type: string | string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, publicKeyInfos: PublicKeyInfo[], expirationDate?: Date): WithVersion<CredentialPair>[] => {
   const credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, expirationDate);
 
-  const results: CredentialPair[] = [];
+  const results: WithVersion<CredentialPair>[] = [];
 
   logger.debug(`credentialOptions: ${credentialOptions}`);
   /**
@@ -331,9 +340,10 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
       // Create the encrypted credential issuance dto
       const encryptedCredentialUploadOptions: IssueCredentialRequest = constructIssueCredentialDto(credential, publicKeyInfos, credentialSubject.id);
 
-      const credPair: CredentialPair = {
+      const credPair: WithVersion<CredentialPair> = {
         credential,
-        encryptedCredential: encryptedCredentialUploadOptions
+        encryptedCredential: encryptedCredentialUploadOptions,
+        version
       };
 
       results.push(credPair);
@@ -357,9 +367,10 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
   // Create the encrypted credential issuance dto
   const encryptedCredentialUploadOptions: IssueCredentialRequest = constructIssueCredentialDto(credential, publicKeyInfos, credentialSubject.id);
 
-  const credPair: CredentialPair = {
+  const credPair: WithVersion<CredentialPair> = {
     credential,
-    encryptedCredential: encryptedCredentialUploadOptions
+    encryptedCredential: encryptedCredentialUploadOptions,
+    version: latestVersion
   };
 
   results.push(credPair);
