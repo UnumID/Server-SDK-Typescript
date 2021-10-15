@@ -309,20 +309,6 @@ const issueCredentialHelper = async (authorization: string, type: string | strin
       // Create the signed Credential object from the unsignedCredential object
       const credential: CredentialV2 = constructSignedCredentialObj(unsignedCredential, signingPrivateKey);
 
-      // // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
-      // const encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos);
-
-      // // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
-      // const credentialType = getCredentialType(credential.type);
-
-      // const encryptedCredentialUploadOptions: IssueCredentialRequest = {
-      //   credentialId: credential.id,
-      //   subject: credentialSubject.id,
-      //   issuer: credential.issuer,
-      //   type: credentialType,
-      //   encryptedCredentials: encryptedCredentialOptions
-      // };
-
       // Create the encrypted credential issuance dto
       const encryptedCredentialUploadOptions: IssueCredentialRequest = constructIssueCredentialDto(credential, publicKeyInfos, credentialSubject.id);
 
@@ -342,20 +328,6 @@ const issueCredentialHelper = async (authorization: string, type: string | strin
 
   // Create the signed Credential object from the unsignedCredential object
   const credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
-
-  // // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
-  // const encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos);
-
-  // // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
-  // const credentialType = getCredentialType(credential.type);
-
-  // const encryptedCredentialUploadOptions: IssueCredentialRequest = {
-  //   credentialId: credential.id,
-  //   subject: credentialSubject.id,
-  //   issuer: credential.issuer,
-  //   type: credentialType,
-  //   encryptedCredentials: encryptedCredentialOptions
-  // };
 
   // Create the encrypted credential issuance dto
   const encryptedCredentialUploadOptions: IssueCredentialRequest = constructIssueCredentialDto(credential, publicKeyInfos, credentialSubject.id);
