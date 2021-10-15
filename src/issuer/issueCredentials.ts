@@ -309,20 +309,24 @@ const issueCredentialHelper = async (authorization: string, type: string | strin
       // Create the signed Credential object from the unsignedCredential object
       const credential: CredentialV2 = constructSignedCredentialObj(unsignedCredential, signingPrivateKey);
 
-      // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
-      const encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos);
+      // // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
+      // const encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos);
 
-      // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
-      const credentialType = getCredentialType(credential.type);
+      // // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
+      // const credentialType = getCredentialType(credential.type);
 
-      const encryptedCredentialUploadOptions: IssueCredentialRequest = {
-        credentialId: credential.id,
-        subject: credentialSubject.id,
-        issuer: credential.issuer,
-        type: credentialType,
-        encryptedCredentials: encryptedCredentialOptions
-      };
+      // const encryptedCredentialUploadOptions: IssueCredentialRequest = {
+      //   credentialId: credential.id,
+      //   subject: credentialSubject.id,
+      //   issuer: credential.issuer,
+      //   type: credentialType,
+      //   encryptedCredentials: encryptedCredentialOptions
+      // };
 
+      // Create the encrypted credential issuance dto
+      const encryptedCredentialUploadOptions: IssueCredentialRequest = constructIssueCredentialDto(credential, publicKeyInfos, credentialSubject.id);
+
+      // Send encrypted credential to Saas
       const result = await sendEncryptedCredential(authorization, encryptedCredentialUploadOptions, version);
 
       // authorization = handleAuthTokenHeader(restResp, authorization as string);
@@ -339,6 +343,32 @@ const issueCredentialHelper = async (authorization: string, type: string | strin
   // Create the signed Credential object from the unsignedCredential object
   const credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
 
+  // // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
+  // const encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos);
+
+  // // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
+  // const credentialType = getCredentialType(credential.type);
+
+  // const encryptedCredentialUploadOptions: IssueCredentialRequest = {
+  //   credentialId: credential.id,
+  //   subject: credentialSubject.id,
+  //   issuer: credential.issuer,
+  //   type: credentialType,
+  //   encryptedCredentials: encryptedCredentialOptions
+  // };
+
+  // Create the encrypted credential issuance dto
+  const encryptedCredentialUploadOptions: IssueCredentialRequest = constructIssueCredentialDto(credential, publicKeyInfos, credentialSubject.id);
+
+  // Send encrypted credential to Saas
+  const result = await sendEncryptedCredential(authorization, encryptedCredentialUploadOptions, latestVersion);
+
+  const issuedCredential: UnumDto<CredentialPb> = { body: credential, authToken: result.authToken };
+
+  return issuedCredential;
+};
+
+const constructIssueCredentialDto = (credential: Credential | CredentialPb, publicKeyInfos: PublicKeyInfo[], subjectDid: string): IssueCredentialRequest => {
   // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
   const encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos);
 
@@ -347,17 +377,13 @@ const issueCredentialHelper = async (authorization: string, type: string | strin
 
   const encryptedCredentialUploadOptions: IssueCredentialRequest = {
     credentialId: credential.id,
-    subject: credentialSubject.id,
+    subject: subjectDid,
     issuer: credential.issuer,
     type: credentialType,
     encryptedCredentials: encryptedCredentialOptions
   };
 
-  const result = await sendEncryptedCredential(authorization, encryptedCredentialUploadOptions, latestVersion);
-
-  const issuedCredential: UnumDto<CredentialPb> = { body: credential, authToken: result.authToken };
-
-  return issuedCredential;
+  return encryptedCredentialUploadOptions;
 };
 
 const sendEncryptedCredential = async (authorization: string, encryptedCredentialUploadOptions: IssueCredentialRequest, version: string) :Promise<UnumDto<void>> => {

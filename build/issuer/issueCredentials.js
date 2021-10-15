@@ -333,7 +333,7 @@ exports.issueCredential = function (authorization, type, issuer, credentialSubje
     });
 }); };
 var issueCredentialHelper = function (authorization, type, issuer, credentialSubject, signingPrivateKey, publicKeyInfos, expirationDate) { return __awaiter(void 0, void 0, void 0, function () {
-    var credentialOptions, v, version, unsignedCredential_1, credential_1, encryptedCredentialOptions_1, credentialType_1, encryptedCredentialUploadOptions_1, result_1, latestVersion, unsignedCredential, credential, encryptedCredentialOptions, credentialType, encryptedCredentialUploadOptions, result, issuedCredential;
+    var credentialOptions, v, version, unsignedCredential_1, credential_1, encryptedCredentialUploadOptions_1, result_1, latestVersion, unsignedCredential, credential, encryptedCredentialUploadOptions, result, issuedCredential;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -347,15 +347,7 @@ var issueCredentialHelper = function (authorization, type, issuer, credentialSub
                 if (!(semver_1.gte(version, '2.0.0') && semver_1.lt(version, '3.0.0'))) return [3 /*break*/, 3];
                 unsignedCredential_1 = constructUnsignedCredentialObj(credentialOptions);
                 credential_1 = constructSignedCredentialObj(unsignedCredential_1, signingPrivateKey);
-                encryptedCredentialOptions_1 = constructEncryptedCredentialOpts(credential_1, publicKeyInfos);
-                credentialType_1 = getCredentialType_1.getCredentialType(credential_1.type);
-                encryptedCredentialUploadOptions_1 = {
-                    credentialId: credential_1.id,
-                    subject: credentialSubject.id,
-                    issuer: credential_1.issuer,
-                    type: credentialType_1,
-                    encryptedCredentials: encryptedCredentialOptions_1
-                };
+                encryptedCredentialUploadOptions_1 = constructIssueCredentialDto(credential_1, publicKeyInfos, credentialSubject.id);
                 return [4 /*yield*/, sendEncryptedCredential(authorization, encryptedCredentialUploadOptions_1, version)];
             case 2:
                 result_1 = _a.sent();
@@ -369,15 +361,7 @@ var issueCredentialHelper = function (authorization, type, issuer, credentialSub
                 latestVersion = versionList_1.versionList[versionList_1.versionList.length - 1];
                 unsignedCredential = constructUnsignedCredentialPbObj(credentialOptions);
                 credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
-                encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos);
-                credentialType = getCredentialType_1.getCredentialType(credential.type);
-                encryptedCredentialUploadOptions = {
-                    credentialId: credential.id,
-                    subject: credentialSubject.id,
-                    issuer: credential.issuer,
-                    type: credentialType,
-                    encryptedCredentials: encryptedCredentialOptions
-                };
+                encryptedCredentialUploadOptions = constructIssueCredentialDto(credential, publicKeyInfos, credentialSubject.id);
                 return [4 /*yield*/, sendEncryptedCredential(authorization, encryptedCredentialUploadOptions, latestVersion)];
             case 5:
                 result = _a.sent();
@@ -386,6 +370,20 @@ var issueCredentialHelper = function (authorization, type, issuer, credentialSub
         }
     });
 }); };
+var constructIssueCredentialDto = function (credential, publicKeyInfos, subjectDid) {
+    // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
+    var encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos);
+    // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
+    var credentialType = getCredentialType_1.getCredentialType(credential.type);
+    var encryptedCredentialUploadOptions = {
+        credentialId: credential.id,
+        subject: subjectDid,
+        issuer: credential.issuer,
+        type: credentialType,
+        encryptedCredentials: encryptedCredentialOptions
+    };
+    return encryptedCredentialUploadOptions;
+};
 var sendEncryptedCredential = function (authorization, encryptedCredentialUploadOptions, version) { return __awaiter(void 0, void 0, void 0, function () {
     var restData, restResp, authToken, issuedCredential;
     return __generator(this, function (_a) {
