@@ -277,7 +277,7 @@ describe('issueCredentials', () => {
 
   it('sends encrypted credentials of all versions (2,3) to the saas', () => {
     expect(mockMakeNetworkRequest).toBeCalled();
-    expect(mockMakeNetworkRequest.mock.calls.length).toEqual(4);
+    expect(mockMakeNetworkRequest.mock.calls.length).toEqual(2);
   });
 
   it('sends the encrypted credentials v2 to the saas', () => {
