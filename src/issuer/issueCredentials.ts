@@ -17,6 +17,7 @@ import { versionList } from '../utils/versionList';
 import { CryptoError } from '@unumid/library-crypto';
 import { getCredentialType } from '../utils/getCredentialType';
 import { IssueCredentialRequest } from '@unumid/types/build/protos/credential';
+import { omit } from 'lodash';
 
 // interface to handle grouping Credentials and their encrypted form
 interface CredentialPair {
@@ -225,10 +226,9 @@ const validateInputs = (type: string|string[], issuer: string, credentialSubject
  * @param expirationDate
  * @returns
  */
-export const issueCredentials = async (authorization: string, types: string[], issuer: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date): Promise<UnumDto<(CredentialPb | Credential)[]>> => {
-  if (types.length !== credentialDataList.length) {
-    throw new CustError(400, 'Number of Credential types must match number of credentialSubjects.');
-  }
+export const issueCredentials = async (authorization: string, issuer: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date): Promise<UnumDto<(CredentialPb | Credential)[]>> => {
+  // validate credentialDataList
+  validateCredentialDataList(credentialDataList);
 
   // Get target Subject's DID document public keys for encrypting all the credentials issued.
   const publicKeyInfos = await getDidDocPublicKeys(authorization, subjectDid);
@@ -236,9 +236,9 @@ export const issueCredentials = async (authorization: string, types: string[], i
   // loop through the types and credential data lists inputted to create CredentialPairs of each supported version for each
   const creds: WithVersion<CredentialPair>[] = [];
 
-  for (let i = 0; i < types.length; i++) {
-    const credData = credentialDataList[i];
-    const type = types[i];
+  for (let i = 0; i < credentialDataList.length; i++) {
+    const type = credentialDataList[i].type;
+    const credData = omit(credentialDataList[i], 'type');
 
     // construct the Credential's credentialSubject
     const credSubject: CredentialSubject = { id: subjectDid, ...credData };
@@ -523,3 +523,15 @@ const sendEncryptedCredentials = async (authorization: string, encryptedCredenti
 
   return issuedCredential;
 };
+
+/**
+ * Validates the credential data objects
+ * @param credentialDataList
+ */
+function validateCredentialDataList (credentialDataList: CredentialData[]) {
+  for (const data of credentialDataList) {
+    if (!data.type) {
+      throw new CustError(400, 'Credential Data needs to contain the credential type');
+    }
+  }
+}

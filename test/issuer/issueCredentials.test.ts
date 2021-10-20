@@ -8,6 +8,7 @@ import * as createKeyPairs from '../../src/utils/createKeyPairs';
 import { getDIDDoc, getDidDocPublicKeys } from '../../src/utils/didHelper';
 import { doEncrypt } from '../../src/utils/encrypt';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
+import { omit } from 'lodash';
 
 jest.mock('../../src/utils/didHelper', () => {
   const actual = jest.requireActual('../../src/utils/didHelper');
@@ -51,8 +52,8 @@ function callIssueCred (credentialSubject: CredentialSubject, type: string[], is
   return issueCredential(auth, type, issuer, credentialSubject, eccPrivateKey, expirationDate);
 }
 
-function callIssueCreds (type: string[], issuer: string, subjectDid: string, credentialDataList: CredentialData[], expirationDate: Date, eccPrivateKey: string, auth: string): Promise<UnumDto<CredentialPb[]>> {
-  return issueCredentials(auth, type, issuer, subjectDid, credentialDataList, eccPrivateKey, expirationDate);
+function callIssueCreds (issuer: string, subjectDid: string, credentialDataList: CredentialData[], expirationDate: Date, eccPrivateKey: string, auth: string): Promise<UnumDto<CredentialPb[]>> {
+  return issueCredentials(auth, issuer, subjectDid, credentialDataList, eccPrivateKey, expirationDate);
 }
 
 describe('issueCredential', () => {
@@ -152,6 +153,7 @@ describe('issueCredential - Failure cases', () => {
   it('returns a CustError with a descriptive error message if type is missing', async () => {
     try {
       await issueCredential(authHeader, undefined, issuer, credentialSubject, eccPrivateKey, expirationDate);
+
       fail();
     } catch (e) {
       expect(e).toEqual(new CustError(400, 'type is required.'));
@@ -235,13 +237,15 @@ describe('issueCredentials', () => {
   };
   const credentialData: CredentialData[] = [
     {
+      type: 'DummyCredential',
       value: 'dummy value'
     },
     {
+      type: 'DummyCredential2',
       value: 'dummy value 2'
     }
   ];
-  const type = ['DummyCredential', 'DummyCredential2'];
+  // const type = ['DummyCredential', 'DummyCredential2'];
   const issuer = 'did:unum:0c1e4d6a-04b9-4518-9293-4de595bbdbd2';
   const expirationDate = new Date('2099-10-26T23:07:12.770Z');
   const eccPrivateKey = '-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIKgEnAHdkJOWCr2HxgThssEnn4+4dXh+AXCK2ORgiM69oAoGCCqGSM49\nAwEHoUQDQgAEl1ZqPBLIa8QxEEx7nNWsVPnUd59UtVmRLS7axzA5VPeVOs2FIGkT\nFx+RgfZSF6J4kXd7F+/pd03fPV/lu/lJpA==\n-----END EC PRIVATE KEY-----\n';
@@ -254,7 +258,7 @@ describe('issueCredentials', () => {
     mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers });
     mockGetDidDocKeys.mockResolvedValue(dummyDidDoc.publicKey);
 
-    responseDto = await callIssueCreds(type, issuer, credentialSubject.id, credentialData, expirationDate, eccPrivateKey, authHeader);
+    responseDto = await callIssueCreds(issuer, credentialSubject.id, credentialData, expirationDate, eccPrivateKey, authHeader);
     response = responseDto.body;
     responseAuthToken = responseDto.authToken;
   });
@@ -301,7 +305,7 @@ describe('issueCredentials', () => {
 
   it('does not return an auth token if the SaaS does not return an auth token', async () => {
     mockMakeNetworkRequest.mockResolvedValue({ body: { success: true } });
-    responseDto = await callIssueCreds(type, issuer, credentialSubject.id, credentialData, expirationDate, eccPrivateKey, authHeader);
+    responseDto = await callIssueCreds(issuer, credentialSubject.id, credentialData, expirationDate, eccPrivateKey, authHeader);
     responseAuthToken = response.authToken;
     expect(responseAuthToken).toBeUndefined();
   });
@@ -312,9 +316,23 @@ describe('issueCredentials', () => {
     const headers = { 'x-auth-token': dummyAuthToken };
     mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
 
-    responseDto = await callIssueCreds(type, issuer, credentialSubject.id, credentialData, expirationDate, eccPrivateKey, authHeader);
+    responseDto = await callIssueCreds(issuer, credentialSubject.id, credentialData, expirationDate, eccPrivateKey, authHeader);
     const types = response[0].type;
     expect(types[0]).toEqual('VerifiableCredential');
     expect(types[1]).toEqual('DummyCredential');
+  });
+
+  it('returns a CustError with a descriptive error message if type is missing from credential data', async () => {
+    const malCredentialData = credentialData;
+    malCredentialData[0] = omit(credentialData[0], 'type');
+
+    try {
+      responseDto = await callIssueCreds(issuer, credentialSubject.id, malCredentialData, expirationDate, eccPrivateKey, authHeader);
+      fail();
+    } catch (e) {
+      expect(e).toEqual(new CustError(400, 'Credential Data needs to contain the credential type'));
+      expect(e.code).toEqual(400);
+      expect(e.message).toEqual('Credential Data needs to contain the credential type');
+    }
   });
 });

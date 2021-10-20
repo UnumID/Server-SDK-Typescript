@@ -73,6 +73,7 @@ var semver_1 = require("semver");
 var versionList_1 = require("../utils/versionList");
 var library_crypto_1 = require("@unumid/library-crypto");
 var getCredentialType_1 = require("../utils/getCredentialType");
+var lodash_1 = require("lodash");
 /**
  * Creates an object of type EncryptedCredentialOptions which encapsulates information relating to the encrypted credential data
  * @param cred Credential
@@ -250,21 +251,23 @@ var validateInputs = function (type, issuer, credentialSubject, signingPrivateKe
  * @param expirationDate
  * @returns
  */
-exports.issueCredentials = function (authorization, types, issuer, subjectDid, credentialDataList, signingPrivateKey, expirationDate) { return __awaiter(void 0, void 0, void 0, function () {
-    var publicKeyInfos, creds, i, credData, type, credSubject, credentialVersionPairs, _loop_1, _i, versionList_2, version, latestVersion, resultantCredentials;
+exports.issueCredentials = function (authorization, issuer, subjectDid, credentialDataList, signingPrivateKey, expirationDate) { return __awaiter(void 0, void 0, void 0, function () {
+    var publicKeyInfos, creds, i, type, credData, credSubject, credentialVersionPairs, _loop_1, _i, versionList_2, version, latestVersion, resultantCredentials;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                if (types.length !== credentialDataList.length) {
-                    throw new error_1.CustError(400, 'Number of Credential types must match number of credentialSubjects.');
-                }
+                // if (types.length !== credentialDataList.length) {
+                //   throw new CustError(400, 'Number of Credential types must match number of credentialSubjects.');
+                // }
+                // validate credentialDataList
+                validateCredentialDataList(credentialDataList);
                 return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authorization, subjectDid)];
             case 1:
                 publicKeyInfos = _a.sent();
                 creds = [];
-                for (i = 0; i < types.length; i++) {
-                    credData = credentialDataList[i];
-                    type = types[i];
+                for (i = 0; i < credentialDataList.length; i++) {
+                    type = credentialDataList[i].type;
+                    credData = lodash_1.omit(credentialDataList[i], 'type');
                     credSubject = __assign({ id: subjectDid }, credData);
                     credentialVersionPairs = constructEncryptedCredentialOfEachVersion(authorization, type, issuer, credSubject, signingPrivateKey, publicKeyInfos, expirationDate);
                     // add all credentialVersionPairs to creds array
@@ -537,4 +540,12 @@ var sendEncryptedCredentials = function (authorization, encryptedCredentialUploa
         }
     });
 }); };
+function validateCredentialDataList(credentialDataList) {
+    for (var _i = 0, credentialDataList_1 = credentialDataList; _i < credentialDataList_1.length; _i++) {
+        var data = credentialDataList_1[_i];
+        if (!data.type) {
+            throw new error_1.CustError(500, 'Credential Data needs to contain the credential type');
+        }
+    }
+}
 //# sourceMappingURL=issueCredentials.js.map
