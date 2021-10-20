@@ -227,9 +227,6 @@ const validateInputs = (type: string|string[], issuer: string, credentialSubject
  * @returns
  */
 export const issueCredentials = async (authorization: string, issuer: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date): Promise<UnumDto<(CredentialPb | Credential)[]>> => {
-  // if (types.length !== credentialDataList.length) {
-  //   throw new CustError(400, 'Number of Credential types must match number of credentialSubjects.');
-  // }
   // validate credentialDataList
   validateCredentialDataList(credentialDataList);
 
@@ -526,10 +523,15 @@ const sendEncryptedCredentials = async (authorization: string, encryptedCredenti
 
   return issuedCredential;
 };
+
+/**
+ * Validates the credential data objects
+ * @param credentialDataList
+ */
 function validateCredentialDataList (credentialDataList: CredentialData[]) {
   for (const data of credentialDataList) {
     if (!data.type) {
-      throw new CustError(500, 'Credential Data needs to contain the credential type');
+      throw new CustError(400, 'Credential Data needs to contain the credential type');
     }
   }
 }

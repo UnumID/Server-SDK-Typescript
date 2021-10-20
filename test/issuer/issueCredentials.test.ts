@@ -8,6 +8,7 @@ import * as createKeyPairs from '../../src/utils/createKeyPairs';
 import { getDIDDoc, getDidDocPublicKeys } from '../../src/utils/didHelper';
 import { doEncrypt } from '../../src/utils/encrypt';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
+import { omit } from 'lodash';
 
 jest.mock('../../src/utils/didHelper', () => {
   const actual = jest.requireActual('../../src/utils/didHelper');
@@ -152,6 +153,7 @@ describe('issueCredential - Failure cases', () => {
   it('returns a CustError with a descriptive error message if type is missing', async () => {
     try {
       await issueCredential(authHeader, undefined, issuer, credentialSubject, eccPrivateKey, expirationDate);
+
       fail();
     } catch (e) {
       expect(e).toEqual(new CustError(400, 'type is required.'));
@@ -318,5 +320,19 @@ describe('issueCredentials', () => {
     const types = response[0].type;
     expect(types[0]).toEqual('VerifiableCredential');
     expect(types[1]).toEqual('DummyCredential');
+  });
+
+  it('returns a CustError with a descriptive error message if type is missing from credential data', async () => {
+    const malCredentialData = credentialData;
+    malCredentialData[0] = omit(credentialData[0], 'type');
+
+    try {
+      responseDto = await callIssueCreds(issuer, credentialSubject.id, malCredentialData, expirationDate, eccPrivateKey, authHeader);
+      fail();
+    } catch (e) {
+      expect(e).toEqual(new CustError(400, 'Credential Data needs to contain the credential type'));
+      expect(e.code).toEqual(400);
+      expect(e.message).toEqual('Credential Data needs to contain the credential type');
+    }
   });
 });
