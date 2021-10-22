@@ -170,7 +170,7 @@ const constructUnsignedCredentialObj = (credOpts: CredentialOptions, credentialI
  * @param credentialSubject
  * @param signingPrivateKey
  */
-const validateInputs = (type: string|string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, expirationDate?: Date): void => {
+const validateInputsDeprecated = (type: string|string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, expirationDate?: Date): void => {
   if (!type) {
     // type element is mandatory, and it can be either string or an array
     throw new CustError(400, 'type is required.');
@@ -279,19 +279,20 @@ export const issueCredentials = async (authorization: string, issuer: string, su
  * @param signingPrivateKey
  * @param expirationDate
  */
+// DEPRECATED; No longer exposed. However keeping around as maybe nice to have internally.
 export const issueCredential = async (authorization: string, type: string | string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, expirationDate?: Date): Promise<UnumDto<CredentialPb>> => {
   try {
     // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
     requireAuth(authorization);
 
     // Validate the inputs
-    validateInputs(type, issuer, credentialSubject, signingPrivateKey, expirationDate);
+    validateInputsDeprecated(type, issuer, credentialSubject, signingPrivateKey, expirationDate);
 
     // Get target Subject's DID document public keys for encrypting all the credentials issued.
     const subjectDid = credentialSubject.id;
     const publicKeyInfos = await getDidDocPublicKeys(authorization, subjectDid);
 
-    return issueCredentialHelper(authorization, type, issuer, credentialSubject, signingPrivateKey, publicKeyInfos, expirationDate);
+    return issueCredentialHelperDeprecated(authorization, type, issuer, credentialSubject, signingPrivateKey, publicKeyInfos, expirationDate);
   } catch (error) {
     logger.error(`Error issuing a credential with UnumID SaaS. ${error}`);
     throw error;
@@ -403,7 +404,7 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
  * @param expirationDate
  * @returns
  */
-const issueCredentialHelper = async (authorization: string, type: string | string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, publicKeyInfos: PublicKeyInfo[], expirationDate?: Date): Promise<UnumDto<CredentialPb>> => {
+const issueCredentialHelperDeprecated = async (authorization: string, type: string | string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, publicKeyInfos: PublicKeyInfo[], expirationDate?: Date): Promise<UnumDto<CredentialPb>> => {
   // Construct CredentialOptions object
   const credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, expirationDate);
 
