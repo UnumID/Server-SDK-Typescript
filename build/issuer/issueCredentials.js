@@ -156,10 +156,9 @@ var constructSignedCredentialObj = function (usCred, privateKey) {
  * Creates all the attributes associated with an unsigned credential.
  * @param credOpts CredentialOptions
  */
-var constructUnsignedCredentialPbObj = function (credOpts) {
+var constructUnsignedCredentialPbObj = function (credOpts, credentialId) {
     // CredentialSubject type is dependent on version. V2 is a string for passing to holder so iOS can handle it as a concrete type instead of a map of unknown keys.
     var credentialSubject = JSON.stringify(credOpts.credentialSubject);
-    var credentialId = helpers_1.getUUID();
     var unsCredObj = {
         context: ['https://www.w3.org/2018/credentials/v1'],
         credentialStatus: {
@@ -400,7 +399,7 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
     // Grabbing the latest version as defined in the version list, 3.0.0
     var latestVersion = versionList_1.versionList[versionList_1.versionList.length - 1];
     // Create latest version of the UnsignedCredential object
-    var unsignedCredential = constructUnsignedCredentialPbObj(credentialOptions);
+    var unsignedCredential = constructUnsignedCredentialPbObj(credentialOptions, credentialId);
     // Create the signed Credential object from the unsignedCredential object
     var credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
     // Create the encrypted credential issuance dto
@@ -452,7 +451,7 @@ var issueCredentialHelper = function (authorization, type, issuer, credentialSub
                 return [3 /*break*/, 1];
             case 4:
                 latestVersion = versionList_1.versionList[versionList_1.versionList.length - 1];
-                unsignedCredential = constructUnsignedCredentialPbObj(credentialOptions);
+                unsignedCredential = constructUnsignedCredentialPbObj(credentialOptions, credentialId);
                 credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
                 encryptedCredentialUploadOptions = constructIssueCredentialDto(credential, publicKeyInfos, credentialSubject.id);
                 return [4 /*yield*/, sendEncryptedCredential(authorization, encryptedCredentialUploadOptions, latestVersion)];
