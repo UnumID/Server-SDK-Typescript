@@ -170,6 +170,47 @@ const constructUnsignedCredentialObj = (credOpts: CredentialOptions, credentialI
  * @param credentialSubject
  * @param signingPrivateKey
  */
+const validateInputs = (issuer: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date): void => {
+  if (!issuer) {
+    throw new CustError(400, 'issuer is required.');
+  }
+
+  if (!subjectDid) {
+    throw new CustError(400, 'subjectDid is required.');
+  }
+
+  if (!signingPrivateKey) {
+    throw new CustError(400, 'signingPrivateKey is required.');
+  }
+
+  if (typeof issuer !== 'string') {
+    throw new CustError(400, 'issuer must be a string.');
+  }
+
+  if (typeof signingPrivateKey !== 'string') {
+    throw new CustError(400, 'signingPrivateKey must be a string.');
+  }
+
+  // expirationDate must be a Date object and return a properly formed time. Invalid Date.getTime() will produce NaN
+  if (expirationDate && (!(expirationDate instanceof Date) || isNaN(expirationDate.getTime()))) {
+    throw new CustError(400, 'expirationDate must be a valid Date object.');
+  }
+
+  if (expirationDate && expirationDate < new Date()) {
+    throw new CustError(400, 'expirationDate must be in the future.');
+  }
+
+  // validate credentialDataList
+  validateCredentialDataList(credentialDataList);
+};
+
+/**
+ * Handle input validation.
+ * @param type
+ * @param issuer
+ * @param credentialSubject
+ * @param signingPrivateKey
+ */
 const validateInputsDeprecated = (type: string|string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, expirationDate?: Date): void => {
   if (!type) {
     // type element is mandatory, and it can be either string or an array
@@ -227,8 +268,11 @@ const validateInputsDeprecated = (type: string|string[], issuer: string, credent
  * @returns
  */
 export const issueCredentials = async (authorization: string, issuer: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date): Promise<UnumDto<(CredentialPb | Credential)[]>> => {
-  // validate credentialDataList
-  validateCredentialDataList(credentialDataList);
+  // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
+  requireAuth(authorization);
+
+  // Validate inputs.
+  validateInputs(issuer, subjectDid, credentialDataList, signingPrivateKey, expirationDate);
 
   // Get target Subject's DID document public keys for encrypting all the credentials issued.
   const publicKeyInfos = await getDidDocPublicKeys(authorization, subjectDid);
