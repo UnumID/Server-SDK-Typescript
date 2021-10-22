@@ -205,58 +205,6 @@ const validateInputs = (issuer: string, subjectDid: string, credentialDataList: 
 };
 
 /**
- * Handle input validation.
- * @param type
- * @param issuer
- * @param credentialSubject
- * @param signingPrivateKey
- */
-const validateInputsDeprecated = (type: string|string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, expirationDate?: Date): void => {
-  if (!type) {
-    // type element is mandatory, and it can be either string or an array
-    throw new CustError(400, 'type is required.');
-  }
-
-  if (!issuer) {
-    throw new CustError(400, 'issuer is required.');
-  }
-
-  if (!credentialSubject) {
-    throw new CustError(400, 'credentialSubject is required.');
-  }
-
-  if (!signingPrivateKey) {
-    throw new CustError(400, 'signingPrivateKey is required.');
-  }
-
-  // id must be present in credentialSubject input parameter
-  if (!credentialSubject.id) {
-    throw new CustError(400, 'Invalid credentialSubject: id is required.');
-  }
-
-  if (!Array.isArray(type) && typeof type !== 'string') {
-    throw new CustError(400, 'type must be an array or a string.');
-  }
-
-  if (typeof issuer !== 'string') {
-    throw new CustError(400, 'issuer must be a string.');
-  }
-
-  if (typeof signingPrivateKey !== 'string') {
-    throw new CustError(400, 'signingPrivateKey must be a string.');
-  }
-
-  // expirationDate must be a Date object and return a properly formed time. Invalid Date.getTime() will produce NaN
-  if (expirationDate && (!(expirationDate instanceof Date) || isNaN(expirationDate.getTime()))) {
-    throw new CustError(400, 'expirationDate must be a valid Date object.');
-  }
-
-  if (expirationDate && expirationDate < new Date()) {
-    throw new CustError(400, 'expirationDate must be in the future.');
-  }
-};
-
-/**
  * Multiplexed handler for issuing credentials with UnumID's SaaS.
  * @param authorization
  * @param types
@@ -438,6 +386,145 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
 };
 
 /**
+ * Helper to construct a IssueCredentialRequest prior to sending to the Saas
+ * @param credential
+ * @param publicKeyInfos
+ * @param subjectDid
+ * @returns
+ */
+const constructIssueCredentialDto = (credential: Credential | CredentialPb, publicKeyInfos: PublicKeyInfo[], subjectDid: string): IssueCredentialRequest => {
+  // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
+  const encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos);
+
+  // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
+  const credentialType = getCredentialType(credential.type);
+
+  const encryptedCredentialUploadOptions: IssueCredentialRequest = {
+    credentialId: credential.id,
+    subject: subjectDid,
+    issuer: credential.issuer,
+    type: credentialType,
+    encryptedCredentials: encryptedCredentialOptions
+  };
+
+  return encryptedCredentialUploadOptions;
+};
+
+/**
+ * Helper to send multiple encrypted credentials, IssueCredentialsRequest, to the Saas
+ * @param authorization
+ * @param encryptedCredentialUploadOptions
+ * @param version
+ * @returns
+ */
+const sendEncryptedCredentials = async (authorization: string, encryptedCredentialUploadOptions: IssueCredentialsRequest, version: string) :Promise<UnumDto<void>> => {
+  const restData: RESTData = {
+    method: 'POST',
+    baseUrl: configData.SaaSUrl,
+    endPoint: 'credentialsRepository',
+    header: { Authorization: authorization, version },
+    data: encryptedCredentialUploadOptions
+  };
+
+  const restResp: JSONObj = await makeNetworkRequest(restData);
+
+  const authToken: string = handleAuthTokenHeader(restResp, authorization as string);
+
+  const issuedCredential: UnumDto<void> = { body: restResp.body, authToken };
+
+  return issuedCredential;
+};
+
+/**
+ * Validates the credential data objects
+ * @param credentialDataList
+ */
+function validateCredentialDataList (credentialDataList: CredentialData[]) {
+  for (const data of credentialDataList) {
+    if (!data.type) {
+      throw new CustError(400, 'Credential Data needs to contain the credential type');
+    }
+  }
+}
+
+/**
+ * Helper to handle sending a single encrypted credential, IssueCredentialRequest, to the Saas
+ * @param authorization
+ * @param encryptedCredentialUploadOptions
+ * @param version
+ * @returns
+ */
+const sendEncryptedCredential = async (authorization: string, encryptedCredentialUploadOptions: IssueCredentialRequest, version: string) :Promise<UnumDto<void>> => {
+  const restData: RESTData = {
+    method: 'POST',
+    baseUrl: configData.SaaSUrl,
+    endPoint: 'credentialRepository',
+    header: { Authorization: authorization, version },
+    data: encryptedCredentialUploadOptions
+  };
+
+  const restResp: JSONObj = await makeNetworkRequest(restData);
+
+  const authToken: string = handleAuthTokenHeader(restResp, authorization as string);
+
+  const issuedCredential: UnumDto<void> = { body: restResp.body, authToken };
+
+  return issuedCredential;
+};
+
+/**
+ * Handle input validation.
+ * @param type
+ * @param issuer
+ * @param credentialSubject
+ * @param signingPrivateKey
+ */
+const validateInputsDeprecated = (type: string|string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, expirationDate?: Date): void => {
+  if (!type) {
+    // type element is mandatory, and it can be either string or an array
+    throw new CustError(400, 'type is required.');
+  }
+
+  if (!issuer) {
+    throw new CustError(400, 'issuer is required.');
+  }
+
+  if (!credentialSubject) {
+    throw new CustError(400, 'credentialSubject is required.');
+  }
+
+  if (!signingPrivateKey) {
+    throw new CustError(400, 'signingPrivateKey is required.');
+  }
+
+  // id must be present in credentialSubject input parameter
+  if (!credentialSubject.id) {
+    throw new CustError(400, 'Invalid credentialSubject: id is required.');
+  }
+
+  if (!Array.isArray(type) && typeof type !== 'string') {
+    throw new CustError(400, 'type must be an array or a string.');
+  }
+
+  if (typeof issuer !== 'string') {
+    throw new CustError(400, 'issuer must be a string.');
+  }
+
+  if (typeof signingPrivateKey !== 'string') {
+    throw new CustError(400, 'signingPrivateKey must be a string.');
+  }
+
+  // expirationDate must be a Date object and return a properly formed time. Invalid Date.getTime() will produce NaN
+  if (expirationDate && (!(expirationDate instanceof Date) || isNaN(expirationDate.getTime()))) {
+    throw new CustError(400, 'expirationDate must be a valid Date object.');
+  }
+
+  if (expirationDate && expirationDate < new Date()) {
+    throw new CustError(400, 'expirationDate must be in the future.');
+  }
+};
+
+/**
  * Helper to handle creating and sending encrypted credentials to Saas while sending back the latest credential version
  * @param authorization
  * @param type
@@ -500,90 +587,3 @@ const issueCredentialHelperDeprecated = async (authorization: string, type: stri
 
   return issuedCredential;
 };
-
-/**
- * Helper to construct a IssueCredentialRequest prior to sending to the Saas
- * @param credential
- * @param publicKeyInfos
- * @param subjectDid
- * @returns
- */
-const constructIssueCredentialDto = (credential: Credential | CredentialPb, publicKeyInfos: PublicKeyInfo[], subjectDid: string): IssueCredentialRequest => {
-  // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
-  const encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos);
-
-  // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
-  const credentialType = getCredentialType(credential.type);
-
-  const encryptedCredentialUploadOptions: IssueCredentialRequest = {
-    credentialId: credential.id,
-    subject: subjectDid,
-    issuer: credential.issuer,
-    type: credentialType,
-    encryptedCredentials: encryptedCredentialOptions
-  };
-
-  return encryptedCredentialUploadOptions;
-};
-
-/**
- * Helper to handle sending a single encrypted credential, IssueCredentialRequest, to the Saas
- * @param authorization
- * @param encryptedCredentialUploadOptions
- * @param version
- * @returns
- */
-const sendEncryptedCredential = async (authorization: string, encryptedCredentialUploadOptions: IssueCredentialRequest, version: string) :Promise<UnumDto<void>> => {
-  const restData: RESTData = {
-    method: 'POST',
-    baseUrl: configData.SaaSUrl,
-    endPoint: 'credentialRepository',
-    header: { Authorization: authorization, version },
-    data: encryptedCredentialUploadOptions
-  };
-
-  const restResp: JSONObj = await makeNetworkRequest(restData);
-
-  const authToken: string = handleAuthTokenHeader(restResp, authorization as string);
-
-  const issuedCredential: UnumDto<void> = { body: restResp.body, authToken };
-
-  return issuedCredential;
-};
-
-/**
- * Helper to send multiple encrypted credentials, IssueCredentialsRequest, to the Saas
- * @param authorization
- * @param encryptedCredentialUploadOptions
- * @param version
- * @returns
- */
-const sendEncryptedCredentials = async (authorization: string, encryptedCredentialUploadOptions: IssueCredentialsRequest, version: string) :Promise<UnumDto<void>> => {
-  const restData: RESTData = {
-    method: 'POST',
-    baseUrl: configData.SaaSUrl,
-    endPoint: 'credentialsRepository',
-    header: { Authorization: authorization, version },
-    data: encryptedCredentialUploadOptions
-  };
-
-  const restResp: JSONObj = await makeNetworkRequest(restData);
-
-  const authToken: string = handleAuthTokenHeader(restResp, authorization as string);
-
-  const issuedCredential: UnumDto<void> = { body: restResp.body, authToken };
-
-  return issuedCredential;
-};
-
-/**
- * Validates the credential data objects
- * @param credentialDataList
- */
-function validateCredentialDataList (credentialDataList: CredentialData[]) {
-  for (const data of credentialDataList) {
-    if (!data.type) {
-      throw new CustError(400, 'Credential Data needs to contain the credential type');
-    }
-  }
-}
