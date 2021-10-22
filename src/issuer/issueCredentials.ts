@@ -142,10 +142,10 @@ const constructUnsignedCredentialPbObj = (credOpts: CredentialOptions): Unsigned
  * Creates all the attributes associated with an unsigned credential.
  * @param credOpts CredentialOptions
  */
-const constructUnsignedCredentialObj = (credOpts: CredentialOptions): UnsignedCredentialV2 => {
+const constructUnsignedCredentialObj = (credOpts: CredentialOptions, credentialId: string): UnsignedCredentialV2 => {
   // CredentialSubject type is dependent on version. V2 is a string for passing to holder so iOS can handle it as a concrete type instead of a map of unknown keys.
   const credentialSubject = JSON.stringify(credOpts.credentialSubject);
-  const credentialId: string = getUUID();
+  // const credentialId: string = getUUID();
   const unsCredObj: UnsignedCredentialV2 = {
     '@context': ['https://www.w3.org/2018/credentials/v1'],
     credentialStatus: {
@@ -337,7 +337,11 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
 
   const results: WithVersion<CredentialPair>[] = [];
 
-  logger.debug(`credentialOptions: ${credentialOptions}`);
+  // create a credentialId to be shared between all versions of the same credential
+  const credentialId: string = getUUID();
+
+  logger.debug(`credentialId's ${credentialId} credentialOptions: ${credentialOptions}`);
+
   /**
    * Need to loop through all versions except most recent so that can issued credentials could be backwards compatible with older holder versions.
    * However only care to return the most recent Credential type for customers to use.
@@ -347,7 +351,7 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
 
     if (gte(version, '2.0.0') && lt(version, '3.0.0')) {
       // Create latest version of the UnsignedCredential object
-      const unsignedCredential: UnsignedCredentialV2 = constructUnsignedCredentialObj(credentialOptions);
+      const unsignedCredential: UnsignedCredentialV2 = constructUnsignedCredentialObj(credentialOptions, credentialId);
 
       // Create the signed Credential object from the unsignedCredential object
       const credential: CredentialV2 = constructSignedCredentialObj(unsignedCredential, signingPrivateKey);
@@ -403,7 +407,10 @@ const issueCredentialHelper = async (authorization: string, type: string | strin
   // Construct CredentialOptions object
   const credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, expirationDate);
 
-  logger.debug(`credentialOptions: ${credentialOptions}`);
+  // create a credentialId to be shared between all versions of the same credential
+  const credentialId: string = getUUID();
+
+  logger.debug(`credentialId's ${credentialId} credentialOptions: ${credentialOptions}`);
   /**
    * Need to loop through all versions except most recent so that can issued credentials could be backwards compatible with older holder versions.
    * However only care to return the most recent Credential type for customers to use.
@@ -413,7 +420,7 @@ const issueCredentialHelper = async (authorization: string, type: string | strin
 
     if (gte(version, '2.0.0') && lt(version, '3.0.0')) {
       // Create latest version of the UnsignedCredential object
-      const unsignedCredential: UnsignedCredentialV2 = constructUnsignedCredentialObj(credentialOptions);
+      const unsignedCredential: UnsignedCredentialV2 = constructUnsignedCredentialObj(credentialOptions, credentialId);
 
       // Create the signed Credential object from the unsignedCredential object
       const credential: CredentialV2 = constructSignedCredentialObj(unsignedCredential, signingPrivateKey);
