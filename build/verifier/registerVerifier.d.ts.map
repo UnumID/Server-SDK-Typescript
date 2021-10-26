@@ -1,1 +1,0 @@
-{"version":3,"file":"registerVerifier.d.ts","sourceRoot":"","sources":["../../src/verifier/registerVerifier.ts"],"names":[],"mappings":"AACA,OAAO,EAAc,kBAAkB,EAAY,OAAO,EAAE,MAAM,UAAU,CAAC;AAE7E,OAAO,EAAuD,WAAW,EAAW,MAAM,eAAe,CAAC;AAsD1G;;;;;;GAMG;AACH,eAAO,MAAM,gBAAgB,iBAAwB,MAAM,OAAO,MAAM,UAAU,MAAM,gBAAe,WAAW,EAAE,KAA6D,OAAO,CAAC,OAAO,CAAC,kBAAkB,CAAC,CAwCnN,CAAC"}

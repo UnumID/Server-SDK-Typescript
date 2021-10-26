@@ -307,11 +307,12 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
 async function handlePresentationVerificationReceipt (authToken: string, presentation: PresentationPb, verifier: string, message: string, requestUuid: string) {
   try {
     const credentialTypes = presentation.verifiableCredential && isArrayNotEmpty(presentation.verifiableCredential) ? presentation.verifiableCredential.flatMap(cred => cred.type.slice(1)) : []; // cut off the preceding 'VerifiableCredential' string in each array
+    const credentialIds = presentation.verifiableCredential && isArrayNotEmpty(presentation.verifiableCredential) ? presentation.verifiableCredential.flatMap(cred => cred.id) : [];
     const issuers = presentation.verifiableCredential && isArrayNotEmpty(presentation.verifiableCredential) ? presentation.verifiableCredential.map(cred => cred.issuer) : [];
     const reply = isDeclinedPresentation(presentation) ? 'declined' : 'approved';
     const proof = presentation.proof as ProofPb; // existence has already been validated
 
-    return sendPresentationVerifiedReceipt(authToken, verifier, proof.verificationMethod, reply, false, presentation.presentationRequestId, requestUuid, message, issuers, credentialTypes);
+    return sendPresentationVerifiedReceipt(authToken, verifier, proof.verificationMethod, reply, false, presentation.presentationRequestId, requestUuid, message, issuers, credentialTypes, credentialIds);
   } catch (e) {
     logger.error('Something went wrong handling the PresentationVerification receipt for the a failed request verification');
   }
