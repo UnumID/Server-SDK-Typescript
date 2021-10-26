@@ -304,14 +304,15 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
  */
 function handlePresentationVerificationReceipt(authToken, presentation, verifier, message, requestUuid) {
     return __awaiter(this, void 0, void 0, function () {
-        var credentialTypes, issuers, reply, proof;
+        var credentialTypes, credentialIds, issuers, reply, proof;
         return __generator(this, function (_a) {
             try {
                 credentialTypes = presentation.verifiableCredential && helpers_1.isArrayNotEmpty(presentation.verifiableCredential) ? presentation.verifiableCredential.flatMap(function (cred) { return cred.type.slice(1); }) : [];
+                credentialIds = presentation.verifiableCredential && helpers_1.isArrayNotEmpty(presentation.verifiableCredential) ? presentation.verifiableCredential.flatMap(function (cred) { return cred.id; }) : [];
                 issuers = presentation.verifiableCredential && helpers_1.isArrayNotEmpty(presentation.verifiableCredential) ? presentation.verifiableCredential.map(function (cred) { return cred.issuer; }) : [];
                 reply = isDeclinedPresentation(presentation) ? 'declined' : 'approved';
                 proof = presentation.proof;
-                return [2 /*return*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authToken, verifier, proof.verificationMethod, reply, false, presentation.presentationRequestId, requestUuid, message, issuers, credentialTypes)];
+                return [2 /*return*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authToken, verifier, proof.verificationMethod, reply, false, presentation.presentationRequestId, requestUuid, message, issuers, credentialTypes, credentialIds)];
             }
             catch (e) {
                 logger_1.default.error('Something went wrong handling the PresentationVerification receipt for the a failed request verification');

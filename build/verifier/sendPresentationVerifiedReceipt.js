@@ -55,9 +55,10 @@ var networkRequestHelper_1 = require("../utils/networkRequestHelper");
  * @param credentialTypes
  * @returns
  */
-function sendPresentationVerifiedReceipt(authorization, verifier, subject, reply, isVerified, requestId, requestUuid, reason, issuers, credentialTypes) {
+function sendPresentationVerifiedReceipt(authorization, verifier, subject, reply, isVerified, requestId, requestUuid, reason, issuers, credentialTypes, credentialIds) {
     if (issuers === void 0) { issuers = []; }
     if (credentialTypes === void 0) { credentialTypes = []; }
+    if (credentialIds === void 0) { credentialIds = []; }
     return __awaiter(this, void 0, void 0, function () {
         var receiptOptions, receiptCallOptions, resp, authToken, e_1;
         return __generator(this, function (_a) {
@@ -72,6 +73,7 @@ function sendPresentationVerifiedReceipt(authorization, verifier, subject, reply
                             isVerified: isVerified,
                             reason: reason,
                             credentialTypes: credentialTypes,
+                            credentialIds: credentialIds,
                             issuers: issuers,
                             requestId: requestId,
                             requestUuid: requestUuid
