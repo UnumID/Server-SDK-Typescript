@@ -407,7 +407,7 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
     return results;
 };
 /**
- * Helper to construct a IssueCredentialRequest prior to sending to the Saas
+ * Helper to construct a IssueCredentialDto prior to sending to the Saas
  * @param credential
  * @param publicKeyInfos
  * @param subjectDid
@@ -428,7 +428,7 @@ var constructIssueCredentialDto = function (credential, publicKeyInfos, subjectD
     return encryptedCredentialUploadOptions;
 };
 /**
- * Helper to send multiple encrypted credentials, IssueCredentialsRequest, to the Saas
+ * Helper to send multiple encrypted credentials, IssueCredentialsDto, to the Saas
  * @param authorization
  * @param encryptedCredentialUploadOptions
  * @param version
@@ -468,7 +468,7 @@ function validateCredentialDataList(credentialDataList) {
     }
 }
 /**
- * Helper to handle sending a single encrypted credential, IssueCredentialRequest, to the Saas
+ * Helper to handle sending a single encrypted credential, IssueCredentialDto, to the Saas
  * @param authorization
  * @param encryptedCredentialUploadOptions
  * @param version
