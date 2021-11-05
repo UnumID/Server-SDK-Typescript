@@ -1,6 +1,6 @@
 import { EncryptedData, JSONObj, PublicKeyInfo } from '@unumid/types';
 import logger from '../logger';
-import { encrypt } from '@unumid/library-crypto';
+import { encrypt, encryptBytes } from '@unumid/library-crypto';
 
 /**
  * Encrypt the provided data object.
@@ -24,7 +24,7 @@ export const doEncrypt = (did: string, publicKeyObj: PublicKeyInfo, data: JSONOb
  */
 export const doEncryptPb = (did: string, publicKeyObj: PublicKeyInfo, data: Uint8Array): EncryptedData => {
   logger.debug('Performing byte array encryption using public key', publicKeyObj);
-  const result:EncryptedData = encrypt(did + '#' + publicKeyObj.id, publicKeyObj.publicKey, data, publicKeyObj.encoding);
+  const result:EncryptedData = encryptBytes(did + '#' + publicKeyObj.id, publicKeyObj.publicKey, data, publicKeyObj.encoding);
 
   logger.debug(`Encrypted data result: ${result.data}`);
   return result;
