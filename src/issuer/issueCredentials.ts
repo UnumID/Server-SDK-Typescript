@@ -1,12 +1,12 @@
 import { configData } from '../config';
 import { CredentialOptions, RESTData, UnumDto } from '../types';
 import { requireAuth } from '../requireAuth';
-import { CredentialSubject, EncryptedCredentialOptions, EncryptedData, Proof, Credential, JSONObj, UnsignedCredentialPb, CredentialPb, ProofPb, PublicKeyInfo, CredentialData, IssueCredentialsDto, WithVersion } from '@unumid/types';
+import { CredentialSubject, EncryptedCredentialOptions, EncryptedData, Proof, Credential, JSONObj, UnsignedCredentialPb, CredentialPb, ProofPb, PublicKeyInfo, CredentialData, IssueCredentialsDto, WithVersion, IssueCredentialDto } from '@unumid/types';
 import { UnsignedCredential as UnsignedCredentialV2, Credential as CredentialV2 } from '@unumid/types-v2';
 
 import logger from '../logger';
 import { getDidDocPublicKeys } from '../utils/didHelper';
-import { doEncrypt } from '../utils/encrypt';
+import { doEncrypt, doEncryptPb } from '../utils/encrypt';
 import { createProof, createProofPb } from '../utils/createProof';
 import { getUUID } from '../utils/helpers';
 import { CustError } from '../utils/error';
@@ -16,13 +16,17 @@ import { gte, lt } from 'semver';
 import { versionList } from '../utils/versionList';
 import { CryptoError } from '@unumid/library-crypto';
 import { getCredentialType } from '../utils/getCredentialType';
-import { IssueCredentialDto } from '@unumid/types/build/protos/credential';
 import { omit } from 'lodash';
 
 // interface to handle grouping Credentials and their encrypted form
 interface CredentialPair {
   encryptedCredential: IssueCredentialDto,
   credential: CredentialPb | Credential
+}
+
+function isCredentialPb (cred: Credential | CredentialPb): boolean {
+  // HACK ALERT: just check if the cred object has a property unique to CredentialPb types
+  return (cred as CredentialPb).context !== undefined;
 }
 
 /**
@@ -38,7 +42,11 @@ const constructEncryptedCredentialOpts = (cred: Credential | CredentialPb, publi
   // create an encrypted copy of the credential with each RSA public key
   return publicKeyInfos.map(publicKeyInfo => {
     const subjectDidWithKeyFragment = `${subjectDid}#${publicKeyInfo.id}`;
-    const encryptedData: EncryptedData = doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, cred);
+
+    // use the protobuf byte array encryption if dealing with a CredentialPb cred type
+    const encryptedData: EncryptedData = isCredentialPb(cred)
+      ? doEncryptPb(subjectDidWithKeyFragment, publicKeyInfo, CredentialPb.encode(cred as CredentialPb).finish())
+      : doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, cred);
 
     // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
     const credentialType = getCredentialType(cred.type);
