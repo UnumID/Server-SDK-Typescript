@@ -74,10 +74,7 @@ var versionList_1 = require("../utils/versionList");
 var library_crypto_1 = require("@unumid/library-crypto");
 var getCredentialType_1 = require("../utils/getCredentialType");
 var lodash_1 = require("lodash");
-function isCredentialPb(t) {
-    return typeof t;
-}
-function isCredentialProto(cred) {
+function isCredentialPb(cred) {
     return cred.context !== undefined;
 }
 /**
@@ -93,9 +90,7 @@ var constructEncryptedCredentialOpts = function (cred, publicKeyInfos) {
     return publicKeyInfos.map(function (publicKeyInfo) {
         var subjectDidWithKeyFragment = subjectDid + "#" + publicKeyInfo.id;
         // use the protobuf byte array encryption if dealing with a CredentialPb cred type
-        var type = isCredentialPb(cred);
-        // const encryptedData: EncryptedData = type === 'credentialPb'
-        var encryptedData = isCredentialProto(cred)
+        var encryptedData = isCredentialPb(cred)
             ? encrypt_1.doEncryptPb(subjectDidWithKeyFragment, publicKeyInfo, types_1.CredentialPb.encode(cred).finish())
             : encrypt_1.doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, cred);
         // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity

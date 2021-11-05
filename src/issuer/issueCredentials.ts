@@ -24,12 +24,7 @@ interface CredentialPair {
   credential: CredentialPb | Credential
 }
 
-type isCredentialPbType<T> = T extends CredentialPb ? 'credentialPb' : 'credential';
-function isCredentialPb<T> (t: T): isCredentialPbType<T> {
-  return typeof t as isCredentialPbType<T>;
-}
-
-function isCredentialProto (cred: Credential | CredentialPb): boolean {
+function isCredentialPb (cred: Credential | CredentialPb): boolean {
   return (cred as CredentialPb).context !== undefined;
 }
 
@@ -48,9 +43,7 @@ const constructEncryptedCredentialOpts = (cred: Credential | CredentialPb, publi
     const subjectDidWithKeyFragment = `${subjectDid}#${publicKeyInfo.id}`;
 
     // use the protobuf byte array encryption if dealing with a CredentialPb cred type
-    const type = isCredentialPb(cred);
-    // const encryptedData: EncryptedData = type === 'credentialPb'
-    const encryptedData: EncryptedData = isCredentialProto(cred)
+    const encryptedData: EncryptedData = isCredentialPb(cred)
       ? doEncryptPb(subjectDidWithKeyFragment, publicKeyInfo, CredentialPb.encode(cred as CredentialPb).finish())
       : doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, cred);
 
