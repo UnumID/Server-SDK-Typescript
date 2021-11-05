@@ -15,3 +15,18 @@ export const doEncrypt = (did: string, publicKeyObj: PublicKeyInfo, data: JSONOb
   logger.debug(`Encrypted data result: ${result.data}`);
   return result;
 };
+
+/**
+ * Encrypt the provided data object.
+ * @param did
+ * @param publicKeyObj
+ * @param data
+ */
+// TODO
+export const doEncryptPb = (did: string, publicKeyObj: PublicKeyInfo, data: Uint8Array): EncryptedData => {
+  logger.debug('Performing encryption using public key', publicKeyObj);
+  const result:EncryptedData = encrypt(did + '#' + publicKeyObj.id, publicKeyObj.publicKey, data, publicKeyObj.encoding);
+
+  logger.debug(`Encrypted data result: ${result.data}`);
+  return result;
+};

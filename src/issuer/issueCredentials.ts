@@ -6,7 +6,7 @@ import { UnsignedCredential as UnsignedCredentialV2, Credential as CredentialV2 
 
 import logger from '../logger';
 import { getDidDocPublicKeys } from '../utils/didHelper';
-import { doEncrypt } from '../utils/encrypt';
+import { doEncrypt, doEncryptPb } from '../utils/encrypt';
 import { createProof, createProofPb } from '../utils/createProof';
 import { getUUID } from '../utils/helpers';
 import { CustError } from '../utils/error';
@@ -25,6 +25,11 @@ interface CredentialPair {
   credential: CredentialPb | Credential
 }
 
+type isCredentialPbType<T> = T extends CredentialPb ? 'credentialPb' : 'credential';
+function isCredentialPb<T> (t: T): isCredentialPbType<T> {
+  return typeof t as isCredentialPbType<T>;
+}
+
 /**
  * Creates an object of type EncryptedCredentialOptions which encapsulates information relating to the encrypted credential data
  * @param cred Credential
@@ -38,7 +43,11 @@ const constructEncryptedCredentialOpts = (cred: Credential | CredentialPb, publi
   // create an encrypted copy of the credential with each RSA public key
   return publicKeyInfos.map(publicKeyInfo => {
     const subjectDidWithKeyFragment = `${subjectDid}#${publicKeyInfo.id}`;
-    const encryptedData: EncryptedData = doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, cred);
+
+    // use the protobuf byte array encryption if dealing with a CredentialPb cred type
+    const encryptedData: EncryptedData = isCredentialPb(cred) === 'credentialPb'
+      ? doEncryptPb(subjectDidWithKeyFragment, publicKeyInfo, CredentialPb.encode(cred as CredentialPb).finish())
+      : doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, cred);
 
     // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
     const credentialType = getCredentialType(cred.type);
