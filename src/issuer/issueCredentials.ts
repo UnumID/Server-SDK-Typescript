@@ -1,7 +1,7 @@
 import { configData } from '../config';
 import { CredentialOptions, RESTData, UnumDto } from '../types';
 import { requireAuth } from '../requireAuth';
-import { CredentialSubject, EncryptedCredentialOptions, EncryptedData, Proof, Credential, JSONObj, UnsignedCredentialPb, CredentialPb, ProofPb, PublicKeyInfo, CredentialData, IssueCredentialsDto, WithVersion, IssueCredentialDto } from '@unumid/types';
+import { CredentialSubject, EncryptedCredentialOptions, EncryptedData, Proof, Credential, JSONObj, UnsignedCredentialPb, CredentialPb, ProofPb, PublicKeyInfo, CredentialData, IssueCredentialsOptions, WithVersion, IssueCredentialOptions } from '@unumid/types';
 import { UnsignedCredential as UnsignedCredentialV2, Credential as CredentialV2 } from '@unumid/types-v2';
 
 import logger from '../logger';
@@ -20,7 +20,7 @@ import { omit } from 'lodash';
 
 // interface to handle grouping Credentials and their encrypted form
 interface CredentialPair {
-  encryptedCredential: IssueCredentialDto,
+  encryptedCredential: IssueCredentialOptions,
   credential: CredentialPb | Credential
 }
 
@@ -253,7 +253,7 @@ export const issueCredentials = async (authorization: string, issuer: string, su
   // loop through the versions list and send all the encrypted credentials to the saas grouped by version
   for (const version of versionList) {
     // only grab the encrypted credentials of the current version
-    const resultantEncryptedCredentials: IssueCredentialDto[] = creds.filter(credPair => credPair.version === version).map(credPair => credPair.encryptedCredential);
+    const resultantEncryptedCredentials: IssueCredentialOptions[] = creds.filter(credPair => credPair.version === version).map(credPair => credPair.encryptedCredential);
 
     const result = await sendEncryptedCredentials(authorization, { credentialRequests: resultantEncryptedCredentials }, version);
     authorization = result.authToken;
@@ -358,7 +358,7 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
       const credential: CredentialV2 = constructSignedCredentialObj(unsignedCredential, signingPrivateKey);
 
       // Create the encrypted credential issuance dto
-      const encryptedCredentialUploadOptions: IssueCredentialDto = constructIssueCredentialDto(credential, publicKeyInfos, credentialSubject.id);
+      const encryptedCredentialUploadOptions: IssueCredentialOptions = constructIssueCredentialOptions(credential, publicKeyInfos, credentialSubject.id);
 
       const credPair: WithVersion<CredentialPair> = {
         credential,
@@ -380,7 +380,7 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
   const credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
 
   // Create the encrypted credential issuance dto
-  const encryptedCredentialUploadOptions: IssueCredentialDto = constructIssueCredentialDto(credential, publicKeyInfos, credentialSubject.id);
+  const encryptedCredentialUploadOptions: IssueCredentialOptions = constructIssueCredentialOptions(credential, publicKeyInfos, credentialSubject.id);
 
   const credPair: WithVersion<CredentialPair> = {
     credential,
@@ -394,20 +394,20 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
 };
 
 /**
- * Helper to construct a IssueCredentialDto prior to sending to the Saas
+ * Helper to construct a IssueCredentialOptions prior to sending to the Saas
  * @param credential
  * @param publicKeyInfos
  * @param subjectDid
  * @returns
  */
-const constructIssueCredentialDto = (credential: Credential | CredentialPb, publicKeyInfos: PublicKeyInfo[], subjectDid: string): IssueCredentialDto => {
+const constructIssueCredentialOptions = (credential: Credential | CredentialPb, publicKeyInfos: PublicKeyInfo[], subjectDid: string): IssueCredentialOptions => {
   // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
   const encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos);
 
   // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
   const credentialType = getCredentialType(credential.type);
 
-  const encryptedCredentialUploadOptions: IssueCredentialDto = {
+  const encryptedCredentialUploadOptions: IssueCredentialOptions = {
     credentialId: credential.id,
     subject: subjectDid,
     issuer: credential.issuer,
@@ -419,13 +419,13 @@ const constructIssueCredentialDto = (credential: Credential | CredentialPb, publ
 };
 
 /**
- * Helper to send multiple encrypted credentials, IssueCredentialsDto, to the Saas
+ * Helper to send multiple encrypted credentials, IssueCredentialsOptions, to the Saas
  * @param authorization
  * @param encryptedCredentialUploadOptions
  * @param version
  * @returns
  */
-const sendEncryptedCredentials = async (authorization: string, encryptedCredentialUploadOptions: IssueCredentialsDto, version: string) :Promise<UnumDto<void>> => {
+const sendEncryptedCredentials = async (authorization: string, encryptedCredentialUploadOptions: IssueCredentialsOptions, version: string) :Promise<UnumDto<void>> => {
   const restData: RESTData = {
     method: 'POST',
     baseUrl: configData.SaaSUrl,
@@ -456,13 +456,13 @@ function validateCredentialDataList (credentialDataList: CredentialData[]) {
 }
 
 /**
- * Helper to handle sending a single encrypted credential, IssueCredentialDto, to the Saas
+ * Helper to handle sending a single encrypted credential, IssueCredentialOptions, to the Saas
  * @param authorization
  * @param encryptedCredentialUploadOptions
  * @param version
  * @returns
  */
-const sendEncryptedCredential = async (authorization: string, encryptedCredentialUploadOptions: IssueCredentialDto, version: string) :Promise<UnumDto<void>> => {
+const sendEncryptedCredential = async (authorization: string, encryptedCredentialUploadOptions: IssueCredentialOptions, version: string) :Promise<UnumDto<void>> => {
   const restData: RESTData = {
     method: 'POST',
     baseUrl: configData.SaaSUrl,
@@ -566,7 +566,7 @@ const issueCredentialHelperDeprecated = async (authorization: string, type: stri
       const credential: CredentialV2 = constructSignedCredentialObj(unsignedCredential, signingPrivateKey);
 
       // Create the encrypted credential issuance dto
-      const encryptedCredentialUploadOptions: IssueCredentialDto = constructIssueCredentialDto(credential, publicKeyInfos, credentialSubject.id);
+      const encryptedCredentialUploadOptions: IssueCredentialOptions = constructIssueCredentialOptions(credential, publicKeyInfos, credentialSubject.id);
 
       // Send encrypted credential to Saas
       const result = await sendEncryptedCredential(authorization, encryptedCredentialUploadOptions, version);
@@ -586,7 +586,7 @@ const issueCredentialHelperDeprecated = async (authorization: string, type: stri
   const credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
 
   // Create the encrypted credential issuance dto
-  const encryptedCredentialUploadOptions: IssueCredentialDto = constructIssueCredentialDto(credential, publicKeyInfos, credentialSubject.id);
+  const encryptedCredentialUploadOptions: IssueCredentialOptions = constructIssueCredentialOptions(credential, publicKeyInfos, credentialSubject.id);
 
   // Send encrypted credential to Saas
   const result = await sendEncryptedCredential(authorization, encryptedCredentialUploadOptions, latestVersion);
