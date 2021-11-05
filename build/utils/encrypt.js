@@ -24,9 +24,8 @@ exports.doEncrypt = function (did, publicKeyObj, data) {
  * @param publicKeyObj
  * @param data
  */
-// TODO
 exports.doEncryptPb = function (did, publicKeyObj, data) {
-    logger_1.default.debug('Performing encryption using public key', publicKeyObj);
+    logger_1.default.debug('Performing byte array encryption using public key', publicKeyObj);
     var result = library_crypto_1.encrypt(did + '#' + publicKeyObj.id, publicKeyObj.publicKey, data, publicKeyObj.encoding);
     logger_1.default.debug("Encrypted data result: " + result.data);
     return result;

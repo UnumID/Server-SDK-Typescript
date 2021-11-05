@@ -45,7 +45,8 @@ const constructEncryptedCredentialOpts = (cred: Credential | CredentialPb, publi
     const subjectDidWithKeyFragment = `${subjectDid}#${publicKeyInfo.id}`;
 
     // use the protobuf byte array encryption if dealing with a CredentialPb cred type
-    const encryptedData: EncryptedData = isCredentialPb(cred) === 'credentialPb'
+    const type = isCredentialPb(cred);
+    const encryptedData: EncryptedData = type === 'credentialPb'
       ? doEncryptPb(subjectDidWithKeyFragment, publicKeyInfo, CredentialPb.encode(cred as CredentialPb).finish())
       : doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, cred);
 
