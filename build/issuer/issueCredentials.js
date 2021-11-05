@@ -388,7 +388,7 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
             // Create the signed Credential object from the unsignedCredential object
             var credential_1 = constructSignedCredentialObj(unsignedCredential_1, signingPrivateKey);
             // Create the encrypted credential issuance dto
-            var encryptedCredentialUploadOptions_1 = constructIssueCredentialDto(credential_1, publicKeyInfos, credentialSubject.id);
+            var encryptedCredentialUploadOptions_1 = constructIssueCredentialOptions(credential_1, publicKeyInfos, credentialSubject.id);
             var credPair_1 = {
                 credential: credential_1,
                 encryptedCredential: encryptedCredentialUploadOptions_1,
@@ -404,7 +404,7 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
     // Create the signed Credential object from the unsignedCredential object
     var credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
     // Create the encrypted credential issuance dto
-    var encryptedCredentialUploadOptions = constructIssueCredentialDto(credential, publicKeyInfos, credentialSubject.id);
+    var encryptedCredentialUploadOptions = constructIssueCredentialOptions(credential, publicKeyInfos, credentialSubject.id);
     var credPair = {
         credential: credential,
         encryptedCredential: encryptedCredentialUploadOptions,
@@ -414,13 +414,13 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
     return results;
 };
 /**
- * Helper to construct a IssueCredentialDto prior to sending to the Saas
+ * Helper to construct a IssueCredentialOptions prior to sending to the Saas
  * @param credential
  * @param publicKeyInfos
  * @param subjectDid
  * @returns
  */
-var constructIssueCredentialDto = function (credential, publicKeyInfos, subjectDid) {
+var constructIssueCredentialOptions = function (credential, publicKeyInfos, subjectDid) {
     // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
     var encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos);
     // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
@@ -435,7 +435,7 @@ var constructIssueCredentialDto = function (credential, publicKeyInfos, subjectD
     return encryptedCredentialUploadOptions;
 };
 /**
- * Helper to send multiple encrypted credentials, IssueCredentialsDto, to the Saas
+ * Helper to send multiple encrypted credentials, IssueCredentialsOptions, to the Saas
  * @param authorization
  * @param encryptedCredentialUploadOptions
  * @param version
@@ -475,7 +475,7 @@ function validateCredentialDataList(credentialDataList) {
     }
 }
 /**
- * Helper to handle sending a single encrypted credential, IssueCredentialDto, to the Saas
+ * Helper to handle sending a single encrypted credential, IssueCredentialOptions, to the Saas
  * @param authorization
  * @param encryptedCredentialUploadOptions
  * @param version
@@ -571,7 +571,7 @@ var issueCredentialHelperDeprecated = function (authorization, type, issuer, cre
                 if (!(semver_1.gte(version, '2.0.0') && semver_1.lt(version, '3.0.0'))) return [3 /*break*/, 3];
                 unsignedCredential_2 = constructUnsignedCredentialObj(credentialOptions, credentialId);
                 credential_2 = constructSignedCredentialObj(unsignedCredential_2, signingPrivateKey);
-                encryptedCredentialUploadOptions_2 = constructIssueCredentialDto(credential_2, publicKeyInfos, credentialSubject.id);
+                encryptedCredentialUploadOptions_2 = constructIssueCredentialOptions(credential_2, publicKeyInfos, credentialSubject.id);
                 return [4 /*yield*/, sendEncryptedCredential(authorization, encryptedCredentialUploadOptions_2, version)];
             case 2:
                 result_1 = _a.sent();
@@ -585,7 +585,7 @@ var issueCredentialHelperDeprecated = function (authorization, type, issuer, cre
                 latestVersion = versionList_1.versionList[versionList_1.versionList.length - 1];
                 unsignedCredential = constructUnsignedCredentialPbObj(credentialOptions, credentialId);
                 credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
-                encryptedCredentialUploadOptions = constructIssueCredentialDto(credential, publicKeyInfos, credentialSubject.id);
+                encryptedCredentialUploadOptions = constructIssueCredentialOptions(credential, publicKeyInfos, credentialSubject.id);
                 return [4 /*yield*/, sendEncryptedCredential(authorization, encryptedCredentialUploadOptions, latestVersion)];
             case 5:
                 result = _a.sent();
