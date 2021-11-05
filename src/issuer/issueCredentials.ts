@@ -1,7 +1,7 @@
 import { configData } from '../config';
 import { CredentialOptions, RESTData, UnumDto } from '../types';
 import { requireAuth } from '../requireAuth';
-import { CredentialSubject, EncryptedCredentialOptions, EncryptedData, Proof, Credential, JSONObj, UnsignedCredentialPb, CredentialPb, ProofPb, PublicKeyInfo, CredentialData, IssueCredentialsDto, WithVersion } from '@unumid/types';
+import { CredentialSubject, EncryptedCredentialOptions, EncryptedData, Proof, Credential, JSONObj, UnsignedCredentialPb, CredentialPb, ProofPb, PublicKeyInfo, CredentialData, IssueCredentialsDto, WithVersion, IssueCredentialDto } from '@unumid/types';
 import { UnsignedCredential as UnsignedCredentialV2, Credential as CredentialV2 } from '@unumid/types-v2';
 
 import logger from '../logger';
@@ -16,7 +16,6 @@ import { gte, lt } from 'semver';
 import { versionList } from '../utils/versionList';
 import { CryptoError } from '@unumid/library-crypto';
 import { getCredentialType } from '../utils/getCredentialType';
-import { IssueCredentialDto } from '@unumid/types/build/protos/credential';
 import { omit } from 'lodash';
 
 // interface to handle grouping Credentials and their encrypted form
@@ -28,6 +27,10 @@ interface CredentialPair {
 type isCredentialPbType<T> = T extends CredentialPb ? 'credentialPb' : 'credential';
 function isCredentialPb<T> (t: T): isCredentialPbType<T> {
   return typeof t as isCredentialPbType<T>;
+}
+
+function isCredentialProto (cred: Credential | CredentialPb): boolean {
+  return (cred as CredentialPb).context !== undefined;
 }
 
 /**
@@ -46,7 +49,8 @@ const constructEncryptedCredentialOpts = (cred: Credential | CredentialPb, publi
 
     // use the protobuf byte array encryption if dealing with a CredentialPb cred type
     const type = isCredentialPb(cred);
-    const encryptedData: EncryptedData = type === 'credentialPb'
+    // const encryptedData: EncryptedData = type === 'credentialPb'
+    const encryptedData: EncryptedData = isCredentialProto(cred)
       ? doEncryptPb(subjectDidWithKeyFragment, publicKeyInfo, CredentialPb.encode(cred as CredentialPb).finish())
       : doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, cred);
 

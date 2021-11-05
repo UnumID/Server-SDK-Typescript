@@ -77,6 +77,9 @@ var lodash_1 = require("lodash");
 function isCredentialPb(t) {
     return typeof t;
 }
+function isCredentialProto(cred) {
+    return cred.context !== undefined;
+}
 /**
  * Creates an object of type EncryptedCredentialOptions which encapsulates information relating to the encrypted credential data
  * @param cred Credential
@@ -91,7 +94,8 @@ var constructEncryptedCredentialOpts = function (cred, publicKeyInfos) {
         var subjectDidWithKeyFragment = subjectDid + "#" + publicKeyInfo.id;
         // use the protobuf byte array encryption if dealing with a CredentialPb cred type
         var type = isCredentialPb(cred);
-        var encryptedData = type === 'credentialPb'
+        // const encryptedData: EncryptedData = type === 'credentialPb'
+        var encryptedData = isCredentialProto(cred)
             ? encrypt_1.doEncryptPb(subjectDidWithKeyFragment, publicKeyInfo, types_1.CredentialPb.encode(cred).finish())
             : encrypt_1.doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, cred);
         // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
