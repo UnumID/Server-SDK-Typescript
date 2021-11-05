@@ -313,6 +313,8 @@ describe('issueCredentials', () => {
 
   // this is not true... it returns the auth that was passed to issueCredentials()
   // if no auth token is returned from the saas
+  // TODO: figure out what the behavior we actually want in this scenario is,
+  // and either update the implementation or remove/update this test
   xit('does not return an auth token if the SaaS does not return an auth token', async () => {
     mockMakeNetworkRequest.mockResolvedValue({ body: { success: true } });
     responseDto = await callIssueCreds(issuer, credentialSubject.id, credentialData, expirationDate, eccPrivateKey, authHeader);
