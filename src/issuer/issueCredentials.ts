@@ -25,6 +25,7 @@ interface CredentialPair {
 }
 
 function isCredentialPb (cred: Credential | CredentialPb): boolean {
+  // HACK ALERT: just check if the cred object has a property unique to CredentialPb types
   return (cred as CredentialPb).context !== undefined;
 }
 

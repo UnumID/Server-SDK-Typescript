@@ -75,6 +75,7 @@ var library_crypto_1 = require("@unumid/library-crypto");
 var getCredentialType_1 = require("../utils/getCredentialType");
 var lodash_1 = require("lodash");
 function isCredentialPb(cred) {
+    // HACK ALERT: just check if the cred object has a property unique to CredentialPb types
     return cred.context !== undefined;
 }
 /**
