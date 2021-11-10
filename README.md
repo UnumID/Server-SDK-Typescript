@@ -76,14 +76,14 @@ Response Body:  [**RegisteredIssuer**](https://docs.unum.id/Server-SDK-Typescrip
       "publicKey": string, // subjects and verifiers use this to verify your signatures on credentials
     }
     "encryption": {
-      "privateKey": string, // you use this to encrypt credentials you send to subjects
-      "publicKey": string, // subjects use this to decrypt credentials they receive from you
+      "privateKey": string, // not used
+      "publicKey": string, // not used; but part of the issuer did doc
     }
   }
 }
 ```
 
-### issueCredential
+### issueCredentials
 Issue a credential to a Subject, also known as a User.
 
 You need to provide your Issuer DID (created when you registered), as well as your signing and encryption private keys, which the Issuer uses to sign and encrypt the credential. You need to specify a credential `type`, which verifiers will use to later request the credential from the user.
@@ -106,7 +106,7 @@ Parameters
 
 Response Body: [**Credential**](https://docs.unum.id/Server-SDK-Typescript/interfaces/credential.html)
 ```typescript title="Credential"
-{
+{[
     "@context": ["https://www.w3.org/2018/credentials/v1"], // for conformance with W3C Verifiable Credential spec
     "credentialStatus": {
         "id": string, // a url for credential's status
@@ -122,7 +122,7 @@ Response Body: [**Credential**](https://docs.unum.id/Server-SDK-Typescript/inter
     "issuanceDate": string, // when credential was issued (ISO 8601 date/time)
     "expirationDate": string, // when credential will no longer be valid (ISO 8601 date-time)
     "proof": Proof // cryptographic proof created by signing credential with your issuer signing private key. Can be used to verify credential.
-}
+]}
 ```
 
 ### updateCredentialStatus
