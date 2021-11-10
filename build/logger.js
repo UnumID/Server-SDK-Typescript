@@ -26,5 +26,6 @@ var logger = winston_1.createLogger({
 // Printing this info here instead of in ./config to prevent a circular dependency.
 logger.debug("Server SDK v3 SaaS URL: " + config_1.configData.SaaSUrl);
 logger.debug("Server SDK v3 Log Level: " + config_1.configData.logLevel);
+logger.debug("Server SDK v3 Debug: " + config_1.configData.debug);
 exports.default = logger;
 //# sourceMappingURL=logger.js.map
