@@ -1,5 +1,7 @@
 import { createLogger, format, transports } from 'winston';
 import { configData } from './config';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { version } = require('./package.json');
 
 // Only adding the timestamp if running locally. Otherwise the timestamp is little redundant when can be added in supplementary fashion outside of the message itself.
 const consoleFormat = configData.nodeEnv === 'local'
@@ -34,7 +36,7 @@ const logger = createLogger({
 });
 
 // Printing this info here instead of in ./config to prevent a circular dependency.
-logger.debug(`Server SDK ${process.env.npm_package_version} SaaS URL: ${configData.SaaSUrl}`);
-logger.debug(`Server SDK ${process.env.npm_package_version} Log Level: ${configData.logLevel}`);
+logger.debug(`Server SDK ${version} SaaS URL: ${configData.SaaSUrl}`);
+logger.debug(`Server SDK ${version} Log Level: ${configData.logLevel}`);
 
 export default logger;

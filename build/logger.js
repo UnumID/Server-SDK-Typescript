@@ -2,6 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var winston_1 = require("winston");
 var config_1 = require("./config");
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+var version = require('./package.json').version;
 // Only adding the timestamp if running locally. Otherwise the timestamp is little redundant when can be added in supplementary fashion outside of the message itself.
 var consoleFormat = config_1.configData.nodeEnv === 'local'
     ? winston_1.format.combine(winston_1.format.colorize(), winston_1.format.timestamp({
@@ -24,7 +26,7 @@ var logger = winston_1.createLogger({
     silent: process.env.NODE_ENV === 'test'
 });
 // Printing this info here instead of in ./config to prevent a circular dependency.
-logger.debug("Server SDK " + process.env.npm_package_version + " SaaS URL: " + config_1.configData.SaaSUrl);
-logger.debug("Server SDK " + process.env.npm_package_version + " Log Level: " + config_1.configData.logLevel);
+logger.debug("Server SDK " + version + " SaaS URL: " + config_1.configData.SaaSUrl);
+logger.debug("Server SDK " + version + " Log Level: " + config_1.configData.logLevel);
 exports.default = logger;
 //# sourceMappingURL=logger.js.map
