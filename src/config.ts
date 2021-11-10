@@ -7,7 +7,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 /**
- * Get saas url based on the provide NODE_ENV env var.
+ * Get saas url based on the provide UNUM_ENV env var.
  * @param env
  */
 function getSaasUrl (env: string) {
@@ -21,14 +21,18 @@ function getSaasUrl (env: string) {
     case 'production':
       return 'https://api.unum.id/';
     default:
-      return 'need_to_populate_NODE_ENV_env_var';
+      return 'http://localhost:3030/';
   }
 }
 
+// defaults to sandbox if not provided
+const env = process.env.UNUM_ENV || 'sandbox';
+
 const configData = {
-  nodeEnv: process.env.NODE_ENV || 'sandbox',
-  SaaSUrl: getSaasUrl(process.env.NODE_ENV as string),
-  logLevel: process.env.LOG_LEVEL || 'debug' // Winston defaults to info if not set
+  nodeEnv: env,
+  SaaSUrl: getSaasUrl(env),
+  debug: process.env.DEBUG || false,
+  logLevel: process.env.LOG_LEVEL || 'info' // Winston defaults to info if not set however being explicit here
 };
 
 export { configData };

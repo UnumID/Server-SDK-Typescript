@@ -16,16 +16,21 @@ Releases and publishing to NPM is automated via Github Actions CI job. In order 
 - NodeJS v14.0.0 or higher, preferably v14.15.0 or higher
 - yarn
 
-## Setup
-One needs to provide the SDK the the environment it is running in, i.e. `production`. For the Typescript SDK this done via the NODE_ENV environment variable. The three relevant values are: `production`, `sandbox`, `dev`. You need to use one of these exactly in order for the SDK to communicate with Unum ID's SaaS. 
+## Environment Variables
+The following environment variables are required to be set to use the SDK properly.
+- `UNUM_ENV`
+- `LOG_LEVEL`
+- `DEBUG`
+### UNUM_ENV
+One needs to provide the SDK the with an environment variable to denote its run time environment, i.e. `production`. For the Typescript SDK this done via the `UNUM_ENV` environment variable. The three relevant values are: `production`, `sandbox`, `dev`. You need to use one of these exactly in order for the SDK to communicate with Unum ID's SaaS. The default value if nothing is supplied is `sandbox`.
 
-## Logging
-Logs level defaults to Info. One can set to debug for more information via the environment variable LOG_LEVEL, i.e. LOG_LEVEL=debug. We are using standard NPM log levels. More details on the various log levels [here](https://github.com/winstonjs/winston#logging-levels).
+### LOG_LEVEL
+The default logs level is `info`. You can change this to `debug` for more information (set the environment variable `LOG_LEVEL = debug`). The logs default to `stdout`, so you can easily aggregate them from disk using the log provider of your choice.
 
-The logs default to stdout so can be aggregated using any log provider you would like from disk.
+We use standard NPM log levels. Learn more about these [here](https://github.com/winstonjs/winston#logging-levels).
 
-## Debugging
-The `NODE_ENV` environment variable defaults to `sandbox`. However while debugging one can use the `debug` environment setting. This enables logging of decrypted presentations at the `debug` level. Due to presentations containing sensitive information it is not advised to use in a production environment.
+### DEBUG
+The `DEBUG` environment variable defaults to `false`. Setting to `true` enables logging of decrypted presentations at the `debug` level. Due to presentations containing potentially sensitive information it is *not* advised to use in a production environment. Note: the `LOG_LEVEL` envirnoment variable also needs to be set to at least `debug` level in order to be visible.
 
 In order to generate the Typedoc documentation from the source code run the `createTypedocs.sh` script.
 
