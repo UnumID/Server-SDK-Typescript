@@ -81,15 +81,28 @@
 					<li>NodeJS v14.0.0 or higher, preferably v14.15.0 or higher</li>
 					<li>yarn</li>
 				</ul>
-				<a href="#logging" id="logging" style="color: inherit; text-decoration: none;">
-					<h2>Logging</h2>
+				<a href="#environment-variables" id="environment-variables" style="color: inherit; text-decoration: none;">
+					<h2>Environment Variables</h2>
 				</a>
-				<p>Logs level defaults to Info. One can set to debug for more information via the environment variable LOG_LEVEL, i.e. LOG_LEVEL=debug. We are using standard NPM log levels. More details on the various log levels <a href="https://github.com/winstonjs/winston#logging-levels">here</a>.</p>
-				<p>The logs default to stdout so can be aggregated using any log provider you would like from disk.</p>
-				<a href="#debugging" id="debugging" style="color: inherit; text-decoration: none;">
-					<h2>Debugging</h2>
+				<p>The following environment variables are required to be set to use the SDK properly.</p>
+				<ul>
+					<li><code>UNUM_ENV</code></li>
+					<li><code>LOG_LEVEL</code></li>
+					<li><code>DEBUG</code>
+						<a href="#unum_env" id="unum_env" style="color: inherit; text-decoration: none;">
+							<h3>UNUM_ENV</h3>
+						</a>
+					One needs to provide the SDK the with an environment variable to denote its run time environment, i.e. <code>production</code>. For the Typescript SDK this done via the <code>UNUM_ENV</code> environment variable. The three relevant values are: <code>production</code>, <code>sandbox</code>, <code>dev</code>. You need to use one of these exactly in order for the SDK to communicate with Unum ID&#39;s SaaS. The default value if nothing is supplied is <code>sandbox</code>.</li>
+				</ul>
+				<a href="#log_level" id="log_level" style="color: inherit; text-decoration: none;">
+					<h3>LOG_LEVEL</h3>
 				</a>
-				<p>The <code>NODE_ENV</code> environment variable defaults to <code>sandbox</code>. However while debugging one can use the <code>debug</code> environment setting. This enables logging of decrypted presentations at the <code>debug</code> level. Due to presentations containing sensitive information it is not advised to use in a production environment.</p>
+				<p>The default logs level is <code>info</code>. You can change this to <code>debug</code> for more information (set the environment variable <code>LOG_LEVEL = debug</code>). The logs default to <code>stdout</code>, so you can easily aggregate them from disk using the log provider of your choice.</p>
+				<p>We use standard NPM log levels. Learn more about these <a href="https://github.com/winstonjs/winston#logging-levels">here</a>.</p>
+				<a href="#debug" id="debug" style="color: inherit; text-decoration: none;">
+					<h3>DEBUG</h3>
+				</a>
+				<p>The <code>DEBUG</code> environment variable defaults to <code>false</code>. Setting to <code>true</code> enables logging of decrypted presentations at the <code>debug</code> level. Due to presentations containing potentially sensitive information it is <em>not</em> advised to use in a production environment. Note: the <code>LOG_LEVEL</code> envirnoment variable also needs to be set to at least <code>debug</code> level in order to be visible.</p>
 				<p>In order to generate the Typedoc documentation from the source code run the <code>createTypedocs.sh</code> script.</p>
 				<a href="#versioning" id="versioning" style="color: inherit; text-decoration: none;">
 					<h2>Versioning</h2>
@@ -137,14 +150,14 @@
 <span style="color: #000000">      </span><span style="color: #A31515">&quot;publicKey&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// subjects and verifiers use this to verify your signatures on credentials</span>
 <span style="color: #000000">    }</span>
 <span style="color: #000000">    </span><span style="color: #A31515">&quot;encryption&quot;</span><span style="color: #000000">: {</span>
-<span style="color: #000000">      </span><span style="color: #A31515">&quot;privateKey&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// you use this to encrypt credentials you send to subjects</span>
-<span style="color: #000000">      </span><span style="color: #A31515">&quot;publicKey&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// subjects use this to decrypt credentials they receive from you</span>
+<span style="color: #000000">      </span><span style="color: #A31515">&quot;privateKey&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// not used</span>
+<span style="color: #000000">      </span><span style="color: #A31515">&quot;publicKey&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// not used; but part of the issuer did doc</span>
 <span style="color: #000000">    }</span>
 <span style="color: #000000">  }</span>
 <span style="color: #000000">}</span>
 </code></pre>
-				<a href="#issuecredential" id="issuecredential" style="color: inherit; text-decoration: none;">
-					<h3>issueCredential</h3>
+				<a href="#issuecredentials" id="issuecredentials" style="color: inherit; text-decoration: none;">
+					<h3>issueCredentials</h3>
 				</a>
 				<p>Issue a credential to a Subject, also known as a User.</p>
 				<p>You need to provide your Issuer DID (created when you registered), as well as your signing and encryption private keys, which the Issuer uses to sign and encrypt the credential. You need to specify a credential <code>type</code>, which verifiers will use to later request the credential from the user.</p>
@@ -161,7 +174,7 @@
 <span style="color: #A31515">&quot;expirationDate&quot;</span><span style="color: #000000">?: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// (optional) when credential will no longer be valid (ISO 8601 date/time)</span>
 </code></pre>
 				<p>Response Body: <a href="https://docs.unum.id/Server-SDK-Typescript/interfaces/credential.html"><strong>Credential</strong></a></p>
-				<pre><code class="language-typescript"><span style="color: #000000">{</span>
+				<pre><code class="language-typescript"><span style="color: #000000">{[</span>
 <span style="color: #000000">    </span><span style="color: #A31515">&quot;@context&quot;</span><span style="color: #000000">: [</span><span style="color: #A31515">&quot;https://www.w3.org/2018/credentials/v1&quot;</span><span style="color: #000000">], </span><span style="color: #008000">// for conformance with W3C Verifiable Credential spec</span>
 <span style="color: #000000">    </span><span style="color: #A31515">&quot;credentialStatus&quot;</span><span style="color: #000000">: {</span>
 <span style="color: #000000">        </span><span style="color: #A31515">&quot;id&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// a url for credential&#039;s status</span>
@@ -177,7 +190,7 @@
 <span style="color: #000000">    </span><span style="color: #A31515">&quot;issuanceDate&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// when credential was issued (ISO 8601 date/time)</span>
 <span style="color: #000000">    </span><span style="color: #A31515">&quot;expirationDate&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// when credential will no longer be valid (ISO 8601 date-time)</span>
 <span style="color: #000000">    </span><span style="color: #A31515">&quot;proof&quot;</span><span style="color: #000000">: </span><span style="color: #001080">Proof</span><span style="color: #000000"> </span><span style="color: #008000">// cryptographic proof created by signing credential with your issuer signing private key. Can be used to verify credential.</span>
-<span style="color: #000000">}</span>
+<span style="color: #000000">]}</span>
 </code></pre>
 				<a href="#updatecredentialstatus" id="updatecredentialstatus" style="color: inherit; text-decoration: none;">
 					<h3>updateCredentialStatus</h3>
