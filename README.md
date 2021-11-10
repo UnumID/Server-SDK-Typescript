@@ -16,6 +16,9 @@ Releases and publishing to NPM is automated via Github Actions CI job. In order 
 - NodeJS v14.0.0 or higher, preferably v14.15.0 or higher
 - yarn
 
+## Setup
+One needs to provide the SDK the the environment it is running in, i.e. `production`. For the Typescript SDK this done via the NODE_ENV environment variable. The three relevant values are: `production`, `sandbox`, `dev`. You need to use one of these exactly in order for the SDK to communicate with Unum ID's SaaS. 
+
 ## Logging
 Logs level defaults to Info. One can set to debug for more information via the environment variable LOG_LEVEL, i.e. LOG_LEVEL=debug. We are using standard NPM log levels. More details on the various log levels [here](https://github.com/winstonjs/winston#logging-levels).
 

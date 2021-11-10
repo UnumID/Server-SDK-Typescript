@@ -10,9 +10,27 @@ exports.configData = void 0;
  */
 var dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
+/**
+ * Get saas url based on the provide NODE_ENV env var.
+ * @param env
+ */
+function getSaasUrl(env) {
+    switch (env) {
+        case 'local':
+            return 'http://localhost:3030/';
+        case 'dev':
+            return 'https://api.dev-unum.id/';
+        case 'sandbox':
+            return 'https://api.sandbox-unum.id/';
+        case 'production':
+            return 'https://api.unum.id/';
+        default:
+            return 'need_to_populate_NODE_ENV_env_var';
+    }
+}
 var configData = {
     nodeEnv: process.env.NODE_ENV || 'sandbox',
-    SaaSUrl: process.env.SAAS_URL || 'https://api.sandbox-unumid.org/',
+    SaaSUrl: getSaasUrl(process.env.NODE_ENV),
     logLevel: process.env.LOG_LEVEL || 'debug' // Winston defaults to info if not set
 };
 exports.configData = configData;
