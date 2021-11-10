@@ -16,13 +16,21 @@ Releases and publishing to NPM is automated via Github Actions CI job. In order 
 - NodeJS v14.0.0 or higher, preferably v14.15.0 or higher
 - yarn
 
-## Logging
-Logs level defaults to Info. One can set to debug for more information via the environment variable LOG_LEVEL, i.e. LOG_LEVEL=debug. We are using standard NPM log levels. More details on the various log levels [here](https://github.com/winstonjs/winston#logging-levels).
+## Environment Variables
+The following environment variables are required to be set to use the SDK properly.
+- `UNUM_ENV`
+- `LOG_LEVEL`
+- `DEBUG`
+### UNUM_ENV
+One needs to provide the SDK the with an environment variable to denote its run time environment, i.e. `production`. For the Typescript SDK this done via the `UNUM_ENV` environment variable. The three relevant values are: `production`, `sandbox`, `dev`. You need to use one of these exactly in order for the SDK to communicate with Unum ID's SaaS. The default value if nothing is supplied is `sandbox`.
 
-The logs default to stdout so can be aggregated using any log provider you would like from disk.
+### LOG_LEVEL
+The default logs level is `info`. You can change this to `debug` for more information (set the environment variable `LOG_LEVEL = debug`). The logs default to `stdout`, so you can easily aggregate them from disk using the log provider of your choice.
 
-## Debugging
-The `NODE_ENV` environment variable defaults to `sandbox`. However while debugging one can use the `debug` environment setting. This enables logging of decrypted presentations at the `debug` level. Due to presentations containing sensitive information it is not advised to use in a production environment.
+We use standard NPM log levels. Learn more about these [here](https://github.com/winstonjs/winston#logging-levels).
+
+### DEBUG
+The `DEBUG` environment variable defaults to `false`. Setting to `true` enables logging of decrypted presentations at the `debug` level. Due to presentations containing potentially sensitive information it is *not* advised to use in a production environment. Note: the `LOG_LEVEL` envirnoment variable also needs to be set to at least `debug` level in order to be visible.
 
 In order to generate the Typedoc documentation from the source code run the `createTypedocs.sh` script.
 
@@ -76,14 +84,14 @@ Response Body:  [**RegisteredIssuer**](https://docs.unum.id/Server-SDK-Typescrip
       "publicKey": string, // subjects and verifiers use this to verify your signatures on credentials
     }
     "encryption": {
-      "privateKey": string, // you use this to encrypt credentials you send to subjects
-      "publicKey": string, // subjects use this to decrypt credentials they receive from you
+      "privateKey": string, // not used
+      "publicKey": string, // not used; but part of the issuer did doc
     }
   }
 }
 ```
 
-### issueCredential
+### issueCredentials
 Issue a credential to a Subject, also known as a User.
 
 You need to provide your Issuer DID (created when you registered), as well as your signing and encryption private keys, which the Issuer uses to sign and encrypt the credential. You need to specify a credential `type`, which verifiers will use to later request the credential from the user.
@@ -106,7 +114,7 @@ Parameters
 
 Response Body: [**Credential**](https://docs.unum.id/Server-SDK-Typescript/interfaces/credential.html)
 ```typescript title="Credential"
-{
+{[
     "@context": ["https://www.w3.org/2018/credentials/v1"], // for conformance with W3C Verifiable Credential spec
     "credentialStatus": {
         "id": string, // a url for credential's status
@@ -122,7 +130,7 @@ Response Body: [**Credential**](https://docs.unum.id/Server-SDK-Typescript/inter
     "issuanceDate": string, // when credential was issued (ISO 8601 date/time)
     "expirationDate": string, // when credential will no longer be valid (ISO 8601 date-time)
     "proof": Proof // cryptographic proof created by signing credential with your issuer signing private key. Can be used to verify credential.
-}
+]}
 ```
 
 ### updateCredentialStatus
