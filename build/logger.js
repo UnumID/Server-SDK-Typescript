@@ -24,7 +24,7 @@ var logger = winston_1.createLogger({
     silent: process.env.NODE_ENV === 'test'
 });
 // Printing this info here instead of in ./config to prevent a circular dependency.
-logger.debug("Server SDK SaaS URL: " + config_1.configData.SaaSUrl);
-logger.debug("Server SDK Log Level: " + config_1.configData.logLevel);
+logger.debug("Server SDK " + process.env.npm_package_version + " SaaS URL: " + config_1.configData.SaaSUrl);
+logger.debug("Server SDK " + process.env.npm_package_version + " Log Level: " + config_1.configData.logLevel);
 exports.default = logger;
 //# sourceMappingURL=logger.js.map
