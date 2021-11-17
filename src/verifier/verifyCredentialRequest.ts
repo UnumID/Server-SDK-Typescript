@@ -5,7 +5,7 @@ import { requireAuth } from '../requireAuth';
 import { CryptoError, decrypt, decryptBytes } from '@unumid/library-crypto';
 import logger from '../logger';
 import { verifyNoPresentationHelper } from './verifyNoPresentationHelper';
-import { verifyPresentationHelper } from './verifyPresentationHelper';
+// import { verifyCredentialHelper } from './verifyCredentialHelper';
 import { CustError } from '../utils/error';
 import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
 import { omit } from 'lodash';
@@ -26,7 +26,7 @@ function isDeclinedPresentation (presentation: Presentation | PresentationPb): p
  * Validates the presentation object has the proper attributes.
  * @param presentation Presentation
  */
-const validatePresentation = (presentation: PresentationPb): PresentationPb => {
+const validateCredential = (presentation: PresentationPb): PresentationPb => {
   // const context = (presentation as Presentation)['@context'] ? (presentation as Presentation)['@context'] : (presentation as PresentationPb).context;
   const { type, proof, presentationRequestId, verifierDid, context } = presentation;
 
@@ -76,7 +76,7 @@ const validatePresentation = (presentation: PresentationPb): PresentationPb => {
  * Validates the presentation request object has the proper attributes.
  * @param presentation Presentation
  */
-const validatePresentationRequest = (presentationRequest: WithVersion<PresentationRequest>): PresentationRequestPb => {
+const validateCredentialRequest = (presentationRequest: WithVersion<PresentationRequest>): PresentationRequestPb => {
   const { proof, credentialRequests, holderAppUuid, verifier } = presentationRequest;
 
   // validate required fields
@@ -139,7 +139,7 @@ const validateCredentialRequests = (requests: CredentialRequest[]): void => {
 /**
  * Verify the PresentationRequest signature as a way to side step verifier MITM attacks where an entity spoofs requests.
  */
-async function verifyPresentationRequest (authorization: string, presentationRequest: PresentationRequestPb): Promise<UnumDto<VerifiedStatus>> {
+async function verifyCredentialRequest (authorization: string, presentationRequest: PresentationRequestPb): Promise<UnumDto<VerifiedStatus>> {
   if (!presentationRequest.proof) {
     throw new CustError(400, 'Invalid PresentationRequest: proof is required.');
   }
@@ -191,7 +191,7 @@ async function verifyPresentationRequest (authorization: string, presentationReq
  * @param encryptedPresentation: EncryptedData
  * @param verifierDid: string
  */
-export const verifyPresentation = async (authorization: string, encryptedPresentation: EncryptedData, verifierDid: string, encryptionPrivateKey: string, presentationRequest?: PresentationRequestDto): Promise<UnumDto<DecryptedPresentation>> => {
+export const verifyCredential = async (authorization: string, encryptedPresentation: EncryptedData, verifierDid: string, encryptionPrivateKey: string, presentationRequest?: PresentationRequestDto): Promise<UnumDto<DecryptedPresentation>> => {
   try {
     requireAuth(authorization);
 
@@ -220,7 +220,7 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
     }
 
     // validate presentation
-    validatePresentation(presentation);
+    validateCredential(presentation);
 
     if (!presentationRequest) {
       // grab the presentation request from Unum ID SaaS for verification purposes
@@ -238,9 +238,9 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
     // verify the presentation request signature
     if (presentationRequest.presentationRequest) {
       // validate the provided presentation request
-      const presentationRequestPb: PresentationRequestPb = validatePresentationRequest(presentationRequest.presentationRequest);
+      const presentationRequestPb: PresentationRequestPb = validateCredentialRequest(presentationRequest.presentationRequest);
 
-      const requestVerificationResult: UnumDto<VerifiedStatus> = await verifyPresentationRequest(authorization, presentationRequestPb);
+      const requestVerificationResult: UnumDto<VerifiedStatus> = await verifyCredentialRequest(authorization, presentationRequestPb);
       authorization = requestVerificationResult.authToken;
 
       // if invalid then can stop here but still send back the decrypted presentation with the verification results
@@ -277,7 +277,7 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
     }
 
     const credentialRequests: CredentialRequest[] = presentationRequest.presentationRequest.credentialRequests;
-    const verificationResult: UnumDto<VerifiedStatus> = await verifyPresentationHelper(authorization, presentation, verifierDid, credentialRequests, presentationRequest.presentationRequest.uuid);
+    const verificationResult: UnumDto<VerifiedStatus> = await verifyCredentialHelper(authorization, presentation, verifierDid, credentialRequests, presentationRequest.presentationRequest.uuid);
     const result: UnumDto<DecryptedPresentation> = {
       authToken: verificationResult.authToken,
       body: {
