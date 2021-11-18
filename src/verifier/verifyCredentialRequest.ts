@@ -1,6 +1,6 @@
 
 import { DecryptedPresentation, UnumDto, VerifiedStatus } from '../types';
-import { Presentation, CredentialRequest, PresentationRequestDto, EncryptedData, PresentationRequest, PresentationPb, PresentationRequestPb, ProofPb, UnsignedPresentationRequestPb, JSONObj, CredentialRequestPb, WithVersion } from '@unumid/types';
+import { Presentation, CredentialRequest, PresentationRequestDto, EncryptedData, PresentationRequest, PresentationPb, PresentationRequestPb, ProofPb, UnsignedPresentationRequestPb, JSONObj, CredentialRequestPb, WithVersion, SubjectCredentialRequest } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
 import { CryptoError, decrypt, decryptBytes } from '@unumid/library-crypto';
 import logger from '../logger';
@@ -72,50 +72,46 @@ function isDeclinedPresentation (credential: Presentation | PresentationPb): cre
 //   return credential;
 // };
 
-/**
- * Validates the credential request object has the proper attributes.
- * @param credential Presentation
- */
-const validateCredentialRequest = (credentialRequest: WithVersion<PresentationRequest>): PresentationRequestPb => {
-  const { proof, credentialRequests, holderAppUuid, verifier } = credentialRequest;
+// /**
+//  * Validates the credential request object has the proper attributes.
+//  * @param credential Presentation
+//  */
+// const validateCredentialRequest = (credentialRequest: CredentialRequestPb): PresentationRequestPb => {
+//   const { type, issuers, required } = credentialRequest;
 
-  // validate required fields
-  if (!credentialRequests) {
-    throw new CustError(400, 'Invalid PresentationRequest: credentialRequests is required.');
-  }
+//   // validate required fields
+//   if (!type) {
+//     throw new CustError(400, `Invalid credentialRequest${credPosStr}: type must be defined.`);
+//   }
 
-  if (!holderAppUuid) {
-    throw new CustError(400, 'Invalid PresentationRequest: holderAppUuid is required.');
-  }
+//   if (typeof type !== 'string') {
+//     throw new CustError(400, `Invalid credentialRequest${credPosStr}: type must be a string.`);
+//   }
 
-  if (!proof) {
-    throw new CustError(400, 'Invalid PresentationRequest: proof is required.');
-  }
+//   if (!issuers) {
+//     throw new CustError(400, `Invalid PresentationRequest CredentialRequest${credPosStr}: issuers must be defined.`);
+//   }
 
-  if (!verifier) {
-    throw new CustError(400, 'Invalid PresentationRequest: verifier is required.');
-  }
+//   validateCredentialRequests(credentialRequest.credentialRequests);
 
-  validateCredentialRequests(credentialRequest.credentialRequests);
+//   // Check proof object is formatted correctly while converting to protobuf type
+//   const result: PresentationRequestPb = {
+//     ...credentialRequest,
+//     proof: validateProof(convertProof(proof)),
+//     expiresAt: credentialRequest.expiresAt ? credentialRequest.expiresAt : undefined,
+//     metadata: credentialRequest.metadata ? credentialRequest.metadata : undefined
+//   };
 
-  // Check proof object is formatted correctly while converting to protobuf type
-  const result: PresentationRequestPb = {
-    ...credentialRequest,
-    proof: validateProof(convertProof(proof)),
-    expiresAt: credentialRequest.expiresAt ? credentialRequest.expiresAt : undefined,
-    metadata: credentialRequest.metadata ? credentialRequest.metadata : undefined
-  };
-
-  return result;
-};
+//   return result;
+// };
 
 /**
  * Validates the attributes for a credential request to UnumID's SaaS.
  * @param requests CredentialRequest
  */
-const validateCredentialRequests = (requests: CredentialRequest[]): void => {
+const validateCredentialRequests = (requests: SubjectCredentialRequest[]): void => {
   if (isArrayEmpty(requests)) {
-    throw new CustError(400, 'Invalid PresentationRequest: verifiableCredential must be a non-empty array.');
+    throw new CustError(400, 'credentialRequests must be a non-empty array.');
   }
 
   const totCred = requests.length;
@@ -123,28 +119,62 @@ const validateCredentialRequests = (requests: CredentialRequest[]): void => {
     const credPosStr = '[' + i + ']';
     const request = requests[i];
 
+    if (!request.proof) {
+      throw new CustError(400, `Invalid CredentialRequest${credPosStr}: proof must be defined.`);
+    }
+
     if (!request.type) {
-      throw new CustError(400, `Invalid PresentationRequest CredentialRequest${credPosStr}: type must be defined.`);
+      throw new CustError(400, `Invalid CredentialRequest${credPosStr}: type must be defined.`);
     }
 
     if (typeof request.type !== 'string') {
-      throw new CustError(400, `Invalid PresentationRequest CredentialRequest${credPosStr}: type must be a string.`);
+      throw new CustError(400, `Invalid CredentialRequest${credPosStr}: type must be a string.`);
     }
 
     if (!request.issuers) {
-      throw new CustError(400, `Invalid PresentationRequest CredentialRequest${credPosStr}: issuers must be defined.`);
+      throw new CustError(400, `Invalid CredentialRequest${credPosStr}: issuers must be defined.`);
     }
   }
 };
 /**
- * Verify the PresentationRequest signature as a way to side step verifier MITM attacks where an entity spoofs requests.
+ * Verify the CredentialRequests signatures.
  */
-async function verifyCredentialRequest (authorization: string, credentialRequest: PresentationRequestPb): Promise<UnumDto<VerifiedStatus>> {
-  if (!credentialRequest.proof) {
-    throw new CustError(400, 'Invalid PresentationRequest: proof is required.');
+export async function verifyCredentialRequests (authorization: string, credentialRequests: SubjectCredentialRequest[]): Promise<UnumDto<VerifiedStatus>> {
+  requireAuth(authorization);
+
+  // validate credentialRequests input
+  validateCredentialRequests(credentialRequests);
+
+  let authToken = authorization;
+  for (const credentialRequest of credentialRequests) {
+    const result: UnumDto<VerifiedStatus> = await verifyCredentialRequest(authToken, credentialRequest);
+    authToken = result.authToken;
+
+    // can stop here is not verified
+    if (!result.body.isVerified) {
+      // handle sending back the PresentationVerified receipt with the verification failure reason
+      authToken = await handleSubjectCredentialRequestVerificationReceipt(authToken, credentialRequest, result.body);
+
+      return {
+        ...result,
+        authToken
+      };
+    }
   }
 
-  const { proof: { verificationMethod, signatureValue } } = credentialRequest;
+  // if made it this far then all SubjectCredentialRequests are verified
+  return {
+    authToken,
+    body: {
+      isVerified: true
+    }
+  };
+}
+
+async function verifyCredentialRequest (authorization: string, credentialRequest: SubjectCredentialRequest): Promise<UnumDto<VerifiedStatus>> {
+//   const { proof: { verificationMethod, signatureValue } } = credentialRequest;
+  const verificationMethod = credentialRequest.proof?.verificationMethod as string;
+  const signatureValue = credentialRequest.proof?.signatureValue as string;
 
   const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, verificationMethod);
 
@@ -157,10 +187,10 @@ async function verifyCredentialRequest (authorization: string, credentialRequest
 
   const { publicKey, encoding } = publicKeyInfos[0];
 
-  const unsignedPresentationRequest: UnsignedPresentationRequestPb = omit(credentialRequest, 'proof');
+  const unsignedCredentialRequest: CredentialRequestPb = omit(credentialRequest, 'proof');
 
   // convert to bytes
-  const bytes: Uint8Array = UnsignedPresentationRequestPb.encode(unsignedPresentationRequest).finish();
+  const bytes: Uint8Array = CredentialRequestPb.encode(unsignedCredentialRequest).finish();
 
   // verify the byte array
   const isVerified = doVerify(signatureValue, bytes, publicKey, encoding);
@@ -185,137 +215,138 @@ async function verifyCredentialRequest (authorization: string, credentialRequest
   return result;
 }
 
+// /**
+//  * Handler to send information regarding the user agreeing to share a credential Presentation.
+//  * @param authorization: string
+//  * @param encryptedPresentation: EncryptedData
+//  * @param verifierDid: string
+//  */
+// export const verifyCredential = async (authorization: string, encryptedPresentation: EncryptedData, verifierDid: string, encryptionPrivateKey: string, credentialRequest?: PresentationRequestDto): Promise<UnumDto<DecryptedPresentation>> => {
+//   try {
+//     requireAuth(authorization);
+
+//     if (!encryptedPresentation) {
+//       throw new CustError(400, 'encryptedPresentation is required.');
+//     }
+
+//     if (!verifierDid) { // verifier did
+//       throw new CustError(400, 'verifier is required.');
+//     }
+
+//     if (!encryptionPrivateKey) {
+//       throw new CustError(400, 'verifier encryptionPrivateKey is required.');
+//     }
+
+//     if (credentialRequest && credentialRequest.verifier.did !== verifierDid) {
+//       throw new CustError(400, `verifier provided, ${verifierDid}, does not match the credential request verifier, ${credentialRequest.verifier.did}.`);
+//     }
+
+//     // decrypt the credential
+//     const credentialBytes = decryptBytes(encryptionPrivateKey, encryptedPresentation);
+//     const credential: PresentationPb = PresentationPb.decode(credentialBytes);
+
+//     if (configData.debug) {
+//       logger.debug(`Decrypted Presentation: ${JSON.stringify(credential)}`);
+//     }
+
+//     // validate credential
+//     validateCredential(credential);
+
+//     if (!credentialRequest) {
+//       // grab the credential request from Unum ID SaaS for verification purposes
+//       const credentialRequestResponse = await getPresentationRequest(authorization, credential.credentialRequestId);
+
+//       authorization = handleAuthTokenHeader(credentialRequestResponse, authorization);
+//       credentialRequest = extractPresentationRequest(credentialRequestResponse.body);
+//     }
+
+//     // verify the credential request uuid match
+//     if (credentialRequest.credentialRequest.id !== credential.credentialRequestId) {
+//       throw new CustError(400, `credential request id provided, ${credentialRequest.credentialRequest.id}, does not match the credentialRequestId that the credential was in response to, ${credential.credentialRequestId}.`);
+//     }
+
+//     // verify the credential request signature
+//     if (credentialRequest.credentialRequest) {
+//       // validate the provided credential request
+//       const credentialRequestPb: PresentationRequestPb = validateCredentialRequest(credentialRequest.credentialRequest);
+
+//       const requestVerificationResult: UnumDto<VerifiedStatus> = await verifyCredentialRequest(authorization, credentialRequestPb);
+//       authorization = requestVerificationResult.authToken;
+
+//       // if invalid then can stop here but still send back the decrypted credential with the verification results
+//       if (!requestVerificationResult.body.isVerified) {
+//         // handle sending back the PresentationVerified receipt with the request verification failure reason
+//         const authToken = await handleSubjectCredentialRequestVerificationReceipt(requestVerificationResult.authToken, credential, verifierDid, requestVerificationResult.body.message as string, credentialRequest.credentialRequest.uuid);
+
+//         const type = isDeclinedPresentation(credential) ? 'DeclinedPresentation' : 'VerifiablePresentation';
+//         const result: UnumDto<DecryptedPresentation> = {
+//           authToken,
+//           body: {
+//             ...requestVerificationResult.body,
+//             type,
+//             credential: credential
+//           }
+//         };
+
+//         return result;
+//       }
+//     }
+
+//     if (isDeclinedPresentation(credential)) {
+//       const verificationResult: UnumDto<VerifiedStatus> = await verifyNoPresentationHelper(authorization, credential, verifierDid, credentialRequest.credentialRequest.uuid);
+//       const result: UnumDto<DecryptedPresentation> = {
+//         authToken: verificationResult.authToken,
+//         body: {
+//           ...verificationResult.body,
+//           type: 'DeclinedPresentation',
+//           credential: credential
+//         }
+//       };
+
+//       return result;
+//     }
+
+//     const credentialRequests: CredentialRequest[] = credentialRequest.credentialRequest.credentialRequests;
+//     const verificationResult: UnumDto<VerifiedStatus> = await verifyCredentialHelper(authorization, credential, verifierDid, credentialRequests, credentialRequest.credentialRequest.uuid);
+//     const result: UnumDto<DecryptedPresentation> = {
+//       authToken: verificationResult.authToken,
+//       body: {
+//         ...verificationResult.body,
+//         type: 'VerifiablePresentation',
+//         credential: credential
+//       }
+//     };
+
+//     return result;
+//   } catch (error) {
+//     if (error instanceof CryptoError) {
+//       logger.error(`Crypto error handling encrypted credential ${error}`);
+//     } if (error instanceof TypeError) {
+//       logger.error(`Type error handling decoding credential, credential or proof from bytes to protobufs ${error}`);
+//     } else {
+//       logger.error(`Error handling encrypted credential. ${error}`);
+//     }
+
+//     throw error;
+//   }
+// };
+
 /**
- * Handler to send information regarding the user agreeing to share a credential Presentation.
- * @param authorization: string
- * @param encryptedPresentation: EncryptedData
- * @param verifierDid: string
+ * Handle sending back the SubjectCredentialRequestVerified receipt
  */
-export const verifyCredential = async (authorization: string, encryptedPresentation: EncryptedData, verifierDid: string, encryptionPrivateKey: string, credentialRequest?: PresentationRequestDto): Promise<UnumDto<DecryptedPresentation>> => {
-  try {
-    requireAuth(authorization);
+async function handleSubjectCredentialRequestVerificationReceipt (authToken: string, credentialRequest: SubjectCredentialRequest, verifiedStatus: VerifiedStatus) {
+  // TODO
+//   try {
+//     const credentialTypes = credential.verifiableCredential && isArrayNotEmpty(credential.verifiableCredential) ? credential.verifiableCredential.flatMap(cred => cred.type.slice(1)) : []; // cut off the preceding 'VerifiableCredential' string in each array
+//     const credentialIds = credential.verifiableCredential && isArrayNotEmpty(credential.verifiableCredential) ? credential.verifiableCredential.flatMap(cred => cred.id) : [];
+//     const issuers = credential.verifiableCredential && isArrayNotEmpty(credential.verifiableCredential) ? credential.verifiableCredential.map(cred => cred.issuer) : [];
+//     const reply = isDeclinedPresentation(credential) ? 'declined' : 'approved';
+//     const proof = credential.proof as ProofPb; // existence has already been validated
 
-    if (!encryptedPresentation) {
-      throw new CustError(400, 'encryptedPresentation is required.');
-    }
-
-    if (!verifierDid) { // verifier did
-      throw new CustError(400, 'verifier is required.');
-    }
-
-    if (!encryptionPrivateKey) {
-      throw new CustError(400, 'verifier encryptionPrivateKey is required.');
-    }
-
-    if (credentialRequest && credentialRequest.verifier.did !== verifierDid) {
-      throw new CustError(400, `verifier provided, ${verifierDid}, does not match the credential request verifier, ${credentialRequest.verifier.did}.`);
-    }
-
-    // decrypt the credential
-    const credentialBytes = decryptBytes(encryptionPrivateKey, encryptedPresentation);
-    const credential: PresentationPb = PresentationPb.decode(credentialBytes);
-
-    if (configData.debug) {
-      logger.debug(`Decrypted Presentation: ${JSON.stringify(credential)}`);
-    }
-
-    // validate credential
-    validateCredential(credential);
-
-    if (!credentialRequest) {
-      // grab the credential request from Unum ID SaaS for verification purposes
-      const credentialRequestResponse = await getPresentationRequest(authorization, credential.credentialRequestId);
-
-      authorization = handleAuthTokenHeader(credentialRequestResponse, authorization);
-      credentialRequest = extractPresentationRequest(credentialRequestResponse.body);
-    }
-
-    // verify the credential request uuid match
-    if (credentialRequest.credentialRequest.id !== credential.credentialRequestId) {
-      throw new CustError(400, `credential request id provided, ${credentialRequest.credentialRequest.id}, does not match the credentialRequestId that the credential was in response to, ${credential.credentialRequestId}.`);
-    }
-
-    // verify the credential request signature
-    if (credentialRequest.credentialRequest) {
-      // validate the provided credential request
-      const credentialRequestPb: PresentationRequestPb = validateCredentialRequest(credentialRequest.credentialRequest);
-
-      const requestVerificationResult: UnumDto<VerifiedStatus> = await verifyCredentialRequest(authorization, credentialRequestPb);
-      authorization = requestVerificationResult.authToken;
-
-      // if invalid then can stop here but still send back the decrypted credential with the verification results
-      if (!requestVerificationResult.body.isVerified) {
-        // handle sending back the PresentationVerified receipt with the request verification failure reason
-        const authToken = await handlePresentationVerificationReceipt(requestVerificationResult.authToken, credential, verifierDid, requestVerificationResult.body.message as string, credentialRequest.credentialRequest.uuid);
-
-        const type = isDeclinedPresentation(credential) ? 'DeclinedPresentation' : 'VerifiablePresentation';
-        const result: UnumDto<DecryptedPresentation> = {
-          authToken,
-          body: {
-            ...requestVerificationResult.body,
-            type,
-            credential: credential
-          }
-        };
-
-        return result;
-      }
-    }
-
-    if (isDeclinedPresentation(credential)) {
-      const verificationResult: UnumDto<VerifiedStatus> = await verifyNoPresentationHelper(authorization, credential, verifierDid, credentialRequest.credentialRequest.uuid);
-      const result: UnumDto<DecryptedPresentation> = {
-        authToken: verificationResult.authToken,
-        body: {
-          ...verificationResult.body,
-          type: 'DeclinedPresentation',
-          credential: credential
-        }
-      };
-
-      return result;
-    }
-
-    const credentialRequests: CredentialRequest[] = credentialRequest.credentialRequest.credentialRequests;
-    const verificationResult: UnumDto<VerifiedStatus> = await verifyCredentialHelper(authorization, credential, verifierDid, credentialRequests, credentialRequest.credentialRequest.uuid);
-    const result: UnumDto<DecryptedPresentation> = {
-      authToken: verificationResult.authToken,
-      body: {
-        ...verificationResult.body,
-        type: 'VerifiablePresentation',
-        credential: credential
-      }
-    };
-
-    return result;
-  } catch (error) {
-    if (error instanceof CryptoError) {
-      logger.error(`Crypto error handling encrypted credential ${error}`);
-    } if (error instanceof TypeError) {
-      logger.error(`Type error handling decoding credential, credential or proof from bytes to protobufs ${error}`);
-    } else {
-      logger.error(`Error handling encrypted credential. ${error}`);
-    }
-
-    throw error;
-  }
-};
-
-/**
- * Handle sending back the PresentationVerified receipt with the request verification failure reason
- */
-async function handlePresentationVerificationReceipt (authToken: string, credential: PresentationPb, verifier: string, message: string, requestUuid: string) {
-  try {
-    const credentialTypes = credential.verifiableCredential && isArrayNotEmpty(credential.verifiableCredential) ? credential.verifiableCredential.flatMap(cred => cred.type.slice(1)) : []; // cut off the preceding 'VerifiableCredential' string in each array
-    const credentialIds = credential.verifiableCredential && isArrayNotEmpty(credential.verifiableCredential) ? credential.verifiableCredential.flatMap(cred => cred.id) : [];
-    const issuers = credential.verifiableCredential && isArrayNotEmpty(credential.verifiableCredential) ? credential.verifiableCredential.map(cred => cred.issuer) : [];
-    const reply = isDeclinedPresentation(credential) ? 'declined' : 'approved';
-    const proof = credential.proof as ProofPb; // existence has already been validated
-
-    return sendPresentationVerifiedReceipt(authToken, verifier, proof.verificationMethod, reply, false, credential.credentialRequestId, requestUuid, message, issuers, credentialTypes, credentialIds);
-  } catch (e) {
-    logger.error('Something went wrong handling the PresentationVerification receipt for the a failed request verification');
-  }
+  //     return sendPresentationVerifiedReceipt(authToken, verifier, proof.verificationMethod, reply, false, credential.credentialRequestId, requestUuid, message, issuers, credentialTypes, credentialIds);
+  //   } catch (e) {
+  //     logger.error('Something went wrong handling the PresentationVerification receipt for the a failed request verification');
+  //   }
 
   return authToken;
 }
