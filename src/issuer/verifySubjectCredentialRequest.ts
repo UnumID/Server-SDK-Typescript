@@ -17,28 +17,27 @@ import { handleAuthTokenHeader } from '../utils/networkRequestHelper';
  */
 const validateCredentialRequests = (requests: SubjectCredentialRequest[]): void => {
   if (isArrayEmpty(requests)) {
-    throw new CustError(400, 'credentialRequests must be a non-empty array.');
+    throw new CustError(400, 'subjectCredentialRequests must be a non-empty array.');
   }
 
   const totCred = requests.length;
   for (let i = 0; i < totCred; i++) {
-    const credPosStr = '[' + i + ']';
     const request = requests[i];
 
     if (!request.proof) {
-      throw new CustError(400, `Invalid CredentialRequest${credPosStr}: proof must be defined.`);
+      throw new CustError(400, `Invalid SubjectCredentialRequest[${i}]: proof must be defined.`);
     }
 
     if (!request.type) {
-      throw new CustError(400, `Invalid CredentialRequest${credPosStr}: type must be defined.`);
+      throw new CustError(400, `Invalid SubjectCredentialRequest[${i}]: type must be defined.`);
     }
 
     if (typeof request.type !== 'string') {
-      throw new CustError(400, `Invalid CredentialRequest${credPosStr}: type must be a string.`);
+      throw new CustError(400, `Invalid SubjectCredentialRequest[${i}]: type must be a string.`);
     }
 
     if (!request.issuers) {
-      throw new CustError(400, `Invalid CredentialRequest${credPosStr}: issuers must be defined.`);
+      throw new CustError(400, `Invalid SubjectCredentialRequest[${i}]: issuers must be defined.`);
     }
   }
 };

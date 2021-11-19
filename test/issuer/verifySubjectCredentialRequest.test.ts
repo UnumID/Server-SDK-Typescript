@@ -132,7 +132,7 @@ const populateMockData = async (): Promise<JSONObj> => {
 };
 
 describe('verifySubjectCredentialRequest', () => {
-  let context, type, verifiableCredential, presentationRequestId, proof, authHeader, verifier, credentialRequests, subjectCredentialRequests, presentationRequestDto, presentationRequest, unsignedPresentationRequest, presentation, unsignedPresentation;
+  let context, type, verifiableCredential, presentationRequestId, proof, authHeader, verifier, credentialRequests, subjectCredentialRequests, subjectCredentialRequest, presentationRequest, unsignedPresentationRequest, presentation, unsignedPresentation;
 
   beforeAll(async () => {
   // const presentationRequest = makeDummyPresentationRequestResponse();
@@ -146,6 +146,7 @@ describe('verifySubjectCredentialRequest', () => {
     verifier = dummyData.verifier;
     credentialRequests = dummyData.credentialRequests;
     subjectCredentialRequests = dummyData.subjectCredentialRequests;
+    subjectCredentialRequest = dummyData.subjectCredentialRequest;
     // presentationRequestDto = dummyData.presentationRequestDto;
     // presentationRequest = dummyData.presentationRequestDto.presentationRequest;
     // unsignedPresentationRequest = dummyData.presentationRequest;
@@ -296,119 +297,72 @@ describe('verifySubjectCredentialRequest', () => {
   describe('verifySubjectCredentialRequest - Validation Failures', () => {
     // const { context, type, verifiableCredential, presentationRequestId, proof, authHeader, verifier, credentialRequests } = populateMockData();
 
-    it('returns a 400 status code with a descriptive error message when context is missing', async () => {
+    it('returns a 400 status code with a descriptive error message when subjectCredentialRequests is not a non empty array', async () => {
       try {
-        await verifySubjectCredentialRequest('', type, verifiableCredential, presentationRequestId, proof, verifier, authHeader, credentialRequests);
+        await verifySubjectCredentialRequests(dummyAuthToken, []);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
-        expect(e.message).toBe('Invalid Presentation: context is required.');
-      }
-    });
-
-    it('returns a 400 status code with a descriptive error message when type is missing', async () => {
-      try {
-        await verifySubjectCredentialRequest(context, '', verifiableCredential, presentationRequestId, proof, verifier, authHeader, credentialRequests);
-        fail();
-      } catch (e) {
-        expect(e.code).toBe(400);
-        expect(e.message).toBe('Invalid Presentation: type is required.');
-      }
-    });
-
-    it('returns a 400 status code with a descriptive error message when verifiableCredential is missing', async () => {
-      try {
-        await verifySubjectCredentialRequest(context, type, '', presentationRequestId, proof, verifier, authHeader, credentialRequests);
-        fail();
-      } catch (e) {
-        expect(e.code).toBe(400);
-        expect(e.message).toBe('Invalid Presentation: verifiableCredential must be a non-empty array.');
-      }
-    });
-
-    it('returns a 400 status code with a descriptive error message when presentationRequestId is missing', async () => {
-      try {
-        await verifySubjectCredentialRequest(context, type, verifiableCredential, '', proof, verifier, authHeader, credentialRequests);
-        fail();
-      } catch (e) {
-        expect(e.code).toBe(400);
-        expect(e.message).toBe('Invalid Presentation: presentationRequestId is required.');
+        expect(e.message).toBe('subjectCredentialRequests must be a non-empty array.');
       }
     });
 
     it('returns a 400 status code with a descriptive error message when proof is missing', async () => {
       try {
-        await verifySubjectCredentialRequest(context, type, verifiableCredential, presentationRequestId, '', verifier, authHeader, credentialRequests);
+        await verifySubjectCredentialRequests(dummyAuthToken, credentialRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
-        expect(e.message).toBe('Invalid Presentation: proof is required.');
+        expect(e.message).toBe('Invalid SubjectCredentialRequest[0]: proof must be defined.');
       }
     });
 
-    it('returns a 400 status code with a descriptive error message when @context is not an array', async () => {
+    it('returns a 400 status code with a descriptive error message when type is missing', async () => {
+      const badRequest = {
+        ...subjectCredentialRequest,
+        type: undefined
+      };
       try {
-        await verifySubjectCredentialRequest('https://www.w3.org/2018/credentials/v1', type, verifiableCredential, presentationRequestId, proof, verifier, authHeader, credentialRequests);
+        await verifySubjectCredentialRequests(dummyAuthToken, [badRequest]);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
-        expect(e.message).toBe('Invalid Presentation: context must be a non-empty array.');
+        expect(e.message).toBe('Invalid SubjectCredentialRequest[0]: type must be defined.');
       }
     });
 
-    it('returns a 400 status code with a descriptive error message when @context array is empty', async () => {
+    it('returns a 400 status code with a descriptive error message when type is not a string', async () => {
+      const badRequest = {
+        ...subjectCredentialRequest,
+        type: []
+      };
       try {
-        await verifySubjectCredentialRequest([], type, verifiableCredential, presentationRequestId, proof, verifier, authHeader, credentialRequests);
+        await verifySubjectCredentialRequests(dummyAuthToken, [badRequest]);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
-        expect(e.message).toBe('Invalid Presentation: context must be a non-empty array.');
+        expect(e.message).toBe('Invalid SubjectCredentialRequest[0]: type must be a string.');
       }
     });
 
-    it('returns a 400 status code with a descriptive error message when type is not an array', async () => {
-      try {
-        await verifySubjectCredentialRequest(context, 'VerifiablePresentation', verifiableCredential, presentationRequestId, proof, verifier, authHeader, credentialRequests);
-        fail();
-      } catch (e) {
-        expect(e.code).toBe(400);
-        expect(e.message).toBe('Invalid Presentation: type must be a non-empty array.');
-      }
-    });
+    it('returns a 400 status code with a descriptive error message when issuers is missing', async () => {
+      const badRequest = {
+        ...subjectCredentialRequest,
+        issuers: undefined
+      };
 
-    it('returns a 400 status code with a descriptive error message when type is empty', async () => {
       try {
-        await verifySubjectCredentialRequest(context, [], verifiableCredential, presentationRequestId, proof, verifier, authHeader, credentialRequests);
+        await verifySubjectCredentialRequests(dummyAuthToken, [badRequest]);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
-        expect(e.message).toBe('Invalid Presentation: type must be a non-empty array.');
-      }
-    });
-
-    it('returns a 400 status code with a descriptive error message when verifiableCredential is not an array', async () => {
-      try {
-        await verifySubjectCredentialRequest(context, type, 'verifiableCredential', presentationRequestId, proof, verifier, authHeader, credentialRequests);
-        fail();
-      } catch (e) {
-        expect(e.code).toBe(400);
-        expect(e.message).toBe('Invalid Presentation: verifiableCredential must be a non-empty array.');
-      }
-    });
-
-    it('returns a 400 status code with a descriptive error message when verifiableCredentials array is empty', async () => {
-      try {
-        await verifySubjectCredentialRequest(context, type, undefined, presentationRequestId, proof, verifier, authHeader, credentialRequests);
-        fail();
-      } catch (e) {
-        expect(e.code).toBe(400);
-        expect(e.message).toBe('Invalid Presentation: verifiableCredential must be a non-empty array.');
+        expect(e.message).toBe('Invalid SubjectCredentialRequest[0]: issuers must be defined.');
       }
     });
 
     it('returns a 401 status code if x-auth-token header is missing', async () => {
       try {
-        await verifySubjectCredentialRequest(context, type, verifiableCredential, presentationRequestId, proof, verifier, '', credentialRequests);
+        await verifySubjectCredentialRequests('', credentialRequests);
         fail();
       } catch (e) {
         expect(e.code).toEqual(401);
