@@ -45,7 +45,7 @@ const validateCredentialRequests = (requests: SubjectCredentialRequest[]): void 
 /**
  * Verify the CredentialRequests signatures.
  */
-export async function verifyCredentialRequests (authorization: string, credentialRequests: SubjectCredentialRequest[]): Promise<UnumDto<VerifiedStatus>> {
+export async function verifySubjectCredentialRequests (authorization: string, credentialRequests: SubjectCredentialRequest[]): Promise<UnumDto<VerifiedStatus>> {
   requireAuth(authorization);
 
   // validate credentialRequests input
@@ -53,7 +53,7 @@ export async function verifyCredentialRequests (authorization: string, credentia
 
   let authToken = authorization;
   for (const credentialRequest of credentialRequests) {
-    const result: UnumDto<VerifiedStatus> = await verifyCredentialRequest(authToken, credentialRequest);
+    const result: UnumDto<VerifiedStatus> = await verifySubjectCredentialRequest(authToken, credentialRequest);
     authToken = result.authToken;
 
     // can stop here is not verified
@@ -77,7 +77,7 @@ export async function verifyCredentialRequests (authorization: string, credentia
   };
 }
 
-async function verifyCredentialRequest (authorization: string, credentialRequest: SubjectCredentialRequest): Promise<UnumDto<VerifiedStatus>> {
+export async function verifySubjectCredentialRequest (authorization: string, credentialRequest: SubjectCredentialRequest): Promise<UnumDto<VerifiedStatus>> {
 //   const { proof: { verificationMethod, signatureValue } } = credentialRequest;
   const verificationMethod = credentialRequest.proof?.verificationMethod as string;
   const signatureValue = credentialRequest.proof?.signatureValue as string;
@@ -90,6 +90,17 @@ async function verifyCredentialRequest (authorization: string, credentialRequest
 
   const authToken: string = handleAuthTokenHeader(didDocumentResponse, authorization);
   const publicKeyInfos = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
+
+  if (publicKeyInfos.length === 0) {
+    // throw new CustError(404, `Public key not found for the subject did ${verificationMethod}`);
+    return {
+      authToken,
+      body: {
+        isVerified: false,
+        message: `Public key not found for the subject did ${verificationMethod}`
+      }
+    };
+  }
 
   const { publicKey, encoding } = publicKeyInfos[0];
 

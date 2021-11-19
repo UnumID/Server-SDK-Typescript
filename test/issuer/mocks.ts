@@ -1,9 +1,10 @@
 
-import { Issuer, DidDocument, UnsignedCredential, Credential, CredentialSubject } from '@unumid/types';
+import { Issuer, DidDocument, UnsignedCredential, Credential, CredentialSubject, SubjectCredentialRequest, CredentialRequestPb } from '@unumid/types';
+import { CredentialRequest } from '@unumid/types/build/protos/credential';
 import { configData } from '../../src/config';
 import { RESTResponse } from '../../src/types';
 import { createKeyPairSet } from '../../src/utils/createKeyPairs';
-import { createProof } from '../../src/utils/createProof';
+import { createProof, createProofPb } from '../../src/utils/createProof';
 import { getUUID } from '../../src/utils/helpers';
 
 export const dummyAuthToken = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiaXNzdWVyIiwidXVpZCI6IjU5MDMyMmRiLTJlMDgtNGZjNi1iZTY2LTQ3NGRmMWY3Nzk4YSIsImRpZCI6ImRpZDp1bnVtOmRhOGYyNDJkLTZjZDYtNGUzMC1iNTU3LTNhMzkzZWFkZmMyYyIsImV4cCI6MTU5Njc2NzAzNi45NjQsImlhdCI6MTU5NzE0MzAxNn0.9AwobcQ3a9u4gMCc9b1BtN8VRoiglCJKGtkqB425Zyo';
@@ -37,6 +38,31 @@ export interface DummyVerifierResponseOptions {
   issuer?: Issuer;
   authToken?: string;
 }
+
+export const dummyCredentialRequest = {
+  type: 'DummyCredential',
+  issuers: [dummyIssuerDid],
+  required: true
+};
+
+export const dummySubjectCredentialRequest = {
+  type: 'DummyCredential',
+  issuers: [dummyIssuerDid],
+  required: true
+};
+
+export const makeDummySubjectCredentialRequest = async (request: CredentialRequestPb, subjectPrivateKey: string, subjectDid): Promise<SubjectCredentialRequest> => {
+  // convert the protobuf to a byte array
+  const bytes: Uint8Array = CredentialRequestPb.encode(request).finish();
+  const proof = await createProofPb(bytes, subjectPrivateKey, subjectDid, undefined);
+
+  return {
+    ...dummyCredentialRequest,
+    proof: proof
+  };
+};
+
+// export const dummySubjectCredentialRequest: SubjectCredentialRequest =
 
 export const makeDummyIssuerResponse = (options: DummyVerifierResponseOptions = {}): RESTResponse<Issuer> => {
   const authToken = options.authToken || dummyAuthToken;
