@@ -10,6 +10,7 @@ import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
 import { configData } from '../config';
 import { doVerify } from '../utils/verify';
 import { handleAuthTokenHeader } from '../utils/networkRequestHelper';
+import { validateProof } from '../verifier/validateProof';
 
 /**
  * Validates the attributes for a credential request to UnumID's SaaS.
@@ -27,6 +28,8 @@ const validateCredentialRequests = (requests: SubjectCredentialRequest[]): void 
     if (!request.proof) {
       throw new CustError(400, `Invalid SubjectCredentialRequest[${i}]: proof must be defined.`);
     }
+
+    validateProof(request.proof);
 
     if (!request.type) {
       throw new CustError(400, `Invalid SubjectCredentialRequest[${i}]: type must be defined.`);
