@@ -23,8 +23,6 @@ const validateCredentialRequests = (requests: SubjectCredentialRequest[]): strin
     throw new CustError(400, 'subjectCredentialRequests must be a non-empty array.');
   }
 
-  // @ts-ignore: Object is possibly 'undefined'.
-  // const subjectDid = requests[0]?.proof.verificationMethod; // note: already ensured that at least one entry in requests
   let subjectDid = '';
 
   for (let i = 0; i < requests.length; i++) {

@@ -68,12 +68,10 @@ var logger_1 = __importDefault(require("../logger"));
  * @param requests CredentialRequest
  */
 var validateCredentialRequests = function (requests) {
-    var _a;
     if (helpers_1.isArrayEmpty(requests) || !requests) {
         throw new error_1.CustError(400, 'subjectCredentialRequests must be a non-empty array.');
     }
-    // @ts-ignore: Object is possibly 'undefined'.
-    var subjectDid = (_a = requests[0]) === null || _a === void 0 ? void 0 : _a.proof.verificationMethod; // note: already ensured that at least one entry in requests
+    var subjectDid = '';
     for (var i = 0; i < requests.length; i++) {
         var request_1 = requests[i];
         if (!request_1.proof) {
@@ -89,8 +87,14 @@ var validateCredentialRequests = function (requests) {
         if (!request_1.issuers) {
             throw new error_1.CustError(400, "Invalid SubjectCredentialRequest[" + i + "]: issuers must be defined.");
         }
-        if (subjectDid !== request_1.proof.verificationMethod) {
-            throw new error_1.CustError(400, 'Invalid SubjectCredentialRequests: subjectDid must identical per batch of requests.');
+        // handle validating the subject did is the identical fr all requests
+        if (i === 0) {
+            subjectDid = request_1.proof.verificationMethod;
+        }
+        else {
+            if (subjectDid !== request_1.proof.verificationMethod) {
+                throw new error_1.CustError(400, 'Invalid SubjectCredentialRequests: subjectDid must identical per batch of requests.');
+            }
         }
     }
     // return the subjectDid for reference now that have validated all the same across all requests
