@@ -69,12 +69,10 @@ var validateCredentialInput = function (credentials) {
         retObj.msg = 'Invalid Presentation: verifiableCredential must be a non-empty array.';
         return (retObj);
     }
-    var totCred = credentials.length;
-    for (var i = 0; i < totCred; i++) {
-        var credPosStr = '[' + i + ']';
+    for (var i = 0; i < credentials.length; i++) {
         var credential = credentials[i];
         // Validate the existence of elements in Credential object
-        var invalidMsg = "Invalid verifiableCredential" + credPosStr + ":";
+        var invalidMsg = "Invalid verifiableCredential[" + i + "]:";
         if (!credential.context) {
             retObj.valid = false;
             retObj.msg = invalidMsg + " context is required.";

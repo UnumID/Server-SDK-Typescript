@@ -175,7 +175,7 @@ describe('verifySubjectCredentialRequest', () => {
       // mockIsCredentialExpired.mockReturnValue(false);
       // mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: { status: 'valid' } });
       mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers: dummyResponseHeaders });
-      response = await verifySubjectCredentialRequests(dummyAuthToken, subjectCredentialRequests);
+      response = await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, subjectCredentialRequests);
       verStatus = response.body.isVerified;
     });
 
@@ -256,7 +256,7 @@ describe('verifySubjectCredentialRequest', () => {
       const dummySubjectDidDoc = await makeDummyDidDocument();
       const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
       mockGetDIDDoc.mockResolvedValue({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
-      response = await verifySubjectCredentialRequests(dummyAuthToken, subjectCredentialRequests);
+      response = await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, subjectCredentialRequests);
       verStatus = response.body.isVerified;
       expect(mockGetDIDDoc).toBeCalled();
     });
@@ -277,7 +277,7 @@ describe('verifySubjectCredentialRequest', () => {
       };
       const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
       mockGetDIDDoc.mockResolvedValue({ body: dummyDidDocWithoutKeys, headers: dummyResponseHeaders });
-      const response = await verifySubjectCredentialRequests(dummyAuthToken, subjectCredentialRequests);
+      const response = await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, subjectCredentialRequests);
       expect(response.body.isVerified).toBe(false);
       expect(response.body.message).toBe(`Public key not found for the subject did ${subjectCredentialRequests[0].proof.verificationMethod}`);
     });
@@ -286,7 +286,7 @@ describe('verifySubjectCredentialRequest', () => {
       mockGetDIDDoc.mockResolvedValue(new CustError(404, 'DID Document not found.'));
 
       try {
-        response = await verifySubjectCredentialRequests(dummyAuthToken, subjectCredentialRequests);
+        response = await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, subjectCredentialRequests);
         fail();
       } catch (e) {
         expect(e.code).toEqual(404);
@@ -299,7 +299,7 @@ describe('verifySubjectCredentialRequest', () => {
 
     it('returns a 400 status code with a descriptive error message when subjectCredentialRequests is not a non empty array', async () => {
       try {
-        await verifySubjectCredentialRequests(dummyAuthToken, []);
+        await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, []);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -309,7 +309,11 @@ describe('verifySubjectCredentialRequest', () => {
 
     it('returns a 400 status code with a descriptive error message when proof is missing', async () => {
       try {
-        await verifySubjectCredentialRequests(dummyAuthToken, credentialRequests);
+        const badRequest = {
+          ...subjectCredentialRequest,
+          proof: undefined
+        };
+        await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, [badRequest]);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -323,7 +327,7 @@ describe('verifySubjectCredentialRequest', () => {
         type: undefined
       };
       try {
-        await verifySubjectCredentialRequests(dummyAuthToken, [badRequest]);
+        await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, [badRequest]);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -337,7 +341,7 @@ describe('verifySubjectCredentialRequest', () => {
         type: []
       };
       try {
-        await verifySubjectCredentialRequests(dummyAuthToken, [badRequest]);
+        await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, [badRequest]);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -352,7 +356,7 @@ describe('verifySubjectCredentialRequest', () => {
       };
 
       try {
-        await verifySubjectCredentialRequests(dummyAuthToken, [badRequest]);
+        await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, [badRequest]);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -362,7 +366,7 @@ describe('verifySubjectCredentialRequest', () => {
 
     it('returns a 401 status code if x-auth-token header is missing', async () => {
       try {
-        await verifySubjectCredentialRequests('', credentialRequests);
+        await verifySubjectCredentialRequests('', dummyIssuerDid, credentialRequests);
         fail();
       } catch (e) {
         expect(e.code).toEqual(401);
