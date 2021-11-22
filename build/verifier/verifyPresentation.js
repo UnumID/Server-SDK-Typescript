@@ -204,7 +204,7 @@ function verifyPresentationRequest(authorization, presentationRequest) {
     });
 }
 /**
- * Handler to send information regarding the user agreeing to share a credential Presentation.
+ * Handler for verifying a provided encrypted Presentation.
  * @param authorization: string
  * @param encryptedPresentation: EncryptedData
  * @param verifierDid: string

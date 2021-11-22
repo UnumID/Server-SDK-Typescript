@@ -33,13 +33,11 @@ const validateCredentialInput = (credentials: CredentialPb[]): JSONObj => {
     return (retObj);
   }
 
-  const totCred = credentials.length;
-  for (let i = 0; i < totCred; i++) {
-    const credPosStr = '[' + i + ']';
+  for (let i = 0; i < credentials.length; i++) {
     const credential = credentials[i];
 
     // Validate the existence of elements in Credential object
-    const invalidMsg = `Invalid verifiableCredential${credPosStr}:`;
+    const invalidMsg = `Invalid verifiableCredential[${i}]:`;
     if (!credential.context) {
       retObj.valid = false;
       retObj.msg = `${invalidMsg} context is required.`;

@@ -186,7 +186,7 @@ async function verifyPresentationRequest (authorization: string, presentationReq
 }
 
 /**
- * Handler to send information regarding the user agreeing to share a credential Presentation.
+ * Handler for verifying a provided encrypted Presentation.
  * @param authorization: string
  * @param encryptedPresentation: EncryptedData
  * @param verifierDid: string
@@ -240,7 +240,7 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
       // validate the provided presentation request
       const presentationRequestPb: PresentationRequestPb = validatePresentationRequest(presentationRequest.presentationRequest);
 
-      const requestVerificationResult = await verifyPresentationRequest(authorization, presentationRequestPb);
+      const requestVerificationResult: UnumDto<VerifiedStatus> = await verifyPresentationRequest(authorization, presentationRequestPb);
       authorization = requestVerificationResult.authToken;
 
       // if invalid then can stop here but still send back the decrypted presentation with the verification results

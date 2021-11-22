@@ -15,6 +15,7 @@ import { createProof, createProofPb } from './utils/createProof';
 import { convertCredentialSubject } from './utils/convertCredentialSubject';
 import { getRequest } from './verifier/getRequest';
 import { getVersionedRequest } from './verifier/getVersionedRequest';
+import { verifySubjectCredentialRequests } from './issuer/verifySubjectCredentialRequest';
 
 export {
   // Issuer Functions
@@ -22,6 +23,7 @@ export {
   issueCredential,
   issueCredentials,
   updateCredentialStatus,
+  verifySubjectCredentialRequests,
   // Verifier Functions
   registerVerifier,
   sendEmail,
