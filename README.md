@@ -158,7 +158,7 @@ Response Body: **Empty**. If unsuccessful and exception will be thrown.
 ### verifySubjectCredentialRequest
 Verify a Subject's request for credentials.
 
-You need to provide the credential `id` (created when you issued the credential) and a [CredentialStatusOptions](https://docs.unum.id/types/modules.html#credentialstatusoptions) `status`. Currently the only valid status are: verified and revoked.
+You need to provide the your issuer's `did` along with the SubjectCredentialRequest array from your `/credentialRequest` endpoint.
 
 ```typescript
 export type SubjectCredentialRequest = {
