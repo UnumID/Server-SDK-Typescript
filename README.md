@@ -155,6 +155,37 @@ Response Body: **Empty**. If unsuccessful and exception will be thrown.
 {}
 ```
 
+### verifySubjectCredentialRequest
+Verify a Subject's request for credentials.
+
+You need to provide the credential `id` (created when you issued the credential) and a [CredentialStatusOptions](https://docs.unum.id/types/modules.html#credentialstatusoptions) `status`. Currently the only valid status are: verified and revoked.
+
+```typescript
+export type SubjectCredentialRequest = {
+  type: string; // the string matching the desire credential type
+  issuers: string[]; //list of acceptable issuer DIDs that have issued the credential
+  required: boolean; // to denote wether this particular credential is required. Defaults behavior resolves this to true.
+  proof: Proof; // proof signed by the subject
+}
+```
+
+Parameters
+```typescript
+{
+  "authorization": string // auth token
+  "issuerDid": string // the did of your issuer
+  "credentialRequests: SubjectCredentialRequest[] // array of credential requests signed by the Subject
+}
+```
+
+Response Body: [**VerifiedStatus**]. 
+```typescript
+export interface VerifiedStatus {
+  isVerified: boolean;
+  message?: string; // message containing information iff it was not verified
+}
+```
+
 ## Verifier
 The Verifier functionality is used by a customer acting as a verifier. Most importantly, it allows customers to send PresentationRequests to the UnumID mobile SDK and to verify the encrypted Presentation responses.
 
