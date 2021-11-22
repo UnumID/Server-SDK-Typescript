@@ -170,7 +170,7 @@ async function handleSubjectCredentialsRequestsVerificationReceipt (authorizatio
     const credentialTypes = credentialRequests.map((request: { type: string; }) => request.type);
 
     const receiptOptions = {
-      type: 'PresentationVerified',
+      type: 'SubjectCredentialRequestVerified',
       issuer: issuerDid,
       subject: subjectDid,
       data: {

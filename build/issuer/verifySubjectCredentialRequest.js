@@ -221,7 +221,7 @@ function handleSubjectCredentialsRequestsVerificationReceipt(authorization, issu
                     _a.trys.push([0, 2, , 3]);
                     credentialTypes = credentialRequests.map(function (request) { return request.type; });
                     receiptOptions = {
-                        type: 'PresentationVerified',
+                        type: 'SubjectCredentialRequestVerified',
                         issuer: issuerDid,
                         subject: subjectDid,
                         data: {
