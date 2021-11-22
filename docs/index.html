@@ -208,6 +208,31 @@
 				<p>Response Body: <strong>Empty</strong>. If unsuccessful and exception will be thrown.</p>
 				<pre><code class="language-typescript"><span style="color: #000000">{}</span>
 </code></pre>
+				<a href="#verifysubjectcredentialrequest" id="verifysubjectcredentialrequest" style="color: inherit; text-decoration: none;">
+					<h3>verifySubjectCredentialRequest</h3>
+				</a>
+				<p>Verify a Subject&#39;s request for credentials.</p>
+				<p>You need to provide the your issuer&#39;s <code>did</code> along with the SubjectCredentialRequest array from your <code>/credentialRequest</code> endpoint.</p>
+				<pre><code class="language-typescript"><span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">type</span><span style="color: #000000"> </span><span style="color: #267F99">SubjectCredentialRequest</span><span style="color: #000000"> = {</span>
+<span style="color: #000000">  </span><span style="color: #001080">type</span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000">; </span><span style="color: #008000">// the string matching the desire credential type</span>
+<span style="color: #000000">  </span><span style="color: #001080">issuers</span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000">[]; </span><span style="color: #008000">//list of acceptable issuer DIDs that have issued the credential</span>
+<span style="color: #000000">  </span><span style="color: #001080">required</span><span style="color: #000000">: </span><span style="color: #267F99">boolean</span><span style="color: #000000">; </span><span style="color: #008000">// to denote wether this particular credential is required. Defaults behavior resolves this to true.</span>
+<span style="color: #000000">  </span><span style="color: #001080">proof</span><span style="color: #000000">: </span><span style="color: #267F99">Proof</span><span style="color: #000000">; </span><span style="color: #008000">// proof signed by the subject</span>
+<span style="color: #000000">}</span>
+</code></pre>
+				<p>Parameters</p>
+				<pre><code class="language-typescript"><span style="color: #000000">{</span>
+<span style="color: #000000">  </span><span style="color: #A31515">&quot;authorization&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// auth token</span>
+<span style="color: #000000">  </span><span style="color: #A31515">&quot;issuerDid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// the did of your issuer</span>
+<span style="color: #000000">  </span><span style="color: #A31515">&quot;credentialRequests: SubjectCredentialRequest[] // array of credential requests signed by the Subjec</span><span style="color: #CD3131">t</span>
+<span style="color: #000000">}</span>
+</code></pre>
+				<p>Response Body: [<strong>VerifiedStatus</strong>]. </p>
+				<pre><code class="language-typescript"><span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">interface</span><span style="color: #000000"> </span><span style="color: #267F99">VerifiedStatus</span><span style="color: #000000"> {</span>
+<span style="color: #000000">  </span><span style="color: #001080">isVerified</span><span style="color: #000000">: </span><span style="color: #267F99">boolean</span><span style="color: #000000">;</span>
+<span style="color: #000000">  </span><span style="color: #001080">message</span><span style="color: #000000">?: </span><span style="color: #267F99">string</span><span style="color: #000000">; </span><span style="color: #008000">// message containing information iff it was not verified</span>
+<span style="color: #000000">}</span>
+</code></pre>
 				<a href="#verifier" id="verifier" style="color: inherit; text-decoration: none;">
 					<h2>Verifier</h2>
 				</a>
@@ -479,6 +504,9 @@
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="modules.html#verifypresentation" class="tsd-kind-icon">verify<wbr>Presentation</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#verifysubjectcredentialrequests" class="tsd-kind-icon">verify<wbr>Subject<wbr>Credential<wbr>Requests</a>
 					</li>
 				</ul>
 			</nav>

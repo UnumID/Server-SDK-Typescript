@@ -53,7 +53,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifySubjectCredentialRequest = exports.verifySubjectCredentialRequests = void 0;
 var types_1 = require("@unumid/types");
 var requireAuth_1 = require("../requireAuth");
-// import { verifyCredentialHelper } from './verifyCredentialHelper';
 var error_1 = require("../utils/error");
 var helpers_1 = require("../utils/helpers");
 var lodash_1 = require("lodash");
@@ -73,26 +72,26 @@ var validateCredentialRequests = function (requests) {
     }
     var subjectDid = '';
     for (var i = 0; i < requests.length; i++) {
-        var request_1 = requests[i];
-        if (!request_1.proof) {
+        var request = requests[i];
+        if (!request.proof) {
             throw new error_1.CustError(400, "Invalid SubjectCredentialRequest[" + i + "]: proof must be defined.");
         }
-        validateProof_1.validateProof(request_1.proof);
-        if (!request_1.type) {
+        validateProof_1.validateProof(request.proof);
+        if (!request.type) {
             throw new error_1.CustError(400, "Invalid SubjectCredentialRequest[" + i + "]: type must be defined.");
         }
-        if (typeof request_1.type !== 'string') {
+        if (typeof request.type !== 'string') {
             throw new error_1.CustError(400, "Invalid SubjectCredentialRequest[" + i + "]: type must be a string.");
         }
-        if (!request_1.issuers) {
+        if (!request.issuers) {
             throw new error_1.CustError(400, "Invalid SubjectCredentialRequest[" + i + "]: issuers must be defined.");
         }
         // handle validating the subject did is the identical fr all requests
         if (i === 0) {
-            subjectDid = request_1.proof.verificationMethod;
+            subjectDid = request.proof.verificationMethod;
         }
         else {
-            if (subjectDid !== request_1.proof.verificationMethod) {
+            if (subjectDid !== request.proof.verificationMethod) {
                 throw new error_1.CustError(400, 'Invalid SubjectCredentialRequests: subjectDid must identical per batch of requests.');
             }
         }
