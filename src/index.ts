@@ -16,6 +16,7 @@ import { convertCredentialSubject } from './utils/convertCredentialSubject';
 import { getRequest } from './verifier/getRequest';
 import { getVersionedRequest } from './verifier/getVersionedRequest';
 import { verifySubjectCredentialRequests } from './issuer/verifySubjectCredentialRequest';
+import { verifySubjectDidDocument } from './utils/verifyDidDocument';
 
 export {
   // Issuer Functions
@@ -49,6 +50,7 @@ export {
   CredentialInfo,
   // Util Functions
   extractCredentialInfo,
+  verifySubjectDidDocument,
   createProof,
   createProofPb,
   convertCredentialSubject

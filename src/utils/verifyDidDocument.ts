@@ -1,15 +1,14 @@
 
 import { RESTData, UnumDto, VerifiedStatus } from '../types';
-import { CredentialRequestPb, DidDocument, DidDocumentService, JSONObj, PublicKeyInfo, SubjectCredentialRequest } from '@unumid/types';
+import { DidDocument, DidDocumentService, JSONObj, PublicKeyInfo, SignedDidDocument } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
 import { CustError } from '../utils/error';
-import { isArrayEmpty } from '../utils/helpers';
 import { omit } from 'lodash';
 import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
 import { configData } from '../config';
-import { doVerify } from '../utils/verify';
+import { doVerifyDeprecated } from '../utils/verify';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
-import { validateProof } from '../verifier/validateProof';
+import { validateProofDeprecated } from '../verifier/validateProof';
 import logger from '../logger';
 
 /**
@@ -104,8 +103,10 @@ const validatePublicKeyInfo = (pki: PublicKeyInfo): void => {
  * Validates the attributes for a DidDocument
  * @param requests CredentialRequest
  */
-const validateDidDocument = (doc: DidDocument): void => {
-  const { id, created, updated, publicKey, service } = doc;
+const validateDidDocument = (doc: SignedDidDocument): void => {
+  const { id, created, updated, publicKey, service, proof } = doc;
+
+  validateProofDeprecated(proof);
 
   if (!id) {
     throw new CustError(400, 'id is required.');
@@ -165,22 +166,22 @@ const validateDidDocument = (doc: DidDocument): void => {
 /**
  * Verify the CredentialRequests signatures.
  */
-export async function verifyDidDocument (authorization: string, didDocument: DidDocument): Promise<UnumDto<VerifiedStatus>> {
+export async function verifySubjectDidDocument (authorization: string, issuerDid: string, didDocument: SignedDidDocument): Promise<UnumDto<VerifiedStatus>> {
   requireAuth(authorization);
 
   // validate the DidDocument
-  const subjectDid = validateDidDocument(didDocument);
+  validateDidDocument(didDocument);
 
   let authToken = authorization;
 
-  const result: UnumDto<VerifiedStatus> = await verifyDidDocumentHelper(authToken, didDocument);
+  const result: UnumDto<VerifiedStatus> = await verifyDidDocument(authToken, didDocument);
   const { isVerified, message } = result.body;
   authToken = result.authToken;
 
   // can stop here is not verified
   if (!result.body.isVerified) {
     // handle sending back the PresentationVerified receipt with the verification failure reason
-    authToken = await handleDidDocumentVerifiedReceipt(authToken, issuerDid, subjectDid, credentialRequests, isVerified, message);
+    authToken = await handleSubjectDidDocumentVerifiedReceipt(authToken, issuerDid, didDocument, isVerified, message);
 
     return {
       ...result,
@@ -188,7 +189,7 @@ export async function verifyDidDocument (authorization: string, didDocument: Did
     };
   }
 
-  authToken = await handleDidDocumentVerifiedReceipt(authToken, issuerDid, subjectDid, credentialRequests, true);
+  authToken = await handleSubjectDidDocumentVerifiedReceipt(authToken, issuerDid, didDocument, true);
 
   // if made it this far then all SubjectCredentialRequests are verified
   return {
@@ -199,20 +200,9 @@ export async function verifyDidDocument (authorization: string, didDocument: Did
   };
 }
 
-export async function verifyDidDocumentHelper (authorization: string, didDocument: DidDocument): Promise<UnumDto<VerifiedStatus>> {
-  // validate that the issueDid is present in the request issuer array
-  if (!credentialRequest.issuers.includes(issuerDid)) {
-    return {
-      authToken: authorization,
-      body: {
-        isVerified: false,
-        message: `Issuer DID, ${issuerDid}, not found in credential request issuers ${credentialRequest.issuers}`
-      }
-    };
-  }
-
+export async function verifyDidDocument (authorization: string, didDocument: SignedDidDocument): Promise<UnumDto<VerifiedStatus>> {
   const verificationMethod = didDocument.proof.verificationMethod as string;
-  const signatureValue = credentialRequest.proof?.signatureValue as string;
+  const signatureValue = didDocument.proof.signatureValue as string;
 
   const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, verificationMethod);
 
@@ -236,13 +226,11 @@ export async function verifyDidDocumentHelper (authorization: string, didDocumen
 
   const { publicKey, encoding } = publicKeyInfos[0];
 
-  const unsignedCredentialRequest: CredentialRequestPb = omit(credentialRequest, 'proof');
+  const unsignedDidDocument: DidDocument = omit(didDocument, 'proof');
 
-  // convert to bytes
-  const bytes: Uint8Array = CredentialRequestPb.encode(unsignedCredentialRequest).finish();
-
-  // verify the byte array
-  const isVerified = doVerify(signatureValue, bytes, publicKey, encoding);
+  // verify the signature
+  // TODO upon v4 work this needs to use the proto didDocument def so can use the byte array
+  const isVerified = doVerifyDeprecated(signatureValue, unsignedDidDocument, publicKey, encoding);
 
   if (!isVerified) {
     const result: UnumDto<VerifiedStatus> = {
@@ -265,16 +253,18 @@ export async function verifyDidDocumentHelper (authorization: string, didDocumen
 }
 
 /**
- * Handle sending back the DidDocumentVerified receipt
+ * Handle sending back the SubjectDidDocumentVerified receipt
  */
-async function handleDidDocumentVerifiedReceipt (authorization: string, issuerDid: string, subjectDid: string, didDocument: DidDocument, isVerified: boolean, message?:string): Promise<string> {
+async function handleSubjectDidDocumentVerifiedReceipt (authorization: string, issuerDid: string, didDocument: DidDocument, isVerified: boolean, message?:string): Promise<string> {
   try {
+    const subjectDid = didDocument.id;
+
     const receiptOptions = {
-      type: 'DidDocumentVerified',
+      type: 'SubjectDidDocumentVerified',
       issuer: issuerDid,
       subject: subjectDid,
       data: {
-        did: didDocument.id,
+        did: subjectDid,
         isVerified,
         reason: message
       }
