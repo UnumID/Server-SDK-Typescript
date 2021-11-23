@@ -32,7 +32,7 @@ function getSaasUrl(env) {
 var env = process.env.UNUM_ENV || 'sandbox';
 var configData = {
     nodeEnv: env,
-    SaaSUrl: getSaasUrl(env),
+    SaaSUrl: process.env.UNUM_SAAS_URL || getSaasUrl(env),
     debug: process.env.DEBUG === 'true' || false,
     logLevel: process.env.LOG_LEVEL || 'info' // Winston defaults to info if not set however being explicit here
 };
