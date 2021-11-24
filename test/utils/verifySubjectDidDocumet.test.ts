@@ -3,7 +3,7 @@ import { JSONObj, SignedDidDocument } from '@unumid/types';
 import { UnumDto, VerifiedStatus, CustError, verifySubjectDidDocument } from '../../src';
 import { getDIDDoc } from '../../src/utils/didHelper';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
-import { doVerify } from '../../src/utils/verify';
+import { doVerify, doVerifyDeprecated } from '../../src/utils/verify';
 import { makeDummyUnsignedCredential, makeDummyCredential, dummyCredentialRequest, makeDummyDidDocument, dummyAuthToken, dummyIssuerDid, makeDummySubjectCredentialRequest, dummySubjectDid, makeDummySignedDidDocument } from '../issuer/mocks';
 import { createKeyPairSet } from '../../src/utils/createKeyPairs';
 
@@ -19,7 +19,7 @@ jest.mock('../../src/utils/verify', () => {
   const actual = jest.requireActual('../../src/utils/verify');
   return {
     ...actual,
-    doVerify: jest.fn(() => actual.doVerify)
+    doVerifyDeprecated: jest.fn(() => actual.doVerify)
   };
 });
 
@@ -33,7 +33,7 @@ jest.mock('../../src/verifier/isCredentialExpired');
 jest.mock('../../src/verifier/checkCredentialStatus');
 
 const mockGetDIDDoc = getDIDDoc as jest.Mock;
-const mockDoVerify = doVerify as jest.Mock;
+const mockDoVerify = doVerifyDeprecated as jest.Mock;
 const mockMakeNetworkRequest = makeNetworkRequest as jest.Mock;
 
 const populateMockData = async (): Promise<JSONObj> => {
@@ -92,14 +92,11 @@ const populateMockData = async (): Promise<JSONObj> => {
 };
 
 describe('verifySubjectDidDocument', () => {
-  let credentialRequests, subjectCredentialRequests, subjectCredentialRequest, signedDidDocument, unsignedDidDocument;
+  let signedDidDocument, unsignedDidDocument;
 
   beforeAll(async () => {
     const dummyData = await populateMockData();
 
-    // credentialRequests = dummyData.credentialRequests;
-    // subjectCredentialRequests = dummyData.subjectCredentialRequests;
-    // subjectCredentialRequest = dummyData.subjectCredentialRequest;
     unsignedDidDocument = dummyData.unsignedDidDocument;
     signedDidDocument = dummyData.signedDidDocument;
   });
@@ -113,14 +110,6 @@ describe('verifySubjectDidDocument', () => {
     let verStatus: boolean;
 
     beforeAll(async () => {
-    //   const dummySubjectDidDoc = await makeDummyDidDocument();
-
-      //   const didId = 'did:unum:f2054199-1069-4337-a588-83d099e79d44';
-      //   const keyPair = await createKeyPairSet('pem');
-      //   const unsignedDidDocument = await makeDummyDidDocument({ id: didId }, keyPair.signing.privateKey, keyPair.signing.publicKey);
-      //   const dummySubjectDidDoc = await makeDummySignedDidDocument(unsignedDidDocument, keyPair.signing.privateKey, unsignedDidDocument.id);
-      //   const signedDidDocument = await makeDummySignedDidDocument(dummySubjectDidDoc, keyPair.signing.privateKey, unsignedDidDocument.id);
-
       const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
       mockGetDIDDoc.mockResolvedValueOnce({ body: unsignedDidDocument, headers: dummyResponseHeaders });
       mockDoVerify.mockResolvedValue(true);
@@ -154,7 +143,6 @@ describe('verifySubjectDidDocument', () => {
   describe('verifySubjectDidDocument - Failure Scenarios', () => {
     let response: UnumDto<VerifiedStatus>;
     let verStatus: boolean;
-    // const { context, type, verifiableCredential, presentationRequestId, proof, invalidProof, authHeader, verifier, credentialRequests } = populateMockData();
 
     beforeAll(async () => {
       mockDoVerify.mockReturnValue(false);
@@ -165,7 +153,6 @@ describe('verifySubjectDidDocument', () => {
     });
 
     it('gets the subject did document', async () => {
-    //   const dummySubjectDidDoc = await makeDummyDidDocument();
       const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
       mockGetDIDDoc.mockResolvedValue({ body: unsignedDidDocument, headers: dummyResponseHeaders });
       response = await verifySubjectDidDocument(dummyAuthToken, dummyIssuerDid, signedDidDocument);
@@ -230,57 +217,5 @@ describe('verifySubjectDidDocument', () => {
         expect(e.message).toBe('proof is required.');
       }
     });
-
-    // it('returns a 400 status code with a descriptive error message when type is missing', async () => {
-    //   const badRequest: SignedDidDocument = {
-    //     ...signedDidDocument,
-    //     type: undefined
-    //   };
-    //   try {
-    //     await verifySubjectDidDocument(dummyAuthToken, dummyIssuerDid, [badRequest]);
-    //     fail();
-    //   } catch (e) {
-    //     expect(e.code).toBe(400);
-    //     expect(e.message).toBe('Invalid SubjectCredentialRequest[0]: type must be defined.');
-    //   }
-    // });
-
-    // it('returns a 400 status code with a descriptive error message when type is not a string', async () => {
-    //   const badRequest = {
-    //     ...subjectCredentialRequest,
-    //     type: []
-    //   };
-    //   try {
-    //     await verifySubjectDidDocument(dummyAuthToken, dummyIssuerDid, [badRequest]);
-    //     fail();
-    //   } catch (e) {
-    //     expect(e.code).toBe(400);
-    //     expect(e.message).toBe('Invalid SubjectCredentialRequest[0]: type must be a string.');
-    //   }
-    // });
-
-    // it('returns a 400 status code with a descriptive error message when issuers is missing', async () => {
-    //   const badRequest = {
-    //     ...subjectCredentialRequest,
-    //     issuers: undefined
-    //   };
-
-    //   try {
-    //     await verifySubjectDidDocument(dummyAuthToken, dummyIssuerDid, [badRequest]);
-    //     fail();
-    //   } catch (e) {
-    //     expect(e.code).toBe(400);
-    //     expect(e.message).toBe('Invalid SubjectCredentialRequest[0]: issuers must be defined.');
-    //   }
-    // });
-
-    // it('returns a 401 status code if x-auth-token header is missing', async () => {
-    //   try {
-    //     await verifySubjectDidDocument('', dummyIssuerDid, credentialRequests);
-    //     fail();
-    //   } catch (e) {
-    //     expect(e.code).toEqual(401);
-    //   }
-    // });
   });
 });
