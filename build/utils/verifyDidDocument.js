@@ -245,7 +245,7 @@ function verifyDidDocument(authorization, didDocument) {
                             authToken: authToken,
                             body: {
                                 isVerified: false,
-                                message: 'SubjectCredentialRequest signature can not be verified.'
+                                message: 'DidDocument signature can not be verified.'
                             }
                         };
                         return [2 /*return*/, result_1];
