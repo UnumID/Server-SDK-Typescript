@@ -1,5 +1,5 @@
 
-import { RESTData, SubjectCredentialRequestsVerifiedMetadata, UnumDto, VerifiedStatus } from '../types';
+import { RESTData, SubjectCredentialRequestVerifiedStatus, UnumDto, VerifiedStatus } from '../types';
 import { CredentialRequestInfoBasic, CredentialRequestPb, JSONObj, ReceiptOptions, SubjectCredentialRequest, ReceiptSubjectCredentialRequestVerifiedData } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
 import { CustError } from '../utils/error';
@@ -60,7 +60,7 @@ const validateCredentialRequests = (requests: SubjectCredentialRequest[]): strin
 /**
  * Verify the CredentialRequests signatures.
  */
-export async function verifySubjectCredentialRequests (authorization: string, issuerDid: string, credentialRequests: SubjectCredentialRequest[]): Promise<UnumDto<VerifiedStatus<SubjectCredentialRequestsVerifiedMetadata>>> {
+export async function verifySubjectCredentialRequests (authorization: string, issuerDid: string, credentialRequests: SubjectCredentialRequest[]): Promise<UnumDto<SubjectCredentialRequestVerifiedStatus>> {
   requireAuth(authorization);
 
   // validate credentialRequests input; and grab the subjectDid for reference later
@@ -68,7 +68,7 @@ export async function verifySubjectCredentialRequests (authorization: string, is
 
   let authToken = authorization;
   for (const credentialRequest of credentialRequests) {
-    const result: UnumDto<VerifiedStatus> = await verifySubjectCredentialRequest(authToken, issuerDid, credentialRequest);
+    const result: UnumDto<SubjectCredentialRequestVerifiedStatus> = await verifySubjectCredentialRequest(authToken, issuerDid, credentialRequest);
     const { isVerified, message } = result.body;
     authToken = result.authToken;
 
@@ -90,25 +90,27 @@ export async function verifySubjectCredentialRequests (authorization: string, is
   return {
     authToken,
     body: {
-      isVerified: true
+      isVerified: true,
+      subjectDid
     }
   };
 }
 
-export async function verifySubjectCredentialRequest (authorization: string, issuerDid: string, credentialRequest: SubjectCredentialRequest): Promise<UnumDto<VerifiedStatus>> {
+export async function verifySubjectCredentialRequest (authorization: string, issuerDid: string, credentialRequest: SubjectCredentialRequest): Promise<UnumDto<SubjectCredentialRequestVerifiedStatus>> {
+  const verificationMethod = credentialRequest.proof?.verificationMethod as string;
+  const signatureValue = credentialRequest.proof?.signatureValue as string;
+
   // validate that the issueDid is present in the request issuer array
   if (!credentialRequest.issuers.includes(issuerDid)) {
     return {
       authToken: authorization,
       body: {
         isVerified: false,
-        message: `Issuer DID, ${issuerDid}, not found in credential request issuers ${credentialRequest.issuers}`
+        message: `Issuer DID, ${issuerDid}, not found in credential request issuers ${credentialRequest.issuers}`,
+        subjectDid: verificationMethod
       }
     };
   }
-
-  const verificationMethod = credentialRequest.proof?.verificationMethod as string;
-  const signatureValue = credentialRequest.proof?.signatureValue as string;
 
   const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, verificationMethod);
 
@@ -125,7 +127,8 @@ export async function verifySubjectCredentialRequest (authorization: string, iss
       authToken,
       body: {
         isVerified: false,
-        message: `Public key not found for the subject did ${verificationMethod}`
+        message: `Public key not found for the subject did ${verificationMethod}`,
+        subjectDid: verificationMethod
       }
     };
   }
@@ -141,23 +144,23 @@ export async function verifySubjectCredentialRequest (authorization: string, iss
   const isVerified = doVerify(signatureValue, bytes, publicKey, encoding);
 
   if (!isVerified) {
-    const result: UnumDto<VerifiedStatus> = {
+    return {
       authToken,
       body: {
         isVerified: false,
-        message: 'SubjectCredentialRequest signature can not be verified.'
+        message: 'SubjectCredentialRequest signature can not be verified.',
+        subjectDid: verificationMethod
       }
     };
-    return result;
   }
 
-  const result: UnumDto<VerifiedStatus> = {
+  return {
     authToken,
     body: {
-      isVerified: true
+      isVerified: true,
+      subjectDid: verificationMethod
     }
   };
-  return result;
 }
 
 /**
