@@ -84,7 +84,7 @@ describe('verifySubjectCredentialRequest', () => {
     jest.clearAllMocks();
   });
 
-  describe('verifySubjectCredentialRequests - Success Scenario with verifiableCredentialsString', () => {
+  describe('verifySubjectCredentialRequests - Success Scenario', () => {
     let response: UnumDto<VerifiedStatus>;
     let verStatus: boolean;
 

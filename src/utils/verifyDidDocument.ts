@@ -104,7 +104,15 @@ const validatePublicKeyInfo = (pki: PublicKeyInfo): void => {
  * @param requests CredentialRequest
  */
 const validateDidDocument = (doc: SignedDidDocument): void => {
+  if (!doc) {
+    throw new CustError(400, 'SignedDidDocument is required.');
+  }
+
   const { id, created, updated, publicKey, service, proof } = doc;
+
+  if (!proof) {
+    throw new CustError(400, 'proof is required.');
+  }
 
   validateProofDeprecated(proof);
 
@@ -136,13 +144,13 @@ const validateDidDocument = (doc: SignedDidDocument): void => {
     throw new CustError(400, 'Invalid id: expected string.');
   }
 
-  if (typeof created !== 'string') {
-    throw new CustError(400, 'Invalid created: expected string.');
-  }
+  // if (typeof created !== 'string') {
+  //   throw new CustError(400, 'Invalid created: expected string.');
+  // }
 
-  if (typeof updated !== 'string') {
-    throw new CustError(400, 'Invalid updated: expected string.');
-  }
+  //   if (typeof updated !== 'string') {
+  //     throw new CustError(400, 'Invalid updated: expected string.');
+  //   }
 
   if (!Array.isArray(publicKey)) {
     throw new CustError(400, 'Invalid publicKey: expected array.');

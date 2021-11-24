@@ -1,5 +1,5 @@
 
-import { Issuer, DidDocument, UnsignedCredential, Credential, CredentialSubject, SubjectCredentialRequest, CredentialRequestPb } from '@unumid/types';
+import { Issuer, DidDocument, UnsignedCredential, Credential, CredentialSubject, SubjectCredentialRequest, CredentialRequestPb, SignedDidDocument } from '@unumid/types';
 import { CredentialRequest } from '@unumid/types/build/protos/credential';
 import { configData } from '../../src/config';
 import { RESTResponse } from '../../src/types';
@@ -51,7 +51,7 @@ export const dummySubjectCredentialRequest = {
   required: true
 };
 
-export const makeDummySubjectCredentialRequest = async (request: CredentialRequestPb, subjectPrivateKey: string, subjectDid): Promise<SubjectCredentialRequest> => {
+export const makeDummySubjectCredentialRequest = async (request: CredentialRequestPb, subjectPrivateKey: string, subjectDid: string): Promise<SubjectCredentialRequest> => {
   // convert the protobuf to a byte array
   const bytes: Uint8Array = CredentialRequestPb.encode(request).finish();
   const proof = await createProofPb(bytes, subjectPrivateKey, subjectDid, undefined);
@@ -62,7 +62,13 @@ export const makeDummySubjectCredentialRequest = async (request: CredentialReque
   };
 };
 
-// export const dummySubjectCredentialRequest: SubjectCredentialRequest =
+export const makeDummySignedDidDocument = async (didDoc: DidDocument, subjectPrivateKey: string, subjectDid: string): Promise<SignedDidDocument> => {
+  const proof = await createProof(didDoc, subjectPrivateKey, subjectDid, 'pem');
+  return {
+    ...didDoc,
+    proof
+  };
+};
 
 export const makeDummyIssuerResponse = (options: DummyVerifierResponseOptions = {}): RESTResponse<Issuer> => {
   const authToken = options.authToken || dummyAuthToken;
@@ -72,7 +78,8 @@ export const makeDummyIssuerResponse = (options: DummyVerifierResponseOptions = 
   return { body: issuer, headers };
 };
 
-export const makeDummyDidDocument = async (options: Partial<DidDocument> = {}): Promise<DidDocument> => {
+export const makeDummyDidDocument = async (options: Partial<DidDocument> = {}, signingPrivateKey?: string, signginPublicKey?: string): Promise<DidDocument> => {
+// export const makeDummyDidDocument = async (options: Partial<DidDocument> = {}, signingPrivateKey?: string, signginPublicKey?: string): Promise<DidDocument> => {
   const id = options.id || `did:unum:${getUUID()}`;
   const now = new Date();
   const created = options.created || now;
@@ -88,7 +95,8 @@ export const makeDummyDidDocument = async (options: Partial<DidDocument> = {}): 
     publicKey = [
       {
         id: getUUID(),
-        publicKey: keypairs.signing.publicKey,
+        publicKey: signginPublicKey || keypairs.signing.publicKey,
+        // publicKey: keypairs.signing.publicKey,
         encoding: 'pem',
         type: 'secp256r1',
         status: 'valid',
@@ -97,7 +105,8 @@ export const makeDummyDidDocument = async (options: Partial<DidDocument> = {}): 
       },
       {
         id: getUUID(),
-        publicKey: keypairs.encryption.publicKey,
+        publicKey: signingPrivateKey || keypairs.encryption.publicKey,
+        // publicKey: keypairs.encryption.publicKey,
         encoding: 'pem',
         type: 'RSA',
         status: 'valid',
