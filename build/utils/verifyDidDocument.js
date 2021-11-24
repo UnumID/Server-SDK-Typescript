@@ -1,15 +1,4 @@
 "use strict";
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -50,11 +39,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifySubjectCredentialRequest = exports.verifySubjectCredentialRequests = void 0;
-var types_1 = require("@unumid/types");
+exports.verifyDidDocument = exports.verifySubjectDidDocument = void 0;
 var requireAuth_1 = require("../requireAuth");
 var error_1 = require("../utils/error");
-var helpers_1 = require("../utils/helpers");
 var lodash_1 = require("lodash");
 var didHelper_1 = require("../utils/didHelper");
 var config_1 = require("../config");
@@ -63,110 +50,170 @@ var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var validateProof_1 = require("../verifier/validateProof");
 var logger_1 = __importDefault(require("../logger"));
 /**
- * Validates the attributes for a credential request to UnumID's SaaS.
+ * Validate a DidDocument's ServiceInfo
+ * @param service
+ */
+var validateServiceInfo = function (service) {
+    var id = service.id, serviceEndpoint = service.serviceEndpoint, type = service.type;
+    if (!id) {
+        throw new error_1.CustError(400, 'Invalid service: id is required.');
+    }
+    if (!serviceEndpoint) {
+        throw new error_1.CustError(400, 'Invalid service: serviceEndpoint is required.');
+    }
+    if (!type) {
+        throw new error_1.CustError(400, 'Invalid service: type is required.');
+    }
+    if (typeof id !== 'string') {
+        throw new error_1.CustError(400, 'Invalid service: expected id to be a string.');
+    }
+    if (typeof serviceEndpoint !== 'string') {
+        throw new error_1.CustError(400, 'Invalid service: expected serviceEndpoint to be a string.');
+    }
+    if (typeof type !== 'string') {
+        throw new error_1.CustError(400, 'Invalid service: expected type to be a string.');
+    }
+};
+/**
+ * Validate a DidDocument's PublicInfo
+ * @param pki
+ */
+var validatePublicKeyInfo = function (pki) {
+    // check that pki is an object
+    if (typeof pki !== 'object') {
+        throw new error_1.CustError(400, 'Invalid publicKeyInfo: expected array of objects.');
+    }
+    if (Array.isArray(pki)) {
+        throw new error_1.CustError(400, 'Invalid publicKeyInfo: expected array of objects.');
+    }
+    var id = pki.id, publicKey = pki.publicKey, encoding = pki.encoding, type = pki.type;
+    // check for each required property
+    if (!id) {
+        throw new error_1.CustError(400, 'Invalid publicKeyInfo: id is required.');
+    }
+    if (!publicKey) {
+        throw new error_1.CustError(400, 'Invalid publicKeyInfo: publicKey is required.');
+    }
+    if (!encoding) {
+        throw new error_1.CustError(400, 'Invalid publicKeyInfo: encoding is required.');
+    }
+    if (!type) {
+        throw new error_1.CustError(400, 'Invalid publicKeyInfo: type is required.');
+    }
+    // check that all values are the correct type
+    if (typeof id !== 'string') {
+        throw new error_1.CustError(400, 'Invalid publicKeyInfo: expected id to be a string.');
+    }
+    if (typeof publicKey !== 'string') {
+        throw new error_1.CustError(400, 'Invalid publicKeyInfo: expected publicKey to be a string.');
+    }
+    if (!['base58', 'pem'].includes(encoding)) {
+        throw new error_1.CustError(400, 'Invalid publicKeyInfo: expected encoding to be one of \'base58\', \'pem\'.');
+    }
+    if (!['RSA', 'secp256r1'].includes(type)) {
+        throw new error_1.CustError(400, 'Invalid publicKeyInfo: expected type to be one of \'RSA\', \'secp256r1\'.');
+    }
+};
+/**
+ * Validates the attributes for a DidDocument
  * @param requests CredentialRequest
  */
-var validateCredentialRequests = function (requests) {
-    if (helpers_1.isArrayEmpty(requests) || !requests) {
-        throw new error_1.CustError(400, 'subjectCredentialRequests must be a non-empty array.');
+var validateDidDocument = function (doc) {
+    if (!doc) {
+        throw new error_1.CustError(400, 'SignedDidDocument is required.');
     }
-    var subjectDid = '';
-    for (var i = 0; i < requests.length; i++) {
-        var request = requests[i];
-        if (!request.proof) {
-            throw new error_1.CustError(400, "Invalid SubjectCredentialRequest[" + i + "]: proof must be defined.");
-        }
-        validateProof_1.validateProof(request.proof);
-        if (!request.type) {
-            throw new error_1.CustError(400, "Invalid SubjectCredentialRequest[" + i + "]: type must be defined.");
-        }
-        if (typeof request.type !== 'string') {
-            throw new error_1.CustError(400, "Invalid SubjectCredentialRequest[" + i + "]: type must be a string.");
-        }
-        if (!request.issuers) {
-            throw new error_1.CustError(400, "Invalid SubjectCredentialRequest[" + i + "]: issuers must be defined.");
-        }
-        // handle validating the subject did is the identical fr all requests
-        if (i === 0) {
-            subjectDid = request.proof.verificationMethod;
-        }
-        else {
-            if (subjectDid !== request.proof.verificationMethod) {
-                throw new error_1.CustError(400, 'Invalid SubjectCredentialRequests: subjectDid must identical per batch of requests.');
-            }
-        }
+    var id = doc.id, created = doc.created, updated = doc.updated, publicKey = doc.publicKey, service = doc.service, proof = doc.proof;
+    if (!proof) {
+        throw new error_1.CustError(400, 'proof is required.');
     }
-    // return the subjectDid for reference now that have validated all the same across all requests
-    return subjectDid;
+    validateProof_1.validateProofDeprecated(proof);
+    if (!id) {
+        throw new error_1.CustError(400, 'id is required.');
+    }
+    if (!doc['@context']) {
+        throw new error_1.CustError(400, '@context is required.');
+    }
+    if (!created) {
+        throw new error_1.CustError(400, 'created is required');
+    }
+    if (!updated) {
+        throw new error_1.CustError(400, 'updated is required');
+    }
+    if (!publicKey) {
+        throw new error_1.CustError(400, 'publicKey is required');
+    }
+    if (!service) {
+        throw new error_1.CustError(400, 'service is required');
+    }
+    if (typeof id !== 'string') {
+        throw new error_1.CustError(400, 'Invalid id: expected string.');
+    }
+    // if (typeof created !== 'string') {
+    //   throw new CustError(400, 'Invalid created: expected string.');
+    // }
+    //   if (typeof updated !== 'string') {
+    //     throw new CustError(400, 'Invalid updated: expected string.');
+    //   }
+    if (!Array.isArray(publicKey)) {
+        throw new error_1.CustError(400, 'Invalid publicKey: expected array.');
+    }
+    if (!Array.isArray(service)) {
+        throw new error_1.CustError(400, 'Invalid service: expected array.');
+    }
+    if (!Array.isArray(doc['@context'])) {
+        throw new error_1.CustError(400, 'Invalid @context: expected array.');
+    }
+    if (doc['@context'][0] !== 'https://www.w3.org/ns/did/v1') {
+        throw new error_1.CustError(400, 'Invalid @context');
+    }
+    publicKey.forEach(validatePublicKeyInfo);
+    service.forEach(validateServiceInfo);
 };
 /**
  * Verify the CredentialRequests signatures.
  */
-function verifySubjectCredentialRequests(authorization, issuerDid, credentialRequests) {
+function verifySubjectDidDocument(authorization, issuerDid, didDocument) {
     return __awaiter(this, void 0, void 0, function () {
-        var subjectDid, authToken, _i, credentialRequests_1, credentialRequest, result, _a, isVerified, message;
+        var authToken, result, _a, isVerified, message;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
                     requireAuth_1.requireAuth(authorization);
-                    subjectDid = validateCredentialRequests(credentialRequests);
+                    // validate the DidDocument
+                    validateDidDocument(didDocument);
                     authToken = authorization;
-                    _i = 0, credentialRequests_1 = credentialRequests;
-                    _b.label = 1;
+                    return [4 /*yield*/, verifyDidDocument(authToken, didDocument)];
                 case 1:
-                    if (!(_i < credentialRequests_1.length)) return [3 /*break*/, 5];
-                    credentialRequest = credentialRequests_1[_i];
-                    return [4 /*yield*/, verifySubjectCredentialRequest(authToken, issuerDid, credentialRequest)];
-                case 2:
                     result = _b.sent();
                     _a = result.body, isVerified = _a.isVerified, message = _a.message;
                     authToken = result.authToken;
-                    if (!!result.body.isVerified) return [3 /*break*/, 4];
-                    return [4 /*yield*/, handleSubjectCredentialsRequestsVerificationReceipt(authToken, issuerDid, subjectDid, credentialRequests, isVerified, message)];
-                case 3:
-                    // handle sending back the ReceiptSubjectCredentialRequestVerifiedData receipt with the verification failure reason
-                    authToken = _b.sent();
-                    return [2 /*return*/, __assign(__assign({}, result), { authToken: authToken })];
-                case 4:
-                    _i++;
-                    return [3 /*break*/, 1];
-                case 5: return [4 /*yield*/, handleSubjectCredentialsRequestsVerificationReceipt(authToken, issuerDid, subjectDid, credentialRequests, true)];
-                case 6:
-                    // if made it this far then all SubjectCredentialRequests are verified
+                    return [4 /*yield*/, handleSubjectDidDocumentVerifiedReceipt(authToken, issuerDid, didDocument, isVerified, message)];
+                case 2:
+                    // handle sending back the SubjectDidDocumentVerified receipt
                     authToken = _b.sent();
                     return [2 /*return*/, {
                             authToken: authToken,
                             body: {
-                                isVerified: true
+                                isVerified: isVerified,
+                                message: message
                             }
                         }];
             }
         });
     });
 }
-exports.verifySubjectCredentialRequests = verifySubjectCredentialRequests;
-function verifySubjectCredentialRequest(authorization, issuerDid, credentialRequest) {
-    var _a, _b;
+exports.verifySubjectDidDocument = verifySubjectDidDocument;
+function verifyDidDocument(authorization, didDocument) {
     return __awaiter(this, void 0, void 0, function () {
-        var verificationMethod, signatureValue, didDocumentResponse, authToken, publicKeyInfos, _c, publicKey, encoding, unsignedCredentialRequest, bytes, isVerified, result_1, result;
-        return __generator(this, function (_d) {
-            switch (_d.label) {
+        var verificationMethod, signatureValue, didDocumentResponse, authToken, publicKeyInfos, _a, publicKey, encoding, unsignedDidDocument, isVerified, result_1, result;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
                 case 0:
-                    // validate that the issueDid is present in the request issuer array
-                    if (!credentialRequest.issuers.includes(issuerDid)) {
-                        return [2 /*return*/, {
-                                authToken: authorization,
-                                body: {
-                                    isVerified: false,
-                                    message: "Issuer DID, " + issuerDid + ", not found in credential request issuers " + credentialRequest.issuers
-                                }
-                            }];
-                    }
-                    verificationMethod = (_a = credentialRequest.proof) === null || _a === void 0 ? void 0 : _a.verificationMethod;
-                    signatureValue = (_b = credentialRequest.proof) === null || _b === void 0 ? void 0 : _b.signatureValue;
+                    verificationMethod = didDocument.proof.verificationMethod;
+                    signatureValue = didDocument.proof.signatureValue;
                     return [4 /*yield*/, didHelper_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, verificationMethod)];
                 case 1:
-                    didDocumentResponse = _d.sent();
+                    didDocumentResponse = _b.sent();
                     if (didDocumentResponse instanceof Error) {
                         throw didDocumentResponse;
                     }
@@ -182,16 +229,15 @@ function verifySubjectCredentialRequest(authorization, issuerDid, credentialRequ
                                 }
                             }];
                     }
-                    _c = publicKeyInfos[0], publicKey = _c.publicKey, encoding = _c.encoding;
-                    unsignedCredentialRequest = lodash_1.omit(credentialRequest, 'proof');
-                    bytes = types_1.CredentialRequestPb.encode(unsignedCredentialRequest).finish();
-                    isVerified = verify_1.doVerify(signatureValue, bytes, publicKey, encoding);
+                    _a = publicKeyInfos[0], publicKey = _a.publicKey, encoding = _a.encoding;
+                    unsignedDidDocument = lodash_1.omit(didDocument, 'proof');
+                    isVerified = verify_1.doVerifyDeprecated(signatureValue, unsignedDidDocument, publicKey, encoding);
                     if (!isVerified) {
                         result_1 = {
                             authToken: authToken,
                             body: {
                                 isVerified: false,
-                                message: 'SubjectCredentialRequest signature can not be verified.'
+                                message: 'DidDocument signature can not be verified.'
                             }
                         };
                         return [2 /*return*/, result_1];
@@ -207,25 +253,25 @@ function verifySubjectCredentialRequest(authorization, issuerDid, credentialRequ
         });
     });
 }
-exports.verifySubjectCredentialRequest = verifySubjectCredentialRequest;
+exports.verifyDidDocument = verifyDidDocument;
 /**
- * Handle sending back the SubjectCredentialRequestVerified receipt
+ * Handle sending back the SubjectDidDocumentVerified receipt
  */
-function handleSubjectCredentialsRequestsVerificationReceipt(authorization, issuerDid, subjectDid, credentialRequests, isVerified, message) {
+function handleSubjectDidDocumentVerifiedReceipt(authorization, issuerDid, didDocument, isVerified, message) {
     return __awaiter(this, void 0, void 0, function () {
-        var requestInfo, data, receiptOptions, receiptCallOptions, resp, authToken, e_1;
+        var subjectDid, data, receiptOptions, receiptCallOptions, resp, authToken, e_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
-                    requestInfo = credentialRequests.map(function (request) { return lodash_1.omit(request, 'proof'); });
+                    subjectDid = didDocument.id;
                     data = {
+                        did: subjectDid,
                         isVerified: isVerified,
-                        requestInfo: requestInfo,
                         reason: message
                     };
                     receiptOptions = {
-                        type: 'SubjectCredentialRequestVerified',
+                        type: 'SubjectDidDocumentVerified',
                         issuer: issuerDid,
                         subject: subjectDid,
                         data: data
@@ -251,4 +297,4 @@ function handleSubjectCredentialsRequestsVerificationReceipt(authorization, issu
         });
     });
 }
-//# sourceMappingURL=verifySubjectCredentialRequest.js.map
+//# sourceMappingURL=verifyDidDocument.js.map
