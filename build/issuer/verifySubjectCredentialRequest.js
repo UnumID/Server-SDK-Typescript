@@ -124,7 +124,7 @@ function verifySubjectCredentialRequests(authorization, issuerDid, credentialReq
                     if (!!result.body.isVerified) return [3 /*break*/, 4];
                     return [4 /*yield*/, handleSubjectCredentialsRequestsVerificationReceipt(authToken, issuerDid, subjectDid, credentialRequests, isVerified, message)];
                 case 3:
-                    // handle sending back the PresentationVerified receipt with the verification failure reason
+                    // handle sending back the ReceiptSubjectCredentialRequestVerifiedData receipt with the verification failure reason
                     authToken = _b.sent();
                     return [2 /*return*/, __assign(__assign({}, result), { authToken: authToken })];
                 case 4:
@@ -132,8 +132,8 @@ function verifySubjectCredentialRequests(authorization, issuerDid, credentialReq
                     return [3 /*break*/, 1];
                 case 5: return [4 /*yield*/, handleSubjectCredentialsRequestsVerificationReceipt(authToken, issuerDid, subjectDid, credentialRequests, true)];
                 case 6:
-                    authToken = _b.sent();
                     // if made it this far then all SubjectCredentialRequests are verified
+                    authToken = _b.sent();
                     return [2 /*return*/, {
                             authToken: authToken,
                             body: {
@@ -213,21 +213,22 @@ exports.verifySubjectCredentialRequest = verifySubjectCredentialRequest;
  */
 function handleSubjectCredentialsRequestsVerificationReceipt(authorization, issuerDid, subjectDid, credentialRequests, isVerified, message) {
     return __awaiter(this, void 0, void 0, function () {
-        var credentialTypes, receiptOptions, receiptCallOptions, resp, authToken, e_1;
+        var requestInfo, data, receiptOptions, receiptCallOptions, resp, authToken, e_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
-                    credentialTypes = credentialRequests.map(function (request) { return request.type; });
+                    requestInfo = credentialRequests.map(function (request) { return lodash_1.omit(request, 'proof'); });
+                    data = {
+                        isVerified: isVerified,
+                        requestInfo: requestInfo,
+                        reason: message
+                    };
                     receiptOptions = {
                         type: 'SubjectCredentialRequestVerified',
                         issuer: issuerDid,
                         subject: subjectDid,
-                        data: {
-                            isVerified: isVerified,
-                            credentialTypes: credentialTypes,
-                            reason: message
-                        }
+                        data: data
                     };
                     receiptCallOptions = {
                         method: 'POST',

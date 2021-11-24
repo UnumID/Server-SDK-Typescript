@@ -1,6 +1,6 @@
 
 import { RESTData, UnumDto, VerifiedStatus } from '../types';
-import { CredentialRequestPb, JSONObj, SubjectCredentialRequest } from '@unumid/types';
+import { CredentialRequestInfoBasic, CredentialRequestPb, JSONObj, ReceiptOptions, SubjectCredentialRequest, ReceiptSubjectCredentialRequestVerifiedData } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
 import { CustError } from '../utils/error';
 import { isArrayEmpty } from '../utils/helpers';
@@ -74,7 +74,7 @@ export async function verifySubjectCredentialRequests (authorization: string, is
 
     // can stop here is not verified
     if (!result.body.isVerified) {
-      // handle sending back the PresentationVerified receipt with the verification failure reason
+      // handle sending back the ReceiptSubjectCredentialRequestVerifiedData receipt with the verification failure reason
       authToken = await handleSubjectCredentialsRequestsVerificationReceipt(authToken, issuerDid, subjectDid, credentialRequests, isVerified, message);
 
       return {
@@ -84,9 +84,9 @@ export async function verifySubjectCredentialRequests (authorization: string, is
     }
   }
 
+  // if made it this far then all SubjectCredentialRequests are verified
   authToken = await handleSubjectCredentialsRequestsVerificationReceipt(authToken, issuerDid, subjectDid, credentialRequests, true);
 
-  // if made it this far then all SubjectCredentialRequests are verified
   return {
     authToken,
     body: {
@@ -165,17 +165,19 @@ export async function verifySubjectCredentialRequest (authorization: string, iss
  */
 async function handleSubjectCredentialsRequestsVerificationReceipt (authorization: string, issuerDid: string, subjectDid: string, credentialRequests: SubjectCredentialRequest[], isVerified: boolean, message?:string): Promise<string> {
   try {
-    const credentialTypes = credentialRequests.map((request: { type: string; }) => request.type);
+    const requestInfo: CredentialRequestInfoBasic[] = credentialRequests.map((request) => omit(request, 'proof'));
 
-    const receiptOptions = {
+    const data: ReceiptSubjectCredentialRequestVerifiedData = {
+      isVerified,
+      requestInfo,
+      reason: message
+    };
+
+    const receiptOptions: ReceiptOptions<ReceiptSubjectCredentialRequestVerifiedData> = {
       type: 'SubjectCredentialRequestVerified',
       issuer: issuerDid,
       subject: subjectDid,
-      data: {
-        isVerified,
-        credentialTypes,
-        reason: message
-      }
+      data
     };
 
     const receiptCallOptions: RESTData = {

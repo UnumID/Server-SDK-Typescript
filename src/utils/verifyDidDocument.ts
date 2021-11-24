@@ -1,6 +1,6 @@
 
 import { RESTData, UnumDto, VerifiedStatus } from '../types';
-import { DidDocument, DidDocumentService, JSONObj, PublicKeyInfo, SignedDidDocument } from '@unumid/types';
+import { DidDocument, DidDocumentService, JSONObj, PublicKeyInfo, ReceiptOptions, SignedDidDocument, ReceiptSubjectDidDocumentVerifiedData } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
 import { CustError } from '../utils/error';
 import { omit } from 'lodash';
@@ -186,18 +186,8 @@ export async function verifySubjectDidDocument (authorization: string, issuerDid
   const { isVerified, message } = result.body;
   authToken = result.authToken;
 
-  // can stop here is not verified
-  //   if (!result.body.isVerified) {
-  // handle sending back the PresentationVerified receipt with the verification failure reason
+  // handle sending back the SubjectDidDocumentVerified receipt
   authToken = await handleSubjectDidDocumentVerifiedReceipt(authToken, issuerDid, didDocument, isVerified, message);
-
-  //     return {
-  //       ...result,
-  //       authToken
-  //     };
-  //   }
-
-  //   authToken = await handleSubjectDidDocumentVerifiedReceipt(authToken, issuerDid, didDocument, true);
 
   return {
     authToken,
@@ -267,15 +257,17 @@ async function handleSubjectDidDocumentVerifiedReceipt (authorization: string, i
   try {
     const subjectDid = didDocument.id;
 
-    const receiptOptions = {
+    const data: ReceiptSubjectDidDocumentVerifiedData = {
+      did: subjectDid,
+      isVerified,
+      reason: message
+    };
+
+    const receiptOptions: ReceiptOptions<ReceiptSubjectDidDocumentVerifiedData> = {
       type: 'SubjectDidDocumentVerified',
       issuer: issuerDid,
       subject: subjectDid,
-      data: {
-        did: subjectDid,
-        isVerified,
-        reason: message
-      }
+      data
     };
 
     const receiptCallOptions: RESTData = {

@@ -189,16 +189,8 @@ function verifySubjectDidDocument(authorization, issuerDid, didDocument) {
                     authToken = result.authToken;
                     return [4 /*yield*/, handleSubjectDidDocumentVerifiedReceipt(authToken, issuerDid, didDocument, isVerified, message)];
                 case 2:
-                    // can stop here is not verified
-                    //   if (!result.body.isVerified) {
-                    // handle sending back the PresentationVerified receipt with the verification failure reason
+                    // handle sending back the SubjectDidDocumentVerified receipt
                     authToken = _b.sent();
-                    //     return {
-                    //       ...result,
-                    //       authToken
-                    //     };
-                    //   }
-                    //   authToken = await handleSubjectDidDocumentVerifiedReceipt(authToken, issuerDid, didDocument, true);
                     return [2 /*return*/, {
                             authToken: authToken,
                             body: {
@@ -267,21 +259,22 @@ exports.verifyDidDocument = verifyDidDocument;
  */
 function handleSubjectDidDocumentVerifiedReceipt(authorization, issuerDid, didDocument, isVerified, message) {
     return __awaiter(this, void 0, void 0, function () {
-        var subjectDid, receiptOptions, receiptCallOptions, resp, authToken, e_1;
+        var subjectDid, data, receiptOptions, receiptCallOptions, resp, authToken, e_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
                     subjectDid = didDocument.id;
+                    data = {
+                        did: subjectDid,
+                        isVerified: isVerified,
+                        reason: message
+                    };
                     receiptOptions = {
                         type: 'SubjectDidDocumentVerified',
                         issuer: issuerDid,
                         subject: subjectDid,
-                        data: {
-                            did: subjectDid,
-                            isVerified: isVerified,
-                            reason: message
-                        }
+                        data: data
                     };
                     receiptCallOptions = {
                         method: 'POST',
