@@ -133,9 +133,19 @@ export interface RegisteredVerifier extends Verifier {
  * While this would normally be served by throwing an exception we want to pass back the auth token returned
  * by calls to the SaaS via the UnumDto type.
  */
-export interface VerifiedStatus {
+export interface VerifiedStatus<T = any> {
   isVerified: boolean;
   message?: string;
+  metadata?: T;
+}
+
+/**
+ * Interface to encapsulate the subject did attributed to a verifySubjectCredentialRequests call.
+ * This is useful for customers to use as reference to then issues the credentials.
+ * Note: the verification method ensures the same subject did is used for all requests.
+ */
+export interface SubjectCredentialRequestsVerifiedMetadata {
+  subjectDid: string
 }
 
 /**

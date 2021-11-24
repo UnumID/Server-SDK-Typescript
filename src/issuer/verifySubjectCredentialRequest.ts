@@ -1,5 +1,5 @@
 
-import { RESTData, UnumDto, VerifiedStatus } from '../types';
+import { RESTData, SubjectCredentialRequestsVerifiedMetadata, UnumDto, VerifiedStatus } from '../types';
 import { CredentialRequestInfoBasic, CredentialRequestPb, JSONObj, ReceiptOptions, SubjectCredentialRequest, ReceiptSubjectCredentialRequestVerifiedData } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
 import { CustError } from '../utils/error';
@@ -60,7 +60,7 @@ const validateCredentialRequests = (requests: SubjectCredentialRequest[]): strin
 /**
  * Verify the CredentialRequests signatures.
  */
-export async function verifySubjectCredentialRequests (authorization: string, issuerDid: string, credentialRequests: SubjectCredentialRequest[]): Promise<UnumDto<VerifiedStatus>> {
+export async function verifySubjectCredentialRequests (authorization: string, issuerDid: string, credentialRequests: SubjectCredentialRequest[]): Promise<UnumDto<VerifiedStatus<SubjectCredentialRequestsVerifiedMetadata>>> {
   requireAuth(authorization);
 
   // validate credentialRequests input; and grab the subjectDid for reference later
