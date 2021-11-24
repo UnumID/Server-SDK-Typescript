@@ -187,23 +187,23 @@ export async function verifySubjectDidDocument (authorization: string, issuerDid
   authToken = result.authToken;
 
   // can stop here is not verified
-  if (!result.body.isVerified) {
-    // handle sending back the PresentationVerified receipt with the verification failure reason
-    authToken = await handleSubjectDidDocumentVerifiedReceipt(authToken, issuerDid, didDocument, isVerified, message);
+  //   if (!result.body.isVerified) {
+  // handle sending back the PresentationVerified receipt with the verification failure reason
+  authToken = await handleSubjectDidDocumentVerifiedReceipt(authToken, issuerDid, didDocument, isVerified, message);
 
-    return {
-      ...result,
-      authToken
-    };
-  }
+  //     return {
+  //       ...result,
+  //       authToken
+  //     };
+  //   }
 
-  authToken = await handleSubjectDidDocumentVerifiedReceipt(authToken, issuerDid, didDocument, true);
+  //   authToken = await handleSubjectDidDocumentVerifiedReceipt(authToken, issuerDid, didDocument, true);
 
-  // if made it this far then all SubjectCredentialRequests are verified
   return {
     authToken,
     body: {
-      isVerified: true
+      isVerified,
+      message
     }
   };
 }
@@ -245,7 +245,7 @@ export async function verifyDidDocument (authorization: string, didDocument: Sig
       authToken,
       body: {
         isVerified: false,
-        message: 'SubjectCredentialRequest signature can not be verified.'
+        message: 'DidDocument signature can not be verified.'
       }
     };
     return result;

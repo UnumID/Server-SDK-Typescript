@@ -1,15 +1,4 @@
 "use strict";
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -198,20 +187,23 @@ function verifySubjectDidDocument(authorization, issuerDid, didDocument) {
                     result = _b.sent();
                     _a = result.body, isVerified = _a.isVerified, message = _a.message;
                     authToken = result.authToken;
-                    if (!!result.body.isVerified) return [3 /*break*/, 3];
                     return [4 /*yield*/, handleSubjectDidDocumentVerifiedReceipt(authToken, issuerDid, didDocument, isVerified, message)];
                 case 2:
+                    // can stop here is not verified
+                    //   if (!result.body.isVerified) {
                     // handle sending back the PresentationVerified receipt with the verification failure reason
                     authToken = _b.sent();
-                    return [2 /*return*/, __assign(__assign({}, result), { authToken: authToken })];
-                case 3: return [4 /*yield*/, handleSubjectDidDocumentVerifiedReceipt(authToken, issuerDid, didDocument, true)];
-                case 4:
-                    authToken = _b.sent();
-                    // if made it this far then all SubjectCredentialRequests are verified
+                    //     return {
+                    //       ...result,
+                    //       authToken
+                    //     };
+                    //   }
+                    //   authToken = await handleSubjectDidDocumentVerifiedReceipt(authToken, issuerDid, didDocument, true);
                     return [2 /*return*/, {
                             authToken: authToken,
                             body: {
-                                isVerified: true
+                                isVerified: isVerified,
+                                message: message
                             }
                         }];
             }
