@@ -83,6 +83,9 @@ var validateCredentialRequests = function (requests) {
         if (typeof request.type !== 'string') {
             throw new error_1.CustError(400, "Invalid SubjectCredentialRequest[" + i + "]: type must be a string.");
         }
+        if (!((request.required === false || request.required === true))) {
+            throw new error_1.CustError(400, "Invalid SubjectCredentialRequest[" + i + "]: required must be defined.");
+        }
         if (!request.issuers) {
             throw new error_1.CustError(400, "Invalid SubjectCredentialRequest[" + i + "]: issuers must be defined.");
         }

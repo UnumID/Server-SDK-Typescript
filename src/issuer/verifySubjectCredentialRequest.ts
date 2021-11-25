@@ -40,6 +40,10 @@ const validateCredentialRequests = (requests: SubjectCredentialRequest[]): strin
       throw new CustError(400, `Invalid SubjectCredentialRequest[${i}]: type must be a string.`);
     }
 
+    if (!((request.required === false || request.required === true))) {
+      throw new CustError(400, `Invalid SubjectCredentialRequest[${i}]: required must be defined.`);
+    }
+
     if (!request.issuers) {
       throw new CustError(400, `Invalid SubjectCredentialRequest[${i}]: issuers must be defined.`);
     }
