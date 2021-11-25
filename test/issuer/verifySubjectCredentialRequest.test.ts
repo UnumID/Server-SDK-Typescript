@@ -215,6 +215,20 @@ describe('verifySubjectCredentialRequest', () => {
       }
     });
 
+    it('returns a 400 status code with a descriptive error message when required is missing', async () => {
+      const badRequest = {
+        ...subjectCredentialRequest,
+        required: undefined
+      };
+      try {
+        await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, [badRequest]);
+        fail();
+      } catch (e) {
+        expect(e.code).toBe(400);
+        expect(e.message).toBe('Invalid SubjectCredentialRequest[0]: required must be defined.');
+      }
+    });
+
     it('returns a 400 status code with a descriptive error message when type is not a string', async () => {
       const badRequest = {
         ...subjectCredentialRequest,

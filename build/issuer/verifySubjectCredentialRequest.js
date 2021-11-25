@@ -83,6 +83,9 @@ var validateCredentialRequests = function (requests) {
         if (typeof request.type !== 'string') {
             throw new error_1.CustError(400, "Invalid SubjectCredentialRequest[" + i + "]: type must be a string.");
         }
+        if (!((request.required === false || request.required === true))) {
+            throw new error_1.CustError(400, "Invalid SubjectCredentialRequest[" + i + "]: required must be defined.");
+        }
         if (!request.issuers) {
             throw new error_1.CustError(400, "Invalid SubjectCredentialRequest[" + i + "]: issuers must be defined.");
         }
@@ -137,7 +140,8 @@ function verifySubjectCredentialRequests(authorization, issuerDid, credentialReq
                     return [2 /*return*/, {
                             authToken: authToken,
                             body: {
-                                isVerified: true
+                                isVerified: true,
+                                subjectDid: subjectDid
                             }
                         }];
             }
@@ -148,22 +152,23 @@ exports.verifySubjectCredentialRequests = verifySubjectCredentialRequests;
 function verifySubjectCredentialRequest(authorization, issuerDid, credentialRequest) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
-        var verificationMethod, signatureValue, didDocumentResponse, authToken, publicKeyInfos, _c, publicKey, encoding, unsignedCredentialRequest, bytes, isVerified, result_1, result;
+        var verificationMethod, signatureValue, didDocumentResponse, authToken, publicKeyInfos, _c, publicKey, encoding, unsignedCredentialRequest, bytes, isVerified;
         return __generator(this, function (_d) {
             switch (_d.label) {
                 case 0:
+                    verificationMethod = (_a = credentialRequest.proof) === null || _a === void 0 ? void 0 : _a.verificationMethod;
+                    signatureValue = (_b = credentialRequest.proof) === null || _b === void 0 ? void 0 : _b.signatureValue;
                     // validate that the issueDid is present in the request issuer array
                     if (!credentialRequest.issuers.includes(issuerDid)) {
                         return [2 /*return*/, {
                                 authToken: authorization,
                                 body: {
                                     isVerified: false,
-                                    message: "Issuer DID, " + issuerDid + ", not found in credential request issuers " + credentialRequest.issuers
+                                    message: "Issuer DID, " + issuerDid + ", not found in credential request issuers " + credentialRequest.issuers,
+                                    subjectDid: verificationMethod
                                 }
                             }];
                     }
-                    verificationMethod = (_a = credentialRequest.proof) === null || _a === void 0 ? void 0 : _a.verificationMethod;
-                    signatureValue = (_b = credentialRequest.proof) === null || _b === void 0 ? void 0 : _b.signatureValue;
                     return [4 /*yield*/, didHelper_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, verificationMethod)];
                 case 1:
                     didDocumentResponse = _d.sent();
@@ -178,7 +183,8 @@ function verifySubjectCredentialRequest(authorization, issuerDid, credentialRequ
                                 authToken: authToken,
                                 body: {
                                     isVerified: false,
-                                    message: "Public key not found for the subject did " + verificationMethod
+                                    message: "Public key not found for the subject did " + verificationMethod,
+                                    subjectDid: verificationMethod
                                 }
                             }];
                     }
@@ -187,22 +193,22 @@ function verifySubjectCredentialRequest(authorization, issuerDid, credentialRequ
                     bytes = types_1.CredentialRequestPb.encode(unsignedCredentialRequest).finish();
                     isVerified = verify_1.doVerify(signatureValue, bytes, publicKey, encoding);
                     if (!isVerified) {
-                        result_1 = {
+                        return [2 /*return*/, {
+                                authToken: authToken,
+                                body: {
+                                    isVerified: false,
+                                    message: 'SubjectCredentialRequest signature can not be verified.',
+                                    subjectDid: verificationMethod
+                                }
+                            }];
+                    }
+                    return [2 /*return*/, {
                             authToken: authToken,
                             body: {
-                                isVerified: false,
-                                message: 'SubjectCredentialRequest signature can not be verified.'
+                                isVerified: true,
+                                subjectDid: verificationMethod
                             }
-                        };
-                        return [2 /*return*/, result_1];
-                    }
-                    result = {
-                        authToken: authToken,
-                        body: {
-                            isVerified: true
-                        }
-                    };
-                    return [2 /*return*/, result];
+                        }];
             }
         });
     });
