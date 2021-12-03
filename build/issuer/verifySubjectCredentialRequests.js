@@ -257,4 +257,4 @@ function handleSubjectCredentialsRequestsVerificationReceipt(authorization, issu
         });
     });
 }
-//# sourceMappingURL=verifySubjectCredentialRequest.js.map
+//# sourceMappingURL=verifySubjectCredentialRequests.js.map

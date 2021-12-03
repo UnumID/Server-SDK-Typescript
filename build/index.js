@@ -33,8 +33,8 @@ var getRequest_1 = require("./verifier/getRequest");
 Object.defineProperty(exports, "getRequest", { enumerable: true, get: function () { return getRequest_1.getRequest; } });
 var getVersionedRequest_1 = require("./verifier/getVersionedRequest");
 Object.defineProperty(exports, "getVersionedRequest", { enumerable: true, get: function () { return getVersionedRequest_1.getVersionedRequest; } });
-var verifySubjectCredentialRequest_1 = require("./issuer/verifySubjectCredentialRequest");
-Object.defineProperty(exports, "verifySubjectCredentialRequests", { enumerable: true, get: function () { return verifySubjectCredentialRequest_1.verifySubjectCredentialRequests; } });
+var verifySubjectCredentialRequests_1 = require("./issuer/verifySubjectCredentialRequests");
+Object.defineProperty(exports, "verifySubjectCredentialRequests", { enumerable: true, get: function () { return verifySubjectCredentialRequests_1.verifySubjectCredentialRequests; } });
 var verifyDidDocument_1 = require("./utils/verifyDidDocument");
 Object.defineProperty(exports, "verifySubjectDidDocument", { enumerable: true, get: function () { return verifyDidDocument_1.verifySubjectDidDocument; } });
 //# sourceMappingURL=index.js.map

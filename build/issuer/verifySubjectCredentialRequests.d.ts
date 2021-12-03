@@ -5,4 +5,4 @@ import { SubjectCredentialRequest } from '@unumid/types';
  */
 export declare function verifySubjectCredentialRequests(authorization: string, issuerDid: string, credentialRequests: SubjectCredentialRequest[]): Promise<UnumDto<SubjectCredentialRequestVerifiedStatus>>;
 export declare function verifySubjectCredentialRequest(authorization: string, issuerDid: string, credentialRequest: SubjectCredentialRequest): Promise<UnumDto<SubjectCredentialRequestVerifiedStatus>>;
-//# sourceMappingURL=verifySubjectCredentialRequest.d.ts.map
+//# sourceMappingURL=verifySubjectCredentialRequests.d.ts.map
