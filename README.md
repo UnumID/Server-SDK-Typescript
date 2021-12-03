@@ -158,7 +158,7 @@ Response Body: **Empty**. If unsuccessful and exception will be thrown.
 ### verifySubjectCredentialRequest
 Verify a Subject's request for credentials.
 
-You need to provide the your issuer's `did` along with the SubjectCredentialRequest array from your `/credentialRequest` [endpoint](https://gist.github.com/rsmets/c9a789ebeecda8077105597575efbec9).
+You need to provide the your issuer's `did` along with the SubjectCredentialRequest array from your `/credentialRequest` [endpoint](https://gist.github.com/UnumIDAdmin/d76d9fe46e459e529d7f7b6f9319a0b6).
 
 Each request is cryptographically signed by the subject's private key. This function verifies the signatures are valid. Furthermore, it validates that all requests are from the same subject and that requested Issuer requirements are met. After which, your application code will need to evaluate wether it can issue the requested credentials. An example implementation can be found [here](https://github.com/UnumID/demo-issuer-server/blob/main/src/services/api/credentialRequest/credentialRequest.class.ts).
 
@@ -297,7 +297,7 @@ Response Body: [**PresentationRequestPostDto**](https://docs.unum.id/types/inter
 ### verifyPresentation 
 Handles decrypting the encrypted presentation and verifies the signatures are valid.
 
-You need to be able to receive presentations from users and pass them to this function. To do this, you need to create a `/presentation` endpoint that conforms to our [OpenAPI specification](https://unumid.postman.co/workspace/Unum-ID-Team-Workspace~48b1f312-a6e6-4bcc-86a0-aa4bc37df9b4/api/09ad0ccd-c614-4d54-a1b4-ff9ae85b8449?version=c217a461-fc05-4476-a792-6c9163f2a198&tab=define). The Unum ID cloud sends encrypted presentations to this endpoint, which should pass those presentations to the `verifyPresentation` function to be decrypted and verified.
+You need to be able to receive presentations from users and pass them to this function. To do this, you need to create a `/presentation` endpoint that conforms to our [OpenAPI specification](https://gist.github.com/UnumIDAdmin/2bffdf092594196beba48ce7738b60fa). The Unum ID cloud sends encrypted presentations to this endpoint, which should pass those presentations to the `verifyPresentation` function to be decrypted and verified.
 
 You need to provide:
 
