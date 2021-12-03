@@ -4,7 +4,7 @@ import { UnumDto, VerifiedStatus, CustError } from '../../src';
 import { getDIDDoc } from '../../src/utils/didHelper';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { doVerify } from '../../src/utils/verify';
-import { verifySubjectCredentialRequests } from '../../src/issuer/verifySubjectCredentialRequest';
+import { verifySubjectCredentialRequests } from '../../src/issuer/verifySubjectCredentialRequests';
 import { makeDummyUnsignedCredential, makeDummyCredential, dummyCredentialRequest, makeDummyDidDocument, dummyAuthToken, dummyIssuerDid, makeDummySubjectCredentialRequest, dummySubjectDid } from './mocks';
 import { createKeyPairSet } from '../../src/utils/createKeyPairs';
 
