@@ -158,7 +158,14 @@ Response Body: **Empty**. If unsuccessful and exception will be thrown.
 ### verifySubjectCredentialRequest
 Verify a Subject's request for credentials.
 
-You need to provide the your issuer's `did` along with the SubjectCredentialRequest array from your `/credentialRequest` endpoint.
+You need to provide the your issuer's `did` along with the SubjectCredentialRequest array from your `/credentialRequest` [endpoint](https://gist.github.com/rsmets/c9a789ebeecda8077105597575efbec9).
+
+Each request is cryptographically signed by the subject's private key. This function verifies the signatures are valid. Furthermore, it validates that all requests are from the same subject and that requested Issuer requirements are met. After which, your application code will need to evaluate wether it can issue the requested credentials. An example implementation can be found [here](https://github.com/UnumID/demo-issuer-server/blob/main/src/services/api/credentialRequest/credentialRequest.class.ts).
+
+The main use case of this to allow bootstrapping users that just installed the Unum ID Wallet with credentials necessary to use across the network, i.e for instant sign ups with a partner. 
+
+_Note_: Despite this having "verify" in its name, this function only serves Issuers in determining whether a subject's request for credentials is valid. It is up to you application logic to determine whether you have the data relating to the the subject to issue the requested credentials.
+
 
 ```typescript
 export type SubjectCredentialRequest = {
@@ -178,11 +185,12 @@ Parameters
 }
 ```
 
-Response Body: [**VerifiedStatus**]. 
+Response Body: [**SubjectCredentialRequestVerifiedStatus**]. 
 ```typescript
-export interface VerifiedStatus {
-  isVerified: boolean;
-  message?: string; // message containing information iff it was not verified
+export interface SubjectCredentialRequestVerifiedStatus {
+  subjectDid: string; // returns the subject DID that made and signed all the requests
+  isVerified: boolean; // returns true if all requests are verified and validation requirements are met
+  message?: string; // (optional) only populated iff isVerified is false
 }
 ```
 

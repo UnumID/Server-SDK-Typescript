@@ -15,7 +15,7 @@ import { createProof, createProofPb } from './utils/createProof';
 import { convertCredentialSubject } from './utils/convertCredentialSubject';
 import { getRequest } from './verifier/getRequest';
 import { getVersionedRequest } from './verifier/getVersionedRequest';
-import { verifySubjectCredentialRequests } from './issuer/verifySubjectCredentialRequest';
+import { verifySubjectCredentialRequests } from './issuer/verifySubjectCredentialRequests';
 import { verifySubjectDidDocument } from './utils/verifyDidDocument';
 
 export {
