@@ -212,7 +212,10 @@
 					<h3>verifySubjectCredentialRequest</h3>
 				</a>
 				<p>Verify a Subject&#39;s request for credentials.</p>
-				<p>You need to provide the your issuer&#39;s <code>did</code> along with the SubjectCredentialRequest array from your <code>/credentialRequest</code> endpoint.</p>
+				<p>You need to provide the your issuer&#39;s <code>did</code> along with the SubjectCredentialRequest array from your <code>/credentialRequest</code> <a href="https://gist.github.com/UnumIDAdmin/d76d9fe46e459e529d7f7b6f9319a0b6">endpoint</a>.</p>
+				<p>Each request is cryptographically signed by the subject&#39;s private key. This function verifies the signatures are valid. Furthermore, it validates that all requests are from the same subject and that requested Issuer requirements are met. After which, your application code will need to evaluate wether it can issue the requested credentials. An example implementation can be found <a href="https://github.com/UnumID/demo-issuer-server/blob/main/src/services/api/credentialRequest/credentialRequest.class.ts">here</a>.</p>
+				<p>The main use case of this to allow bootstrapping users that just installed the Unum ID Wallet with credentials necessary to use across the network, i.e for instant sign ups with a partner. </p>
+				<p><em>Note</em>: Despite this having &quot;verify&quot; in its name, this function only serves Issuers in determining whether a subject&#39;s request for credentials is valid. It is up to you application logic to determine whether you have the data relating to the the subject to issue the requested credentials.</p>
 				<pre><code class="language-typescript"><span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">type</span><span style="color: #000000"> </span><span style="color: #267F99">SubjectCredentialRequest</span><span style="color: #000000"> = {</span>
 <span style="color: #000000">  </span><span style="color: #001080">type</span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000">; </span><span style="color: #008000">// the string matching the desire credential type</span>
 <span style="color: #000000">  </span><span style="color: #001080">issuers</span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000">[]; </span><span style="color: #008000">//list of acceptable issuer DIDs that have issued the credential</span>
@@ -227,10 +230,11 @@
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;credentialRequests: SubjectCredentialRequest[] // array of credential requests signed by the Subjec</span><span style="color: #CD3131">t</span>
 <span style="color: #000000">}</span>
 </code></pre>
-				<p>Response Body: [<strong>VerifiedStatus</strong>]. </p>
-				<pre><code class="language-typescript"><span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">interface</span><span style="color: #000000"> </span><span style="color: #267F99">VerifiedStatus</span><span style="color: #000000"> {</span>
-<span style="color: #000000">  </span><span style="color: #001080">isVerified</span><span style="color: #000000">: </span><span style="color: #267F99">boolean</span><span style="color: #000000">;</span>
-<span style="color: #000000">  </span><span style="color: #001080">message</span><span style="color: #000000">?: </span><span style="color: #267F99">string</span><span style="color: #000000">; </span><span style="color: #008000">// message containing information iff it was not verified</span>
+				<p>Response Body: [<strong>SubjectCredentialRequestVerifiedStatus</strong>]. </p>
+				<pre><code class="language-typescript"><span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">interface</span><span style="color: #000000"> </span><span style="color: #267F99">SubjectCredentialRequestVerifiedStatus</span><span style="color: #000000"> {</span>
+<span style="color: #000000">  </span><span style="color: #001080">subjectDid</span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000">; </span><span style="color: #008000">// returns the subject DID that made and signed all the requests</span>
+<span style="color: #000000">  </span><span style="color: #001080">isVerified</span><span style="color: #000000">: </span><span style="color: #267F99">boolean</span><span style="color: #000000">; </span><span style="color: #008000">// returns true if all requests are verified and validation requirements are met</span>
+<span style="color: #000000">  </span><span style="color: #001080">message</span><span style="color: #000000">?: </span><span style="color: #267F99">string</span><span style="color: #000000">; </span><span style="color: #008000">// (optional) only populated iff isVerified is false</span>
 <span style="color: #000000">}</span>
 </code></pre>
 				<a href="#verifier" id="verifier" style="color: inherit; text-decoration: none;">
@@ -325,7 +329,7 @@
 					<h3>verifyPresentation</h3>
 				</a>
 				<p>Handles decrypting the encrypted presentation and verifies the signatures are valid.</p>
-				<p>You need to be able to receive presentations from users and pass them to this function. To do this, you need to create a <code>/presentation</code> endpoint that conforms to our <a href="https://unumid.postman.co/workspace/Unum-ID-Team-Workspace~48b1f312-a6e6-4bcc-86a0-aa4bc37df9b4/api/09ad0ccd-c614-4d54-a1b4-ff9ae85b8449?version=c217a461-fc05-4476-a792-6c9163f2a198&amp;tab=define">OpenAPI specification</a>. The Unum ID cloud sends encrypted presentations to this endpoint, which should pass those presentations to the <code>verifyPresentation</code> function to be decrypted and verified.</p>
+				<p>You need to be able to receive presentations from users and pass them to this function. To do this, you need to create a <code>/presentation</code> endpoint that conforms to our <a href="https://gist.github.com/UnumIDAdmin/2bffdf092594196beba48ce7738b60fa">OpenAPI specification</a>. The Unum ID cloud sends encrypted presentations to this endpoint, which should pass those presentations to the <code>verifyPresentation</code> function to be decrypted and verified.</p>
 				<p>You need to provide:</p>
 				<ol>
 					<li>your verifier did</li>
