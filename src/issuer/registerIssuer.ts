@@ -2,11 +2,12 @@ import { configData } from '../config';
 import { KeyPairSet, RegisteredIssuer, RESTData, UnumDto } from '../types';
 
 import logger from '../logger';
-import { DidKeyType, IssuerOptions, JSONObj, KeyPair, PublicKeyInfo } from '@unumid/types';
+import { DidKeyType, IssuerOptions, JSONObj, KeyPair, PublicKeyInfo, VersionInfo } from '@unumid/types';
 import { getUUID } from '../utils/helpers';
 import { CustError } from '../utils/error';
 import { createKeyPairSet } from '../utils/createKeyPairs';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
+import { validateVersionInfo } from '../utils/validateVersionInfo';
 
 /**
  * Creates an object to encapsulate key information after key pair creation.
@@ -42,7 +43,7 @@ const constructKeyObjs = (kpSet: KeyPairSet): Array<PublicKeyInfo> => {
  * @param customerUuid string
  * @param apiKey string
  */
-const validateInParams = (customerUuid: string, apiKey: string) => {
+const validateInParams = (customerUuid: string, apiKey: string, url: string, versionInfo: VersionInfo[]) => {
   if (!customerUuid) {
     throw new CustError(400, 'Invalid Issuer: customerUuid is required.');
   }
@@ -50,6 +51,12 @@ const validateInParams = (customerUuid: string, apiKey: string) => {
   if (!apiKey) {
     throw new CustError(401, 'Not authenticated: apiKey is required');
   }
+
+  if (!url) {
+    throw new CustError(400, 'Invalid Issuer: url is required.');
+  }
+
+  validateVersionInfo(versionInfo);
 };
 
 /**
@@ -57,15 +64,18 @@ const validateInParams = (customerUuid: string, apiKey: string) => {
  * @param customerUuid
  * @param apiKey
  */
-export const registerIssuer = async (customerUuid: string, apiKey: string): Promise<UnumDto<RegisteredIssuer>> => {
+export const registerIssuer = async (customerUuid: string, apiKey: string, url:string, versionInfo: VersionInfo[] = [{ target: { version: '1.0.0' }, sdkVersion: '3.0.0' }]): Promise<UnumDto<RegisteredIssuer>> => {
   try {
-    validateInParams(customerUuid, apiKey);
+    validateInParams(customerUuid, apiKey, url, versionInfo);
 
     const kpSet: KeyPairSet = await createKeyPairSet();
     const issuerOpt: IssuerOptions = {
       customerUuid,
-      publicKeyInfo: constructKeyObjs(kpSet)
+      publicKeyInfo: constructKeyObjs(kpSet),
+      url,
+      versionInfo
     };
+
     const restData: RESTData = {
       method: 'POST',
       baseUrl: configData.SaaSUrl,
@@ -89,7 +99,9 @@ export const registerIssuer = async (customerUuid: string, apiKey: string): Prom
         updatedAt: restResp.body.updatedAt,
         isAuthorized: restResp.body.isAuthorized,
         keys: kpSet,
-        apiKey
+        apiKey,
+        url: restResp.body.url,
+        versionInfo: restResp.body.versionInfo
       }
     };
 

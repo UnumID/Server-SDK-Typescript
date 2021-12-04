@@ -6,6 +6,7 @@ import { CustError } from '..';
 import { createKeyPairSet } from '../utils/createKeyPairs';
 import { getUUID } from '../utils/helpers';
 import { makeNetworkRequest, handleAuthTokenHeader } from '../utils/networkRequestHelper';
+import { validateVersionInfo } from '../utils/validateVersionInfo';
 
 /**
  * Creates an object to encapsulate key information after key pair creation.
@@ -41,7 +42,7 @@ const constructKeyObjs = (kpSet: KeyPairSet): Array<PublicKeyInfo> => {
  * Validates request input parameters.
  * @param req Request
  */
-const validateInParams = (customerUuid: string, url: string, apiKey: string): void => {
+const validateInParams = (customerUuid: string, url: string, apiKey: string, versionInfo: VersionInfo[]): void => {
   if (!customerUuid) {
     throw new CustError(400, 'Invalid Verifier Options: customerUuid is required.');
   }
@@ -53,6 +54,8 @@ const validateInParams = (customerUuid: string, url: string, apiKey: string): vo
   if (!apiKey) {
     throw new CustError(401, 'Not authenticated: apiKey is required.');
   }
+
+  validateVersionInfo(versionInfo);
 };
 
 /**
@@ -62,9 +65,9 @@ const validateInParams = (customerUuid: string, url: string, apiKey: string): vo
  * @param apiKey
  * @param versionInfo
  */
-export const registerVerifier = async (customerUuid: string, url: string, apiKey: string, versionInfo: VersionInfo[] = [{ target: { version: '1.0.0' }, sdkVersion: '2.0.0' }]): Promise<UnumDto<RegisteredVerifier>> => {
+export const registerVerifier = async (customerUuid: string, url: string, apiKey: string, versionInfo: VersionInfo[] = [{ target: { version: '1.0.0' }, sdkVersion: '3.0.0' }]): Promise<UnumDto<RegisteredVerifier>> => {
   try {
-    validateInParams(customerUuid, url, apiKey);
+    validateInParams(customerUuid, url, apiKey, versionInfo);
 
     const kpSet: KeyPairSet = await createKeyPairSet();
     const verifierOpt: VerifierOptions = { customerUuid, url, publicKeyInfo: constructKeyObjs(kpSet), versionInfo };

@@ -46,6 +46,7 @@ var __1 = require("..");
 var createKeyPairs_1 = require("../utils/createKeyPairs");
 var helpers_1 = require("../utils/helpers");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
+var validateVersionInfo_1 = require("../utils/validateVersionInfo");
 /**
  * Creates an object to encapsulate key information after key pair creation.
  * @param kp KeyPair
@@ -77,7 +78,7 @@ var constructKeyObjs = function (kpSet) {
  * Validates request input parameters.
  * @param req Request
  */
-var validateInParams = function (customerUuid, url, apiKey) {
+var validateInParams = function (customerUuid, url, apiKey, versionInfo) {
     if (!customerUuid) {
         throw new __1.CustError(400, 'Invalid Verifier Options: customerUuid is required.');
     }
@@ -87,6 +88,7 @@ var validateInParams = function (customerUuid, url, apiKey) {
     if (!apiKey) {
         throw new __1.CustError(401, 'Not authenticated: apiKey is required.');
     }
+    validateVersionInfo_1.validateVersionInfo(versionInfo);
 };
 /**
  * Handler for registering a Verifier with UnumID's SaaS.
@@ -96,14 +98,14 @@ var validateInParams = function (customerUuid, url, apiKey) {
  * @param versionInfo
  */
 exports.registerVerifier = function (customerUuid, url, apiKey, versionInfo) {
-    if (versionInfo === void 0) { versionInfo = [{ target: { version: '1.0.0' }, sdkVersion: '2.0.0' }]; }
+    if (versionInfo === void 0) { versionInfo = [{ target: { version: '1.0.0' }, sdkVersion: '3.0.0' }]; }
     return __awaiter(void 0, void 0, void 0, function () {
         var kpSet, verifierOpt, restData, restResp, authToken, verifierResp, error_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 3, , 4]);
-                    validateInParams(customerUuid, url, apiKey);
+                    validateInParams(customerUuid, url, apiKey, versionInfo);
                     return [4 /*yield*/, createKeyPairs_1.createKeyPairSet()];
                 case 1:
                     kpSet = _a.sent();

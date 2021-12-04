@@ -46,6 +46,7 @@ var helpers_1 = require("../utils/helpers");
 var error_1 = require("../utils/error");
 var createKeyPairs_1 = require("../utils/createKeyPairs");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
+var validateVersionInfo_1 = require("../utils/validateVersionInfo");
 /**
  * Creates an object to encapsulate key information after key pair creation.
  * @param kp KeyPair
@@ -77,65 +78,76 @@ var constructKeyObjs = function (kpSet) {
  * @param customerUuid string
  * @param apiKey string
  */
-var validateInParams = function (customerUuid, apiKey) {
+var validateInParams = function (customerUuid, apiKey, url, versionInfo) {
     if (!customerUuid) {
         throw new error_1.CustError(400, 'Invalid Issuer: customerUuid is required.');
     }
     if (!apiKey) {
         throw new error_1.CustError(401, 'Not authenticated: apiKey is required');
     }
+    if (!url) {
+        throw new error_1.CustError(400, 'Invalid Issuer: url is required.');
+    }
+    validateVersionInfo_1.validateVersionInfo(versionInfo);
 };
 /**
  * Handles registering an Issuer with UnumID's SaaS.
  * @param customerUuid
  * @param apiKey
  */
-exports.registerIssuer = function (customerUuid, apiKey) { return __awaiter(void 0, void 0, void 0, function () {
-    var kpSet, issuerOpt, restData, restResp, authToken, issuerResp, error_2;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 3, , 4]);
-                validateInParams(customerUuid, apiKey);
-                return [4 /*yield*/, createKeyPairs_1.createKeyPairSet()];
-            case 1:
-                kpSet = _a.sent();
-                issuerOpt = {
-                    customerUuid: customerUuid,
-                    publicKeyInfo: constructKeyObjs(kpSet)
-                };
-                restData = {
-                    method: 'POST',
-                    baseUrl: config_1.configData.SaaSUrl,
-                    endPoint: 'issuer',
-                    header: { Authorization: 'Bearer ' + apiKey },
-                    data: issuerOpt
-                };
-                return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];
-            case 2:
-                restResp = _a.sent();
-                authToken = networkRequestHelper_1.handleAuthTokenHeader(restResp);
-                issuerResp = {
-                    authToken: authToken,
-                    body: {
-                        uuid: restResp.body.uuid,
-                        customerUuid: restResp.body.customerUuid,
-                        did: restResp.body.did,
-                        name: restResp.body.name,
-                        createdAt: restResp.body.createdAt,
-                        updatedAt: restResp.body.updatedAt,
-                        isAuthorized: restResp.body.isAuthorized,
-                        keys: kpSet,
-                        apiKey: apiKey
-                    }
-                };
-                return [2 /*return*/, issuerResp];
-            case 3:
-                error_2 = _a.sent();
-                logger_1.default.error("Error registering an Issuer with UnumID SaaS. " + error_2);
-                throw error_2;
-            case 4: return [2 /*return*/];
-        }
+exports.registerIssuer = function (customerUuid, apiKey, url, versionInfo) {
+    if (versionInfo === void 0) { versionInfo = [{ target: { version: '1.0.0' }, sdkVersion: '3.0.0' }]; }
+    return __awaiter(void 0, void 0, void 0, function () {
+        var kpSet, issuerOpt, restData, restResp, authToken, issuerResp, error_2;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 3, , 4]);
+                    validateInParams(customerUuid, apiKey, url, versionInfo);
+                    return [4 /*yield*/, createKeyPairs_1.createKeyPairSet()];
+                case 1:
+                    kpSet = _a.sent();
+                    issuerOpt = {
+                        customerUuid: customerUuid,
+                        publicKeyInfo: constructKeyObjs(kpSet),
+                        url: url,
+                        versionInfo: versionInfo
+                    };
+                    restData = {
+                        method: 'POST',
+                        baseUrl: config_1.configData.SaaSUrl,
+                        endPoint: 'issuer',
+                        header: { Authorization: 'Bearer ' + apiKey },
+                        data: issuerOpt
+                    };
+                    return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];
+                case 2:
+                    restResp = _a.sent();
+                    authToken = networkRequestHelper_1.handleAuthTokenHeader(restResp);
+                    issuerResp = {
+                        authToken: authToken,
+                        body: {
+                            uuid: restResp.body.uuid,
+                            customerUuid: restResp.body.customerUuid,
+                            did: restResp.body.did,
+                            name: restResp.body.name,
+                            createdAt: restResp.body.createdAt,
+                            updatedAt: restResp.body.updatedAt,
+                            isAuthorized: restResp.body.isAuthorized,
+                            keys: kpSet,
+                            apiKey: apiKey,
+                            url: restResp.body.url,
+                            versionInfo: restResp.body.versionInfo
+                        }
+                    };
+                    return [2 /*return*/, issuerResp];
+                case 3:
+                    error_2 = _a.sent();
+                    logger_1.default.error("Error registering an Issuer with UnumID SaaS. " + error_2);
+                    throw error_2;
+                case 4: return [2 /*return*/];
+            }
+        });
     });
-}); };
+};
 //# sourceMappingURL=registerIssuer.js.map

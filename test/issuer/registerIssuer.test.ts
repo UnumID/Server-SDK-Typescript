@@ -4,6 +4,7 @@ import { registerIssuer } from '../../src/issuer/registerIssuer';
 import { CustError } from '../../src/utils/error';
 import * as createKeyPairs from '../../src/utils/createKeyPairs';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
+import { VersionInfo } from '@unumid/types';
 
 jest.mock('../../src/utils/networkRequestHelper', () => ({
   ...jest.requireActual('../../src/utils/networkRequestHelper'),
@@ -62,10 +63,11 @@ describe('registerIssuer - Failure cases', () => {
   let reqBody: JSONObj;
   const name = 'First Unumid Issuer';
   const customerUuid = '5e46f1ba-4c82-471d-bbc7-251924a90532';
+  const url = 'dummy.com';
 
   it('returns a CustError with a descriptive error message if customerUuid is missing', async () => {
     try {
-      await registerIssuer('', dummyIssuerApiKey);
+      await registerIssuer('', dummyIssuerApiKey, url);
       fail();
     } catch (e) {
       expect(e).toEqual(new CustError(400, 'Invalid Issuer: customerUuid is required.'));
@@ -76,7 +78,7 @@ describe('registerIssuer - Failure cases', () => {
 
   it('returns a CustError with a descriptive error message if apiKey is missing', async () => {
     try {
-      await registerIssuer(customerUuid, '');
+      await registerIssuer(customerUuid, '', url);
       fail();
     } catch (e) {
       expect(e).toEqual(new CustError(401, 'Not authenticated: apiKey is required'));
@@ -84,16 +86,77 @@ describe('registerIssuer - Failure cases', () => {
       expect(e.message).toEqual('Not authenticated: apiKey is required');
     }
   });
+
+  it('returns a CustError with a descriptive error message if url is missing', async () => {
+    try {
+      await registerIssuer(customerUuid, dummyIssuerApiKey, undefined);
+      fail();
+    } catch (e) {
+      expect(e).toEqual(new CustError(400, 'Invalid Issuer: url is required.'));
+      expect(e.code).toEqual(400);
+      expect(e.message).toEqual('Invalid Issuer: url is required.');
+    }
+  });
+
+  it('returns a CustError with a descriptive error message if versionInfo target is missing', async () => {
+    // const badVersionInfo: VersionInfo[] = [{ target: { version: '1.0.x' }, sdkVersion: '3.0.0' }];
+    const badVersionInfo: VersionInfo[] = [{ sdkVersion: '3.0.0' }];
+    try {
+      await registerIssuer(customerUuid, dummyIssuerApiKey, url, badVersionInfo);
+      fail();
+    } catch (e) {
+      expect(e).toEqual(new CustError(400, '\'versionInfo[0].target\' must be defined.'));
+      expect(e.code).toEqual(400);
+      expect(e.message).toEqual('\'versionInfo[0].target\' must be defined.');
+    }
+  });
+
+  it('returns a CustError with a descriptive error message if versionInfo url or version is missing', async () => {
+    const badVersionInfo: VersionInfo[] = [{ target: { hat: '1.0.x' }, sdkVersion: '3.0.0' }];
+    try {
+      await registerIssuer(customerUuid, dummyIssuerApiKey, url, badVersionInfo);
+      fail();
+    } catch (e) {
+      expect(e).toEqual(new CustError(400, '\'versionInfo[0].target.version\' or \'versionInfo[0].target.url\' must be defined.'));
+      expect(e.code).toEqual(400);
+      expect(e.message).toEqual('\'versionInfo[0].target.version\' or \'versionInfo[0].target.url\' must be defined.');
+    }
+  });
+
+  it('returns a CustError with a descriptive error message if versionInfo version is not in semver notation', async () => {
+    const badVersionInfo: VersionInfo[] = [{ target: { version: '1.0.x' }, sdkVersion: '3.0.0' }];
+    try {
+      await registerIssuer(customerUuid, dummyIssuerApiKey, url, badVersionInfo);
+      fail();
+    } catch (e) {
+      expect(e).toEqual(new CustError(400, '\'versionInfo[0].target.version\' must be valid semver notation.'));
+      expect(e.code).toEqual(400);
+      expect(e.message).toEqual('\'versionInfo[0].target.version\' must be valid semver notation.');
+    }
+  });
+
+  it('returns a CustError with a descriptive error message if versionInfo sdkVersion is not in semver notation', async () => {
+    const badVersionInfo: VersionInfo[] = [{ target: { version: '1.0.0' }, sdkVersion: '3.0.x' }];
+    try {
+      await registerIssuer(customerUuid, dummyIssuerApiKey, url, badVersionInfo);
+      fail();
+    } catch (e) {
+      expect(e).toEqual(new CustError(400, '\'versionInfo[0].sdkVersion\' must be valid semver notation.'));
+      expect(e.code).toEqual(400);
+      expect(e.message).toEqual('\'versionInfo[0].sdkVersion\' must be valid semver notation.');
+    }
+  });
 });
 
 describe('registerIssuer - Failure cases - SaaS Errors', () => {
   const name = 'First Unumid Issuer';
   const customerUuid = '5e46f1ba-4c82-471d-bbc7-251924a90532';
+  const url = 'dummy.com';
 
   it('Response code should be 403 when uuid is not valid', async () => {
     mockMakeNetworkRequest.mockRejectedValueOnce(new CustError(403, 'Forbidden'));
     try {
-      await registerIssuer('123', dummyIssuerApiKey);
+      await registerIssuer('123', dummyIssuerApiKey, url);
     } catch (e) {
       expect(e.code).toBe(403);
     }
@@ -103,7 +166,7 @@ describe('registerIssuer - Failure cases - SaaS Errors', () => {
     mockMakeNetworkRequest.mockRejectedValueOnce(new CustError(403, 'Forbidden'));
 
     try {
-      await registerIssuer(customerUuid, 'abc');
+      await registerIssuer(customerUuid, 'abc', url);
     } catch (e) {
       expect(e.code).toBe(403);
     }

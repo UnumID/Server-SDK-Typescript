@@ -116,6 +116,55 @@ describe('registerVerifier - Failure cases', () => {
       expect(e.message).toEqual('Not authenticated: apiKey is required.');
     }
   });
+
+  it('returns a CustError with a descriptive error message if versionInfo target is missing', async () => {
+    // const badVersionInfo: VersionInfo[] = [{ target: { version: '1.0.x' }, sdkVersion: '3.0.0' }];
+    const badVersionInfo: VersionInfo[] = [{ sdkVersion: '3.0.0' }];
+    try {
+      await registerVerifier(customerUuid, url, dummyVerifierApiKey, badVersionInfo);
+      fail();
+    } catch (e) {
+      expect(e).toEqual(new CustError(400, '\'versionInfo[0].target\' must be defined.'));
+      expect(e.code).toEqual(400);
+      expect(e.message).toEqual('\'versionInfo[0].target\' must be defined.');
+    }
+  });
+
+  it('returns a CustError with a descriptive error message if versionInfo url or version is missing', async () => {
+    const badVersionInfo: VersionInfo[] = [{ target: { hat: '1.0.x' }, sdkVersion: '3.0.0' }];
+    try {
+      await registerVerifier(customerUuid, url, dummyVerifierApiKey, badVersionInfo);
+      fail();
+    } catch (e) {
+      expect(e).toEqual(new CustError(400, '\'versionInfo[0].target.version\' or \'versionInfo[0].target.url\' must be defined.'));
+      expect(e.code).toEqual(400);
+      expect(e.message).toEqual('\'versionInfo[0].target.version\' or \'versionInfo[0].target.url\' must be defined.');
+    }
+  });
+
+  it('returns a CustError with a descriptive error message if versionInfo version is not in semver notation', async () => {
+    const badVersionInfo: VersionInfo[] = [{ target: { version: '1.0.x' }, sdkVersion: '3.0.0' }];
+    try {
+      await registerVerifier(customerUuid, url, dummyVerifierApiKey, badVersionInfo);
+      fail();
+    } catch (e) {
+      expect(e).toEqual(new CustError(400, '\'versionInfo[0].target.version\' must be valid semver notation.'));
+      expect(e.code).toEqual(400);
+      expect(e.message).toEqual('\'versionInfo[0].target.version\' must be valid semver notation.');
+    }
+  });
+
+  it('returns a CustError with a descriptive error message if versionInfo sdkVersion is not in semver notation', async () => {
+    const badVersionInfo: VersionInfo[] = [{ target: { version: '1.0.0' }, sdkVersion: '3.0.x' }];
+    try {
+      await registerVerifier(customerUuid, url, dummyVerifierApiKey, badVersionInfo);
+      fail();
+    } catch (e) {
+      expect(e).toEqual(new CustError(400, '\'versionInfo[0].sdkVersion\' must be valid semver notation.'));
+      expect(e.code).toEqual(400);
+      expect(e.message).toEqual('\'versionInfo[0].sdkVersion\' must be valid semver notation.');
+    }
+  });
 });
 
 describe('registerVerifier - Failure cases - SaaS Errors', () => {
