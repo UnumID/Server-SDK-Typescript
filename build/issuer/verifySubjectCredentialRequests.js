@@ -66,11 +66,11 @@ var logger_1 = __importDefault(require("../logger"));
  * Validates the attributes for a credential request to UnumID's SaaS.
  * @param requests CredentialRequest
  */
-var validateCredentialRequests = function (requests) {
+var validateCredentialRequests = function (requests, subjectDid) {
     if (helpers_1.isArrayEmpty(requests) || !requests) {
         throw new error_1.CustError(400, 'subjectCredentialRequests must be a non-empty array.');
     }
-    var subjectDid = '';
+    // let subjectDid = '';
     for (var i = 0; i < requests.length; i++) {
         var request = requests[i];
         if (!request.proof) {
@@ -90,13 +90,8 @@ var validateCredentialRequests = function (requests) {
             throw new error_1.CustError(400, "Invalid SubjectCredentialRequest[" + i + "]: issuers must be defined.");
         }
         // handle validating the subject did is the identical fr all requests
-        if (i === 0) {
-            subjectDid = request.proof.verificationMethod;
-        }
-        else {
-            if (subjectDid !== request.proof.verificationMethod) {
-                throw new error_1.CustError(400, 'Invalid SubjectCredentialRequests: subjectDid must identical per batch of requests.');
-            }
+        if (subjectDid !== request.proof.verificationMethod) {
+            throw new error_1.CustError(400, "Invalid SubjectCredentialRequest[" + i + "]: provided subjectDid must match that of the credential requests' signer.");
         }
     }
     // return the subjectDid for reference now that have validated all the same across all requests
@@ -105,21 +100,22 @@ var validateCredentialRequests = function (requests) {
 /**
  * Verify the CredentialRequests signatures.
  */
-function verifySubjectCredentialRequests(authorization, issuerDid, credentialRequests) {
+function verifySubjectCredentialRequests(authorization, issuerDid, subjectDid, credentialRequests) {
     return __awaiter(this, void 0, void 0, function () {
-        var subjectDid, authToken, _i, credentialRequests_1, credentialRequest, result, _a, isVerified, message;
+        var authToken, _i, credentialRequests_1, credentialRequest, result, _a, isVerified, message;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
                     requireAuth_1.requireAuth(authorization);
-                    subjectDid = validateCredentialRequests(credentialRequests);
+                    // validate credentialRequests input; and grab the subjectDid for reference later
+                    validateCredentialRequests(credentialRequests, subjectDid);
                     authToken = authorization;
                     _i = 0, credentialRequests_1 = credentialRequests;
                     _b.label = 1;
                 case 1:
                     if (!(_i < credentialRequests_1.length)) return [3 /*break*/, 5];
                     credentialRequest = credentialRequests_1[_i];
-                    return [4 /*yield*/, verifySubjectCredentialRequest(authToken, issuerDid, credentialRequest)];
+                    return [4 /*yield*/, verifySubjectCredentialRequest(authToken, issuerDid, subjectDid, credentialRequest)];
                 case 2:
                     result = _b.sent();
                     _a = result.body, isVerified = _a.isVerified, message = _a.message;
@@ -140,8 +136,7 @@ function verifySubjectCredentialRequests(authorization, issuerDid, credentialReq
                     return [2 /*return*/, {
                             authToken: authToken,
                             body: {
-                                isVerified: true,
-                                subjectDid: subjectDid
+                                isVerified: true
                             }
                         }];
             }
@@ -149,7 +144,7 @@ function verifySubjectCredentialRequests(authorization, issuerDid, credentialReq
     });
 }
 exports.verifySubjectCredentialRequests = verifySubjectCredentialRequests;
-function verifySubjectCredentialRequest(authorization, issuerDid, credentialRequest) {
+function verifySubjectCredentialRequest(authorization, issuerDid, subjectDid, credentialRequest) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
         var verificationMethod, signatureValue, didDocumentResponse, authToken, publicKeyInfos, _c, publicKey, encoding, unsignedCredentialRequest, bytes, isVerified;
@@ -164,8 +159,7 @@ function verifySubjectCredentialRequest(authorization, issuerDid, credentialRequ
                                 authToken: authorization,
                                 body: {
                                     isVerified: false,
-                                    message: "Issuer DID, " + issuerDid + ", not found in credential request issuers " + credentialRequest.issuers,
-                                    subjectDid: verificationMethod
+                                    message: "Issuer DID, " + issuerDid + ", not found in credential request issuers " + credentialRequest.issuers
                                 }
                             }];
                     }
@@ -178,13 +172,11 @@ function verifySubjectCredentialRequest(authorization, issuerDid, credentialRequ
                     authToken = networkRequestHelper_1.handleAuthTokenHeader(didDocumentResponse, authorization);
                     publicKeyInfos = didHelper_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                     if (publicKeyInfos.length === 0) {
-                        // throw new CustError(404, `Public key not found for the subject did ${verificationMethod}`);
                         return [2 /*return*/, {
                                 authToken: authToken,
                                 body: {
                                     isVerified: false,
-                                    message: "Public key not found for the subject did " + verificationMethod,
-                                    subjectDid: verificationMethod
+                                    message: "Public key not found for the subject did " + verificationMethod
                                 }
                             }];
                     }
@@ -197,16 +189,14 @@ function verifySubjectCredentialRequest(authorization, issuerDid, credentialRequ
                                 authToken: authToken,
                                 body: {
                                     isVerified: false,
-                                    message: 'SubjectCredentialRequest signature can not be verified.',
-                                    subjectDid: verificationMethod
+                                    message: 'SubjectCredentialRequest signature can not be verified.'
                                 }
                             }];
                     }
                     return [2 /*return*/, {
                             authToken: authToken,
                             body: {
-                                isVerified: true,
-                                subjectDid: verificationMethod
+                                isVerified: true
                             }
                         }];
             }
