@@ -1,5 +1,5 @@
 
-import { RESTData, SubjectCredentialRequestVerifiedStatus, UnumDto, VerifiedStatus } from '../types';
+import { RESTData, UnumDto, VerifiedStatus } from '../types';
 import { CredentialRequestInfoBasic, CredentialRequestPb, JSONObj, ReceiptOptions, SubjectCredentialRequest, ReceiptSubjectCredentialRequestVerifiedData } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
 import { CustError } from '../utils/error';

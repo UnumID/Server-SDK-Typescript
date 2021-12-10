@@ -138,15 +138,6 @@ export interface VerifiedStatus{
   message?: string;
 }
 
-/**
- * Interface to encapsulate the additional subject did attributed to a verifySubjectCredentialRequests call.
- * This is useful for customers to use as reference to then issues the credentials.
- * Note: the verification method ensures the same subject did is used for all requests.
- */
-export interface SubjectCredentialRequestVerifiedStatus extends VerifiedStatus {
-  subjectDid: string
-}
-
 // /**
 //  * A type to convey why a presentation can not be verified.
 //  * While this would normally be served by throwing an exception we want to pass back the auth token returned
