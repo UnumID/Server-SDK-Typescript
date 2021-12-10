@@ -221,7 +221,7 @@ describe('verifySubjectCredentialRequest', () => {
         required: undefined
       };
       try {
-        await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, [badRequest]);
+        await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, dummySubjectDid, [badRequest]);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -235,7 +235,7 @@ describe('verifySubjectCredentialRequest', () => {
         type: []
       };
       try {
-        await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, [badRequest]);
+        await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, dummySubjectDid, [badRequest]);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -250,7 +250,7 @@ describe('verifySubjectCredentialRequest', () => {
       };
 
       try {
-        await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, [badRequest]);
+        await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, dummySubjectDid, [badRequest]);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -260,7 +260,7 @@ describe('verifySubjectCredentialRequest', () => {
 
     it('returns a 401 status code if x-auth-token header is missing', async () => {
       try {
-        await verifySubjectCredentialRequests('', dummyIssuerDid, credentialRequests);
+        await verifySubjectCredentialRequests('', dummyIssuerDid, dummySubjectDid, credentialRequests);
         fail();
       } catch (e) {
         expect(e.code).toEqual(401);
