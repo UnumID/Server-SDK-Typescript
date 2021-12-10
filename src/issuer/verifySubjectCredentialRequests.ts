@@ -50,7 +50,7 @@ const validateCredentialRequests = (requests: SubjectCredentialRequest[], subjec
 
     // handle validating the subject did is the identical fr all requests
     if (subjectDid !== request.proof.verificationMethod) {
-      throw new CustError(400, `Invalid SubjectCredentialRequest[${i}]: provided subjectDid must match that of the credential requests' signer.`);
+      throw new CustError(400, `Invalid SubjectCredentialRequest[${i}]: provided subjectDid, ${subjectDid}, must match that of the credential requests' signer, ${request.proof.verificationMethod}.`);
     }
   }
 

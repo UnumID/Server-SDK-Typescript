@@ -91,7 +91,7 @@ var validateCredentialRequests = function (requests, subjectDid) {
         }
         // handle validating the subject did is the identical fr all requests
         if (subjectDid !== request.proof.verificationMethod) {
-            throw new error_1.CustError(400, "Invalid SubjectCredentialRequest[" + i + "]: provided subjectDid must match that of the credential requests' signer.");
+            throw new error_1.CustError(400, "Invalid SubjectCredentialRequest[" + i + "]: provided subjectDid, " + subjectDid + ", must match that of the credential requests' signer, " + request.proof.verificationMethod + ".");
         }
     }
     // return the subjectDid for reference now that have validated all the same across all requests
