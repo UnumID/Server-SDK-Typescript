@@ -2,7 +2,7 @@ import { registerVerifier } from './verifier/registerVerifier';
 import { sendEmail } from './verifier/sendEmail';
 import { sendRequest } from './verifier/sendRequest';
 import { sendSms } from './verifier/sendSms';
-import { UnumDto, RegisteredVerifier, RegisteredIssuer, VerifiedStatus, DecryptedPresentation, CredentialInfo, CredentialStatusInfo, SubjectCredentialRequestVerifiedStatus } from './types';
+import { UnumDto, RegisteredVerifier, RegisteredIssuer, VerifiedStatus, DecryptedPresentation, CredentialInfo, CredentialStatusInfo } from './types';
 import { verifyPresentation } from './verifier/verifyPresentation';
 import { registerIssuer } from './issuer/registerIssuer';
 import { issueCredential, issueCredentials } from './issuer/issueCredentials';
@@ -38,7 +38,6 @@ export {
   UnumDto,
   RegisteredVerifier,
   VerifiedStatus,
-  SubjectCredentialRequestVerifiedStatus,
   Presentation,
   RegisteredIssuer,
   CredentialSubject,
