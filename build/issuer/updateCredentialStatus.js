@@ -81,7 +81,7 @@ exports.updateCredentialStatus = function (authorization, credentialId, status) 
                     restData = {
                         method: 'PATCH',
                         baseUrl: config_1.configData.SaaSUrl,
-                        endPoint: 'credentialStatus/' + credentialId,
+                        endPoint: 'credentialStatus/?credentialId=' + credentialId,
                         header: { Authorization: authorization },
                         data: { status: status }
                     };
