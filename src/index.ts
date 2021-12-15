@@ -18,6 +18,7 @@ import { getVersionedRequest } from './verifier/getVersionedRequest';
 import { verifySubjectCredentialRequests } from './issuer/verifySubjectCredentialRequests';
 import { verifySubjectDidDocument } from './utils/verifyDidDocument';
 import { revokeAllCredentials } from './issuer/revokeAllCredentials';
+import { updateCredentialStatuses } from './issuer/updateCredentialStatuses';
 
 export {
   // Issuer Functions
@@ -25,6 +26,7 @@ export {
   issueCredential,
   issueCredentials,
   updateCredentialStatus,
+  updateCredentialStatuses,
   verifySubjectCredentialRequests,
   revokeAllCredentials,
   // Verifier Functions

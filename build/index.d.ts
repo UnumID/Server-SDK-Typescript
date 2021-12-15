@@ -18,5 +18,6 @@ import { getVersionedRequest } from './verifier/getVersionedRequest';
 import { verifySubjectCredentialRequests } from './issuer/verifySubjectCredentialRequests';
 import { verifySubjectDidDocument } from './utils/verifyDidDocument';
 import { revokeAllCredentials } from './issuer/revokeAllCredentials';
-export { registerIssuer, issueCredential, issueCredentials, updateCredentialStatus, verifySubjectCredentialRequests, revokeAllCredentials, registerVerifier, sendEmail, sendRequest, sendSms, verifyPresentation, checkCredentialStatus, getRequest, getVersionedRequest, UnumDto, RegisteredVerifier, VerifiedStatus, Presentation, RegisteredIssuer, CredentialSubject, DecryptedPresentation, CredentialStatusInfo, CustError, Proof, Credential, CredentialInfo, extractCredentialInfo, verifySubjectDidDocument, createProof, createProofPb, convertCredentialSubject };
+import { updateCredentialStatuses } from './issuer/updateCredentialStatuses';
+export { registerIssuer, issueCredential, issueCredentials, updateCredentialStatus, updateCredentialStatuses, verifySubjectCredentialRequests, revokeAllCredentials, registerVerifier, sendEmail, sendRequest, sendSms, verifyPresentation, checkCredentialStatus, getRequest, getVersionedRequest, UnumDto, RegisteredVerifier, VerifiedStatus, Presentation, RegisteredIssuer, CredentialSubject, DecryptedPresentation, CredentialStatusInfo, CustError, Proof, Credential, CredentialInfo, extractCredentialInfo, verifySubjectDidDocument, createProof, createProofPb, convertCredentialSubject };
 //# sourceMappingURL=index.d.ts.map
