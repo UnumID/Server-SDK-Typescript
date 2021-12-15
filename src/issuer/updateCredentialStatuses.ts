@@ -16,7 +16,7 @@ import { CredentialStatusesOptions } from '@unumid/types/build/protos/credential
 const validateInputs = (credentialIds: string[], status: CredentialStatusOptions): void => {
   // Credential ID is mandatory.
   if (isArrayEmpty(credentialIds)) {
-    throw new CustError(400, 'none empty credentialIds are required.');
+    throw new CustError(400, 'credentialIds are required.');
   }
 
   try {
