@@ -1,6 +1,6 @@
 import { dummyAuthToken, dummyAdminKey } from './mocks';
 import { UnumDto } from '../../src/types';
-import { updateCredentialStatus } from '../../src/issuer/updateCredentialStatus';
+import { updateCredentialStatuses } from '../../src/issuer/updateCredentialStatuses';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { CustError } from '../../src/utils/error';
 
@@ -14,15 +14,15 @@ jest.mock('../../src/utils/networkRequestHelper', () => {
 
 const mockMakeNetworkRequest = makeNetworkRequest as jest.Mock;
 
-describe('updateCredentialStatus', () => {
+describe('updateCredentialStatuses', () => {
   let response: UnumDto, responseAuthToken: string;
-  const credentialId = '0eeb8ea2-e02c-492f-8846-aaea12fb0187';
+  const credentialIds = ['0eeb8ea2-e02c-492f-8846-aaea12fb0187'];
   const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiaXNzdWVyIiwidXVpZCI6IjU5MDMyMmRiLTJlMDgtNGZjNi1iZTY2LTQ3NGRmMWY3Nzk4YSIsImRpZCI6ImRpZDp1bnVtOmRhOGYyNDJkLTZjZDYtNGUzMC1iNTU3LTNhMzkzZWFkZmMyYyIsImV4cCI6MTU5Njc2NzAzNi45NjQsImlhdCI6MTU5NzE0MzAxNn0.9AwobcQ3a9u4gMCc9b1BtN8VRoiglCJKGtkqB425Zyo';
 
   beforeEach(async () => {
     const headers = { 'x-auth-token': dummyAuthToken };
     mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers });
-    response = await updateCredentialStatus(authHeader, credentialId);
+    response = await updateCredentialStatuses(authHeader, credentialIds);
     responseAuthToken = response.authToken;
   });
 
@@ -40,19 +40,19 @@ describe('updateCredentialStatus', () => {
 
   it('does not return an auth token if the SaaS does not return an auth token', async () => {
     mockMakeNetworkRequest.mockResolvedValueOnce({ body: { success: true } });
-    response = await updateCredentialStatus(credentialId, dummyAdminKey);
+    response = await updateCredentialStatuses(dummyAdminKey, credentialIds);
     responseAuthToken = response.authToken;
     expect(responseAuthToken).toBeUndefined();
   });
 });
 
 describe('updateCredentialStatus - Failure cases', () => {
-  const credentialId = '0eeb8ea2-e02c-492f-8846-aaea12fb0187';
+  const credentialIds = ['0eeb8ea2-e02c-492f-8846-aaea12fb0187'];
   const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiaXNzdWVyIiwidXVpZCI6IjU5MDMyMmRiLTJlMDgtNGZjNi1iZTY2LTQ3NGRmMWY3Nzk4YSIsImRpZCI6ImRpZDp1bnVtOmRhOGYyNDJkLTZjZDYtNGUzMC1iNTU3LTNhMzkzZWFkZmMyYyIsImV4cCI6MTU5Njc2NzAzNi45NjQsImlhdCI6MTU5NzE0MzAxNn0.9AwobcQ3a9u4gMCc9b1BtN8VRoiglCJKGtkqB425Zyo';
 
   it('returns a CustError with a descriptive error message if the credentialId is missing', async () => {
     try {
-      await updateCredentialStatus(authHeader, '');
+      await updateCredentialStatuses(authHeader, '');
       fail();
     } catch (e) {
       expect(e).toEqual(new CustError(400, 'credentialId is required.'));
@@ -63,7 +63,7 @@ describe('updateCredentialStatus - Failure cases', () => {
 
   it('returns a CustError with a descriptive error message if the Authorization string is missing', async () => {
     try {
-      await updateCredentialStatus('', credentialId);
+      await updateCredentialStatuses('', credentialIds);
       fail();
     } catch (e) {
       expect(e).toEqual(new CustError(401, 'No authentication string. Not authenticated.'));
@@ -74,7 +74,7 @@ describe('updateCredentialStatus - Failure cases', () => {
 
   it('returns a CustError with a descriptive error message if the status is not a valid CredentialStatusOptions string literal', async () => {
     try {
-      await updateCredentialStatus(authHeader, credentialId, 'fake');
+      await updateCredentialStatuses(authHeader, credentialIds, 'fake');
       fail();
     } catch (e) {
       expect(e).toEqual(new CustError(400, 'status does not match a valid CredentialStatusOptions string literal.'));
