@@ -6,5 +6,5 @@ import { CredentialStatusOptions } from '@unumid/types';
  * @param credentialId string // id of credential to revoke
  * @param status CredentialStatusOptions // status to update the credential to (defaults to 'revoked')
  */
-export declare const updateCredentialStatus: (authorization: string, credentialIds: string[], status?: CredentialStatusOptions) => Promise<UnumDto<undefined>>;
+export declare const updateCredentialStatuses: (authorization: string, credentialIds: string[], status?: CredentialStatusOptions) => Promise<UnumDto<undefined>>;
 //# sourceMappingURL=updateCredentialStatuses.d.ts.map

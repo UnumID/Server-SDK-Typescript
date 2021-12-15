@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateCredentialStatus = void 0;
+exports.updateCredentialStatuses = void 0;
 var config_1 = require("../config");
 var requireAuth_1 = require("../requireAuth");
 var logger_1 = __importDefault(require("../logger"));
@@ -69,7 +69,7 @@ var validateInputs = function (credentialIds, status) {
  * @param credentialId string // id of credential to revoke
  * @param status CredentialStatusOptions // status to update the credential to (defaults to 'revoked')
  */
-exports.updateCredentialStatus = function (authorization, credentialIds, status) {
+exports.updateCredentialStatuses = function (authorization, credentialIds, status) {
     if (status === void 0) { status = 'revoked'; }
     return __awaiter(void 0, void 0, void 0, function () {
         var data, restData, response, authToken, result, error_2;

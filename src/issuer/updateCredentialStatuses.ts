@@ -32,7 +32,7 @@ const validateInputs = (credentialIds: string[], status: CredentialStatusOptions
  * @param credentialId string // id of credential to revoke
  * @param status CredentialStatusOptions // status to update the credential to (defaults to 'revoked')
  */
-export const updateCredentialStatus = async (authorization: string, credentialIds: string[], status: CredentialStatusOptions = 'revoked'): Promise<UnumDto<undefined>> => {
+export const updateCredentialStatuses = async (authorization: string, credentialIds: string[], status: CredentialStatusOptions = 'revoked'): Promise<UnumDto<undefined>> => {
   try {
     requireAuth(authorization);
 
