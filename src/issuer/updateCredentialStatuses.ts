@@ -6,7 +6,7 @@ import logger from '../logger';
 import { CredentialStatusOptions, JSONObj, _CredentialStatusOptions } from '@unumid/types';
 import { CustError } from '../utils/error';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
-import { isArrayNotEmpty } from '../utils/helpers';
+import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
 import { CredentialStatusesOptions } from '@unumid/types/build/protos/credential';
 
 /**
@@ -15,7 +15,7 @@ import { CredentialStatusesOptions } from '@unumid/types/build/protos/credential
  */
 const validateInputs = (credentialIds: string[], status: CredentialStatusOptions): void => {
   // Credential ID is mandatory.
-  if (isArrayNotEmpty(credentialIds)) {
+  if (isArrayEmpty(credentialIds)) {
     throw new CustError(400, 'none empty credentialIds is required.');
   }
 
