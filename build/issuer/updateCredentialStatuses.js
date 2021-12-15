@@ -54,7 +54,7 @@ var helpers_1 = require("../utils/helpers");
 var validateInputs = function (credentialIds, status) {
     // Credential ID is mandatory.
     if (helpers_1.isArrayEmpty(credentialIds)) {
-        throw new error_1.CustError(400, 'none empty credentialIds is required.');
+        throw new error_1.CustError(400, 'credentialIds are required.');
     }
     try {
         types_1._CredentialStatusOptions.check(status);
