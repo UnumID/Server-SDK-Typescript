@@ -55,7 +55,7 @@ describe('updateCredentialStatus - Failure cases', () => {
       await updateCredentialStatuses(authHeader, '');
       fail();
     } catch (e) {
-      expect(e).toEqual(new CustError(400, 'credentialId is required.'));
+      expect(e).toEqual(new CustError(400, 'none empty credentialIds are required.'));
       expect(e.code).toEqual(400);
       expect(e.message).toEqual('credentialId is required.');
     }
