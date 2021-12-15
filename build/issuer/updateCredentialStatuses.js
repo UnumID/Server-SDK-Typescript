@@ -46,14 +46,15 @@ var logger_1 = __importDefault(require("../logger"));
 var types_1 = require("@unumid/types");
 var error_1 = require("../utils/error");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
+var helpers_1 = require("../utils/helpers");
 /**
  * Helper to validate request inputs.
  * @param req Request
  */
-var validateInputs = function (credentialId, status) {
+var validateInputs = function (credentialIds, status) {
     // Credential ID is mandatory.
-    if (!credentialId) {
-        throw new error_1.CustError(400, 'credentialId is required.');
+    if (helpers_1.isArrayNotEmpty(credentialIds)) {
+        throw new error_1.CustError(400, 'none empty credentialIds is required.');
     }
     try {
         types_1._CredentialStatusOptions.check(status);
@@ -68,22 +69,26 @@ var validateInputs = function (credentialId, status) {
  * @param credentialId string // id of credential to revoke
  * @param status CredentialStatusOptions // status to update the credential to (defaults to 'revoked')
  */
-exports.updateCredentialStatus = function (authorization, credentialId, status) {
+exports.updateCredentialStatus = function (authorization, credentialIds, status) {
     if (status === void 0) { status = 'revoked'; }
     return __awaiter(void 0, void 0, void 0, function () {
-        var restData, response, authToken, result, error_2;
+        var data, restData, response, authToken, result, error_2;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
                     requireAuth_1.requireAuth(authorization);
-                    validateInputs(credentialId, status);
+                    validateInputs(credentialIds, status);
+                    data = {
+                        status: status,
+                        credentialIds: credentialIds
+                    };
                     restData = {
                         method: 'PATCH',
                         baseUrl: config_1.configData.SaaSUrl,
-                        endPoint: 'credentialStatus/?credentialId=' + credentialId,
+                        endPoint: 'credentialStatuses',
                         header: { Authorization: authorization },
-                        data: { status: status }
+                        data: data
                     };
                     return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];
                 case 1:
@@ -103,4 +108,4 @@ exports.updateCredentialStatus = function (authorization, credentialId, status) 
         });
     });
 };
-//# sourceMappingURL=updateCredentialStatus.js.map
+//# sourceMappingURL=updateCredentialStatuses.js.map

@@ -6,15 +6,17 @@ import logger from '../logger';
 import { CredentialStatusOptions, JSONObj, _CredentialStatusOptions } from '@unumid/types';
 import { CustError } from '../utils/error';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
+import { isArrayNotEmpty } from '../utils/helpers';
+import { CredentialStatusesOptions } from '@unumid/types/build/protos/credential';
 
 /**
  * Helper to validate request inputs.
  * @param req Request
  */
-const validateInputs = (credentialId: string, status: CredentialStatusOptions): void => {
+const validateInputs = (credentialIds: string[], status: CredentialStatusOptions): void => {
   // Credential ID is mandatory.
-  if (!credentialId) {
-    throw new CustError(400, 'credentialId is required.');
+  if (isArrayNotEmpty(credentialIds)) {
+    throw new CustError(400, 'none empty credentialIds is required.');
   }
 
   try {
@@ -30,18 +32,23 @@ const validateInputs = (credentialId: string, status: CredentialStatusOptions): 
  * @param credentialId string // id of credential to revoke
  * @param status CredentialStatusOptions // status to update the credential to (defaults to 'revoked')
  */
-export const updateCredentialStatus = async (authorization: string, credentialId: string, status: CredentialStatusOptions = 'revoked'): Promise<UnumDto<undefined>> => {
+export const updateCredentialStatus = async (authorization: string, credentialIds: string[], status: CredentialStatusOptions = 'revoked'): Promise<UnumDto<undefined>> => {
   try {
     requireAuth(authorization);
 
-    validateInputs(credentialId, status);
+    validateInputs(credentialIds, status);
+
+    const data: CredentialStatusesOptions = {
+      status,
+      credentialIds
+    };
 
     const restData: RESTData = {
       method: 'PATCH',
       baseUrl: configData.SaaSUrl,
-      endPoint: 'credentialStatus/?credentialId=' + credentialId,
+      endPoint: 'credentialStatuses',
       header: { Authorization: authorization },
-      data: { status }
+      data
     };
 
     // make request to SaaS to update the CredentialStatus
