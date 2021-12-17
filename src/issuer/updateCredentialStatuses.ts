@@ -39,14 +39,6 @@ export const updateCredentialStatuses = async (authorization: string, credential
 
     validateInputs(credentialIds, status);
 
-    // const data: CredentialStatusesOptions = {
-    //   status,
-    //   credentialIds
-    // };
-    // const data: CredentialStatusOptions = {
-    //   status
-    // };
-
     const query = createListQueryString('credentialId', credentialIds);
 
     const restData: RESTData = {
