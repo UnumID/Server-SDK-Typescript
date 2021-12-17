@@ -52,7 +52,7 @@ export const updateCredentialStatuses = async (authorization: string, credential
     const restData: RESTData = {
       method: 'PATCH',
       baseUrl: configData.SaaSUrl,
-      endPoint: `credentialStatuses?${query}`,
+      endPoint: `credentialStatus?${query}`,
       header: { Authorization: authorization },
       data: { status }
     };
