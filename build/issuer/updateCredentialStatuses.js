@@ -47,6 +47,7 @@ var types_1 = require("@unumid/types");
 var error_1 = require("../utils/error");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var helpers_1 = require("../utils/helpers");
+var queryStringHelper_1 = require("../utils/queryStringHelper");
 /**
  * Helper to validate request inputs.
  * @param req Request
@@ -72,23 +73,20 @@ var validateInputs = function (credentialIds, status) {
 exports.updateCredentialStatuses = function (authorization, credentialIds, status) {
     if (status === void 0) { status = 'revoked'; }
     return __awaiter(void 0, void 0, void 0, function () {
-        var data, restData, response, authToken, result, error_2;
+        var query, restData, response, authToken, result, error_2;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
                     requireAuth_1.requireAuth(authorization);
                     validateInputs(credentialIds, status);
-                    data = {
-                        status: status,
-                        credentialIds: credentialIds
-                    };
+                    query = queryStringHelper_1.createListQueryString('credentialId', credentialIds);
                     restData = {
                         method: 'PATCH',
                         baseUrl: config_1.configData.SaaSUrl,
-                        endPoint: 'credentialStatuses',
+                        endPoint: "credentialStatus?" + query,
                         header: { Authorization: authorization },
-                        data: data
+                        data: { status: status }
                     };
                     return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];
                 case 1:

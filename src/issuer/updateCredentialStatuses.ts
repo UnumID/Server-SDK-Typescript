@@ -8,6 +8,7 @@ import { CustError } from '../utils/error';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
 import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
 import { CredentialStatusesOptions } from '@unumid/types/build/protos/credential';
+import { createListQueryString } from '../utils/queryStringHelper';
 
 /**
  * Helper to validate request inputs.
@@ -38,17 +39,14 @@ export const updateCredentialStatuses = async (authorization: string, credential
 
     validateInputs(credentialIds, status);
 
-    const data: CredentialStatusesOptions = {
-      status,
-      credentialIds
-    };
+    const query = createListQueryString('credentialId', credentialIds);
 
     const restData: RESTData = {
       method: 'PATCH',
       baseUrl: configData.SaaSUrl,
-      endPoint: 'credentialStatuses',
+      endPoint: `credentialStatus?${query}`,
       header: { Authorization: authorization },
-      data
+      data: { status }
     };
 
     // make request to SaaS to update the CredentialStatus
