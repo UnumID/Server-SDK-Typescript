@@ -19,6 +19,7 @@ import { verifySubjectCredentialRequests } from './issuer/verifySubjectCredentia
 import { verifySubjectDidDocument } from './utils/verifyDidDocument';
 import { revokeAllCredentials } from './issuer/revokeAllCredentials';
 import { updateCredentialStatuses } from './issuer/updateCredentialStatuses';
+import { checkManyCredentialStatuses } from './verifier/checkManyCredentialStatuses';
 
 export {
   // Issuer Functions
@@ -36,6 +37,7 @@ export {
   sendSms,
   verifyPresentation,
   checkCredentialStatus,
+  checkManyCredentialStatuses,
   getRequest,
   getVersionedRequest,
   // Types
