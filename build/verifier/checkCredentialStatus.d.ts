@@ -1,5 +1,6 @@
 import { CredentialStatusInfo, UnumDto } from '../types';
 /**
+ * @deprecated prefer checkManyCredentialStatuses
  * Helper to check the status of a credential: verified, revoked, etc.
  * @param credential
  * @param authorization

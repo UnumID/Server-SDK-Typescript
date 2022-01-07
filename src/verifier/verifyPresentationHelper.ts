@@ -378,6 +378,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
         break;
       }
 
+      // TODO: use checkManyCredentialStatuses to check status for all presented credentials at once
       const isStatusValidResponse: UnumDto<CredentialStatusInfo> = await checkCredentialStatus(authToken, credential.id);
       const isStatusValid = isStatusValidResponse.body.status === 'valid';
       authToken = isStatusValidResponse.authToken;
