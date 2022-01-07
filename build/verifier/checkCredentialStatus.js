@@ -40,6 +40,7 @@ exports.checkCredentialStatus = void 0;
 var config_1 = require("../config");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 /**
+ * @deprecated prefer checkManyCredentialStatuses
  * Helper to check the status of a credential: verified, revoked, etc.
  * @param credential
  * @param authorization

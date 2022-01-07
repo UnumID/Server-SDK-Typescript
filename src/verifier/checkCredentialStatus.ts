@@ -3,6 +3,7 @@ import { configData } from '../config';
 import { makeNetworkRequest, handleAuthTokenHeader } from '../utils/networkRequestHelper';
 
 /**
+ * @deprecated prefer checkManyCredentialStatuses
  * Helper to check the status of a credential: verified, revoked, etc.
  * @param credential
  * @param authorization
