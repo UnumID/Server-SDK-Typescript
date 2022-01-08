@@ -165,7 +165,7 @@ Parameters
 {
   "issuerDid": string // did of the issuer of credential you would like to revoke
   "signingPrivateKey": string // issuer's signing private key
-  "subjectDid": string // did of target subject whom to revoke all the issuer's credentials from
+  "subjectDid": string // did of target subject whom to revoke all the credentials issued by the issuer
 }
 ```
 
