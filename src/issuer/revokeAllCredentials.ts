@@ -32,9 +32,11 @@ const validateInputs = (issuerDid: string, signingPrivateKey: string, subjectDid
 
 /**
  * Helper to revoke all credentials that the calling issuer (DID + signing private key) has issued a particular DID.
- * @param authorization string // auth string
- * @param credentialId string // id of credential to revoke
- * @param status CredentialStatusOptions // status to update the credential to (defaults to 'revoked')
+ * @param authorization
+ * @param issuerDid
+ * @param signingPrivateKey
+ * @param subjectDid
+ * @returns
  */
 export const revokeAllCredentials = async (authorization: string, issuerDid: string, signingPrivateKey: string, subjectDid: string): Promise<UnumDto<undefined>> => {
   try {
