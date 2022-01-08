@@ -158,7 +158,7 @@ Response Body: **Empty**. If unsuccessful and exception will be thrown.
 ### revokeAllCredentials
 Revoke all issued credentials to a particular DID.
 
-You need to provide your issuer's `did` and `signingPrivateKey`, and the target `subjectDid`. Only credentials issued by the associated issuer are revoked from the subject. The signing private key is necessary for the request signature to be created within the sdk. The signature is necessary to be verified by the SaaS prior to revoking all the credentials. 
+You need to provide your issuer's `did` and `signingPrivateKey` also the target `subjectDid`. Only credentials issued by the associated issuer are revoked from the subject. The signing private key is necessary for the request signature to be created within the sdk. The signature is necessary to be verified by the SaaS prior to revoking all the credentials. 
 
 Parameters
 ```typescript
