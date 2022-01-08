@@ -163,7 +163,7 @@ You need to provide your issuer's `did` and `signingPrivateKey` also the target 
 Parameters
 ```typescript
 {
-  "issuerDid": string // did of issuer's who credential you would like to revoke
+  "issuerDid": string // did of the issuer of credential you would like to revoke
   "signingPrivateKey": string // issuer's signing private key
   "subjectDid": string // did of target subject whom to revoke all the issuer's credentials from
 }
