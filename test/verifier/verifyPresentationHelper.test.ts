@@ -36,13 +36,11 @@ jest.mock('../../src/utils/networkRequestHelper', () => ({
 
 jest.mock('../../src/verifier/verifyCredential');
 jest.mock('../../src/verifier/isCredentialExpired');
-jest.mock('../../src/verifier/checkCredentialStatus');
 jest.mock('../../src/verifier/checkCredentialStatuses');
 jest.mock('../../src/utils/getCredentialStatusFromMap');
 
 const mockVerifyCredential = verifyCredential as jest.Mock;
 const mockIsCredentialExpired = isCredentialExpired as jest.Mock;
-const mockCheckCredentialStatus = checkCredentialStatus as jest.Mock;
 const mockCheckCredentialStatuses = checkCredentialStatuses as jest.Mock;
 const mockGetCredentialStatusFromMap = getCredentialStatusFromMap as jest.Mock;
 const mockGetDIDDoc = getDIDDoc as jest.Mock;
@@ -169,7 +167,6 @@ describe('verifyPresentationHelper', () => {
       mockDoVerify.mockResolvedValue(true);
       mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: true });
       mockIsCredentialExpired.mockReturnValue(false);
-      mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: { status: 'valid' } });
       mockCheckCredentialStatuses.mockReturnValue({ authToken: dummyAuthToken, body: { credentialId: { status: 'valid' } } });
       mockGetCredentialStatusFromMap.mockReturnValue({ status: 'valid' });
       mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers: dummyResponseHeaders });
@@ -201,12 +198,6 @@ describe('verifyPresentationHelper', () => {
       });
     });
 
-    // it('checks the status of each credential', () => {
-    //   verifiableCredential.forEach((vc) => {
-    //     expect(mockCheckCredentialStatus).toBeCalledWith(authHeader, vc.id);
-    //   });
-    // });
-
     it('checks the status of each credential', () => {
       verifiableCredential.forEach((vc) => {
         expect(mockCheckCredentialStatuses).toBeCalledWith(authHeader, [vc.id]);
@@ -227,7 +218,6 @@ describe('verifyPresentationHelper', () => {
       const dummyApiResponse = { body: dummySubjectDidDoc };
       mockMakeNetworkRequest.mockResolvedValueOnce(dummyApiResponse);
       mockGetDIDDoc.mockResolvedValue({ body: dummySubjectDidDoc, authToken: undefined });
-      mockCheckCredentialStatus.mockReturnValue({ authToken: undefined, body: { status: 'valid' } });
       mockCheckCredentialStatuses.mockReturnValue({ authToken: dummyAuthToken, body: { credentialId: { status: 'valid' } } });
       mockGetCredentialStatusFromMap.mockReturnValue({ status: 'valid' });
       mockVerifyCredential.mockResolvedValue({ authToken: undefined, body: true });
@@ -251,7 +241,6 @@ describe('verifyPresentationHelper', () => {
       mockDoVerify.mockResolvedValue(true);
       mockVerifyCredential.mockResolvedValue({ authToken: dummyAuthToken, body: true });
       mockIsCredentialExpired.mockReturnValue(false);
-      mockCheckCredentialStatus.mockReturnValue({ authToken: dummyAuthToken, body: { status: 'valid' } });
       mockCheckCredentialStatuses.mockReturnValue({ authToken: dummyAuthToken, body: { credentialId: { status: 'valid' } } });
       mockGetCredentialStatusFromMap.mockReturnValue({ status: 'valid' });
       mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers: dummyResponseHeaders });
