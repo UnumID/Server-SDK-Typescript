@@ -4,7 +4,9 @@ import { omit } from 'lodash';
 import { CustError } from './error';
 
 /**
- * Handler to get a credential status from the response of checkCredentialStatuses
+ * Handler to get a credential status from the response of checkCredentialStatuses.
+ *
+ * Not much of a utility but very helpful in order to mock response of checkCredentialStatuses in unit tests.
  */
 export const getCredentialStatusFromMap = (credentialId: string, statusMap: CredentialIdToStatusMap): CredentialStatusInfo => {
   if (typeof credentialId !== 'string') {

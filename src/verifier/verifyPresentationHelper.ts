@@ -371,6 +371,11 @@ export const verifyPresentationHelper = async (authorization: string, presentati
     let areCredentialsValid = true;
     let credentialInvalidMessage;
 
+    // get all the presentation's credentialIds to make one batched call for their statuses to the saas
+    const presentationCredentialIds = presentation.verifiableCredential.map(credential => credential.id);
+    const isStatusValidResponse: UnumDto<CredentialIdToStatusMap> = await checkCredentialStatuses(authToken, presentationCredentialIds);
+    authToken = isStatusValidResponse.authToken;
+
     for (const credential of presentation.verifiableCredential) {
       const isExpired = isCredentialExpired(credential);
 
@@ -380,9 +385,6 @@ export const verifyPresentationHelper = async (authorization: string, presentati
         break;
       }
 
-      // TODO: use checkCredentialStatuses to check status for all presented credentials at once
-      const isStatusValidResponse: UnumDto<CredentialIdToStatusMap> = await checkCredentialStatuses(authToken, [credential.id]);
-      // const isStatusValid = isStatusValidResponse.body[credential.id].status === 'valid';
       const isStatusValid = getCredentialStatusFromMap(credential.id, isStatusValidResponse.body);
       authToken = isStatusValidResponse.authToken;
 
