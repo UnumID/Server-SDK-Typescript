@@ -50,7 +50,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkManyCredentialStatuses = void 0;
+exports.checkCredentialStatuses = void 0;
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var config_1 = require("../config");
 var logger_1 = __importDefault(require("../logger"));
@@ -60,7 +60,7 @@ var logger_1 = __importDefault(require("../logger"));
  * @param {string[]} credentialIds
  * @returns {Promise<UnumDto<CredentialIdToStatusMap>>} a promise resolving to an UnumDto containing a list of zero or more CredentialStatuses
  */
-exports.checkManyCredentialStatuses = function (authorization, credentialIds) { return __awaiter(void 0, void 0, void 0, function () {
+exports.checkCredentialStatuses = function (authorization, credentialIds) { return __awaiter(void 0, void 0, void 0, function () {
     var searchParams, searchParamsString, options, credentialStatusesResponse, authToken, credentialIdToStatusMap, e_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
@@ -97,4 +97,4 @@ exports.checkManyCredentialStatuses = function (authorization, credentialIds) { 
         }
     });
 }); };
-//# sourceMappingURL=checkManyCredentialStatuses.js.map
+//# sourceMappingURL=checkCredentialStatuses.js.map

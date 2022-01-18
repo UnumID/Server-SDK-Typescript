@@ -78,9 +78,11 @@ var validateInputs = function (issuerDid, signingPrivateKey, subjectDid) {
 };
 /**
  * Helper to revoke all credentials that the calling issuer (DID + signing private key) has issued a particular DID.
- * @param authorization string // auth string
- * @param credentialId string // id of credential to revoke
- * @param status CredentialStatusOptions // status to update the credential to (defaults to 'revoked')
+ * @param authorization
+ * @param issuerDid
+ * @param signingPrivateKey
+ * @param subjectDid
+ * @returns
  */
 exports.revokeAllCredentials = function (authorization, issuerDid, signingPrivateKey, subjectDid) { return __awaiter(void 0, void 0, void 0, function () {
     var unsignedDto, bytes, proof, signedDto, restData, response, authToken, revokedResponse, error_2;

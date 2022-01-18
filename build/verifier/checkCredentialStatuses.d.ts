@@ -10,5 +10,5 @@ import { UnumDto } from '../types';
  * @param {string[]} credentialIds
  * @returns {Promise<UnumDto<CredentialIdToStatusMap>>} a promise resolving to an UnumDto containing a list of zero or more CredentialStatuses
  */
-export declare const checkManyCredentialStatuses: (authorization: string, credentialIds: string[]) => Promise<UnumDto<CredentialIdToStatusMap>>;
-//# sourceMappingURL=checkManyCredentialStatuses.d.ts.map
+export declare const checkCredentialStatuses: (authorization: string, credentialIds: string[]) => Promise<UnumDto<CredentialIdToStatusMap>>;
+//# sourceMappingURL=checkCredentialStatuses.d.ts.map
