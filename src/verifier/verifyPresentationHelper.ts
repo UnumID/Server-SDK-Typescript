@@ -2,7 +2,7 @@ import { omit } from 'lodash';
 
 import { configData } from '../config';
 import { CredentialStatusInfo, UnumDto, VerifiedStatus } from '../types';
-import { CredentialRequest, PublicKeyInfo, JSONObj, PresentationPb, CredentialPb, ProofPb, UnsignedPresentationPb, CredentialSubject, WithVersion } from '@unumid/types';
+import { CredentialRequest, PublicKeyInfo, JSONObj, PresentationPb, CredentialPb, ProofPb, UnsignedPresentationPb, CredentialSubject, WithVersion, CredentialIdToStatusMap } from '@unumid/types';
 import { validateProof } from './validateProof';
 import { requireAuth } from '../requireAuth';
 import { verifyCredential } from './verifyCredential';
@@ -17,6 +17,8 @@ import { handleAuthTokenHeader } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
 import { convertCredentialSubject } from '../utils/convertCredentialSubject';
 import { sendPresentationVerifiedReceipt } from './sendPresentationVerifiedReceipt';
+import { checkCredentialStatuses } from './checkCredentialStatuses';
+import { getCredentialStatusFromMap } from '../utils/getCredentialStatusFromMap';
 
 /**
  * Validates the attributes for a credential from UnumId's Saas
@@ -379,8 +381,9 @@ export const verifyPresentationHelper = async (authorization: string, presentati
       }
 
       // TODO: use checkCredentialStatuses to check status for all presented credentials at once
-      const isStatusValidResponse: UnumDto<CredentialStatusInfo> = await checkCredentialStatus(authToken, credential.id);
-      const isStatusValid = isStatusValidResponse.body.status === 'valid';
+      const isStatusValidResponse: UnumDto<CredentialIdToStatusMap> = await checkCredentialStatuses(authToken, [credential.id]);
+      // const isStatusValid = isStatusValidResponse.body[credential.id].status === 'valid';
+      const isStatusValid = getCredentialStatusFromMap(credential.id, isStatusValidResponse.body);
       authToken = isStatusValidResponse.authToken;
 
       if (!isStatusValid) {

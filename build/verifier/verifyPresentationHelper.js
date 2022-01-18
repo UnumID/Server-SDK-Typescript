@@ -47,7 +47,6 @@ var validateProof_1 = require("./validateProof");
 var requireAuth_1 = require("../requireAuth");
 var verifyCredential_1 = require("./verifyCredential");
 var isCredentialExpired_1 = require("./isCredentialExpired");
-var checkCredentialStatus_1 = require("./checkCredentialStatus");
 var logger_1 = __importDefault(require("../logger"));
 var library_crypto_1 = require("@unumid/library-crypto");
 var helpers_1 = require("../utils/helpers");
@@ -57,6 +56,7 @@ var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var verify_1 = require("../utils/verify");
 var convertCredentialSubject_1 = require("../utils/convertCredentialSubject");
 var sendPresentationVerifiedReceipt_1 = require("./sendPresentationVerifiedReceipt");
+var checkCredentialStatuses_1 = require("./checkCredentialStatuses");
 /**
  * Validates the attributes for a credential from UnumId's Saas
  * @param credentials JSONObj
@@ -367,10 +367,10 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                     credentialInvalidMessage = "Credential " + credential.type + " " + credential.id + " is expired.";
                     return [3 /*break*/, 14];
                 }
-                return [4 /*yield*/, checkCredentialStatus_1.checkCredentialStatus(authToken, credential.id)];
+                return [4 /*yield*/, checkCredentialStatuses_1.checkCredentialStatuses(authToken, [credential.id])];
             case 11:
                 isStatusValidResponse = _b.sent();
-                isStatusValid = isStatusValidResponse.body.status === 'valid';
+                isStatusValid = isStatusValidResponse.body[credential.id].status === 'valid';
                 authToken = isStatusValidResponse.authToken;
                 if (!isStatusValid) {
                     areCredentialsValid = false;
