@@ -1,9 +1,9 @@
 # Unum ID Typescript Server-SDK
 
-This SDK combines the functionality of an [**Issuer**](https://docs.unum.id/terminology#issuer) and [**Verifier**](https://docs.unum.id/terminology#verifier) entities to work with UnumID's SaaS. For necessary account creation and API keys please email admin@unum.id.
+This SDK combines the functionality of an [**Issuer**](https://docs.unumid.co/terminology#issuer) and [**Verifier**](https://docs.unumid.co/terminology#verifier) entities to work with UnumID's SaaS. For necessary account creation and API keys please email admin@unumid.co.
 
 ## Documentation
-High level technical documentation can be found [here](https://docs.unum.id/server-sdk) which is served via [Docusaurus](https://github.com/UnumID/UnumID.github.io). More detailed generated from source documentation can be found [here](https://docs.unum.id/Server-SDK-Typescript/index.html) which is served via repo specific Github pages via the /docs folder of the main branch.
+High level technical documentation can be found [here](https://docs.unumid.co/server-sdk) which is served via [Docusaurus](https://github.com/UnumID/UnumID.github.io). More detailed generated from source documentation can be found [here](https://docs.unumid.co/Server-SDK-Typescript/index.html) which is served via repo specific Github pages via the /docs folder of the main branch.
 ## Distribution
 
 This project is publicly published on the official npm [registry](https://www.npmjs.com/package/@unumid/server-sdk). For example it can be pulled with, `npm i @unumid/server-sdk` or `yarn add @unumid/server-sdk`.
@@ -35,7 +35,7 @@ The `DEBUG` environment variable defaults to `false`. Setting to `true` enables 
 In order to generate the Typedoc documentation from the source code run the `createTypedocs.sh` script.
 
 ## Versioning
-Information regarding the suggested versioning strategy can be found [here](https://docs.unum.id/deployment-overview#versioning-strategy).
+Information regarding the suggested versioning strategy can be found [here](https://docs.unumid.co/deployment-overview#versioning-strategy).
 Breaking versions of this SDK will be denoted as such with an incremented major version. However all versions of the SDK will be fully backwards compatible with the other Unum ID SDKs. If there is a need to referencing an older version of the SDK within your applications for other applications specific backwards compatibility we recommend this syntax for simplicity: 
 `@unumid/server-sdk-v2": "npm:@unumid/server-sdk@2.1.4`.
 
@@ -69,7 +69,7 @@ Parameters:
 "apiKey": string // your issuer API key
 ```
 
-Response Body:  [**RegisteredIssuer**](https://docs.unum.id/Server-SDK-Typescript/interfaces/registeredissuer.html)
+Response Body:  [**RegisteredIssuer**](https://docs.unumid.co/Server-SDK-Typescript/interfaces/registeredissuer.html)
 ```typescript title="RegisteredIssuer"
 {
   "uuid": string, // identifies issuer in Unum ID database
@@ -112,7 +112,7 @@ Parameters
 "expirationDate"?: string, // (optional) when credential will no longer be valid (ISO 8601 date/time)
 ```
 
-Response Body: [**Credential**](https://docs.unum.id/Server-SDK-Typescript/interfaces/credential.html)
+Response Body: [**Credential**](https://docs.unumid.co/Server-SDK-Typescript/interfaces/credential.html)
 ```typescript title="Credential"
 {[
     "@context": ["https://www.w3.org/2018/credentials/v1"], // for conformance with W3C Verifiable Credential spec
@@ -136,7 +136,7 @@ Response Body: [**Credential**](https://docs.unum.id/Server-SDK-Typescript/inter
 ### updateCredentialStatus
 Update a credential, i.e. make it invalid.
 
-You need to provide the credential `id` (created when you issued the credential) and a [CredentialStatusOptions](https://docs.unum.id/types/modules.html#credentialstatusoptions) `status`. Currently the only valid status are: verified and revoked.
+You need to provide the credential `id` (created when you issued the credential) and a [CredentialStatusOptions](https://docs.unumid.co/types/modules.html#credentialstatusoptions) `status`. Currently the only valid status are: verified and revoked.
 
 ```typescript
 export type CredentialStatusOptions = 'valid' | 'revoked';
@@ -228,7 +228,7 @@ Parameters
 "apiKey": string // your verifier API key
 ```
 
-Response body: [**RegisteredVerifier**](https://docs.unum.id/Server-SDK-Typescript/interfaces/registeredverifier.html)
+Response body: [**RegisteredVerifier**](https://docs.unumid.co/Server-SDK-Typescript/interfaces/registeredverifier.html)
 ```typescript title="RegisteredVerifier"
 {
   "uuid": string, // identifies verifier in Unum ID database
@@ -256,7 +256,7 @@ You need to provide your verifier DID (created when you registered) and the UUID
 
 **Important**: The signing private key never leaves your app. This function, like all the others in this SDK, is solely using it to handle to cryptographic functionality on your behalf.
 
-To request credentials, you need to populate one or more [CredentialRequest](https://docs.unum.id/types/interfaces/credentialrequest.html) objects, defined in the UnumID generic [types](https://github.com/UnumID/types/blob/00ba819e661e2856ba9909923ac6f083b9a15e85/index.d.ts#L113-L117) project and shown below.
+To request credentials, you need to populate one or more [CredentialRequest](https://docs.unumid.co/types/interfaces/credentialrequest.html) objects, defined in the UnumID generic [types](https://github.com/UnumID/types/blob/00ba819e661e2856ba9909923ac6f083b9a15e85/index.d.ts#L113-L117) project and shown below.
 
 ```typescript
 export interface CredentialRequest {
@@ -277,7 +277,7 @@ Parameters
 "metadata"?: object // (optional) any additional data to include in PresentationRequest
 ```
 
-Response Body: [**PresentationRequestPostDto**](https://docs.unum.id/types/interfaces/presentationrequestpostdto.html)
+Response Body: [**PresentationRequestPostDto**](https://docs.unumid.co/types/interfaces/presentationrequestpostdto.html)
 ```typescript title="PresentationRequestPostDto"
 {
   "presentationRequest": {
@@ -340,7 +340,7 @@ Parameters
 ```
 
 
-Response Body: [**DecryptedPresentation**](https://docs.unum.id/Server-SDK-Typescript/interfaces/decryptedpresentation.html)
+Response Body: [**DecryptedPresentation**](https://docs.unumid.co/Server-SDK-Typescript/interfaces/decryptedpresentation.html)
 ```typescript title="DecryptedPresentation"
 {
   "isVerified": boolean; // whether the presentation is valid
@@ -374,7 +374,7 @@ Response Body: **Empty**. If unsuccessful and exception will be thrown.
 ```
 
 ### sendEmail
-Use to send a deep link to a user by email. A templated message will be delivered from no-reply@unum.id. You can of course use your own email sending service if you prefer.
+Use to send a deep link to a user by email. A templated message will be delivered from no-reply@unumid.co. You can of course use your own email sending service if you prefer.
 
 To request (a presentation of) credentials from a user, you first create the request object and receive a deep link that references it. The user need to receive this deep link, which will open the correct app on their phone and prompt them to share the credentials. Email is one convenient channel, though keep in mind that the user will need to click the link from their phone for the deep link to work.
 
@@ -400,7 +400,7 @@ Response Body: **Empty**. If unsuccessful and exception will be thrown.
 ### checkCredentialStatuses
 Used to check the status of individual credentials. 
 
-The `status` attribute of the response's [CredentialStatusInfo](https://docs.unumid.co/types/interfaces/credentialstatusinfo.html) is of type [CredentialStatusOptions](https://docs.unum.id/types/modules.html#credentialstatusoptions). Currently the only valid status are: verified and revoked.
+The `status` attribute of the response's [CredentialStatusInfo](https://docs.unumid.co/types/interfaces/credentialstatusinfo.html) is of type [CredentialStatusOptions](https://docs.unumid.co/types/modules.html#credentialstatusoptions). Currently the only valid status are: verified and revoked.
 
 ```typescript
 export type CredentialStatusOptions = 'valid' | 'revoked';
