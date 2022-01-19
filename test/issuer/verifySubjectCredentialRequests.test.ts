@@ -31,7 +31,6 @@ jest.mock('../../src/utils/networkRequestHelper', () => ({
 
 jest.mock('../../src/verifier/verifyCredential');
 jest.mock('../../src/verifier/isCredentialExpired');
-jest.mock('../../src/verifier/checkCredentialStatus');
 
 const mockGetDIDDoc = getDIDDoc as jest.Mock;
 const mockDoVerify = doVerify as jest.Mock;

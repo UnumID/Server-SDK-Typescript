@@ -2,7 +2,7 @@ import { verifyNoPresentationHelper } from '../../src/verifier/verifyNoPresentat
 
 import { getUUID } from '../../src/utils/helpers';
 import { PresentationPb, JSONObj, Presentation } from '@unumid/types';
-import { checkCredentialStatus, UnumDto, VerifiedStatus, CustError, verifyPresentation, checkCredentialStatuses } from '../../src';
+import { UnumDto, VerifiedStatus, CustError, verifyPresentation, checkCredentialStatuses } from '../../src';
 import { getDIDDoc } from '../../src/utils/didHelper';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { getCredentialStatusFromMap } from '../../src/utils/getCredentialStatusFromMap';

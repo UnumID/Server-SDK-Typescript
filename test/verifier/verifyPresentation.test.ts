@@ -1,7 +1,6 @@
 import { Presentation, VerifiedStatus, UnumDto, CustError, checkCredentialStatuses } from '../../src/index';
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { isCredentialExpired } from '../../src/verifier/isCredentialExpired';
-import { checkCredentialStatus } from '../../src/verifier/checkCredentialStatus';
 import { dummyAuthToken, dummyIssuerDid, dummyRsaPrivateKey, dummyRsaPublicKey, dummyVerifierDid, makeDummyCredential, makeDummyDidDocument, makeDummyPresentation, makeDummyPresentationRequestResponse, makeDummyUnsignedCredential, makeDummyUnsignedPresentation, makeDummyUnsignedPresentationRequest } from './mocks';
 import { encrypt, encryptBytes } from '@unumid/library-crypto';
 import { omit } from 'lodash';

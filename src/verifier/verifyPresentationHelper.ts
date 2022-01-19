@@ -7,7 +7,6 @@ import { validateProof } from './validateProof';
 import { requireAuth } from '../requireAuth';
 import { verifyCredential } from './verifyCredential';
 import { isCredentialExpired } from './isCredentialExpired';
-import { checkCredentialStatus } from './checkCredentialStatus';
 import logger from '../logger';
 import { CryptoError } from '@unumid/library-crypto';
 import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
