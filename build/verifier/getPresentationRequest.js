@@ -50,7 +50,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.extractPresentationRequest = exports.getPresentationRequest = void 0;
+exports.handleConvertingPresentationRequestDateAttributes = exports.extractPresentationRequest = exports.getPresentationRequest = void 0;
+var lodash_1 = require("lodash");
 var config_1 = require("../config");
 var logger_1 = __importDefault(require("../logger"));
 var error_1 = require("../utils/error");
@@ -96,15 +97,43 @@ exports.getPresentationRequest = getPresentationRequest;
  * @returns
  */
 function extractPresentationRequest(presentationRequestResponse) {
+    // export function extractPresentationRequest (presentationRequestDto: PresentationRequestDto): PresentationRequestDto {
     try {
         var presentationRequestDto = presentationRequestResponse.presentationRequests['3.0.0'];
         // need to convert the times to Date objects for proto handling
-        var result = __assign(__assign({}, presentationRequestDto), { presentationRequest: __assign(__assign({}, presentationRequestDto.presentationRequest), { createdAt: presentationRequestDto.presentationRequest.createdAt ? new Date(presentationRequestDto.presentationRequest.createdAt) : undefined, updatedAt: presentationRequestDto.presentationRequest.updatedAt ? new Date(presentationRequestDto.presentationRequest.updatedAt) : undefined, expiresAt: presentationRequestDto.presentationRequest.expiresAt ? new Date(presentationRequestDto.presentationRequest.expiresAt) : undefined }) });
-        return result;
+        return handleConvertingPresentationRequestDateAttributes(presentationRequestDto);
     }
     catch (e) {
         throw new error_1.CustError(500, "Error handling presentation request from Saas: Error " + e);
     }
 }
 exports.extractPresentationRequest = extractPresentationRequest;
+/**
+ * Helper to handle converting the stringified date attributes to real Date objects so the proto serializer doesn't complain when going into a byte array for the signature check.
+ * @param presentationRequestDto
+ * @returns
+ */
+function handleConvertingPresentationRequestDateAttributes(presentationRequestDto) {
+    var result = __assign(__assign({}, presentationRequestDto), { presentationRequest: __assign(__assign({}, presentationRequestDto.presentationRequest), { createdAt: handleAttributeDateType(presentationRequestDto.presentationRequest.createdAt), updatedAt: handleAttributeDateType(presentationRequestDto.presentationRequest.updatedAt), expiresAt: handleAttributeDateType(presentationRequestDto.presentationRequest.expiresAt) }) });
+    return result;
+}
+exports.handleConvertingPresentationRequestDateAttributes = handleConvertingPresentationRequestDateAttributes;
+/**
+ * Helper to make the date attribute handling a little easier to follow than a complicate ternary.
+ * @param input
+ * @returns
+ */
+function handleAttributeDateType(input) {
+    if (!input) {
+        return undefined;
+    }
+    if (lodash_1.isDate(input)) {
+        return input;
+    }
+    if (lodash_1.isString(input)) {
+        return new Date(input);
+    }
+    logger_1.default.error('PresentationRequest date attribute value is not a string, undefined or Date. This should never happen.');
+    return undefined;
+}
 //# sourceMappingURL=getPresentationRequest.js.map
