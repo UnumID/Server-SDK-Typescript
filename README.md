@@ -408,11 +408,10 @@ export type CredentialStatusOptions = 'valid' | 'revoked';
 
 ```typescript
 export type CredentialStatusInfo {
-  uuid: string;
-  createdAt: Date;
-  updatedAt: Date;
-  credentialId: string;
-  status: CredentialStatusOptions;
+  "createdAt": Date; // the time  the credential was recorded as created in the UnumID SaaS db
+  "updatedAt": Date; // the time  the credential was recorded as updated in the UnumID SaaS db
+  "credentialId": string; // the did (aka id) of the credential this status is in regard to
+  "status": CredentialStatusOptions; // a string literal type that currently only consists of 'valid' and 'revoked'
 }
 ```
 
