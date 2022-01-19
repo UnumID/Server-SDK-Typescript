@@ -114,8 +114,26 @@ exports.extractPresentationRequest = extractPresentationRequest;
  * @returns
  */
 function handleConvertingPresentationRequestDateAttributes(presentationRequestDto) {
-    var result = __assign(__assign({}, presentationRequestDto), { presentationRequest: __assign(__assign({}, presentationRequestDto.presentationRequest), { createdAt: presentationRequestDto.presentationRequest.createdAt && lodash_1.isString(presentationRequestDto.presentationRequest.createdAt) ? new Date(presentationRequestDto.presentationRequest.createdAt) : undefined, updatedAt: presentationRequestDto.presentationRequest.updatedAt && lodash_1.isString(presentationRequestDto.presentationRequest.updatedAt) ? new Date(presentationRequestDto.presentationRequest.updatedAt) : undefined, expiresAt: presentationRequestDto.presentationRequest.expiresAt && lodash_1.isString(presentationRequestDto.presentationRequest.expiresAt) ? new Date(presentationRequestDto.presentationRequest.expiresAt) : undefined }) });
+    var result = __assign(__assign({}, presentationRequestDto), { presentationRequest: __assign(__assign({}, presentationRequestDto.presentationRequest), { createdAt: handleAttributeDateType(presentationRequestDto.presentationRequest.createdAt), updatedAt: handleAttributeDateType(presentationRequestDto.presentationRequest.updatedAt), expiresAt: handleAttributeDateType(presentationRequestDto.presentationRequest.expiresAt) }) });
     return result;
 }
 exports.handleConvertingPresentationRequestDateAttributes = handleConvertingPresentationRequestDateAttributes;
+/**
+ * Helper to make the date attribute handling a little easier to follow than a complicate ternary.
+ * @param input
+ * @returns
+ */
+function handleAttributeDateType(input) {
+    if (!input) {
+        return undefined;
+    }
+    if (lodash_1.isDate(input)) {
+        return input;
+    }
+    if (lodash_1.isString(input)) {
+        return new Date(input);
+    }
+    logger_1.default.error('PresentationRequest date attribute value is not a string, undefined or Date. This should never happen.');
+    return undefined;
+}
 //# sourceMappingURL=getPresentationRequest.js.map

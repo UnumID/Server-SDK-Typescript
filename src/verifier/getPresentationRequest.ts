@@ -1,5 +1,5 @@
 import { JSONObj, PresentationRequestDto, PresentationRequestDtoPb, WithVersion, PresentationRequestRepoDto } from '@unumid/types';
-import { isString } from 'lodash';
+import { isDate, isString } from 'lodash';
 import { configData } from '../config';
 import logger from '../logger';
 import { RESTData, RESTResponse, UnumDto } from '../types';
@@ -57,11 +57,33 @@ export function handleConvertingPresentationRequestDateAttributes (presentationR
     ...presentationRequestDto,
     presentationRequest: {
       ...presentationRequestDto.presentationRequest,
-      createdAt: presentationRequestDto.presentationRequest.createdAt && isString(presentationRequestDto.presentationRequest.createdAt) ? new Date(presentationRequestDto.presentationRequest.createdAt) : undefined as any as Date, // Despite this ugliness, rather check for presence and handle the undefined directly while not dealing with a whole new type
-      updatedAt: presentationRequestDto.presentationRequest.updatedAt && isString(presentationRequestDto.presentationRequest.updatedAt) ? new Date(presentationRequestDto.presentationRequest.updatedAt) : undefined as any as Date,
-      expiresAt: presentationRequestDto.presentationRequest.expiresAt && isString(presentationRequestDto.presentationRequest.expiresAt) ? new Date(presentationRequestDto.presentationRequest.expiresAt) : undefined as any as Date
+      createdAt: handleAttributeDateType(presentationRequestDto.presentationRequest.createdAt) as Date, // Despite this ugliness, rather check for presence and handle the undefined directly while not dealing with a whole new type
+      updatedAt: handleAttributeDateType(presentationRequestDto.presentationRequest.updatedAt) as Date,
+      expiresAt: handleAttributeDateType(presentationRequestDto.presentationRequest.expiresAt) as Date
     }
   };
 
   return result;
+}
+
+/**
+ * Helper to make the date attribute handling a little easier to follow than a complicate ternary.
+ * @param input
+ * @returns
+ */
+function handleAttributeDateType (input: any): Date | undefined {
+  if (!input) {
+    return undefined;
+  }
+
+  if (isDate(input)) {
+    return input;
+  }
+
+  if (isString(input)) {
+    return new Date(input);
+  }
+
+  logger.error('PresentationRequest date attribute value is not a string, undefined or Date. This should never happen.');
+  return undefined;
 }
