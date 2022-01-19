@@ -1,7 +1,7 @@
 import { v4 } from 'uuid';
 
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
-import { checkManyCredentialStatuses } from '../../src/verifier/checkManyCredentialStatuses';
+import { checkCredentialStatuses } from '../../src/verifier/checkCredentialStatuses';
 import { configData } from '../../src/config';
 import { dummyAuthToken, makeDummyCredential, makeDummyUnsignedCredential } from './mocks';
 
@@ -16,7 +16,7 @@ jest.mock('../../src/utils/networkRequestHelper', () => {
 
 const mockMakeNetworkRequest = makeNetworkRequest as jest.MockedFunction<typeof makeNetworkRequest>;
 
-describe('checkManyCredentialStatuses', () => {
+describe('checkCredentialStatuses', () => {
   let credential1;
   let credential2;
   const authHeader = `Bearer ${dummyAuthToken}`;
@@ -57,7 +57,7 @@ describe('checkManyCredentialStatuses', () => {
       headers: { 'x-auth-token': dummyAuthToken }
     });
 
-    const result = await checkManyCredentialStatuses(authHeader, [credential1.id, credential2.id]);
+    const result = await checkCredentialStatuses(authHeader, [credential1.id, credential2.id]);
 
     expect(mockMakeNetworkRequest).toBeCalledWith({
       baseUrl: configData.SaaSUrl,

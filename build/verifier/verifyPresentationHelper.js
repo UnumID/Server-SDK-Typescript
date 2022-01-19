@@ -47,7 +47,6 @@ var validateProof_1 = require("./validateProof");
 var requireAuth_1 = require("../requireAuth");
 var verifyCredential_1 = require("./verifyCredential");
 var isCredentialExpired_1 = require("./isCredentialExpired");
-var checkCredentialStatus_1 = require("./checkCredentialStatus");
 var logger_1 = __importDefault(require("../logger"));
 var library_crypto_1 = require("@unumid/library-crypto");
 var helpers_1 = require("../utils/helpers");
@@ -57,6 +56,8 @@ var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var verify_1 = require("../utils/verify");
 var convertCredentialSubject_1 = require("../utils/convertCredentialSubject");
 var sendPresentationVerifiedReceipt_1 = require("./sendPresentationVerifiedReceipt");
+var checkCredentialStatuses_1 = require("./checkCredentialStatuses");
+var getCredentialStatusFromMap_1 = require("../utils/getCredentialStatusFromMap");
 /**
  * Validates the attributes for a credential from UnumId's Saas
  * @param credentials JSONObj
@@ -256,7 +257,7 @@ function validatePresentationMeetsRequestedCredentials(presentation, credentialR
  * @param verifier
  */
 exports.verifyPresentationHelper = function (authorization, presentation, verifier, credentialRequests, requestUuid) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, proof, subject, credentialTypes, credentialIds, issuers, message, authToken_1, result_1, didDocumentResponse, authToken, pubKeyObj, result_2, isPresentationVerified, bytes, e_1, message, authToken_2, result_3, message, authToken_3, result_4, areCredentialsValid, credentialInvalidMessage, _i, _a, credential, isExpired, isStatusValidResponse, isStatusValid, isVerifiedResponse, isVerified_1, authToken_4, result_5, isVerified, result, error_2;
+    var data, proof, subject, credentialTypes, credentialIds, issuers, message, authToken_1, result_1, didDocumentResponse, authToken, pubKeyObj, result_2, isPresentationVerified, bytes, e_1, message, authToken_2, result_3, message, authToken_3, result_4, areCredentialsValid, credentialInvalidMessage, presentationCredentialIds, isStatusValidResponse, _i, _a, credential, isExpired, isStatusValid, isVerifiedResponse, isVerified_1, authToken_4, result_5, isVerified, result, error_2;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -356,9 +357,14 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
             case 9:
                 areCredentialsValid = true;
                 credentialInvalidMessage = void 0;
-                _i = 0, _a = presentation.verifiableCredential;
-                _b.label = 10;
+                presentationCredentialIds = presentation.verifiableCredential.map(function (credential) { return credential.id; });
+                return [4 /*yield*/, checkCredentialStatuses_1.checkCredentialStatuses(authToken, presentationCredentialIds)];
             case 10:
+                isStatusValidResponse = _b.sent();
+                authToken = isStatusValidResponse.authToken;
+                _i = 0, _a = presentation.verifiableCredential;
+                _b.label = 11;
+            case 11:
                 if (!(_i < _a.length)) return [3 /*break*/, 14];
                 credential = _a[_i];
                 isExpired = isCredentialExpired_1.isCredentialExpired(credential);
@@ -367,10 +373,7 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                     credentialInvalidMessage = "Credential " + credential.type + " " + credential.id + " is expired.";
                     return [3 /*break*/, 14];
                 }
-                return [4 /*yield*/, checkCredentialStatus_1.checkCredentialStatus(authToken, credential.id)];
-            case 11:
-                isStatusValidResponse = _b.sent();
-                isStatusValid = isStatusValidResponse.body.status === 'valid';
+                isStatusValid = getCredentialStatusFromMap_1.getCredentialStatusFromMap(credential.id, isStatusValidResponse.body);
                 authToken = isStatusValidResponse.authToken;
                 if (!isStatusValid) {
                     areCredentialsValid = false;
@@ -390,7 +393,7 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 _b.label = 13;
             case 13:
                 _i++;
-                return [3 /*break*/, 10];
+                return [3 /*break*/, 11];
             case 14:
                 if (!!areCredentialsValid) return [3 /*break*/, 16];
                 return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, presentation.presentationRequestId, requestUuid, credentialInvalidMessage, issuers, credentialTypes, credentialIds)];

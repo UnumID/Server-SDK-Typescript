@@ -9,7 +9,6 @@ import { issueCredential, issueCredentials } from './issuer/issueCredentials';
 import { updateCredentialStatus } from './issuer/updateCredentialStatus';
 import { extractCredentialInfo } from './utils/extractCredentialInfo';
 import { CredentialSubject, Presentation, Proof, Credential } from '@unumid/types';
-import { checkCredentialStatus } from './verifier/checkCredentialStatus';
 import { CustError } from './utils/error';
 import { createProof, createProofPb } from './utils/createProof';
 import { convertCredentialSubject } from './utils/convertCredentialSubject';
@@ -19,7 +18,7 @@ import { verifySubjectCredentialRequests } from './issuer/verifySubjectCredentia
 import { verifySubjectDidDocument } from './utils/verifyDidDocument';
 import { revokeAllCredentials } from './issuer/revokeAllCredentials';
 import { updateCredentialStatuses } from './issuer/updateCredentialStatuses';
-import { checkManyCredentialStatuses } from './verifier/checkManyCredentialStatuses';
+import { checkCredentialStatuses } from './verifier/checkCredentialStatuses';
 
 export {
   // Issuer Functions
@@ -36,8 +35,7 @@ export {
   sendRequest,
   sendSms,
   verifyPresentation,
-  checkCredentialStatus,
-  checkManyCredentialStatuses,
+  checkCredentialStatuses,
   getRequest,
   getVersionedRequest,
   // Types

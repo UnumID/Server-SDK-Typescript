@@ -15,7 +15,7 @@ import logger from '../logger';
  * @param {string[]} credentialIds
  * @returns {Promise<UnumDto<CredentialIdToStatusMap>>} a promise resolving to an UnumDto containing a list of zero or more CredentialStatuses
  */
-export const checkManyCredentialStatuses = async (
+export const checkCredentialStatuses = async (
   authorization: string,
   credentialIds: string[]
 ): Promise<UnumDto<CredentialIdToStatusMap>> => {

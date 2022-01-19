@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.convertCredentialSubject = exports.createProofPb = exports.createProof = exports.verifySubjectDidDocument = exports.extractCredentialInfo = exports.CustError = exports.getVersionedRequest = exports.getRequest = exports.checkManyCredentialStatuses = exports.checkCredentialStatus = exports.verifyPresentation = exports.sendSms = exports.sendRequest = exports.sendEmail = exports.registerVerifier = exports.revokeAllCredentials = exports.verifySubjectCredentialRequests = exports.updateCredentialStatuses = exports.updateCredentialStatus = exports.issueCredentials = exports.issueCredential = exports.registerIssuer = void 0;
+exports.convertCredentialSubject = exports.createProofPb = exports.createProof = exports.verifySubjectDidDocument = exports.extractCredentialInfo = exports.CustError = exports.getVersionedRequest = exports.getRequest = exports.checkCredentialStatuses = exports.verifyPresentation = exports.sendSms = exports.sendRequest = exports.sendEmail = exports.registerVerifier = exports.revokeAllCredentials = exports.verifySubjectCredentialRequests = exports.updateCredentialStatuses = exports.updateCredentialStatus = exports.issueCredentials = exports.issueCredential = exports.registerIssuer = void 0;
 var registerVerifier_1 = require("./verifier/registerVerifier");
 Object.defineProperty(exports, "registerVerifier", { enumerable: true, get: function () { return registerVerifier_1.registerVerifier; } });
 var sendEmail_1 = require("./verifier/sendEmail");
@@ -20,8 +20,6 @@ var updateCredentialStatus_1 = require("./issuer/updateCredentialStatus");
 Object.defineProperty(exports, "updateCredentialStatus", { enumerable: true, get: function () { return updateCredentialStatus_1.updateCredentialStatus; } });
 var extractCredentialInfo_1 = require("./utils/extractCredentialInfo");
 Object.defineProperty(exports, "extractCredentialInfo", { enumerable: true, get: function () { return extractCredentialInfo_1.extractCredentialInfo; } });
-var checkCredentialStatus_1 = require("./verifier/checkCredentialStatus");
-Object.defineProperty(exports, "checkCredentialStatus", { enumerable: true, get: function () { return checkCredentialStatus_1.checkCredentialStatus; } });
 var error_1 = require("./utils/error");
 Object.defineProperty(exports, "CustError", { enumerable: true, get: function () { return error_1.CustError; } });
 var createProof_1 = require("./utils/createProof");
@@ -41,6 +39,6 @@ var revokeAllCredentials_1 = require("./issuer/revokeAllCredentials");
 Object.defineProperty(exports, "revokeAllCredentials", { enumerable: true, get: function () { return revokeAllCredentials_1.revokeAllCredentials; } });
 var updateCredentialStatuses_1 = require("./issuer/updateCredentialStatuses");
 Object.defineProperty(exports, "updateCredentialStatuses", { enumerable: true, get: function () { return updateCredentialStatuses_1.updateCredentialStatuses; } });
-var checkManyCredentialStatuses_1 = require("./verifier/checkManyCredentialStatuses");
-Object.defineProperty(exports, "checkManyCredentialStatuses", { enumerable: true, get: function () { return checkManyCredentialStatuses_1.checkManyCredentialStatuses; } });
+var checkCredentialStatuses_1 = require("./verifier/checkCredentialStatuses");
+Object.defineProperty(exports, "checkCredentialStatuses", { enumerable: true, get: function () { return checkCredentialStatuses_1.checkCredentialStatuses; } });
 //# sourceMappingURL=index.js.map

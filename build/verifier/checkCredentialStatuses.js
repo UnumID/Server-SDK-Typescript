@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -35,38 +46,55 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkCredentialStatus = void 0;
-var config_1 = require("../config");
+exports.checkCredentialStatuses = void 0;
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
+var config_1 = require("../config");
+var logger_1 = __importDefault(require("../logger"));
 /**
- * @deprecated prefer checkManyCredentialStatuses
- * Helper to check the status of a credential: verified, revoked, etc.
- * @param credential
- * @param authorization
+ * Function to check the status of one or more credentials by credentialId (valid, revoked, etc)
+ * @param {string} authorization
+ * @param {string[]} credentialIds
+ * @returns {Promise<UnumDto<CredentialIdToStatusMap>>} a promise resolving to an UnumDto containing a list of zero or more CredentialStatuses
  */
-exports.checkCredentialStatus = function (authorization, credentialId) { return __awaiter(void 0, void 0, void 0, function () {
-    var options, credentialStatusResponse, credentialStatus, authToken, result;
+exports.checkCredentialStatuses = function (authorization, credentialIds) { return __awaiter(void 0, void 0, void 0, function () {
+    var searchParams, searchParamsString, options, credentialStatusesResponse, authToken, credentialIdToStatusMap, e_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                searchParams = new URLSearchParams();
+                credentialIds.forEach(function (credentialId) { return searchParams.append('credentialId', credentialId); });
+                searchParamsString = searchParams.toString();
                 options = {
                     baseUrl: config_1.configData.SaaSUrl,
-                    endPoint: "credentialStatus/" + credentialId,
+                    endPoint: "credentialStatus?" + searchParamsString,
                     method: 'GET',
                     header: { Authorization: authorization }
                 };
-                return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(options)];
+                _a.label = 1;
             case 1:
-                credentialStatusResponse = _a.sent();
-                credentialStatus = credentialStatusResponse.body;
-                authToken = networkRequestHelper_1.handleAuthTokenHeader(credentialStatusResponse, authorization);
-                result = {
-                    authToken: authToken,
-                    body: credentialStatus
-                };
-                return [2 /*return*/, result];
+                _a.trys.push([1, 3, , 4]);
+                return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(options)];
+            case 2:
+                credentialStatusesResponse = _a.sent();
+                authToken = networkRequestHelper_1.handleAuthTokenHeader(credentialStatusesResponse, authorization);
+                credentialIdToStatusMap = credentialStatusesResponse.body.reduce(function (previous, current) {
+                    var _a;
+                    return __assign(__assign({}, previous), (_a = {}, _a[current.credentialId] = current, _a));
+                }, {});
+                return [2 /*return*/, {
+                        authToken: authToken,
+                        body: credentialIdToStatusMap
+                    }];
+            case 3:
+                e_1 = _a.sent();
+                logger_1.default.error('Error getting credential statuses', e_1);
+                throw e_1;
+            case 4: return [2 /*return*/];
         }
     });
 }); };
-//# sourceMappingURL=checkCredentialStatus.js.map
+//# sourceMappingURL=checkCredentialStatuses.js.map

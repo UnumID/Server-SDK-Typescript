@@ -2,12 +2,11 @@ import { omit } from 'lodash';
 
 import { configData } from '../config';
 import { CredentialStatusInfo, UnumDto, VerifiedStatus } from '../types';
-import { CredentialRequest, PublicKeyInfo, JSONObj, PresentationPb, CredentialPb, ProofPb, UnsignedPresentationPb, CredentialSubject, WithVersion } from '@unumid/types';
+import { CredentialRequest, PublicKeyInfo, JSONObj, PresentationPb, CredentialPb, ProofPb, UnsignedPresentationPb, CredentialSubject, WithVersion, CredentialIdToStatusMap } from '@unumid/types';
 import { validateProof } from './validateProof';
 import { requireAuth } from '../requireAuth';
 import { verifyCredential } from './verifyCredential';
 import { isCredentialExpired } from './isCredentialExpired';
-import { checkCredentialStatus } from './checkCredentialStatus';
 import logger from '../logger';
 import { CryptoError } from '@unumid/library-crypto';
 import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
@@ -17,6 +16,8 @@ import { handleAuthTokenHeader } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
 import { convertCredentialSubject } from '../utils/convertCredentialSubject';
 import { sendPresentationVerifiedReceipt } from './sendPresentationVerifiedReceipt';
+import { checkCredentialStatuses } from './checkCredentialStatuses';
+import { getCredentialStatusFromMap } from '../utils/getCredentialStatusFromMap';
 
 /**
  * Validates the attributes for a credential from UnumId's Saas
@@ -369,6 +370,11 @@ export const verifyPresentationHelper = async (authorization: string, presentati
     let areCredentialsValid = true;
     let credentialInvalidMessage;
 
+    // get all the presentation's credentialIds to make one batched call for their statuses to the saas
+    const presentationCredentialIds = presentation.verifiableCredential.map(credential => credential.id);
+    const isStatusValidResponse: UnumDto<CredentialIdToStatusMap> = await checkCredentialStatuses(authToken, presentationCredentialIds);
+    authToken = isStatusValidResponse.authToken;
+
     for (const credential of presentation.verifiableCredential) {
       const isExpired = isCredentialExpired(credential);
 
@@ -378,9 +384,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
         break;
       }
 
-      // TODO: use checkManyCredentialStatuses to check status for all presented credentials at once
-      const isStatusValidResponse: UnumDto<CredentialStatusInfo> = await checkCredentialStatus(authToken, credential.id);
-      const isStatusValid = isStatusValidResponse.body.status === 'valid';
+      const isStatusValid = getCredentialStatusFromMap(credential.id, isStatusValidResponse.body);
       authToken = isStatusValidResponse.authToken;
 
       if (!isStatusValid) {
