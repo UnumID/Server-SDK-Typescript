@@ -16,7 +16,7 @@ import { handleAuthTokenHeader } from '../utils/networkRequestHelper';
 import { validateProof } from './validateProof';
 import { convertProof } from '../utils/convertToProtobuf';
 import { sendPresentationVerifiedReceipt } from './sendPresentationVerifiedReceipt';
-import { extractPresentationRequest, getPresentationRequest } from './getPresentationRequest';
+import { extractPresentationRequest, getPresentationRequest, handleConvertingPresentationRequestDateAttributes } from './getPresentationRequest';
 
 function isDeclinedPresentation (presentation: Presentation | PresentationPb): presentation is Presentation {
   return isArrayEmpty(presentation.verifiableCredential);
@@ -228,6 +228,10 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
 
       authorization = handleAuthTokenHeader(presentationRequestResponse, authorization);
       presentationRequest = extractPresentationRequest(presentationRequestResponse.body);
+      // presentationRequest = extractPresentationRequest(presentationRequestResponse.body.presentationRequests['3.0.0']);
+    } else {
+      // need to convert the string date attributes to to Date objects for proto handling
+      presentationRequest = handleConvertingPresentationRequestDateAttributes(presentationRequest);
     }
 
     // verify the presentation request uuid match

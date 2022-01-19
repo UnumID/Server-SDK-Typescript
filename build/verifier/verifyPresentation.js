@@ -214,7 +214,7 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                _a.trys.push([0, 9, , 10]);
+                _a.trys.push([0, 10, , 11]);
                 requireAuth_1.requireAuth(authorization);
                 if (!encryptedPresentation) {
                     throw new error_1.CustError(400, 'encryptedPresentation is required.');
@@ -241,21 +241,25 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                 presentationRequestResponse = _a.sent();
                 authorization = networkRequestHelper_1.handleAuthTokenHeader(presentationRequestResponse, authorization);
                 presentationRequest = getPresentationRequest_1.extractPresentationRequest(presentationRequestResponse.body);
-                _a.label = 2;
+                return [3 /*break*/, 3];
             case 2:
+                // need to convert the string date attributes to to Date objects for proto handling
+                presentationRequest = getPresentationRequest_1.handleConvertingPresentationRequestDateAttributes(presentationRequest);
+                _a.label = 3;
+            case 3:
                 // verify the presentation request uuid match
                 if (presentationRequest.presentationRequest.id !== presentation.presentationRequestId) {
                     throw new error_1.CustError(400, "presentation request id provided, " + presentationRequest.presentationRequest.id + ", does not match the presentationRequestId that the presentation was in response to, " + presentation.presentationRequestId + ".");
                 }
-                if (!presentationRequest.presentationRequest) return [3 /*break*/, 5];
+                if (!presentationRequest.presentationRequest) return [3 /*break*/, 6];
                 presentationRequestPb = validatePresentationRequest(presentationRequest.presentationRequest);
                 return [4 /*yield*/, verifyPresentationRequest(authorization, presentationRequestPb)];
-            case 3:
+            case 4:
                 requestVerificationResult = _a.sent();
                 authorization = requestVerificationResult.authToken;
-                if (!!requestVerificationResult.body.isVerified) return [3 /*break*/, 5];
+                if (!!requestVerificationResult.body.isVerified) return [3 /*break*/, 6];
                 return [4 /*yield*/, handlePresentationVerificationReceipt(requestVerificationResult.authToken, presentation, verifierDid, requestVerificationResult.body.message, presentationRequest.presentationRequest.uuid)];
-            case 4:
+            case 5:
                 authToken = _a.sent();
                 type = isDeclinedPresentation(presentation) ? 'DeclinedPresentation' : 'VerifiablePresentation';
                 result_2 = {
@@ -263,27 +267,27 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                     body: __assign(__assign({}, requestVerificationResult.body), { type: type, presentation: presentation })
                 };
                 return [2 /*return*/, result_2];
-            case 5:
-                if (!isDeclinedPresentation(presentation)) return [3 /*break*/, 7];
-                return [4 /*yield*/, verifyNoPresentationHelper_1.verifyNoPresentationHelper(authorization, presentation, verifierDid, presentationRequest.presentationRequest.uuid)];
             case 6:
+                if (!isDeclinedPresentation(presentation)) return [3 /*break*/, 8];
+                return [4 /*yield*/, verifyNoPresentationHelper_1.verifyNoPresentationHelper(authorization, presentation, verifierDid, presentationRequest.presentationRequest.uuid)];
+            case 7:
                 verificationResult_1 = _a.sent();
                 result_3 = {
                     authToken: verificationResult_1.authToken,
                     body: __assign(__assign({}, verificationResult_1.body), { type: 'DeclinedPresentation', presentation: presentation })
                 };
                 return [2 /*return*/, result_3];
-            case 7:
+            case 8:
                 credentialRequests = presentationRequest.presentationRequest.credentialRequests;
                 return [4 /*yield*/, verifyPresentationHelper_1.verifyPresentationHelper(authorization, presentation, verifierDid, credentialRequests, presentationRequest.presentationRequest.uuid)];
-            case 8:
+            case 9:
                 verificationResult = _a.sent();
                 result = {
                     authToken: verificationResult.authToken,
                     body: __assign(__assign({}, verificationResult.body), { type: 'VerifiablePresentation', presentation: presentation })
                 };
                 return [2 /*return*/, result];
-            case 9:
+            case 10:
                 error_2 = _a.sent();
                 if (error_2 instanceof library_crypto_1.CryptoError) {
                     logger_1.default.error("Crypto error handling encrypted presentation " + error_2);
@@ -295,7 +299,7 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                     logger_1.default.error("Error handling encrypted presentation. " + error_2);
                 }
                 throw error_2;
-            case 10: return [2 /*return*/];
+            case 11: return [2 /*return*/];
         }
     });
 }); };

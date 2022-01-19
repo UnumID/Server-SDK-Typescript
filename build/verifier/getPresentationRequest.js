@@ -50,7 +50,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.extractPresentationRequest = exports.getPresentationRequest = void 0;
+exports.handleConvertingPresentationRequestDateAttributes = exports.extractPresentationRequest = exports.getPresentationRequest = void 0;
+var lodash_1 = require("lodash");
 var config_1 = require("../config");
 var logger_1 = __importDefault(require("../logger"));
 var error_1 = require("../utils/error");
@@ -96,15 +97,35 @@ exports.getPresentationRequest = getPresentationRequest;
  * @returns
  */
 function extractPresentationRequest(presentationRequestResponse) {
+    // export function extractPresentationRequest (presentationRequestDto: PresentationRequestDto): PresentationRequestDto {
     try {
         var presentationRequestDto = presentationRequestResponse.presentationRequests['3.0.0'];
         // need to convert the times to Date objects for proto handling
-        var result = __assign(__assign({}, presentationRequestDto), { presentationRequest: __assign(__assign({}, presentationRequestDto.presentationRequest), { createdAt: presentationRequestDto.presentationRequest.createdAt ? new Date(presentationRequestDto.presentationRequest.createdAt) : undefined, updatedAt: presentationRequestDto.presentationRequest.updatedAt ? new Date(presentationRequestDto.presentationRequest.updatedAt) : undefined, expiresAt: presentationRequestDto.presentationRequest.expiresAt ? new Date(presentationRequestDto.presentationRequest.expiresAt) : undefined }) });
-        return result;
+        return handleConvertingPresentationRequestDateAttributes(presentationRequestDto);
+        // const result = {
+        //   ...presentationRequestDto,
+        //   presentationRequest: {
+        //     ...presentationRequestDto.presentationRequest,
+        //     createdAt: presentationRequestDto.presentationRequest.createdAt ? new Date(presentationRequestDto.presentationRequest.createdAt) : undefined as any as Date, // Despite this ugliness, rather check for presence and handle the undefined directly while not dealing with a whole new type
+        //     updatedAt: presentationRequestDto.presentationRequest.updatedAt ? new Date(presentationRequestDto.presentationRequest.updatedAt) : undefined as any as Date,
+        //     expiresAt: presentationRequestDto.presentationRequest.expiresAt ? new Date(presentationRequestDto.presentationRequest.expiresAt) : undefined as any as Date
+        //   }
+        // };
+        // return result;
     }
     catch (e) {
         throw new error_1.CustError(500, "Error handling presentation request from Saas: Error " + e);
     }
 }
 exports.extractPresentationRequest = extractPresentationRequest;
+/**
+ * Helper to handle converting the stringified date attributes to real Date objects so the proto serializer doesn't complain when going into a byte array for the signature check.
+ * @param presentationRequestDto
+ * @returns
+ */
+function handleConvertingPresentationRequestDateAttributes(presentationRequestDto) {
+    var result = __assign(__assign({}, presentationRequestDto), { presentationRequest: __assign(__assign({}, presentationRequestDto.presentationRequest), { createdAt: presentationRequestDto.presentationRequest.createdAt && !lodash_1.isString(presentationRequestDto.presentationRequest.createdAt) ? new Date(presentationRequestDto.presentationRequest.createdAt) : undefined, updatedAt: presentationRequestDto.presentationRequest.updatedAt && !lodash_1.isString(presentationRequestDto.presentationRequest.updatedAt) ? new Date(presentationRequestDto.presentationRequest.updatedAt) : undefined, expiresAt: presentationRequestDto.presentationRequest.expiresAt && !lodash_1.isString(presentationRequestDto.presentationRequest.expiresAt) ? new Date(presentationRequestDto.presentationRequest.expiresAt) : undefined }) });
+    return result;
+}
+exports.handleConvertingPresentationRequestDateAttributes = handleConvertingPresentationRequestDateAttributes;
 //# sourceMappingURL=getPresentationRequest.js.map

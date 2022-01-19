@@ -13,4 +13,10 @@ export declare function getPresentationRequest(authorization: string, id: string
  * @returns
  */
 export declare function extractPresentationRequest(presentationRequestResponse: PresentationRequestRepoDto): PresentationRequestDto;
+/**
+ * Helper to handle converting the stringified date attributes to real Date objects so the proto serializer doesn't complain when going into a byte array for the signature check.
+ * @param presentationRequestDto
+ * @returns
+ */
+export declare function handleConvertingPresentationRequestDateAttributes(presentationRequestDto: PresentationRequestDto): PresentationRequestDto;
 //# sourceMappingURL=getPresentationRequest.d.ts.map
