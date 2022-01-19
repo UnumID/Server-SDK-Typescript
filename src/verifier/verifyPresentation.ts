@@ -228,7 +228,6 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
 
       authorization = handleAuthTokenHeader(presentationRequestResponse, authorization);
       presentationRequest = extractPresentationRequest(presentationRequestResponse.body);
-      // presentationRequest = extractPresentationRequest(presentationRequestResponse.body.presentationRequests['3.0.0']);
     } else {
       // need to convert the string date attributes to to Date objects for proto handling
       presentationRequest = handleConvertingPresentationRequestDateAttributes(presentationRequest);

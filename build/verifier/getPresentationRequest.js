@@ -102,16 +102,6 @@ function extractPresentationRequest(presentationRequestResponse) {
         var presentationRequestDto = presentationRequestResponse.presentationRequests['3.0.0'];
         // need to convert the times to Date objects for proto handling
         return handleConvertingPresentationRequestDateAttributes(presentationRequestDto);
-        // const result = {
-        //   ...presentationRequestDto,
-        //   presentationRequest: {
-        //     ...presentationRequestDto.presentationRequest,
-        //     createdAt: presentationRequestDto.presentationRequest.createdAt ? new Date(presentationRequestDto.presentationRequest.createdAt) : undefined as any as Date, // Despite this ugliness, rather check for presence and handle the undefined directly while not dealing with a whole new type
-        //     updatedAt: presentationRequestDto.presentationRequest.updatedAt ? new Date(presentationRequestDto.presentationRequest.updatedAt) : undefined as any as Date,
-        //     expiresAt: presentationRequestDto.presentationRequest.expiresAt ? new Date(presentationRequestDto.presentationRequest.expiresAt) : undefined as any as Date
-        //   }
-        // };
-        // return result;
     }
     catch (e) {
         throw new error_1.CustError(500, "Error handling presentation request from Saas: Error " + e);
@@ -124,7 +114,7 @@ exports.extractPresentationRequest = extractPresentationRequest;
  * @returns
  */
 function handleConvertingPresentationRequestDateAttributes(presentationRequestDto) {
-    var result = __assign(__assign({}, presentationRequestDto), { presentationRequest: __assign(__assign({}, presentationRequestDto.presentationRequest), { createdAt: presentationRequestDto.presentationRequest.createdAt && !lodash_1.isString(presentationRequestDto.presentationRequest.createdAt) ? new Date(presentationRequestDto.presentationRequest.createdAt) : undefined, updatedAt: presentationRequestDto.presentationRequest.updatedAt && !lodash_1.isString(presentationRequestDto.presentationRequest.updatedAt) ? new Date(presentationRequestDto.presentationRequest.updatedAt) : undefined, expiresAt: presentationRequestDto.presentationRequest.expiresAt && !lodash_1.isString(presentationRequestDto.presentationRequest.expiresAt) ? new Date(presentationRequestDto.presentationRequest.expiresAt) : undefined }) });
+    var result = __assign(__assign({}, presentationRequestDto), { presentationRequest: __assign(__assign({}, presentationRequestDto.presentationRequest), { createdAt: presentationRequestDto.presentationRequest.createdAt && lodash_1.isString(presentationRequestDto.presentationRequest.createdAt) ? new Date(presentationRequestDto.presentationRequest.createdAt) : undefined, updatedAt: presentationRequestDto.presentationRequest.updatedAt && lodash_1.isString(presentationRequestDto.presentationRequest.updatedAt) ? new Date(presentationRequestDto.presentationRequest.updatedAt) : undefined, expiresAt: presentationRequestDto.presentationRequest.expiresAt && lodash_1.isString(presentationRequestDto.presentationRequest.expiresAt) ? new Date(presentationRequestDto.presentationRequest.expiresAt) : undefined }) });
     return result;
 }
 exports.handleConvertingPresentationRequestDateAttributes = handleConvertingPresentationRequestDateAttributes;

@@ -42,17 +42,6 @@ export function extractPresentationRequest (presentationRequestResponse: Present
 
     // need to convert the times to Date objects for proto handling
     return handleConvertingPresentationRequestDateAttributes(presentationRequestDto);
-    // const result = {
-    //   ...presentationRequestDto,
-    //   presentationRequest: {
-    //     ...presentationRequestDto.presentationRequest,
-    //     createdAt: presentationRequestDto.presentationRequest.createdAt ? new Date(presentationRequestDto.presentationRequest.createdAt) : undefined as any as Date, // Despite this ugliness, rather check for presence and handle the undefined directly while not dealing with a whole new type
-    //     updatedAt: presentationRequestDto.presentationRequest.updatedAt ? new Date(presentationRequestDto.presentationRequest.updatedAt) : undefined as any as Date,
-    //     expiresAt: presentationRequestDto.presentationRequest.expiresAt ? new Date(presentationRequestDto.presentationRequest.expiresAt) : undefined as any as Date
-    //   }
-    // };
-
-    // return result;
   } catch (e) {
     throw new CustError(500, `Error handling presentation request from Saas: Error ${e}`);
   }
@@ -68,12 +57,9 @@ export function handleConvertingPresentationRequestDateAttributes (presentationR
     ...presentationRequestDto,
     presentationRequest: {
       ...presentationRequestDto.presentationRequest,
-      createdAt: presentationRequestDto.presentationRequest.createdAt && !isString(presentationRequestDto.presentationRequest.createdAt) ? new Date(presentationRequestDto.presentationRequest.createdAt) : undefined as any as Date, // Despite this ugliness, rather check for presence and handle the undefined directly while not dealing with a whole new type
-      updatedAt: presentationRequestDto.presentationRequest.updatedAt && !isString(presentationRequestDto.presentationRequest.updatedAt) ? new Date(presentationRequestDto.presentationRequest.updatedAt) : undefined as any as Date,
-      expiresAt: presentationRequestDto.presentationRequest.expiresAt && !isString(presentationRequestDto.presentationRequest.expiresAt) ? new Date(presentationRequestDto.presentationRequest.expiresAt) : undefined as any as Date
-      // createdAt: presentationRequestDto.presentationRequest.createdAt ? new Date(presentationRequestDto.presentationRequest.createdAt) : undefined as any as Date, // Despite this ugliness, rather check for presence and handle the undefined directly while not dealing with a whole new type
-      // updatedAt: presentationRequestDto.presentationRequest.updatedAt ? new Date(presentationRequestDto.presentationRequest.updatedAt) : undefined as any as Date,
-      // expiresAt: presentationRequestDto.presentationRequest.expiresAt ? new Date(presentationRequestDto.presentationRequest.expiresAt) : undefined as any as Date
+      createdAt: presentationRequestDto.presentationRequest.createdAt && isString(presentationRequestDto.presentationRequest.createdAt) ? new Date(presentationRequestDto.presentationRequest.createdAt) : undefined as any as Date, // Despite this ugliness, rather check for presence and handle the undefined directly while not dealing with a whole new type
+      updatedAt: presentationRequestDto.presentationRequest.updatedAt && isString(presentationRequestDto.presentationRequest.updatedAt) ? new Date(presentationRequestDto.presentationRequest.updatedAt) : undefined as any as Date,
+      expiresAt: presentationRequestDto.presentationRequest.expiresAt && isString(presentationRequestDto.presentationRequest.expiresAt) ? new Date(presentationRequestDto.presentationRequest.expiresAt) : undefined as any as Date
     }
   };
 
