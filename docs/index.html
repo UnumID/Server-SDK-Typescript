@@ -61,11 +61,11 @@
 				<a href="#unum-id-typescript-server-sdk" id="unum-id-typescript-server-sdk" style="color: inherit; text-decoration: none;">
 					<h1>Unum ID Typescript Server-SDK</h1>
 				</a>
-				<p>This SDK combines the functionality of an <a href="https://docs.unum.id/terminology#issuer"><strong>Issuer</strong></a> and <a href="https://docs.unum.id/terminology#verifier"><strong>Verifier</strong></a> entities to work with UnumID&#39;s SaaS. For necessary account creation and API keys please email <a href="mailto:admin@unum.id">admin@unum.id</a>.</p>
+				<p>This SDK combines the functionality of an <a href="https://docs.unumid.co/terminology#issuer"><strong>Issuer</strong></a> and <a href="https://docs.unumid.co/terminology#verifier"><strong>Verifier</strong></a> entities to work with UnumID&#39;s SaaS. For necessary account creation and API keys please email <a href="mailto:admin@unumid.co">admin@unumid.co</a>.</p>
 				<a href="#documentation" id="documentation" style="color: inherit; text-decoration: none;">
 					<h2>Documentation</h2>
 				</a>
-				<p>High level technical documentation can be found <a href="https://docs.unum.id/server-sdk">here</a> which is served via <a href="https://github.com/UnumID/UnumID.github.io">Docusaurus</a>. More detailed generated from source documentation can be found <a href="https://docs.unum.id/Server-SDK-Typescript/index.html">here</a> which is served via repo specific Github pages via the /docs folder of the main branch.</p>
+				<p>High level technical documentation can be found <a href="https://docs.unumid.co/server-sdk">here</a> which is served via <a href="https://github.com/UnumID/UnumID.github.io">Docusaurus</a>. More detailed generated from source documentation can be found <a href="https://docs.unumid.co/Server-SDK-Typescript/index.html">here</a> which is served via repo specific Github pages via the /docs folder of the main branch.</p>
 				<a href="#distribution" id="distribution" style="color: inherit; text-decoration: none;">
 					<h2>Distribution</h2>
 				</a>
@@ -107,7 +107,7 @@
 				<a href="#versioning" id="versioning" style="color: inherit; text-decoration: none;">
 					<h2>Versioning</h2>
 				</a>
-				<p>Information regarding the suggested versioning strategy can be found <a href="https://docs.unum.id/deployment-overview#versioning-strategy">here</a>.
+				<p>Information regarding the suggested versioning strategy can be found <a href="https://docs.unumid.co/deployment-overview#versioning-strategy">here</a>.
 					Breaking versions of this SDK will be denoted as such with an incremented major version. However all versions of the SDK will be fully backwards compatible with the other Unum ID SDKs. If there is a need to referencing an older version of the SDK within your applications for other applications specific backwards compatibility we recommend this syntax for simplicity:
 				<code>@unumid/server-sdk-v2&quot;: &quot;npm:@unumid/server-sdk@2.1.4</code>.</p>
 				<a href="#sdk-functionality" id="sdk-functionality" style="color: inherit; text-decoration: none;">
@@ -136,7 +136,7 @@
 				<pre><code class="language-typescript"><span style="color: #A31515">&quot;customerUuid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// your customer UUID</span>
 <span style="color: #A31515">&quot;apiKey&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// your issuer API key</span>
 </code></pre>
-				<p>Response Body:  <a href="https://docs.unum.id/Server-SDK-Typescript/interfaces/registeredissuer.html"><strong>RegisteredIssuer</strong></a></p>
+				<p>Response Body:  <a href="https://docs.unumid.co/Server-SDK-Typescript/interfaces/registeredissuer.html"><strong>RegisteredIssuer</strong></a></p>
 				<pre><code class="language-typescript"><span style="color: #000000">{</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;uuid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// identifies issuer in Unum ID database</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;customerUuid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// identifies customer in Unum ID database</span>
@@ -173,7 +173,7 @@
 <span style="color: #A31515">&quot;signingPrivateKey&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// your issuer signing private key</span>
 <span style="color: #A31515">&quot;expirationDate&quot;</span><span style="color: #000000">?: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// (optional) when credential will no longer be valid (ISO 8601 date/time)</span>
 </code></pre>
-				<p>Response Body: <a href="https://docs.unum.id/Server-SDK-Typescript/interfaces/credential.html"><strong>Credential</strong></a></p>
+				<p>Response Body: <a href="https://docs.unumid.co/Server-SDK-Typescript/interfaces/credential.html"><strong>Credential</strong></a></p>
 				<pre><code class="language-typescript"><span style="color: #000000">{[</span>
 <span style="color: #000000">    </span><span style="color: #A31515">&quot;@context&quot;</span><span style="color: #000000">: [</span><span style="color: #A31515">&quot;https://www.w3.org/2018/credentials/v1&quot;</span><span style="color: #000000">], </span><span style="color: #008000">// for conformance with W3C Verifiable Credential spec</span>
 <span style="color: #000000">    </span><span style="color: #A31515">&quot;credentialStatus&quot;</span><span style="color: #000000">: {</span>
@@ -196,13 +196,28 @@
 					<h3>updateCredentialStatus</h3>
 				</a>
 				<p>Update a credential, i.e. make it invalid.</p>
-				<p>You need to provide the credential <code>id</code> (created when you issued the credential) and a <a href="https://docs.unum.id/types/modules.html#credentialstatusoptions">CredentialStatusOptions</a> <code>status</code>. Currently the only valid status are: verified and revoked.</p>
+				<p>You need to provide the credential <code>id</code> (created when you issued the credential) and a <a href="https://docs.unumid.co/types/modules.html#credentialstatusoptions">CredentialStatusOptions</a> <code>status</code>. Currently the only valid status are: verified and revoked.</p>
 				<pre><code class="language-typescript"><span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">type</span><span style="color: #000000"> </span><span style="color: #267F99">CredentialStatusOptions</span><span style="color: #000000"> = </span><span style="color: #A31515">&#039;valid&#039;</span><span style="color: #000000"> | </span><span style="color: #A31515">&#039;revoked&#039;</span><span style="color: #000000">;</span>
 </code></pre>
 				<p>Parameters</p>
 				<pre><code class="language-typescript"><span style="color: #000000">{</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;credentialId&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// id of the credential</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;status&quot;</span><span style="color: #000000">: </span><span style="color: #001080">CredentialStatusOptions</span><span style="color: #000000"> </span><span style="color: #008000">// status to update the credential to (defaults to &#039;revoked&#039;)</span>
+<span style="color: #000000">}</span>
+</code></pre>
+				<p>Response Body: <strong>Empty</strong>. If unsuccessful and exception will be thrown.</p>
+				<pre><code class="language-typescript"><span style="color: #000000">{}</span>
+</code></pre>
+				<a href="#revokeallcredentials" id="revokeallcredentials" style="color: inherit; text-decoration: none;">
+					<h3>revokeAllCredentials</h3>
+				</a>
+				<p>Revoke all issued credentials to a particular DID.</p>
+				<p>You need to provide your issuer&#39;s <code>did</code> and <code>signingPrivateKey</code> also the target <code>subjectDid</code>. Only credentials issued by the associated issuer are revoked from the subject. The signing private key is necessary for the request signature to be created within the sdk. The signature is necessary to be verified by the SaaS prior to revoking all the credentials. </p>
+				<p>Parameters</p>
+				<pre><code class="language-typescript"><span style="color: #000000">{</span>
+<span style="color: #000000">  </span><span style="color: #A31515">&quot;issuerDid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// did of the issuer of credential you would like to revoke</span>
+<span style="color: #000000">  </span><span style="color: #A31515">&quot;signingPrivateKey&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// issuer&#039;s signing private key</span>
+<span style="color: #000000">  </span><span style="color: #A31515">&quot;subjectDid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// did of target subject whom to revoke all the credentials issued by the issuer</span>
 <span style="color: #000000">}</span>
 </code></pre>
 				<p>Response Body: <strong>Empty</strong>. If unsuccessful and exception will be thrown.</p>
@@ -251,7 +266,7 @@
 <span style="color: #A31515">&quot;url&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// the url of which UnumID&#039;s SaaS will interface with</span>
 <span style="color: #A31515">&quot;apiKey&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// your verifier API key</span>
 </code></pre>
-				<p>Response body: <a href="https://docs.unum.id/Server-SDK-Typescript/interfaces/registeredverifier.html"><strong>RegisteredVerifier</strong></a></p>
+				<p>Response body: <a href="https://docs.unumid.co/Server-SDK-Typescript/interfaces/registeredverifier.html"><strong>RegisteredVerifier</strong></a></p>
 				<pre><code class="language-typescript"><span style="color: #000000">{</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;uuid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// identifies verifier in Unum ID database</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;customerUuid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// identifies customer in Unum ID database</span>
@@ -275,7 +290,7 @@
 				<p>Create a request for (a presentation of) credentials from a user.</p>
 				<p>You need to provide your verifier DID (created when you registered) and the UUID of the holder app from which the user can share the data. You also need to provide your signing private key, which the SDK uses to sign the request.</p>
 				<p><strong>Important</strong>: The signing private key never leaves your app. This function, like all the others in this SDK, is solely using it to handle to cryptographic functionality on your behalf.</p>
-				<p>To request credentials, you need to populate one or more <a href="https://docs.unum.id/types/interfaces/credentialrequest.html">CredentialRequest</a> objects, defined in the UnumID generic <a href="https://github.com/UnumID/types/blob/00ba819e661e2856ba9909923ac6f083b9a15e85/index.d.ts#L113-L117">types</a> project and shown below.</p>
+				<p>To request credentials, you need to populate one or more <a href="https://docs.unumid.co/types/interfaces/credentialrequest.html">CredentialRequest</a> objects, defined in the UnumID generic <a href="https://github.com/UnumID/types/blob/00ba819e661e2856ba9909923ac6f083b9a15e85/index.d.ts#L113-L117">types</a> project and shown below.</p>
 				<pre><code class="language-typescript"><span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">interface</span><span style="color: #000000"> </span><span style="color: #267F99">CredentialRequest</span><span style="color: #000000"> {</span>
 <span style="color: #000000">  </span><span style="color: #001080">type</span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000">; </span><span style="color: #008000">// credential type. This must match type of previously issued credential.</span>
 <span style="color: #000000">  </span><span style="color: #001080">issuers</span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000">[]; </span><span style="color: #008000">// list of DIDs for acceptable issuers. If multiple, any one is acceptable.</span>
@@ -291,7 +306,7 @@
 <span style="color: #A31515">&quot;expiresAt&quot;</span><span style="color: #000000">?: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// (optional) when PresentationRequest will no longer be valid (ISO 8601 date/time). Default is 10 minutes after creation.</span>
 <span style="color: #A31515">&quot;metadata&quot;</span><span style="color: #000000">?: </span><span style="color: #001080">object</span><span style="color: #000000"> </span><span style="color: #008000">// (optional) any additional data to include in PresentationRequest</span>
 </code></pre>
-				<p>Response Body: <a href="https://docs.unum.id/types/interfaces/presentationrequestpostdto.html"><strong>PresentationRequestPostDto</strong></a></p>
+				<p>Response Body: <a href="https://docs.unumid.co/types/interfaces/presentationrequestpostdto.html"><strong>PresentationRequestPostDto</strong></a></p>
 				<pre><code class="language-typescript"><span style="color: #000000">{</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;presentationRequest&quot;</span><span style="color: #000000">: {</span>
 <span style="color: #000000">    </span><span style="color: #A31515">&quot;uuid&quot;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// identifies PresentationRequest in Unum ID database</span>
@@ -346,7 +361,7 @@
 <span style="color: #A31515">&quot;encryptionPrivateKey&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// your verifier encryption private key</span>
 <span style="color: #A31515">&quot;presentationRequest&quot;</span><span style="color: #000000">?: </span><span style="color: #001080">PresentationRequestDto</span><span style="color: #000000"> </span><span style="color: #008000">// (optional) presentation request dto object to verify presentation credentials meet request requirements. This is an optional param to support the future use case of handling verifying presentations that are not in response to PresentationRequest</span>
 </code></pre>
-				<p>Response Body: <a href="https://docs.unum.id/Server-SDK-Typescript/interfaces/decryptedpresentation.html"><strong>DecryptedPresentation</strong></a></p>
+				<p>Response Body: <a href="https://docs.unumid.co/Server-SDK-Typescript/interfaces/decryptedpresentation.html"><strong>DecryptedPresentation</strong></a></p>
 				<pre><code class="language-typescript"><span style="color: #000000">{</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;isVerified&quot;</span><span style="color: #000000">: </span><span style="color: #001080">boolean</span><span style="color: #000000">; </span><span style="color: #008000">// whether the presentation is valid</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;type&quot;</span><span style="color: #000000">: </span><span style="color: #A31515">&#039;VerifiablePresentation&#039;</span><span style="color: #000000"> | </span><span style="color: #A31515">&#039;DeclinedPresentation&#039;</span><span style="color: #000000"> </span><span style="color: #008000">// type of presentation. DeclinedPresentation means user declined request and the submitted presentation&#039;s VerifiableCredential attribute was undefined or an empty array.</span>
@@ -376,7 +391,7 @@
 				<a href="#sendemail" id="sendemail" style="color: inherit; text-decoration: none;">
 					<h3>sendEmail</h3>
 				</a>
-				<p>Use to send a deep link to a user by email. A templated message will be delivered from <a href="mailto:no-reply@unum.id">no-reply@unum.id</a>. You can of course use your own email sending service if you prefer.</p>
+				<p>Use to send a deep link to a user by email. A templated message will be delivered from <a href="mailto:no-reply@unumid.co">no-reply@unumid.co</a>. You can of course use your own email sending service if you prefer.</p>
 				<p>To request (a presentation of) credentials from a user, you first create the request object and receive a deep link that references it. The user need to receive this deep link, which will open the correct app on their phone and prompt them to share the credentials. Email is one convenient channel, though keep in mind that the user will need to click the link from their phone for the deep link to work.</p>
 				<p>The email will be in the format:</p>
 				<ul>
@@ -393,24 +408,28 @@
 				<p>Response Body: <strong>Empty</strong>. If unsuccessful and exception will be thrown.</p>
 				<pre><code class="language-typescript"><span style="color: #000000">{}</span>
 </code></pre>
-				<a href="#checkcredentialstatus" id="checkcredentialstatus" style="color: inherit; text-decoration: none;">
-					<h3>checkCredentialStatus</h3>
+				<a href="#checkcredentialstatuses" id="checkcredentialstatuses" style="color: inherit; text-decoration: none;">
+					<h3>checkCredentialStatuses</h3>
 				</a>
-				<p>Used to check the status of a credential. </p>
-				<p>The <code>status</code> attribute of the response is of type <a href="https://docs.unum.id/types/modules.html#credentialstatusoptions">CredentialStatusOptions</a>. Currently the only valid status are: verified and revoked.</p>
+				<p>Used to check the status of individual credentials. </p>
+				<p>The <code>status</code> attribute of the response&#39;s <a href="https://docs.unumid.co/types/interfaces/credentialstatusinfo.html">CredentialStatusInfo</a> is of type <a href="https://docs.unumid.co/types/modules.html#credentialstatusoptions">CredentialStatusOptions</a>. Currently the only valid status are: verified and revoked.</p>
 				<pre><code class="language-typescript"><span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">type</span><span style="color: #000000"> </span><span style="color: #267F99">CredentialStatusOptions</span><span style="color: #000000"> = </span><span style="color: #A31515">&#039;valid&#039;</span><span style="color: #000000"> | </span><span style="color: #A31515">&#039;revoked&#039;</span><span style="color: #000000">;</span>
 </code></pre>
-				<p>Parameters</p>
-				<pre><code class="language-typescript"><span style="color: #000000">{</span>
-<span style="color: #000000">  </span><span style="color: #A31515">&quot;credentialId&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// the id of the credential in question</span>
-<span style="color: #000000">}</span>
-</code></pre>
-				<p>Response Body: <strong>CredentialStatusInfo</strong>. If unsuccessful and exception will be thrown.</p>
-				<pre><code class="language-typescript"><span style="color: #000000">{</span>
-<span style="color: #000000">  </span><span style="color: #A31515">&quot;createdAt&quot;</span><span style="color: #000000">: </span><span style="color: #267F99">Date</span><span style="color: #000000">; </span><span style="color: #008000">// the time  the credential was recorded as created in the UnumID SaaS db</span>
+				<pre><code class="language-typescript"><span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">type</span><span style="color: #000000"> </span><span style="color: #267F99">CredentialStatusInfo</span><span style="color: #000000"> {</span>
+<span style="color: #000000">  &quot;createdAt&quot;: Date; </span><span style="color: #008000">// the time  the credential was recorded as created in the UnumID SaaS db</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;updatedAt&quot;</span><span style="color: #000000">: </span><span style="color: #267F99">Date</span><span style="color: #000000">; </span><span style="color: #008000">// the time  the credential was recorded as updated in the UnumID SaaS db</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;credentialId&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">; </span><span style="color: #008000">// the did (aka id) of the credential this status is in regard to</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;status&quot;</span><span style="color: #000000">: </span><span style="color: #001080">CredentialStatusOptions</span><span style="color: #000000">; </span><span style="color: #008000">// a string literal type that currently only consists of &#039;valid&#039; and &#039;revoked&#039;</span>
+<span style="color: #000000">}</span>
+</code></pre>
+				<p>Parameters</p>
+				<pre><code class="language-typescript"><span style="color: #000000">{</span>
+<span style="color: #000000">  </span><span style="color: #A31515">&quot;credentialIds&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">[], </span><span style="color: #008000">// the array of ids of the credentials in question</span>
+<span style="color: #000000">}</span>
+</code></pre>
+				<p>Response Body: <strong>CredentialIdToStatusMap</strong>. If unsuccessful and exception will be thrown.</p>
+				<pre><code class="language-typescript"><span style="color: #000000">{</span>
+<span style="color: #000000">  [</span><span style="color: #001080">credentialId</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">]: </span><span style="color: #001080">CredentialStatusInfo</span><span style="color: #000000">;</span>
 <span style="color: #000000">}</span>
 </code></pre>
 			</div>
@@ -462,10 +481,7 @@
 						<a href="interfaces/verifiedstatus.html" class="tsd-kind-icon">Verified<wbr>Status</a>
 					</li>
 					<li class=" tsd-kind-function">
-						<a href="modules.html#checkcredentialstatus" class="tsd-kind-icon">check<wbr>Credential<wbr>Status</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="modules.html#checkmanycredentialstatuses" class="tsd-kind-icon">check<wbr>Many<wbr>Credential<wbr>Statuses</a>
+						<a href="modules.html#checkcredentialstatuses" class="tsd-kind-icon">check<wbr>Credential<wbr>Statuses</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="modules.html#convertcredentialsubject" class="tsd-kind-icon">convert<wbr>Credential<wbr>Subject</a>
