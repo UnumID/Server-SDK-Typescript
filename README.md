@@ -397,28 +397,35 @@ Response Body: **Empty**. If unsuccessful and exception will be thrown.
 {}
 ```
 
-### checkCredentialStatus
-Used to check the status of a credential. 
+### checkCredentialStatuses
+Used to check the status of individual credentials. 
 
-The `status` attribute of the response is of type [CredentialStatusOptions](https://docs.unum.id/types/modules.html#credentialstatusoptions). Currently the only valid status are: verified and revoked.
+The `status` attribute of the response's [CredentialStatusInfo](https://docs.unumid.co/types/interfaces/credentialstatusinfo.html) is of type [CredentialStatusOptions](https://docs.unum.id/types/modules.html#credentialstatusoptions). Currently the only valid status are: verified and revoked.
 
 ```typescript
 export type CredentialStatusOptions = 'valid' | 'revoked';
 ```
 
-Parameters
 ```typescript
-{
-  "credentialId": string, // the id of the credential in question
+export type CredentialStatusInfo {
+  uuid: string;
+  createdAt: Date;
+  updatedAt: Date;
+  credentialId: string;
+  status: CredentialStatusOptions;
 }
 ```
 
-Response Body: **CredentialStatusInfo**. If unsuccessful and exception will be thrown.
+Parameters
 ```typescript
 {
-  "createdAt": Date; // the time  the credential was recorded as created in the UnumID SaaS db
-  "updatedAt": Date; // the time  the credential was recorded as updated in the UnumID SaaS db
-  "credentialId": string; // the did (aka id) of the credential this status is in regard to
-  "status": CredentialStatusOptions; // a string literal type that currently only consists of 'valid' and 'revoked'
+  "credentialIds": string[], // the array of ids of the credentials in question
+}
+```
+
+Response Body: **CredentialIdToStatusMap**. If unsuccessful and exception will be thrown.
+```typescript
+{
+  [credentialId: string]: CredentialStatusInfo;
 }
 ```
