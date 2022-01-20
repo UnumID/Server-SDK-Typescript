@@ -19,7 +19,7 @@ jest.mock('../../src/utils/verify', () => {
   const actual = jest.requireActual('../../src/utils/verify');
   return {
     ...actual,
-    doVerifyDeprecated: jest.fn(() => actual.doVerify)
+    doVerify: jest.fn(() => actual.doVerify)
   };
 });
 
@@ -32,7 +32,7 @@ jest.mock('../../src/verifier/verifyCredential');
 jest.mock('../../src/verifier/isCredentialExpired');
 
 const mockGetDIDDoc = getDIDDoc as jest.Mock;
-const mockDoVerify = doVerifyDeprecated as jest.Mock;
+const mockDoVerify = doVerify as jest.Mock;
 const mockMakeNetworkRequest = makeNetworkRequest as jest.Mock;
 
 const populateMockData = async (): Promise<JSONObj> => {
@@ -199,7 +199,7 @@ describe('verifySubjectDidDocument', () => {
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
-        expect(e.message).toBe('SignedDidDocument is required.');
+        expect(e.message).toBe('SignedDid is required.');
       }
     });
 
