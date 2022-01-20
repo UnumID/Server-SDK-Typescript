@@ -70,7 +70,6 @@ var validateCredentialRequests = function (requests, subjectDid) {
     if (helpers_1.isArrayEmpty(requests) || !requests) {
         throw new error_1.CustError(400, 'subjectCredentialRequests must be a non-empty array.');
     }
-    // let subjectDid = '';
     for (var i = 0; i < requests.length; i++) {
         var request = requests[i];
         if (!request.proof) {
@@ -115,7 +114,7 @@ function verifySubjectCredentialRequests(authorization, issuerDid, subjectDid, c
                 case 1:
                     if (!(_i < credentialRequests_1.length)) return [3 /*break*/, 5];
                     credentialRequest = credentialRequests_1[_i];
-                    return [4 /*yield*/, verifySubjectCredentialRequest(authToken, issuerDid, subjectDid, credentialRequest)];
+                    return [4 /*yield*/, verifySubjectCredentialRequest(authToken, issuerDid, credentialRequest)];
                 case 2:
                     result = _b.sent();
                     _a = result.body, isVerified = _a.isVerified, message = _a.message;
@@ -144,7 +143,7 @@ function verifySubjectCredentialRequests(authorization, issuerDid, subjectDid, c
     });
 }
 exports.verifySubjectCredentialRequests = verifySubjectCredentialRequests;
-function verifySubjectCredentialRequest(authorization, issuerDid, subjectDid, credentialRequest) {
+function verifySubjectCredentialRequest(authorization, issuerDid, credentialRequest) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
         var verificationMethod, signatureValue, didDocumentResponse, authToken, publicKeyInfos, _c, publicKey, encoding, unsignedCredentialRequest, bytes, isVerified;

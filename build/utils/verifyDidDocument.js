@@ -39,7 +39,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyDidDocument = exports.verifySubjectDidDocument = void 0;
+exports.verifySubjectDidDocument = void 0;
+var types_1 = require("@unumid/types");
 var requireAuth_1 = require("../requireAuth");
 var error_1 = require("../utils/error");
 var lodash_1 = require("lodash");
@@ -118,6 +119,22 @@ var validatePublicKeyInfo = function (pki) {
  * Validates the attributes for a DidDocument
  * @param requests CredentialRequest
  */
+var validateSignedDid = function (did) {
+    if (!did) {
+        throw new error_1.CustError(400, 'SignedDid is required.');
+    }
+    var id = did.id, proof = did.proof;
+    if (!proof) {
+        throw new error_1.CustError(400, 'proof is required.');
+    }
+    if (!id) {
+        throw new error_1.CustError(400, 'id is required.');
+    }
+};
+/**
+ * Validates the attributes for a DidDocument
+ * @param requests CredentialRequest
+ */
 var validateDidDocument = function (doc) {
     if (!doc) {
         throw new error_1.CustError(400, 'SignedDidDocument is required.');
@@ -172,22 +189,22 @@ var validateDidDocument = function (doc) {
 /**
  * Verify the CredentialRequests signatures.
  */
-function verifySubjectDidDocument(authorization, issuerDid, didDocument) {
+function verifySubjectDidDocument(authorization, issuerDid, signedDid) {
     return __awaiter(this, void 0, void 0, function () {
         var authToken, result, _a, isVerified, message;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
                     requireAuth_1.requireAuth(authorization);
-                    // validate the DidDocument
-                    validateDidDocument(didDocument);
+                    // validate the DID
+                    validateSignedDid(signedDid);
                     authToken = authorization;
-                    return [4 /*yield*/, verifyDidDocument(authToken, didDocument)];
+                    return [4 /*yield*/, verifyDid(authToken, signedDid)];
                 case 1:
                     result = _b.sent();
                     _a = result.body, isVerified = _a.isVerified, message = _a.message;
                     authToken = result.authToken;
-                    return [4 /*yield*/, handleSubjectDidDocumentVerifiedReceipt(authToken, issuerDid, didDocument, isVerified, message)];
+                    return [4 /*yield*/, handleSubjectDidDocumentVerifiedReceipt(authToken, issuerDid, signedDid, isVerified, message)];
                 case 2:
                     // handle sending back the SubjectDidDocumentVerified receipt
                     authToken = _b.sent();
@@ -203,14 +220,14 @@ function verifySubjectDidDocument(authorization, issuerDid, didDocument) {
     });
 }
 exports.verifySubjectDidDocument = verifySubjectDidDocument;
-function verifyDidDocument(authorization, didDocument) {
+function verifyDid(authorization, did) {
     return __awaiter(this, void 0, void 0, function () {
-        var verificationMethod, signatureValue, didDocumentResponse, authToken, publicKeyInfos, _a, publicKey, encoding, unsignedDidDocument, isVerified, result_1, result;
+        var verificationMethod, signatureValue, didDocumentResponse, authToken, publicKeyInfos, _a, publicKey, encoding, unsignedDid, bytes, isVerified, result_1, result;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
-                    verificationMethod = didDocument.proof.verificationMethod;
-                    signatureValue = didDocument.proof.signatureValue;
+                    verificationMethod = did.proof.verificationMethod;
+                    signatureValue = did.proof.signatureValue;
                     return [4 /*yield*/, didHelper_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, verificationMethod)];
                 case 1:
                     didDocumentResponse = _b.sent();
@@ -230,14 +247,15 @@ function verifyDidDocument(authorization, didDocument) {
                             }];
                     }
                     _a = publicKeyInfos[0], publicKey = _a.publicKey, encoding = _a.encoding;
-                    unsignedDidDocument = lodash_1.omit(didDocument, 'proof');
-                    isVerified = verify_1.doVerifyDeprecated(signatureValue, unsignedDidDocument, publicKey, encoding);
+                    unsignedDid = lodash_1.omit(did, 'proof');
+                    bytes = types_1.UnsignedDID.encode(unsignedDid).finish();
+                    isVerified = verify_1.doVerify(signatureValue, bytes, publicKey, encoding);
                     if (!isVerified) {
                         result_1 = {
                             authToken: authToken,
                             body: {
                                 isVerified: false,
-                                message: 'DidDocument signature can not be verified.'
+                                message: 'Did signature can not be verified.'
                             }
                         };
                         return [2 /*return*/, result_1];
@@ -253,18 +271,17 @@ function verifyDidDocument(authorization, didDocument) {
         });
     });
 }
-exports.verifyDidDocument = verifyDidDocument;
 /**
  * Handle sending back the SubjectDidDocumentVerified receipt
  */
-function handleSubjectDidDocumentVerifiedReceipt(authorization, issuerDid, didDocument, isVerified, message) {
+function handleSubjectDidDocumentVerifiedReceipt(authorization, issuerDid, did, isVerified, message) {
     return __awaiter(this, void 0, void 0, function () {
         var subjectDid, data, receiptOptions, receiptCallOptions, resp, authToken, e_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
-                    subjectDid = didDocument.id;
+                    subjectDid = did.id;
                     data = {
                         did: subjectDid,
                         isVerified: isVerified,
