@@ -1,12 +1,12 @@
 
 import { RESTData, UnumDto, VerifiedStatus } from '../types';
-import { DidDocument, DidDocumentService, JSONObj, PublicKeyInfo, ReceiptOptions, SignedDidDocument, ReceiptSubjectDidDocumentVerifiedData } from '@unumid/types';
+import { DidDocument, DidDocumentService, JSONObj, PublicKeyInfo, ReceiptOptions, SignedDidDocument, ReceiptSubjectDidDocumentVerifiedData, DID, UnsignedDID } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
 import { CustError } from '../utils/error';
 import { omit } from 'lodash';
 import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
 import { configData } from '../config';
-import { doVerifyDeprecated } from '../utils/verify';
+import { doVerify, doVerifyDeprecated } from '../utils/verify';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
 import { validateProofDeprecated } from '../verifier/validateProof';
 import logger from '../logger';
@@ -103,6 +103,26 @@ const validatePublicKeyInfo = (pki: PublicKeyInfo): void => {
  * Validates the attributes for a DidDocument
  * @param requests CredentialRequest
  */
+const validateSignedDid = (did: DID): void => {
+  if (!did) {
+    throw new CustError(400, 'SignedDid is required.');
+  }
+
+  const { id, proof } = did;
+
+  if (!proof) {
+    throw new CustError(400, 'proof is required.');
+  }
+
+  if (!id) {
+    throw new CustError(400, 'id is required.');
+  }
+};
+
+/**
+ * Validates the attributes for a DidDocument
+ * @param requests CredentialRequest
+ */
 const validateDidDocument = (doc: SignedDidDocument): void => {
   if (!doc) {
     throw new CustError(400, 'SignedDidDocument is required.');
@@ -174,20 +194,20 @@ const validateDidDocument = (doc: SignedDidDocument): void => {
 /**
  * Verify the CredentialRequests signatures.
  */
-export async function verifySubjectDidDocument (authorization: string, issuerDid: string, didDocument: SignedDidDocument): Promise<UnumDto<VerifiedStatus>> {
+export async function verifySubjectDidDocument (authorization: string, issuerDid: string, signedDid: DID): Promise<UnumDto<VerifiedStatus>> {
   requireAuth(authorization);
 
-  // validate the DidDocument
-  validateDidDocument(didDocument);
+  // validate the DID
+  validateSignedDid(signedDid);
 
   let authToken = authorization;
 
-  const result: UnumDto<VerifiedStatus> = await verifyDidDocument(authToken, didDocument);
+  const result: UnumDto<VerifiedStatus> = await verifyDid(authToken, signedDid);
   const { isVerified, message } = result.body;
   authToken = result.authToken;
 
   // handle sending back the SubjectDidDocumentVerified receipt
-  authToken = await handleSubjectDidDocumentVerifiedReceipt(authToken, issuerDid, didDocument, isVerified, message);
+  authToken = await handleSubjectDidDocumentVerifiedReceipt(authToken, issuerDid, signedDid, isVerified, message);
 
   return {
     authToken,
@@ -198,9 +218,9 @@ export async function verifySubjectDidDocument (authorization: string, issuerDid
   };
 }
 
-export async function verifyDidDocument (authorization: string, didDocument: SignedDidDocument): Promise<UnumDto<VerifiedStatus>> {
-  const verificationMethod = didDocument.proof.verificationMethod as string;
-  const signatureValue = didDocument.proof.signatureValue as string;
+async function verifyDid (authorization: string, did: DID): Promise<UnumDto<VerifiedStatus>> {
+  const verificationMethod = did.proof.verificationMethod as string;
+  const signatureValue = did.proof.signatureValue as string;
 
   const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, verificationMethod);
 
@@ -224,18 +244,20 @@ export async function verifyDidDocument (authorization: string, didDocument: Sig
 
   const { publicKey, encoding } = publicKeyInfos[0];
 
-  const unsignedDidDocument: DidDocument = omit(didDocument, 'proof');
+  const unsignedDid: UnsignedDID = omit(did, 'proof');
 
-  // verify the signature
-  // TODO upon v4 work this needs to use the proto didDocument def so can use the byte array
-  const isVerified = doVerifyDeprecated(signatureValue, unsignedDidDocument, publicKey, encoding);
+  // convert to byte array
+  const bytes: Uint8Array = UnsignedDID.encode(unsignedDid).finish();
+
+  // verify the signature over the byte array
+  const isVerified = doVerify(signatureValue, bytes, publicKey, encoding);
 
   if (!isVerified) {
     const result: UnumDto<VerifiedStatus> = {
       authToken,
       body: {
         isVerified: false,
-        message: 'DidDocument signature can not be verified.'
+        message: 'Did signature can not be verified.'
       }
     };
     return result;
@@ -253,9 +275,9 @@ export async function verifyDidDocument (authorization: string, didDocument: Sig
 /**
  * Handle sending back the SubjectDidDocumentVerified receipt
  */
-async function handleSubjectDidDocumentVerifiedReceipt (authorization: string, issuerDid: string, didDocument: DidDocument, isVerified: boolean, message?:string): Promise<string> {
+async function handleSubjectDidDocumentVerifiedReceipt (authorization: string, issuerDid: string, did: DID, isVerified: boolean, message?:string): Promise<string> {
   try {
-    const subjectDid = didDocument.id;
+    const subjectDid = did.id;
 
     const data: ReceiptSubjectDidDocumentVerifiedData = {
       did: subjectDid,

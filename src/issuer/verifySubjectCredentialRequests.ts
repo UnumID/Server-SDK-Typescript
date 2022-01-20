@@ -21,8 +21,6 @@ const validateCredentialRequests = (requests: SubjectCredentialRequest[], subjec
     throw new CustError(400, 'subjectCredentialRequests must be a non-empty array.');
   }
 
-  // let subjectDid = '';
-
   for (let i = 0; i < requests.length; i++) {
     const request = requests[i];
 
@@ -68,7 +66,7 @@ export async function verifySubjectCredentialRequests (authorization: string, is
 
   let authToken = authorization;
   for (const credentialRequest of credentialRequests) {
-    const result: UnumDto<VerifiedStatus> = await verifySubjectCredentialRequest(authToken, issuerDid, subjectDid, credentialRequest);
+    const result: UnumDto<VerifiedStatus> = await verifySubjectCredentialRequest(authToken, issuerDid, credentialRequest);
     const { isVerified, message } = result.body;
     authToken = result.authToken;
 
@@ -95,7 +93,7 @@ export async function verifySubjectCredentialRequests (authorization: string, is
   };
 }
 
-export async function verifySubjectCredentialRequest (authorization: string, issuerDid: string, subjectDid: string, credentialRequest: SubjectCredentialRequest): Promise<UnumDto<VerifiedStatus>> {
+export async function verifySubjectCredentialRequest (authorization: string, issuerDid: string, credentialRequest: SubjectCredentialRequest): Promise<UnumDto<VerifiedStatus>> {
   const verificationMethod = credentialRequest.proof?.verificationMethod as string;
   const signatureValue = credentialRequest.proof?.signatureValue as string;
 
