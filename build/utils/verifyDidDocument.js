@@ -48,73 +48,7 @@ var didHelper_1 = require("../utils/didHelper");
 var config_1 = require("../config");
 var verify_1 = require("../utils/verify");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
-var validateProof_1 = require("../verifier/validateProof");
 var logger_1 = __importDefault(require("../logger"));
-/**
- * Validate a DidDocument's ServiceInfo
- * @param service
- */
-var validateServiceInfo = function (service) {
-    var id = service.id, serviceEndpoint = service.serviceEndpoint, type = service.type;
-    if (!id) {
-        throw new error_1.CustError(400, 'Invalid service: id is required.');
-    }
-    if (!serviceEndpoint) {
-        throw new error_1.CustError(400, 'Invalid service: serviceEndpoint is required.');
-    }
-    if (!type) {
-        throw new error_1.CustError(400, 'Invalid service: type is required.');
-    }
-    if (typeof id !== 'string') {
-        throw new error_1.CustError(400, 'Invalid service: expected id to be a string.');
-    }
-    if (typeof serviceEndpoint !== 'string') {
-        throw new error_1.CustError(400, 'Invalid service: expected serviceEndpoint to be a string.');
-    }
-    if (typeof type !== 'string') {
-        throw new error_1.CustError(400, 'Invalid service: expected type to be a string.');
-    }
-};
-/**
- * Validate a DidDocument's PublicInfo
- * @param pki
- */
-var validatePublicKeyInfo = function (pki) {
-    // check that pki is an object
-    if (typeof pki !== 'object') {
-        throw new error_1.CustError(400, 'Invalid publicKeyInfo: expected array of objects.');
-    }
-    if (Array.isArray(pki)) {
-        throw new error_1.CustError(400, 'Invalid publicKeyInfo: expected array of objects.');
-    }
-    var id = pki.id, publicKey = pki.publicKey, encoding = pki.encoding, type = pki.type;
-    // check for each required property
-    if (!id) {
-        throw new error_1.CustError(400, 'Invalid publicKeyInfo: id is required.');
-    }
-    if (!publicKey) {
-        throw new error_1.CustError(400, 'Invalid publicKeyInfo: publicKey is required.');
-    }
-    if (!encoding) {
-        throw new error_1.CustError(400, 'Invalid publicKeyInfo: encoding is required.');
-    }
-    if (!type) {
-        throw new error_1.CustError(400, 'Invalid publicKeyInfo: type is required.');
-    }
-    // check that all values are the correct type
-    if (typeof id !== 'string') {
-        throw new error_1.CustError(400, 'Invalid publicKeyInfo: expected id to be a string.');
-    }
-    if (typeof publicKey !== 'string') {
-        throw new error_1.CustError(400, 'Invalid publicKeyInfo: expected publicKey to be a string.');
-    }
-    if (!['base58', 'pem'].includes(encoding)) {
-        throw new error_1.CustError(400, 'Invalid publicKeyInfo: expected encoding to be one of \'base58\', \'pem\'.');
-    }
-    if (!['RSA', 'secp256r1'].includes(type)) {
-        throw new error_1.CustError(400, 'Invalid publicKeyInfo: expected type to be one of \'RSA\', \'secp256r1\'.');
-    }
-};
 /**
  * Validates the attributes for a DidDocument
  * @param requests CredentialRequest
@@ -130,61 +64,6 @@ var validateSignedDid = function (did) {
     if (!id) {
         throw new error_1.CustError(400, 'id is required.');
     }
-};
-/**
- * Validates the attributes for a DidDocument
- * @param requests CredentialRequest
- */
-var validateDidDocument = function (doc) {
-    if (!doc) {
-        throw new error_1.CustError(400, 'SignedDidDocument is required.');
-    }
-    var id = doc.id, created = doc.created, updated = doc.updated, publicKey = doc.publicKey, service = doc.service, proof = doc.proof;
-    if (!proof) {
-        throw new error_1.CustError(400, 'proof is required.');
-    }
-    validateProof_1.validateProofDeprecated(proof);
-    if (!id) {
-        throw new error_1.CustError(400, 'id is required.');
-    }
-    if (!doc['@context']) {
-        throw new error_1.CustError(400, '@context is required.');
-    }
-    if (!created) {
-        throw new error_1.CustError(400, 'created is required');
-    }
-    if (!updated) {
-        throw new error_1.CustError(400, 'updated is required');
-    }
-    if (!publicKey) {
-        throw new error_1.CustError(400, 'publicKey is required');
-    }
-    if (!service) {
-        throw new error_1.CustError(400, 'service is required');
-    }
-    if (typeof id !== 'string') {
-        throw new error_1.CustError(400, 'Invalid id: expected string.');
-    }
-    // if (typeof created !== 'string') {
-    //   throw new CustError(400, 'Invalid created: expected string.');
-    // }
-    //   if (typeof updated !== 'string') {
-    //     throw new CustError(400, 'Invalid updated: expected string.');
-    //   }
-    if (!Array.isArray(publicKey)) {
-        throw new error_1.CustError(400, 'Invalid publicKey: expected array.');
-    }
-    if (!Array.isArray(service)) {
-        throw new error_1.CustError(400, 'Invalid service: expected array.');
-    }
-    if (!Array.isArray(doc['@context'])) {
-        throw new error_1.CustError(400, 'Invalid @context: expected array.');
-    }
-    if (doc['@context'][0] !== 'https://www.w3.org/ns/did/v1') {
-        throw new error_1.CustError(400, 'Invalid @context');
-    }
-    publicKey.forEach(validatePublicKeyInfo);
-    service.forEach(validateServiceInfo);
 };
 /**
  * Verify the CredentialRequests signatures.
