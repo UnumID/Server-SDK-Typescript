@@ -59,7 +59,7 @@ exports.getDIDDoc = function (baseUrl, authorization, did) { return __awaiter(vo
                 restData = {
                     method: 'GET',
                     baseUrl: baseUrl,
-                    endPoint: 'didDocument/' + did,
+                    endPoint: 'didDocument/' + encodeURIComponent(did),
                     header: { Authorization: authorization }
                 };
                 return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];

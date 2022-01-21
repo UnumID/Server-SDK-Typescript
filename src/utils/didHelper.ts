@@ -18,7 +18,7 @@ export const getDIDDoc = async (baseUrl: string, authorization: string, did: str
     const restData: RESTData = {
       method: 'GET',
       baseUrl: baseUrl,
-      endPoint: 'didDocument/' + did,
+      endPoint: 'didDocument/' + encodeURIComponent(did),
       header: { Authorization: authorization }
     };
 
