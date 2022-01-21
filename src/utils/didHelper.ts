@@ -2,8 +2,8 @@ import { CredentialSubject, DidDocument, DidKeyType, PublicKeyInfo, Credential, 
 
 import { CustError } from './error';
 import logger from '../logger';
-import { makeNetworkRequest } from './networkRequestHelper';
-import { RESTData, RESTResponse } from '../types';
+import { handleAuthTokenHeader, makeNetworkRequest } from './networkRequestHelper';
+import { RESTData, RESTResponse, UnumDto } from '../types';
 import { convertCredentialSubject } from './convertCredentialSubject';
 import { configData } from '../config';
 
@@ -49,7 +49,7 @@ export const getKeysFromDIDDoc = (didDocument: DidDocument, type: DidKeyType): P
   return publicKeyInfos;
 };
 
-export const getDidDocPublicKeys = async (authorization: string, subjectDid: string): Promise<PublicKeyInfo[]> => {
+export const getDidDocPublicKeys = async (authorization: string, subjectDid: string, type: DidKeyType): Promise<UnumDto<PublicKeyInfo[]>> => {
   // resolve the subject's DID
   const didDocResponse = await getDIDDoc(configData.SaaSUrl, authorization, subjectDid);
 
@@ -58,12 +58,60 @@ export const getDidDocPublicKeys = async (authorization: string, subjectDid: str
     throw didDocResponse;
   }
 
-  // get subject's public key info from its DID document
-  const publicKeyInfos = getKeysFromDIDDoc(didDocResponse.body, 'RSA');
+  // const did = subjectDid.split('#')[0];
+  const didKeyId = subjectDid.split('#')[1];
 
-  if (publicKeyInfos.length === 0) {
-    throw new CustError(404, 'Public key not found for the DID');
+  let publicKeyInfoList: PublicKeyInfo[];
+
+  if (didKeyId) {
+    /**
+       * If making a request to the Did Document service with a did and did fragment, only a single PublicKeyInfo object is returned.
+       * Putting in array for uniform handling with the case no fragment is included, in which case all the matching keys will need to be tried until one works.
+       */
+    publicKeyInfoList = [await didDocResponse.body as PublicKeyInfo];
+  } else {
+    const didDoc = await didDocResponse.body as DidDocument;
+    // get subject's encryption public key info from its DID document
+    publicKeyInfoList = getKeysFromDIDDoc(didDoc, type);
   }
 
-  return publicKeyInfos;
+  // // get subject's public key info from its DID document
+  // const publicKeyInfos = getKeysFromDIDDoc(didDocResponse.body, 'RSA');
+
+  if (publicKeyInfoList.length === 0) {
+    throw new CustError(404, `${type} public keys not found for the DID ${subjectDid}`);
+  }
+
+  const authToken: string = handleAuthTokenHeader(didDocResponse, authorization);
+
+  return {
+    authToken,
+    body: publicKeyInfoList
+  };
 };
+
+// export const getDidDocPublicKeysR = async (authorization: string, subjectDid: string): Promise<PublicKeyInfo[]> => {
+//   const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, subjectDid);
+
+//   if (didDocumentResponse instanceof Error) {
+//     throw didDocumentResponse;
+//   }
+
+//   // // need to get the issuer's DID doc's 'secp256r1' public key(s)
+//   // const didDocumentService = app.service('didDocument');
+//   const did = subjectDid.split('#')[0];
+//   const didKeyId = subjectDid.split('#')[1];
+
+//   let publicKeyInfoList: PublicKeyInfo[];
+
+//   if (didKeyId) {
+//     /**
+//        * If making a request to the Did Document service with a did and did fragment, only a single PublicKeyInfo object is returned.
+//        * Putting in array for uniform handling with the case no fragment is included, in which case all the matching keys will need to be tried until one works.
+//        */
+//     publicKeyInfoList = [await didDocumentResponse.body as PublicKeyInfo];
+//   } else {
+//     const didDoc = await didDocumentResponse.body as DidDocument;
+//     publicKeyInfoList = getKeysFromDIDDoc(didDoc, 'secp256r1');
+//   }
+// };

@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifySubjectDidDocument = void 0;
+exports.verifySignedDid = void 0;
 var types_1 = require("@unumid/types");
 var requireAuth_1 = require("../requireAuth");
 var error_1 = require("../utils/error");
@@ -68,7 +68,7 @@ var validateSignedDid = function (did) {
 /**
  * Verify the CredentialRequests signatures.
  */
-function verifySubjectDidDocument(authorization, issuerDid, signedDid) {
+function verifySignedDid(authorization, issuerDid, signedDid) {
     return __awaiter(this, void 0, void 0, function () {
         var authToken, result, _a, isVerified, message;
         return __generator(this, function (_b) {
@@ -98,37 +98,33 @@ function verifySubjectDidDocument(authorization, issuerDid, signedDid) {
         });
     });
 }
-exports.verifySubjectDidDocument = verifySubjectDidDocument;
-function verifyDid(authorization, did) {
+exports.verifySignedDid = verifySignedDid;
+function verifyDid(authToken, did) {
     return __awaiter(this, void 0, void 0, function () {
-        var verificationMethod, signatureValue, didDocumentResponse, authToken, publicKeyInfos, _a, publicKey, encoding, unsignedDid, bytes, isVerified, result_1, result;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
+        var verificationMethod, signatureValue, publicKeyInfoResponse, publicKeyInfoList, unsignedDid, bytes, isVerified, _i, publicKeyInfoList_1, publicKeyInfo, publicKey, encoding, result_1, result;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
                 case 0:
                     verificationMethod = did.proof.verificationMethod;
                     signatureValue = did.proof.signatureValue;
-                    return [4 /*yield*/, didHelper_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, verificationMethod)];
+                    return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authToken, verificationMethod, 'secp256r1')];
                 case 1:
-                    didDocumentResponse = _b.sent();
-                    if (didDocumentResponse instanceof Error) {
-                        throw didDocumentResponse;
-                    }
-                    authToken = networkRequestHelper_1.handleAuthTokenHeader(didDocumentResponse, authorization);
-                    publicKeyInfos = didHelper_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
-                    if (publicKeyInfos.length === 0) {
-                        // throw new CustError(404, `Public key not found for the subject did ${verificationMethod}`);
-                        return [2 /*return*/, {
-                                authToken: authToken,
-                                body: {
-                                    isVerified: false,
-                                    message: "Public key not found for the subject did " + verificationMethod
-                                }
-                            }];
-                    }
-                    _a = publicKeyInfos[0], publicKey = _a.publicKey, encoding = _a.encoding;
+                    publicKeyInfoResponse = _a.sent();
+                    publicKeyInfoList = publicKeyInfoResponse.body;
+                    authToken = publicKeyInfoResponse.authToken;
                     unsignedDid = lodash_1.omit(did, 'proof');
                     bytes = types_1.UnsignedDID.encode(unsignedDid).finish();
-                    isVerified = verify_1.doVerify(signatureValue, bytes, publicKey, encoding);
+                    isVerified = false;
+                    // check all the public keys to see if any work, stop if one does
+                    for (_i = 0, publicKeyInfoList_1 = publicKeyInfoList; _i < publicKeyInfoList_1.length; _i++) {
+                        publicKeyInfo = publicKeyInfoList_1[_i];
+                        publicKey = publicKeyInfo.publicKey, encoding = publicKeyInfo.encoding;
+                        // verify the signature over the byte array
+                        isVerified = verify_1.doVerify(signatureValue, bytes, publicKey, encoding);
+                        if (isVerified) {
+                            break;
+                        }
+                    }
                     if (!isVerified) {
                         result_1 = {
                             authToken: authToken,

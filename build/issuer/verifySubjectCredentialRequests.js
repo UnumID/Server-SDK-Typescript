@@ -89,7 +89,7 @@ var validateCredentialRequests = function (requests, subjectDid) {
             throw new error_1.CustError(400, "Invalid SubjectCredentialRequest[" + i + "]: issuers must be defined.");
         }
         // handle validating the subject did is the identical fr all requests
-        if (subjectDid !== request.proof.verificationMethod) {
+        if (subjectDid !== request.proof.verificationMethod.split('#')[0]) {
             throw new error_1.CustError(400, "Invalid SubjectCredentialRequest[" + i + "]: provided subjectDid, " + subjectDid + ", must match that of the credential requests' signer, " + request.proof.verificationMethod + ".");
         }
     }
@@ -143,10 +143,10 @@ function verifySubjectCredentialRequests(authorization, issuerDid, subjectDid, c
     });
 }
 exports.verifySubjectCredentialRequests = verifySubjectCredentialRequests;
-function verifySubjectCredentialRequest(authorization, issuerDid, credentialRequest) {
+function verifySubjectCredentialRequest(authToken, issuerDid, credentialRequest) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
-        var verificationMethod, signatureValue, didDocumentResponse, authToken, publicKeyInfos, _c, publicKey, encoding, unsignedCredentialRequest, bytes, isVerified;
+        var verificationMethod, signatureValue, publicKeyInfoResponse, publicKeyInfoList, _c, publicKey, encoding, unsignedCredentialRequest, bytes, isVerified;
         return __generator(this, function (_d) {
             switch (_d.label) {
                 case 0:
@@ -155,22 +155,19 @@ function verifySubjectCredentialRequest(authorization, issuerDid, credentialRequ
                     // validate that the issueDid is present in the request issuer array
                     if (!credentialRequest.issuers.includes(issuerDid)) {
                         return [2 /*return*/, {
-                                authToken: authorization,
+                                authToken: authToken,
                                 body: {
                                     isVerified: false,
                                     message: "Issuer DID, " + issuerDid + ", not found in credential request issuers " + credentialRequest.issuers
                                 }
                             }];
                     }
-                    return [4 /*yield*/, didHelper_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, verificationMethod)];
+                    return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authToken, verificationMethod, 'secp256r1')];
                 case 1:
-                    didDocumentResponse = _d.sent();
-                    if (didDocumentResponse instanceof Error) {
-                        throw didDocumentResponse;
-                    }
-                    authToken = networkRequestHelper_1.handleAuthTokenHeader(didDocumentResponse, authorization);
-                    publicKeyInfos = didHelper_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
-                    if (publicKeyInfos.length === 0) {
+                    publicKeyInfoResponse = _d.sent();
+                    publicKeyInfoList = publicKeyInfoResponse.body;
+                    authToken = publicKeyInfoResponse.authToken;
+                    if (publicKeyInfoList.length === 0) {
                         return [2 /*return*/, {
                                 authToken: authToken,
                                 body: {
@@ -179,7 +176,7 @@ function verifySubjectCredentialRequest(authorization, issuerDid, credentialRequ
                                 }
                             }];
                     }
-                    _c = publicKeyInfos[0], publicKey = _c.publicKey, encoding = _c.encoding;
+                    _c = publicKeyInfoList[0], publicKey = _c.publicKey, encoding = _c.encoding;
                     unsignedCredentialRequest = lodash_1.omit(credentialRequest, 'proof');
                     bytes = types_1.CredentialRequestPb.encode(unsignedCredentialRequest).finish();
                     isVerified = verify_1.doVerify(signatureValue, bytes, publicKey, encoding);

@@ -301,7 +301,7 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                     throw didDocumentResponse;
                 }
                 authToken = networkRequestHelper_1.handleAuthTokenHeader(didDocumentResponse, authorization);
-                pubKeyObj = didHelper_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
+                pubKeyObj = didHelper_1.getKeysFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 if (pubKeyObj.length === 0) {
                     result_2 = {
                         authToken: authToken,
@@ -318,6 +318,7 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 _b.trys.push([4, 5, , 7]);
                 bytes = types_1.UnsignedPresentationPb.encode(data).finish();
                 // verify the signature
+                // TODO update DID
                 isPresentationVerified = verify_1.doVerify(proof.signatureValue, bytes, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
                 return [3 /*break*/, 7];
             case 5:

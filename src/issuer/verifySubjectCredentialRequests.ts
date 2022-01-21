@@ -1,11 +1,11 @@
 
 import { RESTData, UnumDto, VerifiedStatus } from '../types';
-import { CredentialRequestInfoBasic, CredentialRequestPb, JSONObj, ReceiptOptions, SubjectCredentialRequest, ReceiptSubjectCredentialRequestVerifiedData, PublicKeyInfo } from '@unumid/types';
+import { CredentialRequestInfoBasic, CredentialRequestPb, JSONObj, ReceiptOptions, SubjectCredentialRequest, ReceiptSubjectCredentialRequestVerifiedData, PublicKeyInfo, DidDocument } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
 import { CustError } from '../utils/error';
 import { isArrayEmpty } from '../utils/helpers';
 import { omit } from 'lodash';
-import { getDIDDoc, getKeysFromDIDDoc } from '../utils/didHelper';
+import { getDIDDoc, getDidDocPublicKeys, getKeysFromDIDDoc } from '../utils/didHelper';
 import { configData } from '../config';
 import { doVerify } from '../utils/verify';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
@@ -93,14 +93,14 @@ export async function verifySubjectCredentialRequests (authorization: string, is
   };
 }
 
-export async function verifySubjectCredentialRequest (authorization: string, issuerDid: string, credentialRequest: SubjectCredentialRequest): Promise<UnumDto<VerifiedStatus>> {
+export async function verifySubjectCredentialRequest (authToken: string, issuerDid: string, credentialRequest: SubjectCredentialRequest): Promise<UnumDto<VerifiedStatus>> {
   const verificationMethod = credentialRequest.proof?.verificationMethod as string;
   const signatureValue = credentialRequest.proof?.signatureValue as string;
 
   // validate that the issueDid is present in the request issuer array
   if (!credentialRequest.issuers.includes(issuerDid)) {
     return {
-      authToken: authorization,
+      authToken,
       body: {
         isVerified: false,
         message: `Issuer DID, ${issuerDid}, not found in credential request issuers ${credentialRequest.issuers}`
@@ -108,32 +108,9 @@ export async function verifySubjectCredentialRequest (authorization: string, iss
     };
   }
 
-  const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, verificationMethod);
-
-  // need to get the issuer's DID doc's 'secp256r1' public key(s)
-  const didDocumentService = app.service('didDocument');
-  const did = verificationMethod.split('#')[0];
-  const didKeyId = verificationMethod.split('#')[1];
-
-  let publicKeyInfoList: PublicKeyInfo[];
-
-  if (didKeyId) {
-    /**
-       * If making a request to the Did Document service with a did and did fragment, only a single PublicKeyInfo object is returned.
-       * Putting in array for uniform handling with the case no fragment is included, in which case all the matching keys will need to be tried until one works.
-       */
-    publicKeyInfoList = [await didDocumentService.get(proof.verificationMethod) as PublicKeyInfo];
-  } else {
-    const didDoc = await didDocumentService.get(proof.verificationMethod) as DidDocument;
-    publicKeyInfoList = getKeyFromDIDDoc(didDoc, 'secp256r1');
-  }
-
-  if (didDocumentResponse instanceof Error) {
-    throw didDocumentResponse;
-  }
-
-  const authToken: string = handleAuthTokenHeader(didDocumentResponse, authorization);
-  // const publicKeyInfoList = getKeysFromDIDDoc(didDocumentResponse.body, 'secp256r1');
+  const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authToken, verificationMethod, 'secp256r1');
+  const publicKeyInfoList: PublicKeyInfo[] = publicKeyInfoResponse.body;
+  authToken = publicKeyInfoResponse.authToken;
 
   if (publicKeyInfoList.length === 0) {
     return {

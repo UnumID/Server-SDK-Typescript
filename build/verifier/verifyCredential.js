@@ -70,7 +70,7 @@ exports.verifyCredential = function (credential, authorization) { return __await
                     throw didDocumentResponse;
                 }
                 authToken = networkRequestHelper_1.handleAuthTokenHeader(didDocumentResponse, authorization);
-                publicKeyObject = didHelper_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
+                publicKeyObject = didHelper_1.getKeysFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                 data = lodash_1.omit(credential, 'proof');
                 try {
                     bytes = types_1.UnsignedCredentialPb.encode(data).finish();

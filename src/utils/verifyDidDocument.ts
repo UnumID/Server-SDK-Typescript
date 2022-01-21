@@ -1,10 +1,10 @@
 
 import { RESTData, UnumDto, VerifiedStatus } from '../types';
-import { JSONObj, ReceiptOptions, ReceiptSubjectDidDocumentVerifiedData, DID, UnsignedDID } from '@unumid/types';
+import { JSONObj, ReceiptOptions, ReceiptSubjectDidDocumentVerifiedData, DID, UnsignedDID, PublicKeyInfo } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
 import { CustError } from '../utils/error';
 import { omit } from 'lodash';
-import { getDIDDoc, getKeysFromDIDDoc } from '../utils/didHelper';
+import { getDIDDoc, getDidDocPublicKeys, getKeysFromDIDDoc } from '../utils/didHelper';
 import { configData } from '../config';
 import { doVerify } from '../utils/verify';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
@@ -57,40 +57,33 @@ export async function verifySignedDid (authorization: string, issuerDid: string,
   };
 }
 
-async function verifyDid (authorization: string, did: DID): Promise<UnumDto<VerifiedStatus>> {
+async function verifyDid (authToken: string, did: DID): Promise<UnumDto<VerifiedStatus>> {
   const verificationMethod = did.proof.verificationMethod as string;
   const signatureValue = did.proof.signatureValue as string;
 
-  const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, verificationMethod);
-
-  if (didDocumentResponse instanceof Error) {
-    throw didDocumentResponse;
-  }
-
-  const authToken: string = handleAuthTokenHeader(didDocumentResponse, authorization);
-  const publicKeyInfos = getKeysFromDIDDoc(didDocumentResponse.body, 'secp256r1');
-
-  if (publicKeyInfos.length === 0) {
-    // throw new CustError(404, `Public key not found for the subject did ${verificationMethod}`);
-    return {
-      authToken,
-      body: {
-        isVerified: false,
-        message: `Public key not found for the subject did ${verificationMethod}`
-      }
-    };
-  }
-
-  // TODO update DID
-  const { publicKey, encoding } = publicKeyInfos[0];
+  // grab all 'secp256r1' keys from the DID document
+  const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authToken, verificationMethod, 'secp256r1');
+  const publicKeyInfoList: PublicKeyInfo[] = publicKeyInfoResponse.body;
+  authToken = publicKeyInfoResponse.authToken;
 
   const unsignedDid: UnsignedDID = omit(did, 'proof');
 
   // convert to byte array
   const bytes: Uint8Array = UnsignedDID.encode(unsignedDid).finish();
 
-  // verify the signature over the byte array
-  const isVerified = doVerify(signatureValue, bytes, publicKey, encoding);
+  let isVerified = false;
+
+  // check all the public keys to see if any work, stop if one does
+  for (const publicKeyInfo of publicKeyInfoList) {
+    const { publicKey, encoding } = publicKeyInfo;
+
+    // verify the signature over the byte array
+    isVerified = doVerify(signatureValue, bytes, publicKey, encoding);
+
+    if (isVerified) {
+      break;
+    }
+  }
 
   if (!isVerified) {
     const result: UnumDto<VerifiedStatus> = {

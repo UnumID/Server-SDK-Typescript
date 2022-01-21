@@ -177,7 +177,7 @@ function verifyPresentationRequest(authorization, presentationRequest) {
                         throw didDocumentResponse;
                     }
                     authToken = networkRequestHelper_1.handleAuthTokenHeader(didDocumentResponse, authorization);
-                    publicKeyInfos = didHelper_1.getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
+                    publicKeyInfos = didHelper_1.getKeysFromDIDDoc(didDocumentResponse.body, 'secp256r1');
                     _b = publicKeyInfos[0], publicKey = _b.publicKey, encoding = _b.encoding;
                     unsignedPresentationRequest = lodash_1.omit(presentationRequest, 'proof');
                     bytes = types_1.UnsignedPresentationRequestPb.encode(unsignedPresentationRequest).finish();

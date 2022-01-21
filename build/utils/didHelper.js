@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getDidDocPublicKeys = exports.getKeyFromDIDDoc = exports.getDIDDoc = void 0;
+exports.getDidDocPublicKeys = exports.getKeysFromDIDDoc = exports.getDIDDoc = void 0;
 var error_1 = require("./error");
 var logger_1 = __importDefault(require("../logger"));
 var networkRequestHelper_1 = require("./networkRequestHelper");
@@ -76,17 +76,21 @@ exports.getDIDDoc = function (baseUrl, authorization, did) { return __awaiter(vo
     });
 }); };
 /**
- * Helper to get a key from a Did document.
- * Note: Per convention, Did documents have secp256r1 keys for signing / verification and only holder DID Documents have RSA keys.
+ * Helper to return the keys in the DID document which corresponds to the type specified.
+ * Note: the can be multiple keys of same type on the same DID document.
  * @param didDocument DiDDocument
  * @param type DidKeyType
  */
-exports.getKeyFromDIDDoc = function (didDocument, type) {
-    // return the key in the DID document which corresponds to the type specified.
-    return didDocument.publicKey.filter(function (publicKeyInfo) { return publicKeyInfo.type === type; });
+exports.getKeysFromDIDDoc = function (didDocument, type) {
+    var publicKeyInfos = didDocument.publicKey.filter(function (publicKeyInfo) { return publicKeyInfo.type === type; });
+    if (publicKeyInfos.length === 0) {
+        logger_1.default.error("DidDoc " + didDocument.id + " has no " + type + " public keys");
+        throw new error_1.CustError(500, "DidDoc " + didDocument.id + " has no " + type + " public keys");
+    }
+    return publicKeyInfos;
 };
-exports.getDidDocPublicKeys = function (authorization, subjectDid) { return __awaiter(void 0, void 0, void 0, function () {
-    var didDocResponse, publicKeyInfos;
+exports.getDidDocPublicKeys = function (authorization, subjectDid, type) { return __awaiter(void 0, void 0, void 0, function () {
+    var didDocResponse, didKeyId, publicKeyInfoList, didDoc, authToken;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0: return [4 /*yield*/, exports.getDIDDoc(config_1.configData.SaaSUrl, authorization, subjectDid)];
@@ -96,12 +100,55 @@ exports.getDidDocPublicKeys = function (authorization, subjectDid) { return __aw
                 if (didDocResponse instanceof Error) {
                     throw didDocResponse;
                 }
-                publicKeyInfos = exports.getKeyFromDIDDoc(didDocResponse.body, 'RSA');
-                if (publicKeyInfos.length === 0) {
-                    throw new error_1.CustError(404, 'Public key not found for the DID');
+                didKeyId = subjectDid.split('#')[1];
+                if (!didKeyId) return [3 /*break*/, 3];
+                return [4 /*yield*/, didDocResponse.body];
+            case 2:
+                /**
+                   * If making a request to the Did Document service with a did and did fragment, only a single PublicKeyInfo object is returned.
+                   * Putting in array for uniform handling with the case no fragment is included, in which case all the matching keys will need to be tried until one works.
+                   */
+                publicKeyInfoList = [_a.sent()];
+                return [3 /*break*/, 5];
+            case 3: return [4 /*yield*/, didDocResponse.body];
+            case 4:
+                didDoc = _a.sent();
+                // get subject's encryption public key info from its DID document
+                publicKeyInfoList = exports.getKeysFromDIDDoc(didDoc, type);
+                _a.label = 5;
+            case 5:
+                // // get subject's public key info from its DID document
+                // const publicKeyInfos = getKeysFromDIDDoc(didDocResponse.body, 'RSA');
+                if (publicKeyInfoList.length === 0) {
+                    throw new error_1.CustError(404, type + " public keys not found for the DID " + subjectDid);
                 }
-                return [2 /*return*/, publicKeyInfos];
+                authToken = networkRequestHelper_1.handleAuthTokenHeader(didDocResponse, authorization);
+                return [2 /*return*/, {
+                        authToken: authToken,
+                        body: publicKeyInfoList
+                    }];
         }
     });
 }); };
+// export const getDidDocPublicKeysR = async (authorization: string, subjectDid: string): Promise<PublicKeyInfo[]> => {
+//   const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, subjectDid);
+//   if (didDocumentResponse instanceof Error) {
+//     throw didDocumentResponse;
+//   }
+//   // // need to get the issuer's DID doc's 'secp256r1' public key(s)
+//   // const didDocumentService = app.service('didDocument');
+//   const did = subjectDid.split('#')[0];
+//   const didKeyId = subjectDid.split('#')[1];
+//   let publicKeyInfoList: PublicKeyInfo[];
+//   if (didKeyId) {
+//     /**
+//        * If making a request to the Did Document service with a did and did fragment, only a single PublicKeyInfo object is returned.
+//        * Putting in array for uniform handling with the case no fragment is included, in which case all the matching keys will need to be tried until one works.
+//        */
+//     publicKeyInfoList = [await didDocumentResponse.body as PublicKeyInfo];
+//   } else {
+//     const didDoc = await didDocumentResponse.body as DidDocument;
+//     publicKeyInfoList = getKeysFromDIDDoc(didDoc, 'secp256r1');
+//   }
+// };
 //# sourceMappingURL=didHelper.js.map

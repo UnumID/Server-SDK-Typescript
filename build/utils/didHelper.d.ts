@@ -1,19 +1,19 @@
 import { DidDocument, DidKeyType, PublicKeyInfo } from '@unumid/types';
 import { CustError } from './error';
-import { RESTResponse } from '../types';
+import { RESTResponse, UnumDto } from '../types';
 /**
  * Get a Did document from the did and url provided.
  * @param baseUrl
  * @param authorization
  * @param did
  */
-export declare const getDIDDoc: (baseUrl: string, authorization: string, did: string) => Promise<RESTResponse<DidDocument> | CustError>;
+export declare const getDIDDoc: (baseUrl: string, authorization: string, did: string) => Promise<RESTResponse<DidDocument | PublicKeyInfo> | CustError>;
 /**
- * Helper to get a key from a Did document.
- * Note: Per convention, Did documents have secp256r1 keys for signing / verification and only holder DID Documents have RSA keys.
+ * Helper to return the keys in the DID document which corresponds to the type specified.
+ * Note: the can be multiple keys of same type on the same DID document.
  * @param didDocument DiDDocument
  * @param type DidKeyType
  */
 export declare const getKeysFromDIDDoc: (didDocument: DidDocument, type: DidKeyType) => PublicKeyInfo[];
-export declare const getDidDocPublicKeys: (authorization: string, subjectDid: string) => Promise<PublicKeyInfo[]>;
-// # sourceMappingURL=didHelper.d.ts.map
+export declare const getDidDocPublicKeys: (authorization: string, subjectDid: string, type: DidKeyType) => Promise<UnumDto<PublicKeyInfo[]>>;
+//# sourceMappingURL=didHelper.d.ts.map

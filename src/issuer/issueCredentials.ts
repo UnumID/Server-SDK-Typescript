@@ -231,7 +231,9 @@ export const issueCredentials = async (authorization: string, issuer: string, su
   validateInputs(issuer, subjectDid, credentialDataList, signingPrivateKey, expirationDate);
 
   // Get target Subject's DID document public keys for encrypting all the credentials issued.
-  const publicKeyInfos = await getDidDocPublicKeys(authorization, subjectDid);
+  const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, subjectDid, 'RSA');
+  const publicKeyInfos = publicKeyInfoResponse.body;
+  authorization = publicKeyInfoResponse.authToken;
 
   // loop through the types and credential data lists inputted to create CredentialPairs of each supported version for each
   const creds: WithVersion<CredentialPair>[] = [];
@@ -290,7 +292,10 @@ export const issueCredential = async (authorization: string, type: string | stri
 
     // Get target Subject's DID document public keys for encrypting all the credentials issued.
     const subjectDid = credentialSubject.id;
-    const publicKeyInfos = await getDidDocPublicKeys(authorization, subjectDid);
+
+    const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, subjectDid, 'RSA');
+    const publicKeyInfos = publicKeyInfoResponse.body;
+    authorization = publicKeyInfoResponse.authToken;
 
     return issueCredentialHelperDeprecated(authorization, type, issuer, credentialSubject, signingPrivateKey, publicKeyInfos, expirationDate);
   } catch (error) {
