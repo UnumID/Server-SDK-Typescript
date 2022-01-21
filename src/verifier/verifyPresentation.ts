@@ -1,6 +1,6 @@
 
 import { DecryptedPresentation, UnumDto, VerifiedStatus } from '../types';
-import { Presentation, CredentialRequest, PresentationRequestDto, EncryptedData, PresentationRequest, PresentationPb, PresentationRequestPb, ProofPb, UnsignedPresentationRequestPb, JSONObj, CredentialRequestPb, WithVersion } from '@unumid/types';
+import { Presentation, CredentialRequest, PresentationRequestDto, EncryptedData, PresentationRequest, PresentationPb, PresentationRequestPb, ProofPb, UnsignedPresentationRequestPb, JSONObj, CredentialRequestPb, WithVersion, PublicKeyInfo } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
 import { CryptoError, decrypt, decryptBytes } from '@unumid/library-crypto';
 import logger from '../logger';
@@ -9,7 +9,7 @@ import { verifyPresentationHelper } from './verifyPresentationHelper';
 import { CustError } from '../utils/error';
 import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
 import { omit } from 'lodash';
-import { getDIDDoc, getKeysFromDIDDoc } from '../utils/didHelper';
+import { getDIDDoc, getDidDocPublicKeys, getKeysFromDIDDoc } from '../utils/didHelper';
 import { configData } from '../config';
 import { doVerify } from '../utils/verify';
 import { handleAuthTokenHeader } from '../utils/networkRequestHelper';
@@ -139,32 +139,33 @@ const validateCredentialRequests = (requests: CredentialRequest[]): void => {
 /**
  * Verify the PresentationRequest signature as a way to side step verifier MITM attacks where an entity spoofs requests.
  */
-async function verifyPresentationRequest (authorization: string, presentationRequest: PresentationRequestPb): Promise<UnumDto<VerifiedStatus>> {
+async function verifyPresentationRequest (authToken: string, presentationRequest: PresentationRequestPb): Promise<UnumDto<VerifiedStatus>> {
   if (!presentationRequest.proof) {
     throw new CustError(400, 'Invalid PresentationRequest: proof is required.');
   }
 
   const { proof: { verificationMethod, signatureValue } } = presentationRequest;
 
-  const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, verificationMethod);
-
-  if (didDocumentResponse instanceof Error) {
-    throw didDocumentResponse;
-  }
-
-  const authToken: string = handleAuthTokenHeader(didDocumentResponse, authorization);
-  const publicKeyInfos = getKeysFromDIDDoc(didDocumentResponse.body, 'secp256r1');
-
-  // TODO update DID
-  const { publicKey, encoding } = publicKeyInfos[0];
+  // grab all 'secp256r1' keys from the DID document
+  const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authToken, verificationMethod, 'secp256r1');
+  const publicKeyInfoList: PublicKeyInfo[] = publicKeyInfoResponse.body;
+  authToken = publicKeyInfoResponse.authToken;
 
   const unsignedPresentationRequest: UnsignedPresentationRequestPb = omit(presentationRequest, 'proof');
 
   // convert to bytes
   const bytes: Uint8Array = UnsignedPresentationRequestPb.encode(unsignedPresentationRequest).finish();
 
-  // verify the byte array
-  const isVerified = doVerify(signatureValue, bytes, publicKey, encoding);
+  let isVerified = false;
+
+  // check all the public keys to see if any work, stop if one does
+  for (const publicKeyInfo of publicKeyInfoList) {
+    const { publicKey, encoding } = publicKeyInfo;
+
+    // verify the signature
+    isVerified = doVerify(signatureValue, bytes, publicKey, encoding);
+    if (isVerified) break;
+  }
 
   if (!isVerified) {
     const result: UnumDto<VerifiedStatus> = {
