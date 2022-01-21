@@ -11,7 +11,7 @@ import logger from '../logger';
 import { CryptoError } from '@unumid/library-crypto';
 import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
 import { CustError } from '../utils/error';
-import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
+import { getDIDDoc, getKeysFromDIDDoc } from '../utils/didHelper';
 import { handleAuthTokenHeader } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
 import { convertCredentialSubject } from '../utils/convertCredentialSubject';
@@ -305,7 +305,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
     }
 
     let authToken: string = handleAuthTokenHeader(didDocumentResponse, authorization); // Note: going to use authToken instead of authorization for subsequent requests in case saas rolls to token.
-    const pubKeyObj: PublicKeyInfo[] = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
+    const pubKeyObj: PublicKeyInfo[] = getKeysFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
     if (pubKeyObj.length === 0) {
       const result: UnumDto<VerifiedStatus> = {
@@ -327,6 +327,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
       const bytes = UnsignedPresentationPb.encode(data).finish();
 
       // verify the signature
+      // TODO update DID
       isPresentationVerified = doVerify(proof.signatureValue, bytes, pubKeyObj[0].publicKey, pubKeyObj[0].encoding);
     } catch (e) {
       if (e instanceof CryptoError) {

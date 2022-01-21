@@ -11,7 +11,7 @@ import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
 import { handleAuthTokenHeader } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
 import { PresentationPb, UnsignedPresentationPb } from '@unumid/types';
-import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
+import { getDIDDoc, getKeysFromDIDDoc } from '../utils/didHelper';
 import { sendPresentationVerifiedReceipt } from './sendPresentationVerifiedReceipt';
 
 /**
@@ -102,8 +102,9 @@ export const verifyNoPresentationHelper = async (authorization: string, noPresen
     }
 
     let authToken: string = handleAuthTokenHeader(didDocumentResponse, authorization);
-    const publicKeyInfos = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
+    const publicKeyInfos = getKeysFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
+    // TODO update DID
     const { publicKey, encoding } = publicKeyInfos[0];
 
     // remove the proof attribute

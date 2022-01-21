@@ -33,14 +33,20 @@ export const getDIDDoc = async (baseUrl: string, authorization: string, did: str
 };
 
 /**
- * Helper to get a key from a Did document.
- * Note: Per convention, Did documents have secp256r1 keys for signing / verification and only holder DID Documents have RSA keys.
+ * Helper to return the keys in the DID document which corresponds to the type specified.
+ * Note: the can be multiple keys of same type on the same DID document.
  * @param didDocument DiDDocument
  * @param type DidKeyType
  */
-export const getKeyFromDIDDoc = (didDocument: DidDocument, type: DidKeyType): PublicKeyInfo[] => {
-  // return the key in the DID document which corresponds to the type specified.
-  return didDocument.publicKey.filter(publicKeyInfo => publicKeyInfo.type === type);
+export const getKeysFromDIDDoc = (didDocument: DidDocument, type: DidKeyType): PublicKeyInfo[] => {
+  const publicKeyInfos = didDocument.publicKey.filter(publicKeyInfo => publicKeyInfo.type === type);
+
+  if (publicKeyInfos.length === 0) {
+    logger.error(`DidDoc ${didDocument.id} has no ${type} public keys`);
+    throw new CustError(500, `DidDoc ${didDocument.id} has no ${type} public keys`);
+  }
+
+  return publicKeyInfos;
 };
 
 export const getDidDocPublicKeys = async (authorization: string, subjectDid: string): Promise<PublicKeyInfo[]> => {
@@ -53,7 +59,7 @@ export const getDidDocPublicKeys = async (authorization: string, subjectDid: str
   }
 
   // get subject's public key info from its DID document
-  const publicKeyInfos = getKeyFromDIDDoc(didDocResponse.body, 'RSA');
+  const publicKeyInfos = getKeysFromDIDDoc(didDocResponse.body, 'RSA');
 
   if (publicKeyInfos.length === 0) {
     throw new CustError(404, 'Public key not found for the DID');

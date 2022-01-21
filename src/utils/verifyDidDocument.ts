@@ -4,7 +4,7 @@ import { JSONObj, ReceiptOptions, ReceiptSubjectDidDocumentVerifiedData, DID, Un
 import { requireAuth } from '../requireAuth';
 import { CustError } from '../utils/error';
 import { omit } from 'lodash';
-import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
+import { getDIDDoc, getKeysFromDIDDoc } from '../utils/didHelper';
 import { configData } from '../config';
 import { doVerify } from '../utils/verify';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
@@ -68,7 +68,7 @@ async function verifyDid (authorization: string, did: DID): Promise<UnumDto<Veri
   }
 
   const authToken: string = handleAuthTokenHeader(didDocumentResponse, authorization);
-  const publicKeyInfos = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
+  const publicKeyInfos = getKeysFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
   if (publicKeyInfos.length === 0) {
     // throw new CustError(404, `Public key not found for the subject did ${verificationMethod}`);
@@ -81,6 +81,7 @@ async function verifyDid (authorization: string, did: DID): Promise<UnumDto<Veri
     };
   }
 
+  // TODO update DID
   const { publicKey, encoding } = publicKeyInfos[0];
 
   const unsignedDid: UnsignedDID = omit(did, 'proof');

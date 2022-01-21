@@ -1,5 +1,5 @@
 import { DidDocument } from '@unumid/types';
-import { getKeyFromDIDDoc } from '../../src/utils/didHelper';
+import { getKeysFromDIDDoc } from '../../src/utils/didHelper';
 
 describe('getKeyFromDidDoc', () => {
   it('gets keys by the given type', () => {
@@ -35,7 +35,7 @@ describe('getKeyFromDidDoc', () => {
       ]
     };
 
-    const result = getKeyFromDIDDoc(didDoc, 'secp256r1');
+    const result = getKeysFromDIDDoc(didDoc, 'secp256r1');
     expect(result.length).toEqual(1);
     expect(result[0].id).toEqual('5a586f0f-6936-426c-bc68-adeb4f0e7d5d');
   });

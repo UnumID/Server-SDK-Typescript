@@ -5,7 +5,7 @@ import { requireAuth } from '../requireAuth';
 import { CustError } from '../utils/error';
 import { isArrayEmpty } from '../utils/helpers';
 import { omit } from 'lodash';
-import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
+import { getDIDDoc, getKeysFromDIDDoc } from '../utils/didHelper';
 import { configData } from '../config';
 import { doVerify } from '../utils/verify';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
@@ -115,7 +115,7 @@ export async function verifySubjectCredentialRequest (authorization: string, iss
   }
 
   const authToken: string = handleAuthTokenHeader(didDocumentResponse, authorization);
-  const publicKeyInfos = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
+  const publicKeyInfos = getKeysFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
   if (publicKeyInfos.length === 0) {
     return {
@@ -127,6 +127,7 @@ export async function verifySubjectCredentialRequest (authorization: string, iss
     };
   }
 
+  // TODO update DID
   const { publicKey, encoding } = publicKeyInfos[0];
 
   const unsignedCredentialRequest: CredentialRequestPb = omit(credentialRequest, 'proof');

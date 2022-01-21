@@ -9,7 +9,7 @@ import { verifyPresentationHelper } from './verifyPresentationHelper';
 import { CustError } from '../utils/error';
 import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
 import { omit } from 'lodash';
-import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
+import { getDIDDoc, getKeysFromDIDDoc } from '../utils/didHelper';
 import { configData } from '../config';
 import { doVerify } from '../utils/verify';
 import { handleAuthTokenHeader } from '../utils/networkRequestHelper';
@@ -153,8 +153,9 @@ async function verifyPresentationRequest (authorization: string, presentationReq
   }
 
   const authToken: string = handleAuthTokenHeader(didDocumentResponse, authorization);
-  const publicKeyInfos = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
+  const publicKeyInfos = getKeysFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
+  // TODO update DID
   const { publicKey, encoding } = publicKeyInfos[0];
 
   const unsignedPresentationRequest: UnsignedPresentationRequestPb = omit(presentationRequest, 'proof');

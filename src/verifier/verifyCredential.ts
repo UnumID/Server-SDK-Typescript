@@ -6,7 +6,7 @@ import { UnumDto } from '../types';
 import { configData } from '../config';
 import logger from '../logger';
 import { CredentialPb, Proof, UnsignedCredentialPb } from '@unumid/types';
-import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
+import { getDIDDoc, getKeysFromDIDDoc } from '../utils/didHelper';
 import { handleAuthTokenHeader } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
 import { CustError } from '..';
@@ -30,12 +30,13 @@ export const verifyCredential = async (credential: CredentialPb, authorization: 
   }
 
   const authToken: string = handleAuthTokenHeader(didDocumentResponse, authorization);
-  const publicKeyObject = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
+  const publicKeyObject = getKeysFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
   const data: UnsignedCredentialPb = omit(credential, 'proof');
 
   try {
     const bytes = UnsignedCredentialPb.encode(data).finish();
+    // TODO update DID
     const isVerified: boolean = doVerify(proof.signatureValue, bytes, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
 
     const result: UnumDto<boolean> = {

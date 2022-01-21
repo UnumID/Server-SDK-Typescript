@@ -1,6 +1,6 @@
 import * as cryptoLib from '@unumid/library-crypto';
 import { PublicKeyInfo, EncryptedData, KeyPair, UnsignedCredentialPb } from '@unumid/types';
-import { getDIDDoc, getKeyFromDIDDoc } from '../../src/utils/didHelper';
+import { getDIDDoc, getKeysFromDIDDoc } from '../../src/utils/didHelper';
 import { doEncrypt } from '../../src/utils/encrypt';
 import { doVerify, doVerifyDeprecated } from '../../src/utils/verify';
 import { getUUID } from '../../src/utils/helpers';
@@ -24,7 +24,7 @@ describe('Encrypt the given data', () => {
     const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiaXNzdWVyIiwidXVpZCI6ImRmYTllNmY5LWUyMGYtNGU2MS05ODZjLTEwYjRjZDFmMDQxOCIsImRpZCI6ImRpZDp1bnVtOjNlNDhiOTY5LTVjZjMtNDZjNy05YzYxLTU0ZGU4ODZkMTM4MiIsImV4cCI6MTU5Njc2NzAzNi45NjQsImlhdCI6MTU5NzA1MDY4MX0.I-t3mDBTBjKeO_GZDyiXwgKwvlUIy_B6zcB1V3hZ2c0';
     encryptSpy = jest.spyOn(cryptoLib, 'encrypt', 'get');
     const didDocResponse = await getDIDDoc(baseUrl, authHeader, did);
-    publicKeyObj = getKeyFromDIDDoc(didDocResponse.body, 'RSA');
+    publicKeyObj = getKeysFromDIDDoc(didDocResponse.body, 'RSA');
   });
 
   afterAll(() => {
