@@ -70,7 +70,7 @@ exports.getDIDDoc = function (baseUrl, authorization, did) { return __awaiter(vo
             case 2:
                 error_2 = _a.sent();
                 logger_1.default.error("Error getting did document " + did + " from " + baseUrl, error_2);
-                return [2 /*return*/, (error_2)];
+                throw error_2;
             case 3: return [2 /*return*/];
         }
     });
@@ -130,25 +130,4 @@ exports.getDidDocPublicKeys = function (authorization, subjectDid, type) { retur
         }
     });
 }); };
-// export const getDidDocPublicKeysR = async (authorization: string, subjectDid: string): Promise<PublicKeyInfo[]> => {
-//   const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, subjectDid);
-//   if (didDocumentResponse instanceof Error) {
-//     throw didDocumentResponse;
-//   }
-//   // // need to get the issuer's DID doc's 'secp256r1' public key(s)
-//   // const didDocumentService = app.service('didDocument');
-//   const did = subjectDid.split('#')[0];
-//   const didKeyId = subjectDid.split('#')[1];
-//   let publicKeyInfoList: PublicKeyInfo[];
-//   if (didKeyId) {
-//     /**
-//        * If making a request to the Did Document service with a did and did fragment, only a single PublicKeyInfo object is returned.
-//        * Putting in array for uniform handling with the case no fragment is included, in which case all the matching keys will need to be tried until one works.
-//        */
-//     publicKeyInfoList = [await didDocumentResponse.body as PublicKeyInfo];
-//   } else {
-//     const didDoc = await didDocumentResponse.body as DidDocument;
-//     publicKeyInfoList = getKeysFromDIDDoc(didDoc, 'secp256r1');
-//   }
-// };
 //# sourceMappingURL=didHelper.js.map

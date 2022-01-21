@@ -13,7 +13,7 @@ import { configData } from '../config';
  * @param authorization
  * @param did
  */
-const getDIDDoc = async (baseUrl: string, authorization: string, did: string): Promise<RESTResponse<DidDocument | PublicKeyInfo> | CustError> => {
+export const getDIDDoc = async (baseUrl: string, authorization: string, did: string): Promise<RESTResponse<DidDocument | PublicKeyInfo> | CustError> => {
   try {
     const restData: RESTData = {
       method: 'GET',
@@ -28,7 +28,7 @@ const getDIDDoc = async (baseUrl: string, authorization: string, did: string): P
     return (restResp);
   } catch (error) {
     logger.error(`Error getting did document ${did} from ${baseUrl}`, error);
-    return (error);
+    throw error;
   }
 };
 
@@ -38,7 +38,7 @@ const getDIDDoc = async (baseUrl: string, authorization: string, did: string): P
  * @param didDocument DiDDocument
  * @param type DidKeyType
  */
-const getKeysFromDIDDoc = (didDocument: DidDocument, type: DidKeyType): PublicKeyInfo[] => {
+export const getKeysFromDIDDoc = (didDocument: DidDocument, type: DidKeyType): PublicKeyInfo[] => {
   const publicKeyInfos = didDocument.publicKey.filter(publicKeyInfo => publicKeyInfo.type === type);
 
   if (publicKeyInfos.length === 0) {
@@ -54,6 +54,7 @@ export const getDidDocPublicKeys = async (authorization: string, subjectDid: str
   const didDocResponse = await getDIDDoc(configData.SaaSUrl, authorization, subjectDid);
 
   logger.debug(`DidDoc repsonse: ${didDocResponse}`);
+
   if (didDocResponse instanceof Error) {
     throw didDocResponse;
   }
