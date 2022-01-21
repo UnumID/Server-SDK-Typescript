@@ -3,11 +3,9 @@ import { CryptoError } from '@unumid/library-crypto';
 import { omit } from 'lodash';
 
 import { UnumDto } from '../types';
-import { configData } from '../config';
 import logger from '../logger';
-import { CredentialPb, Proof, PublicKeyInfo, UnsignedCredentialPb } from '@unumid/types';
-import { getDIDDoc, getDidDocPublicKeys, getKeysFromDIDDoc } from '../utils/didHelper';
-import { handleAuthTokenHeader } from '../utils/networkRequestHelper';
+import { CredentialPb, PublicKeyInfo, UnsignedCredentialPb } from '@unumid/types';
+import { getDidDocPublicKeys } from '../utils/didHelper';
 import { doVerify } from '../utils/verify';
 import { CustError } from '..';
 

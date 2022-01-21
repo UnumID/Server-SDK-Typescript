@@ -7,9 +7,9 @@ import { PresentationPb } from '@unumid/types';
 export declare const validateNoPresentationParams: (noPresentation: PresentationPb) => PresentationPb;
 /**
  * Handler for when a user does not agree to share the information in the credential request.
- * @param authorization
+ * @param authToken
  * @param noPresentation
  * @param verifier
  */
-export declare const verifyNoPresentationHelper: (authorization: string, noPresentation: PresentationPb, verifier: string, requestUuid: string) => Promise<UnumDto<VerifiedStatus>>;
+export declare const verifyNoPresentationHelper: (authToken: string, noPresentation: PresentationPb, verifier: string, requestUuid: string) => Promise<UnumDto<VerifiedStatus>>;
 //# sourceMappingURL=verifyNoPresentationHelper.d.ts.map

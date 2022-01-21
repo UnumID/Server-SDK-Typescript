@@ -42,20 +42,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyCredential = void 0;
 var library_crypto_1 = require("@unumid/library-crypto");
 var lodash_1 = require("lodash");
-var config_1 = require("../config");
 var logger_1 = __importDefault(require("../logger"));
 var types_1 = require("@unumid/types");
 var didHelper_1 = require("../utils/didHelper");
-var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var verify_1 = require("../utils/verify");
 var __1 = require("..");
 /**
  * Used to verify the credential signature given the corresponding Did document's public key.
  * @param credential
- * @param authorization
+ * @param authToken
  */
-exports.verifyCredential = function (credential, authorization) { return __awaiter(void 0, void 0, void 0, function () {
-    var proof, didDocumentResponse, authToken, publicKeyObject, data, bytes, isVerified, result, result;
+exports.verifyCredential = function (authToken, credential) { return __awaiter(void 0, void 0, void 0, function () {
+    var proof, publicKeyInfoResponse, publicKeyInfoList, data, bytes, isVerified, _i, publicKeyInfoList_1, publicKeyInfo, publicKey, encoding, result, result;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -63,18 +61,23 @@ exports.verifyCredential = function (credential, authorization) { return __await
                 if (!proof) {
                     throw new __1.CustError(400, "Credential " + credential.id + " does not contain a proof attribute.");
                 }
-                return [4 /*yield*/, didHelper_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, proof.verificationMethod)];
+                return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authToken, proof.verificationMethod, 'secp256r1')];
             case 1:
-                didDocumentResponse = _a.sent();
-                if (didDocumentResponse instanceof Error) {
-                    throw didDocumentResponse;
-                }
-                authToken = networkRequestHelper_1.handleAuthTokenHeader(didDocumentResponse, authorization);
-                publicKeyObject = didHelper_1.getKeysFromDIDDoc(didDocumentResponse.body, 'secp256r1');
+                publicKeyInfoResponse = _a.sent();
+                publicKeyInfoList = publicKeyInfoResponse.body;
+                authToken = publicKeyInfoResponse.authToken;
                 data = lodash_1.omit(credential, 'proof');
                 try {
                     bytes = types_1.UnsignedCredentialPb.encode(data).finish();
-                    isVerified = verify_1.doVerify(proof.signatureValue, bytes, publicKeyObject[0].publicKey, publicKeyObject[0].encoding);
+                    isVerified = false;
+                    // check all the public keys to see if any work, stop if one does
+                    for (_i = 0, publicKeyInfoList_1 = publicKeyInfoList; _i < publicKeyInfoList_1.length; _i++) {
+                        publicKeyInfo = publicKeyInfoList_1[_i];
+                        publicKey = publicKeyInfo.publicKey, encoding = publicKeyInfo.encoding;
+                        isVerified = verify_1.doVerify(proof.signatureValue, bytes, publicKey, encoding);
+                        if (isVerified)
+                            break;
+                    }
                     result = {
                         authToken: authToken,
                         body: isVerified

@@ -1,8 +1,7 @@
 import { omit } from 'lodash';
 
-import { configData } from '../config';
-import { CredentialStatusInfo, UnumDto, VerifiedStatus } from '../types';
-import { CredentialRequest, PublicKeyInfo, JSONObj, PresentationPb, CredentialPb, ProofPb, UnsignedPresentationPb, CredentialSubject, WithVersion, CredentialIdToStatusMap } from '@unumid/types';
+import { UnumDto, VerifiedStatus } from '../types';
+import { CredentialRequest, PublicKeyInfo, JSONObj, PresentationPb, CredentialPb, ProofPb, UnsignedPresentationPb, CredentialSubject, CredentialIdToStatusMap } from '@unumid/types';
 import { validateProof } from './validateProof';
 import { requireAuth } from '../requireAuth';
 import { verifyCredential } from './verifyCredential';
@@ -11,8 +10,7 @@ import logger from '../logger';
 import { CryptoError } from '@unumid/library-crypto';
 import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
 import { CustError } from '../utils/error';
-import { getDIDDoc, getDidDocPublicKeys, getKeysFromDIDDoc } from '../utils/didHelper';
-import { handleAuthTokenHeader } from '../utils/networkRequestHelper';
+import { getDidDocPublicKeys } from '../utils/didHelper';
 import { doVerify } from '../utils/verify';
 import { convertCredentialSubject } from '../utils/convertCredentialSubject';
 import { sendPresentationVerifiedReceipt } from './sendPresentationVerifiedReceipt';

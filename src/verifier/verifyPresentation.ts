@@ -1,15 +1,15 @@
 
 import { DecryptedPresentation, UnumDto, VerifiedStatus } from '../types';
-import { Presentation, CredentialRequest, PresentationRequestDto, EncryptedData, PresentationRequest, PresentationPb, PresentationRequestPb, ProofPb, UnsignedPresentationRequestPb, JSONObj, CredentialRequestPb, WithVersion, PublicKeyInfo } from '@unumid/types';
+import { Presentation, CredentialRequest, PresentationRequestDto, EncryptedData, PresentationRequest, PresentationPb, PresentationRequestPb, ProofPb, UnsignedPresentationRequestPb, WithVersion, PublicKeyInfo } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
-import { CryptoError, decrypt, decryptBytes } from '@unumid/library-crypto';
+import { CryptoError, decryptBytes } from '@unumid/library-crypto';
 import logger from '../logger';
 import { verifyNoPresentationHelper } from './verifyNoPresentationHelper';
 import { verifyPresentationHelper } from './verifyPresentationHelper';
 import { CustError } from '../utils/error';
 import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
 import { omit } from 'lodash';
-import { getDIDDoc, getDidDocPublicKeys, getKeysFromDIDDoc } from '../utils/didHelper';
+import { getDidDocPublicKeys } from '../utils/didHelper';
 import { configData } from '../config';
 import { doVerify } from '../utils/verify';
 import { handleAuthTokenHeader } from '../utils/networkRequestHelper';

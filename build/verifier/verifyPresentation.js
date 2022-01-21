@@ -160,28 +160,33 @@ var validateCredentialRequests = function (requests) {
 /**
  * Verify the PresentationRequest signature as a way to side step verifier MITM attacks where an entity spoofs requests.
  */
-function verifyPresentationRequest(authorization, presentationRequest) {
+function verifyPresentationRequest(authToken, presentationRequest) {
     return __awaiter(this, void 0, void 0, function () {
-        var _a, verificationMethod, signatureValue, didDocumentResponse, authToken, publicKeyInfos, _b, publicKey, encoding, unsignedPresentationRequest, bytes, isVerified, result_1, result;
-        return __generator(this, function (_c) {
-            switch (_c.label) {
+        var _a, verificationMethod, signatureValue, publicKeyInfoResponse, publicKeyInfoList, unsignedPresentationRequest, bytes, isVerified, _i, publicKeyInfoList_1, publicKeyInfo, publicKey, encoding, result_1, result;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
                 case 0:
                     if (!presentationRequest.proof) {
                         throw new error_1.CustError(400, 'Invalid PresentationRequest: proof is required.');
                     }
                     _a = presentationRequest.proof, verificationMethod = _a.verificationMethod, signatureValue = _a.signatureValue;
-                    return [4 /*yield*/, didHelper_1.getDIDDoc(config_1.configData.SaaSUrl, authorization, verificationMethod)];
+                    return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authToken, verificationMethod, 'secp256r1')];
                 case 1:
-                    didDocumentResponse = _c.sent();
-                    if (didDocumentResponse instanceof Error) {
-                        throw didDocumentResponse;
-                    }
-                    authToken = networkRequestHelper_1.handleAuthTokenHeader(didDocumentResponse, authorization);
-                    publicKeyInfos = didHelper_1.getKeysFromDIDDoc(didDocumentResponse.body, 'secp256r1');
-                    _b = publicKeyInfos[0], publicKey = _b.publicKey, encoding = _b.encoding;
+                    publicKeyInfoResponse = _b.sent();
+                    publicKeyInfoList = publicKeyInfoResponse.body;
+                    authToken = publicKeyInfoResponse.authToken;
                     unsignedPresentationRequest = lodash_1.omit(presentationRequest, 'proof');
                     bytes = types_1.UnsignedPresentationRequestPb.encode(unsignedPresentationRequest).finish();
-                    isVerified = verify_1.doVerify(signatureValue, bytes, publicKey, encoding);
+                    isVerified = false;
+                    // check all the public keys to see if any work, stop if one does
+                    for (_i = 0, publicKeyInfoList_1 = publicKeyInfoList; _i < publicKeyInfoList_1.length; _i++) {
+                        publicKeyInfo = publicKeyInfoList_1[_i];
+                        publicKey = publicKeyInfo.publicKey, encoding = publicKeyInfo.encoding;
+                        // verify the signature
+                        isVerified = verify_1.doVerify(signatureValue, bytes, publicKey, encoding);
+                        if (isVerified)
+                            break;
+                    }
                     if (!isVerified) {
                         result_1 = {
                             authToken: authToken,

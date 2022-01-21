@@ -3,15 +3,13 @@ import { omit } from 'lodash';
 
 import { UnumDto, VerifiedStatus } from '../types';
 import { validateProof } from './validateProof';
-import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
 import logger from '../logger';
 import { CustError } from '../utils/error';
 import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
-import { handleAuthTokenHeader } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
 import { PresentationPb, PublicKeyInfo, UnsignedPresentationPb } from '@unumid/types';
-import { getDIDDoc, getDidDocPublicKeys, getKeysFromDIDDoc } from '../utils/didHelper';
+import { getDidDocPublicKeys } from '../utils/didHelper';
 import { sendPresentationVerifiedReceipt } from './sendPresentationVerifiedReceipt';
 
 /**
@@ -68,7 +66,7 @@ export const validateNoPresentationParams = (noPresentation: PresentationPb): Pr
  */
 export const verifyNoPresentationHelper = async (authToken: string, noPresentation: PresentationPb, verifier: string, requestUuid: string): Promise<UnumDto<VerifiedStatus>> => {
   try {
-    requireAuth(authorization);
+    requireAuth(authToken);
 
     noPresentation = validateNoPresentationParams(noPresentation);
 
@@ -83,7 +81,7 @@ export const verifyNoPresentationHelper = async (authToken: string, noPresentati
       const message = `The presentation was meant for verifier, ${verifierDid}, not the provided verifier, ${verifier}.`;
 
       // send PresentationVerified receipt
-      const authToken = await sendPresentationVerifiedReceipt(authToken, verifier, noPresentation.proof.verificationMethod, 'declined', false, noPresentation.presentationRequestId, requestUuid, message);
+      authToken = await sendPresentationVerifiedReceipt(authToken, verifier, noPresentation.proof.verificationMethod, 'declined', false, noPresentation.presentationRequestId, requestUuid, message);
 
       const result: UnumDto<VerifiedStatus> = {
         authToken,

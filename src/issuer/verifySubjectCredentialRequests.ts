@@ -1,11 +1,11 @@
 
 import { RESTData, UnumDto, VerifiedStatus } from '../types';
-import { CredentialRequestInfoBasic, CredentialRequestPb, JSONObj, ReceiptOptions, SubjectCredentialRequest, ReceiptSubjectCredentialRequestVerifiedData, PublicKeyInfo, DidDocument } from '@unumid/types';
+import { CredentialRequestInfoBasic, CredentialRequestPb, JSONObj, ReceiptOptions, SubjectCredentialRequest, ReceiptSubjectCredentialRequestVerifiedData, PublicKeyInfo } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
 import { CustError } from '../utils/error';
 import { isArrayEmpty } from '../utils/helpers';
 import { omit } from 'lodash';
-import { getDIDDoc, getDidDocPublicKeys, getKeysFromDIDDoc } from '../utils/didHelper';
+import { getDidDocPublicKeys } from '../utils/didHelper';
 import { configData } from '../config';
 import { doVerify } from '../utils/verify';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
