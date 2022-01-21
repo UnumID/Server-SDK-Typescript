@@ -49,7 +49,6 @@ jest.mock('../../src/utils/encrypt');
 const createKeyPairSetSpy = jest.spyOn(createKeyPairs, 'createKeyPairSet');
 
 const mockMakeNetworkRequest = makeNetworkRequest as jest.Mock;
-const mockGetDIDDoc = getDIDDoc as jest.Mock;
 const mockGetDidDocKeys = getDidDocPublicKeys as jest.Mock;
 const mockDoEncrypt = doEncrypt as jest.Mock;
 const mockDoEncryptPb = doEncryptPb as jest.Mock;
@@ -77,7 +76,6 @@ describe('issueCredential', () => {
   beforeEach(async () => {
     const dummyDidDoc = await makeDummyDidDocument();
     const headers = { 'x-auth-token': dummyAuthToken };
-    mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
     mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers });
     mockGetDidDocKeys.mockResolvedValue({ authToken: dummyAuthToken, body: [dummyDidDoc.publicKey] });
 
@@ -130,7 +128,6 @@ describe('issueCredential', () => {
     mockMakeNetworkRequest.mockResolvedValue({ body: { success: true } });
     const dummyDidDoc = await makeDummyDidDocument();
     const headers = { 'x-auth-token': dummyAuthToken };
-    mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
 
     responseDto = await callIssueCred(credentialSubject, type, issuer, expirationDate, eccPrivateKey, dummyAdminKey);
     const types = responseDto.body.type;
@@ -254,7 +251,7 @@ describe('issueCredentials', () => {
   beforeEach(async () => {
     const dummyDidDoc = await makeDummyDidDocument();
     const headers = { 'x-auth-token': dummyAuthToken };
-    mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
+    // mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
     mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers });
     mockGetDidDocKeys.mockResolvedValue({ authToken: dummyAuthToken, body: [dummyDidDoc.publicKey] });
 
@@ -319,7 +316,7 @@ describe('issueCredentials', () => {
     mockMakeNetworkRequest.mockResolvedValue({ body: { success: true } });
     const dummyDidDoc = await makeDummyDidDocument();
     const headers = { 'x-auth-token': dummyAuthToken };
-    mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
+    // mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
 
     responseDto = await callIssueCreds(issuer, credentialSubject.id, credentialData, expirationDate, eccPrivateKey, authHeader);
     const types = response[0].type;
