@@ -160,9 +160,9 @@ var validateCredentialRequests = function (requests) {
 /**
  * Verify the PresentationRequest signature as a way to side step verifier MITM attacks where an entity spoofs requests.
  */
-function verifyPresentationRequest(authToken, presentationRequest) {
+function verifyPresentationRequest(authorization, presentationRequest) {
     return __awaiter(this, void 0, void 0, function () {
-        var _a, verificationMethod, signatureValue, publicKeyInfoResponse, publicKeyInfoList, unsignedPresentationRequest, bytes, isVerified, _i, publicKeyInfoList_1, publicKeyInfo, publicKey, encoding, result_1, result;
+        var _a, verificationMethod, signatureValue, publicKeyInfoResponse, publicKeyInfoList, authToken, unsignedPresentationRequest, bytes, isVerified, _i, publicKeyInfoList_1, publicKeyInfo, publicKey, encoding, result_1, result;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
@@ -170,7 +170,7 @@ function verifyPresentationRequest(authToken, presentationRequest) {
                         throw new error_1.CustError(400, 'Invalid PresentationRequest: proof is required.');
                     }
                     _a = presentationRequest.proof, verificationMethod = _a.verificationMethod, signatureValue = _a.signatureValue;
-                    return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authToken, verificationMethod, 'secp256r1')];
+                    return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authorization, verificationMethod, 'secp256r1')];
                 case 1:
                     publicKeyInfoResponse = _b.sent();
                     publicKeyInfoList = publicKeyInfoResponse.body;

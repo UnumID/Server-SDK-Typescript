@@ -12,9 +12,9 @@ import { CustError } from '..';
 /**
  * Used to verify the credential signature given the corresponding Did document's public key.
  * @param credential
- * @param authToken
+ * @param authorization
  */
-export const verifyCredential = async (authToken: string, credential: CredentialPb): Promise<UnumDto<boolean>> => {
+export const verifyCredential = async (authorization: string, credential: CredentialPb): Promise<UnumDto<boolean>> => {
   const { proof } = credential;
 
   if (!proof) {
@@ -22,9 +22,9 @@ export const verifyCredential = async (authToken: string, credential: Credential
   }
 
   // grab all 'secp256r1' keys from the DID document
-  const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authToken, proof.verificationMethod, 'secp256r1');
+  const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, proof.verificationMethod, 'secp256r1');
   const publicKeyInfoList: PublicKeyInfo[] = publicKeyInfoResponse.body;
-  authToken = publicKeyInfoResponse.authToken;
+  const authToken = publicKeyInfoResponse.authToken;
 
   const data: UnsignedCredentialPb = omit(credential, 'proof');
 

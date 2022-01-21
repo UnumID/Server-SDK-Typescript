@@ -250,17 +250,17 @@ function validatePresentationMeetsRequestedCredentials(presentation, credentialR
 }
 /**
  * Handler to send information regarding the user agreeing to share a credential Presentation.
- * @param authToken
+ * @param authorization
  * @param presentation
  * @param verifier
  */
-exports.verifyPresentationHelper = function (authToken, presentation, verifier, credentialRequests, requestUuid) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, proof, subject, credentialTypes, credentialIds, issuers, message, result_1, publicKeyInfoResponse, publicKeyInfoList, isPresentationVerified, bytes, _i, publicKeyInfoList_1, publicKeyInfo, publicKey, encoding, e_1, message, result_2, message, result_3, areCredentialsValid, credentialInvalidMessage, presentationCredentialIds, isStatusValidResponse, _a, _b, credential, isExpired, isStatusValid, isVerifiedResponse, isVerified_1, result_4, isVerified, result, error_2;
+exports.verifyPresentationHelper = function (authorization, presentation, verifier, credentialRequests, requestUuid) { return __awaiter(void 0, void 0, void 0, function () {
+    var data, proof, subject, credentialTypes, credentialIds, issuers, message, authToken_1, result_1, publicKeyInfoResponse, publicKeyInfoList, authToken, isPresentationVerified, bytes, _i, publicKeyInfoList_1, publicKeyInfo, publicKey, encoding, e_1, message, result_2, message, result_3, areCredentialsValid, credentialInvalidMessage, presentationCredentialIds, isStatusValidResponse, _a, _b, credential, isExpired, isStatusValid, isVerifiedResponse, isVerified_1, result_4, isVerified, result, error_2;
     return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
                 _c.trys.push([0, 18, , 19]);
-                requireAuth_1.requireAuth(authToken);
+                requireAuth_1.requireAuth(authorization);
                 if (!presentation) {
                     throw new error_1.CustError(400, 'presentation is required.');
                 }
@@ -276,12 +276,11 @@ exports.verifyPresentationHelper = function (authToken, presentation, verifier, 
                 issuers = presentation.verifiableCredential.map(function (cred) { return cred.issuer; });
                 if (!(presentation.verifierDid !== verifier)) return [3 /*break*/, 2];
                 message = "The presentation was meant for verifier, " + presentation.verifierDid + ", not the provided verifier, " + verifier + ".";
-                return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authToken, verifier, proof.verificationMethod, 'approved', false, presentation.presentationRequestId, requestUuid, message, issuers, credentialTypes, credentialIds)];
+                return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, presentation.presentationRequestId, requestUuid, message, issuers, credentialTypes, credentialIds)];
             case 1:
-                // send PresentationVerified receipt
-                authToken = _c.sent();
+                authToken_1 = _c.sent();
                 result_1 = {
-                    authToken: authToken,
+                    authToken: authToken_1,
                     body: {
                         isVerified: false,
                         message: message
@@ -293,7 +292,7 @@ exports.verifyPresentationHelper = function (authToken, presentation, verifier, 
                 if (helpers_1.isArrayNotEmpty(credentialRequests)) {
                     validatePresentationMeetsRequestedCredentials(presentation, credentialRequests);
                 }
-                return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authToken, proof.verificationMethod, 'secp256r1')];
+                return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authorization, proof.verificationMethod, 'secp256r1')];
             case 3:
                 publicKeyInfoResponse = _c.sent();
                 publicKeyInfoList = publicKeyInfoResponse.body;

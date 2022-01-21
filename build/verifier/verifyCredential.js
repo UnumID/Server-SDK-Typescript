@@ -50,10 +50,10 @@ var __1 = require("..");
 /**
  * Used to verify the credential signature given the corresponding Did document's public key.
  * @param credential
- * @param authToken
+ * @param authorization
  */
-exports.verifyCredential = function (authToken, credential) { return __awaiter(void 0, void 0, void 0, function () {
-    var proof, publicKeyInfoResponse, publicKeyInfoList, data, bytes, isVerified, _i, publicKeyInfoList_1, publicKeyInfo, publicKey, encoding, result, result;
+exports.verifyCredential = function (authorization, credential) { return __awaiter(void 0, void 0, void 0, function () {
+    var proof, publicKeyInfoResponse, publicKeyInfoList, authToken, data, bytes, isVerified, _i, publicKeyInfoList_1, publicKeyInfo, publicKey, encoding, result, result;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -61,7 +61,7 @@ exports.verifyCredential = function (authToken, credential) { return __awaiter(v
                 if (!proof) {
                     throw new __1.CustError(400, "Credential " + credential.id + " does not contain a proof attribute.");
                 }
-                return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authToken, proof.verificationMethod, 'secp256r1')];
+                return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authorization, proof.verificationMethod, 'secp256r1')];
             case 1:
                 publicKeyInfoResponse = _a.sent();
                 publicKeyInfoList = publicKeyInfoResponse.body;

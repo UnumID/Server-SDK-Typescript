@@ -79,7 +79,7 @@ describe('issueCredential', () => {
     const headers = { 'x-auth-token': dummyAuthToken };
     mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
     mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers });
-    mockGetDidDocKeys.mockResolvedValue(dummyDidDoc.publicKey);
+    mockGetDidDocKeys.mockResolvedValue({ authToken: dummyAuthToken, body: [dummyDidDoc.publicKey] });
 
     responseDto = await callIssueCred(credentialSubject, type, issuer, expirationDate, eccPrivateKey, authHeader);
     response = responseDto.body;
@@ -99,8 +99,8 @@ describe('issueCredential', () => {
   });
 
   it('encrypts the credential for each public key', () => {
-    expect(mockDoEncrypt).toBeCalledTimes(4);
-    expect(mockDoEncryptPb).toBeCalledTimes(4);
+    expect(mockDoEncrypt).toBeCalledTimes(1);
+    expect(mockDoEncryptPb).toBeCalledTimes(1);
   });
 
   it('sends encrypted credentials of all versions (2,3) to the saas', () => {
@@ -124,13 +124,6 @@ describe('issueCredential', () => {
 
   it('returns the auth token', () => {
     expect(responseAuthToken).toEqual(dummyAuthToken);
-  });
-
-  it('does not return an auth token if the SaaS does not return an auth token', async () => {
-    mockMakeNetworkRequest.mockResolvedValue({ body: { success: true } });
-    responseDto = await callIssueCred(credentialSubject, type, issuer, expirationDate, eccPrivateKey, dummyAdminKey);
-    responseAuthToken = responseDto.authToken;
-    expect(responseAuthToken).toBeUndefined();
   });
 
   it('type array starts with and contains only one `VerifiableCredential` string despite type of the credential options including the preceeding string', async () => {
@@ -263,7 +256,7 @@ describe('issueCredentials', () => {
     const headers = { 'x-auth-token': dummyAuthToken };
     mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
     mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers });
-    mockGetDidDocKeys.mockResolvedValue(dummyDidDoc.publicKey);
+    mockGetDidDocKeys.mockResolvedValue({ authToken: dummyAuthToken, body: [dummyDidDoc.publicKey] });
 
     responseDto = await callIssueCreds(issuer, credentialSubject.id, credentialData, expirationDate, eccPrivateKey, authHeader);
     response = responseDto.body;
@@ -283,8 +276,8 @@ describe('issueCredentials', () => {
   });
 
   it('encrypts the credential for each public key', () => {
-    expect(mockDoEncrypt).toBeCalledTimes(8);
-    expect(mockDoEncryptPb).toBeCalledTimes(8);
+    expect(mockDoEncrypt).toBeCalledTimes(2);
+    expect(mockDoEncryptPb).toBeCalledTimes(2);
   });
 
   it('sends encrypted credentials of all versions (2,3) to the saas', () => {

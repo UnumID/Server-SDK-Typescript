@@ -139,7 +139,7 @@ const validateCredentialRequests = (requests: CredentialRequest[]): void => {
 /**
  * Verify the PresentationRequest signature as a way to side step verifier MITM attacks where an entity spoofs requests.
  */
-async function verifyPresentationRequest (authToken: string, presentationRequest: PresentationRequestPb): Promise<UnumDto<VerifiedStatus>> {
+async function verifyPresentationRequest (authorization: string, presentationRequest: PresentationRequestPb): Promise<UnumDto<VerifiedStatus>> {
   if (!presentationRequest.proof) {
     throw new CustError(400, 'Invalid PresentationRequest: proof is required.');
   }
@@ -147,9 +147,9 @@ async function verifyPresentationRequest (authToken: string, presentationRequest
   const { proof: { verificationMethod, signatureValue } } = presentationRequest;
 
   // grab all 'secp256r1' keys from the DID document
-  const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authToken, verificationMethod, 'secp256r1');
+  const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, verificationMethod, 'secp256r1');
   const publicKeyInfoList: PublicKeyInfo[] = publicKeyInfoResponse.body;
-  authToken = publicKeyInfoResponse.authToken;
+  const authToken = publicKeyInfoResponse.authToken;
 
   const unsignedPresentationRequest: UnsignedPresentationRequestPb = omit(presentationRequest, 'proof');
 
