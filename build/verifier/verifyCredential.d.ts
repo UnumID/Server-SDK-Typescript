@@ -5,5 +5,5 @@ import { CredentialPb } from '@unumid/types';
  * @param credential
  * @param authorization
  */
-export declare const verifyCredential: (credential: CredentialPb, authorization: string) => Promise<UnumDto<boolean>>;
+export declare const verifyCredential: (authorization: string, credential: CredentialPb) => Promise<UnumDto<boolean>>;
 //# sourceMappingURL=verifyCredential.d.ts.map

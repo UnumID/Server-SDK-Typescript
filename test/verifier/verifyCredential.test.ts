@@ -1,7 +1,7 @@
-import { CredentialPb, CredentialRequestPb, UnsignedCredentialPb } from '@unumid/types';
+import { CredentialPb, UnsignedCredentialPb } from '@unumid/types';
 
 import { UnumDto } from '../../src/types';
-import { getDIDDoc } from '../../src/utils/didHelper';
+import { getDidDocPublicKeys } from '../../src/utils/didHelper';
 import { doVerify } from '../../src/utils/verify';
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { DummyCredentialOptions, makeDummyCredential, makeDummyDidDocument, makeDummyUnsignedCredential } from './mocks';
@@ -11,7 +11,7 @@ jest.mock('../../src/utils/didHelper', () => {
   const actual = jest.requireActual('../../src/utils/didHelper');
   return {
     ...actual,
-    getDIDDoc: jest.fn()
+    getDidDocPublicKeys: jest.fn()
   };
 });
 
@@ -23,7 +23,7 @@ jest.mock('../../src/utils/verify', () => {
   };
 });
 
-const mockGetDIDDoc = getDIDDoc as jest.Mock;
+const mockGetDidDocKeys = getDidDocPublicKeys as jest.Mock;
 const mockDoVerify = doVerify as jest.Mock;
 
 describe('verifyCredential', () => {
@@ -44,10 +44,10 @@ describe('verifyCredential', () => {
     credential = await makeDummyCredential(credOptions);
 
     const dummyDidDoc = await makeDummyDidDocument({ id: credential.issuer });
-    mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc });
+    mockGetDidDocKeys.mockResolvedValue({ authToken: authHeader, body: [dummyDidDoc.publicKey] });
     mockDoVerify.mockReturnValueOnce(true);
 
-    isVerified = await verifyCredential(credential, authHeader);
+    isVerified = await verifyCredential(authHeader, credential);
   });
 
   afterAll(() => {
@@ -55,7 +55,7 @@ describe('verifyCredential', () => {
   });
 
   it('gets the did document', () => {
-    expect(mockGetDIDDoc).toBeCalled();
+    expect(mockGetDidDocKeys).toBeCalled();
   });
 
   it('verifies the credential', () => {
@@ -96,7 +96,7 @@ describe('verifyCredential', () => {
     };
 
     mockDoVerify.mockReturnValueOnce(false);
-    const isInvalidVerified = await verifyCredential(invalidCredential, authHeader);
+    const isInvalidVerified = await verifyCredential(authHeader, invalidCredential);
     expect(isInvalidVerified.body).toBe(false);
   });
 
@@ -132,7 +132,7 @@ describe('verifyCredential', () => {
     };
 
     mockDoVerify.mockReturnValueOnce(false);
-    const isInvalidVerified = await verifyCredential(invalidCredential, authHeader);
+    const isInvalidVerified = await verifyCredential(authHeader, invalidCredential);
     expect(isInvalidVerified.body).toBe(false);
   });
 
@@ -168,7 +168,7 @@ describe('verifyCredential', () => {
     };
 
     mockDoVerify.mockReturnValueOnce(false);
-    const isInvalidVerified = await verifyCredential(validCredential, authHeader);
+    const isInvalidVerified = await verifyCredential(authHeader, validCredential);
     expect(isInvalidVerified.body).toBe(false);
   });
 });

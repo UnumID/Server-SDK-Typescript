@@ -249,7 +249,7 @@ var validateInputs = function (issuer, subjectDid, credentialDataList, signingPr
  * @returns
  */
 exports.issueCredentials = function (authorization, issuer, subjectDid, credentialDataList, signingPrivateKey, expirationDate) { return __awaiter(void 0, void 0, void 0, function () {
-    var publicKeyInfos, creds, i, type, credData, credSubject, credentialVersionPairs, _loop_1, _i, versionList_2, version, latestVersion, resultantCredentials;
+    var publicKeyInfoResponse, publicKeyInfos, creds, i, type, credData, credSubject, credentialVersionPairs, _loop_1, _i, versionList_2, version, latestVersion, resultantCredentials;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -257,9 +257,11 @@ exports.issueCredentials = function (authorization, issuer, subjectDid, credenti
                 requireAuth_1.requireAuth(authorization);
                 // Validate inputs.
                 validateInputs(issuer, subjectDid, credentialDataList, signingPrivateKey, expirationDate);
-                return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authorization, subjectDid)];
+                return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authorization, subjectDid, 'RSA')];
             case 1:
-                publicKeyInfos = _a.sent();
+                publicKeyInfoResponse = _a.sent();
+                publicKeyInfos = publicKeyInfoResponse.body;
+                authorization = publicKeyInfoResponse.authToken;
                 creds = [];
                 for (i = 0; i < credentialDataList.length; i++) {
                     type = credentialDataList[i].type;
@@ -317,7 +319,7 @@ exports.issueCredentials = function (authorization, issuer, subjectDid, credenti
  */
 // DEPRECATED; No longer exposed. However keeping around as maybe nice to have internally.
 exports.issueCredential = function (authorization, type, issuer, credentialSubject, signingPrivateKey, expirationDate) { return __awaiter(void 0, void 0, void 0, function () {
-    var subjectDid, publicKeyInfos, error_2;
+    var subjectDid, publicKeyInfoResponse, publicKeyInfos, error_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -327,9 +329,11 @@ exports.issueCredential = function (authorization, type, issuer, credentialSubje
                 // Validate the inputs
                 validateInputsDeprecated(type, issuer, credentialSubject, signingPrivateKey, expirationDate);
                 subjectDid = credentialSubject.id;
-                return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authorization, subjectDid)];
+                return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authorization, subjectDid, 'RSA')];
             case 1:
-                publicKeyInfos = _a.sent();
+                publicKeyInfoResponse = _a.sent();
+                publicKeyInfos = publicKeyInfoResponse.body;
+                authorization = publicKeyInfoResponse.authToken;
                 return [2 /*return*/, issueCredentialHelperDeprecated(authorization, type, issuer, credentialSubject, signingPrivateKey, publicKeyInfos, expirationDate)];
             case 2:
                 error_2 = _a.sent();

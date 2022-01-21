@@ -3,15 +3,13 @@ import { omit } from 'lodash';
 
 import { UnumDto, VerifiedStatus } from '../types';
 import { validateProof } from './validateProof';
-import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
 import logger from '../logger';
 import { CustError } from '../utils/error';
 import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
-import { handleAuthTokenHeader } from '../utils/networkRequestHelper';
 import { doVerify } from '../utils/verify';
-import { PresentationPb, UnsignedPresentationPb } from '@unumid/types';
-import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
+import { PresentationPb, PublicKeyInfo, UnsignedPresentationPb } from '@unumid/types';
+import { getDidDocPublicKeys } from '../utils/didHelper';
 import { sendPresentationVerifiedReceipt } from './sendPresentationVerifiedReceipt';
 
 /**
@@ -62,13 +60,13 @@ export const validateNoPresentationParams = (noPresentation: PresentationPb): Pr
 
 /**
  * Handler for when a user does not agree to share the information in the credential request.
- * @param authorization
+ * @param authToken
  * @param noPresentation
  * @param verifier
  */
-export const verifyNoPresentationHelper = async (authorization: string, noPresentation: PresentationPb, verifier: string, requestUuid: string): Promise<UnumDto<VerifiedStatus>> => {
+export const verifyNoPresentationHelper = async (authToken: string, noPresentation: PresentationPb, verifier: string, requestUuid: string): Promise<UnumDto<VerifiedStatus>> => {
   try {
-    requireAuth(authorization);
+    requireAuth(authToken);
 
     noPresentation = validateNoPresentationParams(noPresentation);
 
@@ -83,7 +81,7 @@ export const verifyNoPresentationHelper = async (authorization: string, noPresen
       const message = `The presentation was meant for verifier, ${verifierDid}, not the provided verifier, ${verifier}.`;
 
       // send PresentationVerified receipt
-      const authToken = await sendPresentationVerifiedReceipt(authorization, verifier, noPresentation.proof.verificationMethod, 'declined', false, noPresentation.presentationRequestId, requestUuid, message);
+      authToken = await sendPresentationVerifiedReceipt(authToken, verifier, noPresentation.proof.verificationMethod, 'declined', false, noPresentation.presentationRequestId, requestUuid, message);
 
       const result: UnumDto<VerifiedStatus> = {
         authToken,
@@ -95,16 +93,10 @@ export const verifyNoPresentationHelper = async (authorization: string, noPresen
       return result;
     }
 
-    const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, verificationMethod);
-
-    if (didDocumentResponse instanceof Error) {
-      throw didDocumentResponse;
-    }
-
-    let authToken: string = handleAuthTokenHeader(didDocumentResponse, authorization);
-    const publicKeyInfos = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
-
-    const { publicKey, encoding } = publicKeyInfos[0];
+    // grab all 'secp256r1' keys from the DID document
+    const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authToken, verificationMethod, 'secp256r1');
+    const publicKeyInfoList: PublicKeyInfo[] = publicKeyInfoResponse.body;
+    authToken = publicKeyInfoResponse.authToken;
 
     // remove the proof attribute
     const unsignedNoPresentation: UnsignedPresentationPb = omit(noPresentation, 'proof');
@@ -112,8 +104,16 @@ export const verifyNoPresentationHelper = async (authorization: string, noPresen
     // create byte array from protobuf helpers
     const bytes = UnsignedPresentationPb.encode(unsignedNoPresentation).finish();
 
-    // verify the signature
-    const isVerified = doVerify(signatureValue, bytes, publicKey, encoding);
+    let isVerified = false;
+
+    // check all the public keys to see if any work, stop if one does
+    for (const publicKeyInfo of publicKeyInfoList) {
+      const { publicKey, encoding } = publicKeyInfo;
+
+      // verify the signature
+      isVerified = doVerify(signatureValue, bytes, publicKey, encoding);
+      if (isVerified) break;
+    }
 
     const message = isVerified ? undefined : 'Presentation signature can not be verified.'; // the receipt reason, only populated if not verified
 

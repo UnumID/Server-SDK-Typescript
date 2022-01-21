@@ -1,9 +1,9 @@
 import { omit } from 'lodash';
 
 import { VerifiedStatus, UnumDto } from '../../src/types';
-import { dummyAuthToken, dummyVerifierDid, makeDummyDidDocument, makeDummyPresentation } from './mocks';
+import { dummyAuthToken, makeDummyDidDocument, makeDummyPresentation } from './mocks';
 import { verifyNoPresentationHelper as verifyNoPresentation } from '../../src/verifier/verifyNoPresentationHelper';
-import { getDIDDoc } from '../../src/utils/didHelper';
+import { getDidDocPublicKeys } from '../../src/utils/didHelper';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { doVerify } from '../../src/utils/verify';
 import { PresentationPb } from '@unumid/types';
@@ -12,7 +12,7 @@ jest.mock('../../src/utils/didHelper', () => {
   const actual = jest.requireActual('../../src/utils/didHelper');
   return {
     ...actual,
-    getDIDDoc: jest.fn()
+    getDidDocPublicKeys: jest.fn()
   };
 });
 
@@ -29,7 +29,7 @@ jest.mock('../../src/utils/networkRequestHelper', () => ({
   makeNetworkRequest: jest.fn()
 }));
 
-const mockGetDIDDoc = getDIDDoc as jest.Mock;
+const mockGetDidDocKeys = getDidDocPublicKeys as jest.Mock;
 const mockDoVerify = doVerify as jest.Mock;
 const mockMakeNetworkRequest = makeNetworkRequest as jest.Mock;
 
@@ -76,7 +76,7 @@ describe('verifyNoPresentation', () => {
     // const dummyDidDoc = await makeDummyDidDocument({ id: dummyNoPresentation.holder });
     const dummyDidDoc = await makeDummyDidDocument({ });
     const headers = { 'x-auth-token': dummyAuthToken };
-    mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
+    mockGetDidDocKeys.mockResolvedValue({ body: [dummyDidDoc.publicKey], authToken: dummyAuthToken });
     mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers });
   });
 
@@ -95,7 +95,7 @@ describe('verifyNoPresentation', () => {
     });
 
     it('gets the holder did', () => {
-      expect(mockGetDIDDoc).toBeCalled();
+      expect(mockGetDidDocKeys).toBeCalled();
     });
 
     it('verifies the NoPresentation', () => {
@@ -114,7 +114,7 @@ describe('verifyNoPresentation', () => {
       const dummySubjectDidDoc = await makeDummyDidDocument();
       const dummyApiResponse = { body: dummySubjectDidDoc };
       mockMakeNetworkRequest.mockResolvedValueOnce(dummyApiResponse);
-      mockGetDIDDoc.mockResolvedValue({ body: dummySubjectDidDoc });
+      mockGetDidDocKeys.mockResolvedValue({ body: [dummySubjectDidDoc.publicKey], authToken: dummyAuthToken });
       const dummyNoPresentationLocal = await makeDummyPresentation({ context: [], type: ['NoPresentation', 'NoPresentation'], verifiableCredential: [] });
       response = await callVerifyNoPresentation(dummyNoPresentationLocal, verifier, authHeader);
 

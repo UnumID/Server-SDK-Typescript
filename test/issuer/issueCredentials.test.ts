@@ -5,7 +5,7 @@ import { UnumDto } from '../../src/types';
 import { CredentialSubject, Credential, CredentialData, CredentialPb } from '@unumid/types';
 import { CustError } from '../../src/utils/error';
 import * as createKeyPairs from '../../src/utils/createKeyPairs';
-import { getDIDDoc, getDidDocPublicKeys } from '../../src/utils/didHelper';
+import { getDidDocPublicKeys } from '../../src/utils/didHelper';
 import { doEncrypt, doEncryptPb } from '../../src/utils/encrypt';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { omit } from 'lodash';
@@ -14,7 +14,6 @@ jest.mock('../../src/utils/didHelper', () => {
   const actual = jest.requireActual('../../src/utils/didHelper');
   return {
     ...actual,
-    getDIDDoc: jest.fn(),
     getDidDocPublicKeys: jest.fn()
   };
 });
@@ -49,7 +48,6 @@ jest.mock('../../src/utils/encrypt');
 const createKeyPairSetSpy = jest.spyOn(createKeyPairs, 'createKeyPairSet');
 
 const mockMakeNetworkRequest = makeNetworkRequest as jest.Mock;
-const mockGetDIDDoc = getDIDDoc as jest.Mock;
 const mockGetDidDocKeys = getDidDocPublicKeys as jest.Mock;
 const mockDoEncrypt = doEncrypt as jest.Mock;
 const mockDoEncryptPb = doEncryptPb as jest.Mock;
@@ -77,9 +75,8 @@ describe('issueCredential', () => {
   beforeEach(async () => {
     const dummyDidDoc = await makeDummyDidDocument();
     const headers = { 'x-auth-token': dummyAuthToken };
-    mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
     mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers });
-    mockGetDidDocKeys.mockResolvedValue(dummyDidDoc.publicKey);
+    mockGetDidDocKeys.mockResolvedValue({ authToken: dummyAuthToken, body: [dummyDidDoc.publicKey] });
 
     responseDto = await callIssueCred(credentialSubject, type, issuer, expirationDate, eccPrivateKey, authHeader);
     response = responseDto.body;
@@ -99,8 +96,8 @@ describe('issueCredential', () => {
   });
 
   it('encrypts the credential for each public key', () => {
-    expect(mockDoEncrypt).toBeCalledTimes(4);
-    expect(mockDoEncryptPb).toBeCalledTimes(4);
+    expect(mockDoEncrypt).toBeCalledTimes(1);
+    expect(mockDoEncryptPb).toBeCalledTimes(1);
   });
 
   it('sends encrypted credentials of all versions (2,3) to the saas', () => {
@@ -126,18 +123,10 @@ describe('issueCredential', () => {
     expect(responseAuthToken).toEqual(dummyAuthToken);
   });
 
-  it('does not return an auth token if the SaaS does not return an auth token', async () => {
-    mockMakeNetworkRequest.mockResolvedValue({ body: { success: true } });
-    responseDto = await callIssueCred(credentialSubject, type, issuer, expirationDate, eccPrivateKey, dummyAdminKey);
-    responseAuthToken = responseDto.authToken;
-    expect(responseAuthToken).toBeUndefined();
-  });
-
   it('type array starts with and contains only one `VerifiableCredential` string despite type of the credential options including the preceeding string', async () => {
     mockMakeNetworkRequest.mockResolvedValue({ body: { success: true } });
     const dummyDidDoc = await makeDummyDidDocument();
     const headers = { 'x-auth-token': dummyAuthToken };
-    mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
 
     responseDto = await callIssueCred(credentialSubject, type, issuer, expirationDate, eccPrivateKey, dummyAdminKey);
     const types = responseDto.body.type;
@@ -261,9 +250,9 @@ describe('issueCredentials', () => {
   beforeEach(async () => {
     const dummyDidDoc = await makeDummyDidDocument();
     const headers = { 'x-auth-token': dummyAuthToken };
-    mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
+    // mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
     mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers });
-    mockGetDidDocKeys.mockResolvedValue(dummyDidDoc.publicKey);
+    mockGetDidDocKeys.mockResolvedValue({ authToken: dummyAuthToken, body: [dummyDidDoc.publicKey] });
 
     responseDto = await callIssueCreds(issuer, credentialSubject.id, credentialData, expirationDate, eccPrivateKey, authHeader);
     response = responseDto.body;
@@ -283,8 +272,8 @@ describe('issueCredentials', () => {
   });
 
   it('encrypts the credential for each public key', () => {
-    expect(mockDoEncrypt).toBeCalledTimes(8);
-    expect(mockDoEncryptPb).toBeCalledTimes(8);
+    expect(mockDoEncrypt).toBeCalledTimes(2);
+    expect(mockDoEncryptPb).toBeCalledTimes(2);
   });
 
   it('sends encrypted credentials of all versions (2,3) to the saas', () => {
@@ -326,7 +315,7 @@ describe('issueCredentials', () => {
     mockMakeNetworkRequest.mockResolvedValue({ body: { success: true } });
     const dummyDidDoc = await makeDummyDidDocument();
     const headers = { 'x-auth-token': dummyAuthToken };
-    mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
+    // mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
 
     responseDto = await callIssueCreds(issuer, credentialSubject.id, credentialData, expirationDate, eccPrivateKey, authHeader);
     const types = response[0].type;

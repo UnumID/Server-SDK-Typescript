@@ -1,11 +1,11 @@
 
 import { RESTData, UnumDto, VerifiedStatus } from '../types';
-import { CredentialRequestInfoBasic, CredentialRequestPb, JSONObj, ReceiptOptions, SubjectCredentialRequest, ReceiptSubjectCredentialRequestVerifiedData } from '@unumid/types';
+import { CredentialRequestInfoBasic, CredentialRequestPb, JSONObj, ReceiptOptions, SubjectCredentialRequest, ReceiptSubjectCredentialRequestVerifiedData, PublicKeyInfo } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
 import { CustError } from '../utils/error';
 import { isArrayEmpty } from '../utils/helpers';
 import { omit } from 'lodash';
-import { getDIDDoc, getKeyFromDIDDoc } from '../utils/didHelper';
+import { getDidDocPublicKeys } from '../utils/didHelper';
 import { configData } from '../config';
 import { doVerify } from '../utils/verify';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
@@ -47,7 +47,7 @@ const validateCredentialRequests = (requests: SubjectCredentialRequest[], subjec
     }
 
     // handle validating the subject did is the identical fr all requests
-    if (subjectDid !== request.proof.verificationMethod) {
+    if (subjectDid !== request.proof.verificationMethod.split('#')[0]) {
       throw new CustError(400, `Invalid SubjectCredentialRequest[${i}]: provided subjectDid, ${subjectDid}, must match that of the credential requests' signer, ${request.proof.verificationMethod}.`);
     }
   }
@@ -93,14 +93,14 @@ export async function verifySubjectCredentialRequests (authorization: string, is
   };
 }
 
-export async function verifySubjectCredentialRequest (authorization: string, issuerDid: string, credentialRequest: SubjectCredentialRequest): Promise<UnumDto<VerifiedStatus>> {
+export async function verifySubjectCredentialRequest (authToken: string, issuerDid: string, credentialRequest: SubjectCredentialRequest): Promise<UnumDto<VerifiedStatus>> {
   const verificationMethod = credentialRequest.proof?.verificationMethod as string;
   const signatureValue = credentialRequest.proof?.signatureValue as string;
 
   // validate that the issueDid is present in the request issuer array
   if (!credentialRequest.issuers.includes(issuerDid)) {
     return {
-      authToken: authorization,
+      authToken,
       body: {
         isVerified: false,
         message: `Issuer DID, ${issuerDid}, not found in credential request issuers ${credentialRequest.issuers}`
@@ -108,16 +108,11 @@ export async function verifySubjectCredentialRequest (authorization: string, iss
     };
   }
 
-  const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, verificationMethod);
+  const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authToken, verificationMethod, 'secp256r1');
+  const publicKeyInfoList: PublicKeyInfo[] = publicKeyInfoResponse.body;
+  authToken = publicKeyInfoResponse.authToken;
 
-  if (didDocumentResponse instanceof Error) {
-    throw didDocumentResponse;
-  }
-
-  const authToken: string = handleAuthTokenHeader(didDocumentResponse, authorization);
-  const publicKeyInfos = getKeyFromDIDDoc(didDocumentResponse.body, 'secp256r1');
-
-  if (publicKeyInfos.length === 0) {
+  if (publicKeyInfoList.length === 0) {
     return {
       authToken,
       body: {
@@ -127,15 +122,21 @@ export async function verifySubjectCredentialRequest (authorization: string, iss
     };
   }
 
-  const { publicKey, encoding } = publicKeyInfos[0];
+  let isVerified = false;
 
   const unsignedCredentialRequest: CredentialRequestPb = omit(credentialRequest, 'proof');
 
   // convert to bytes
   const bytes: Uint8Array = CredentialRequestPb.encode(unsignedCredentialRequest).finish();
 
-  // verify the byte array
-  const isVerified = doVerify(signatureValue, bytes, publicKey, encoding);
+  // check all the public keys to see if any work, stop if one does
+  for (const publicKeyInfo of publicKeyInfoList) {
+    const { publicKey, encoding } = publicKeyInfo;
+
+    // verify the signature
+    isVerified = doVerify(signatureValue, bytes, publicKey, encoding);
+    if (isVerified) break;
+  }
 
   if (!isVerified) {
     return {
