@@ -1,6 +1,6 @@
 
 import { RESTData, UnumDto, VerifiedStatus } from '../types';
-import { CredentialRequestInfoBasic, CredentialRequestPb, JSONObj, ReceiptOptions, SubjectCredentialRequest, ReceiptSubjectCredentialRequestVerifiedData } from '@unumid/types';
+import { CredentialRequestInfoBasic, CredentialRequestPb, JSONObj, ReceiptOptions, SubjectCredentialRequest, ReceiptSubjectCredentialRequestVerifiedData, PublicKeyInfo } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
 import { CustError } from '../utils/error';
 import { isArrayEmpty } from '../utils/helpers';
@@ -47,7 +47,7 @@ const validateCredentialRequests = (requests: SubjectCredentialRequest[], subjec
     }
 
     // handle validating the subject did is the identical fr all requests
-    if (subjectDid !== request.proof.verificationMethod) {
+    if (subjectDid !== request.proof.verificationMethod.split('#')[0]) {
       throw new CustError(400, `Invalid SubjectCredentialRequest[${i}]: provided subjectDid, ${subjectDid}, must match that of the credential requests' signer, ${request.proof.verificationMethod}.`);
     }
   }
@@ -110,14 +110,32 @@ export async function verifySubjectCredentialRequest (authorization: string, iss
 
   const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, verificationMethod);
 
+  // need to get the issuer's DID doc's 'secp256r1' public key(s)
+  const didDocumentService = app.service('didDocument');
+  const did = verificationMethod.split('#')[0];
+  const didKeyId = verificationMethod.split('#')[1];
+
+  let publicKeyInfoList: PublicKeyInfo[];
+
+  if (didKeyId) {
+    /**
+       * If making a request to the Did Document service with a did and did fragment, only a single PublicKeyInfo object is returned.
+       * Putting in array for uniform handling with the case no fragment is included, in which case all the matching keys will need to be tried until one works.
+       */
+    publicKeyInfoList = [await didDocumentService.get(proof.verificationMethod) as PublicKeyInfo];
+  } else {
+    const didDoc = await didDocumentService.get(proof.verificationMethod) as DidDocument;
+    publicKeyInfoList = getKeyFromDIDDoc(didDoc, 'secp256r1');
+  }
+
   if (didDocumentResponse instanceof Error) {
     throw didDocumentResponse;
   }
 
   const authToken: string = handleAuthTokenHeader(didDocumentResponse, authorization);
-  const publicKeyInfos = getKeysFromDIDDoc(didDocumentResponse.body, 'secp256r1');
+  // const publicKeyInfoList = getKeysFromDIDDoc(didDocumentResponse.body, 'secp256r1');
 
-  if (publicKeyInfos.length === 0) {
+  if (publicKeyInfoList.length === 0) {
     return {
       authToken,
       body: {
@@ -128,7 +146,7 @@ export async function verifySubjectCredentialRequest (authorization: string, iss
   }
 
   // TODO update DID
-  const { publicKey, encoding } = publicKeyInfos[0];
+  const { publicKey, encoding } = publicKeyInfoList[0];
 
   const unsignedCredentialRequest: CredentialRequestPb = omit(credentialRequest, 'proof');
 

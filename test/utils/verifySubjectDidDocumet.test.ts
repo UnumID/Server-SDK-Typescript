@@ -1,6 +1,6 @@
 
 import { JSONObj, SignedDidDocument } from '@unumid/types';
-import { UnumDto, VerifiedStatus, CustError, verifySubjectDidDocument } from '../../src';
+import { UnumDto, VerifiedStatus, CustError, verifySignedDid } from '../../src';
 import { getDIDDoc } from '../../src/utils/didHelper';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { doVerify, doVerifyDeprecated } from '../../src/utils/verify';
@@ -90,7 +90,7 @@ const populateMockData = async (): Promise<JSONObj> => {
   });
 };
 
-describe('verifySubjectDidDocument', () => {
+describe('verifySignedDid', () => {
   let signedDidDocument, unsignedDidDocument;
 
   beforeAll(async () => {
@@ -104,7 +104,7 @@ describe('verifySubjectDidDocument', () => {
     jest.clearAllMocks();
   });
 
-  describe('verifySubjectDidDocument - Success Scenario', () => {
+  describe('verifySignedDid - Success Scenario', () => {
     let response: UnumDto<VerifiedStatus>;
     let verStatus: boolean;
 
@@ -113,7 +113,7 @@ describe('verifySubjectDidDocument', () => {
       mockGetDIDDoc.mockResolvedValueOnce({ body: unsignedDidDocument, headers: dummyResponseHeaders });
       mockDoVerify.mockResolvedValue(true);
       mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers: dummyResponseHeaders });
-      response = await verifySubjectDidDocument(dummyAuthToken, dummyIssuerDid, signedDidDocument);
+      response = await verifySignedDid(dummyAuthToken, dummyIssuerDid, signedDidDocument);
       verStatus = response.body.isVerified;
     });
 
@@ -139,7 +139,7 @@ describe('verifySubjectDidDocument', () => {
     });
   });
 
-  describe('verifySubjectDidDocument - Failure Scenarios', () => {
+  describe('verifySignedDid - Failure Scenarios', () => {
     let response: UnumDto<VerifiedStatus>;
     let verStatus: boolean;
 
@@ -154,7 +154,7 @@ describe('verifySubjectDidDocument', () => {
     it('gets the subject did document', async () => {
       const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
       mockGetDIDDoc.mockResolvedValue({ body: unsignedDidDocument, headers: dummyResponseHeaders });
-      response = await verifySubjectDidDocument(dummyAuthToken, dummyIssuerDid, signedDidDocument);
+      response = await verifySignedDid(dummyAuthToken, dummyIssuerDid, signedDidDocument);
       verStatus = response.body.isVerified;
       expect(mockGetDIDDoc).toBeCalled();
     });
@@ -175,7 +175,7 @@ describe('verifySubjectDidDocument', () => {
       };
       const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
       mockGetDIDDoc.mockResolvedValue({ body: dummyDidDocWithoutKeys, headers: dummyResponseHeaders });
-      response = await verifySubjectDidDocument(dummyAuthToken, dummyIssuerDid, signedDidDocument);
+      response = await verifySignedDid(dummyAuthToken, dummyIssuerDid, signedDidDocument);
       expect(response.body.isVerified).toBe(false);
       expect(response.body.message).toBe(`Public key not found for the subject did ${signedDidDocument.proof.verificationMethod}`);
     });
@@ -184,7 +184,7 @@ describe('verifySubjectDidDocument', () => {
       mockGetDIDDoc.mockResolvedValue(new CustError(404, 'DID Document not found.'));
 
       try {
-        response = await verifySubjectDidDocument(dummyAuthToken, dummyIssuerDid, signedDidDocument);
+        response = await verifySignedDid(dummyAuthToken, dummyIssuerDid, signedDidDocument);
         fail();
       } catch (e) {
         expect(e.code).toEqual(404);
@@ -192,10 +192,10 @@ describe('verifySubjectDidDocument', () => {
     });
   });
 
-  describe('verifySubjectDidDocument - Validation Failures', () => {
+  describe('verifySignedDid - Validation Failures', () => {
     it('returns a 400 status code with a descriptive error message when didDocument is missing', async () => {
       try {
-        await verifySubjectDidDocument(dummyAuthToken, dummyIssuerDid, undefined);
+        await verifySignedDid(dummyAuthToken, dummyIssuerDid, undefined);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -209,7 +209,7 @@ describe('verifySubjectDidDocument', () => {
           ...signedDidDocument,
           proof: undefined
         };
-        await verifySubjectDidDocument(dummyAuthToken, dummyIssuerDid, badRequest);
+        await verifySignedDid(dummyAuthToken, dummyIssuerDid, badRequest);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);

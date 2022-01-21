@@ -13,7 +13,7 @@ import { configData } from '../config';
  * @param authorization
  * @param did
  */
-export const getDIDDoc = async (baseUrl: string, authorization: string, did: string): Promise<RESTResponse<DidDocument> | CustError> => {
+export const getDIDDoc = async (baseUrl: string, authorization: string, did: string): Promise<RESTResponse<DidDocument | PublicKeyInfo> | CustError> => {
   try {
     const restData: RESTData = {
       method: 'GET',

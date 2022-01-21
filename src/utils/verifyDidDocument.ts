@@ -33,7 +33,7 @@ const validateSignedDid = (did: DID): void => {
 /**
  * Verify the CredentialRequests signatures.
  */
-export async function verifySubjectDidDocument (authorization: string, issuerDid: string, signedDid: DID): Promise<UnumDto<VerifiedStatus>> {
+export async function verifySignedDid (authorization: string, issuerDid: string, signedDid: DID): Promise<UnumDto<VerifiedStatus>> {
   requireAuth(authorization);
 
   // validate the DID
