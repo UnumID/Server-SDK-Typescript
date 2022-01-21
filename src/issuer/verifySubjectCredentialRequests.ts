@@ -122,16 +122,21 @@ export async function verifySubjectCredentialRequest (authToken: string, issuerD
     };
   }
 
-  // TODO update DID
-  const { publicKey, encoding } = publicKeyInfoList[0];
+  let isVerified = false;
 
   const unsignedCredentialRequest: CredentialRequestPb = omit(credentialRequest, 'proof');
 
   // convert to bytes
   const bytes: Uint8Array = CredentialRequestPb.encode(unsignedCredentialRequest).finish();
 
-  // verify the byte array
-  const isVerified = doVerify(signatureValue, bytes, publicKey, encoding);
+  // check all the public keys to see if any work, stop if one does
+  for (const publicKeyInfo of publicKeyInfoList) {
+    const { publicKey, encoding } = publicKeyInfo;
+
+    // verify the signature
+    isVerified = doVerify(signatureValue, bytes, publicKey, encoding);
+    if (isVerified) break;
+  }
 
   if (!isVerified) {
     return {
