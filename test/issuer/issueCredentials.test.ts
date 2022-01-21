@@ -14,7 +14,6 @@ jest.mock('../../src/utils/didHelper', () => {
   const actual = jest.requireActual('../../src/utils/didHelper');
   return {
     ...actual,
-    getDIDDoc: jest.fn(),
     getDidDocPublicKeys: jest.fn()
   };
 });

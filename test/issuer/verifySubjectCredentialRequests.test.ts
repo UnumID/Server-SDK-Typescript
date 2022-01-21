@@ -1,7 +1,7 @@
 
 import { JSONObj } from '@unumid/types';
 import { UnumDto, VerifiedStatus, CustError } from '../../src';
-import { getDIDDoc } from '../../src/utils/didHelper';
+import { getDIDDoc, getDidDocPublicKeys } from '../../src/utils/didHelper';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { doVerify } from '../../src/utils/verify';
 import { verifySubjectCredentialRequests } from '../../src/issuer/verifySubjectCredentialRequests';
@@ -12,7 +12,7 @@ jest.mock('../../src/utils/didHelper', () => {
   const actual = jest.requireActual('../../src/utils/didHelper');
   return {
     ...actual,
-    getDIDDoc: jest.fn()
+    getDidDocPublicKeys: jest.fn()
   };
 });
 
@@ -32,7 +32,7 @@ jest.mock('../../src/utils/networkRequestHelper', () => ({
 jest.mock('../../src/verifier/verifyCredential');
 jest.mock('../../src/verifier/isCredentialExpired');
 
-const mockGetDIDDoc = getDIDDoc as jest.Mock;
+const mockGetDidDocKeys = getDidDocPublicKeys as jest.Mock;
 const mockDoVerify = doVerify as jest.Mock;
 const mockMakeNetworkRequest = makeNetworkRequest as jest.Mock;
 
@@ -91,7 +91,7 @@ describe('verifySubjectCredentialRequest', () => {
       const dummySubjectDidDoc = await makeDummyDidDocument();
 
       const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
-      mockGetDIDDoc.mockResolvedValueOnce({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
+      mockGetDidDocKeys.mockResolvedValue({ authToken: dummyAuthToken, body: [dummySubjectDidDoc.publicKey] });
       mockDoVerify.mockResolvedValue(true);
       mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers: dummyResponseHeaders });
       response = await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, dummySubjectDid, subjectCredentialRequests);
@@ -103,7 +103,7 @@ describe('verifySubjectCredentialRequest', () => {
     });
 
     it('gets the subject did document', () => {
-      expect(mockGetDIDDoc).toBeCalled();
+      expect(mockGetDidDocKeys).toBeCalled();
     });
 
     it('verifies the SubjectCredentialRequest', () => {
@@ -136,10 +136,10 @@ describe('verifySubjectCredentialRequest', () => {
     it('gets the subject did document', async () => {
       const dummySubjectDidDoc = await makeDummyDidDocument();
       const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
-      mockGetDIDDoc.mockResolvedValue({ body: dummySubjectDidDoc, headers: dummyResponseHeaders });
+      mockGetDidDocKeys.mockResolvedValue({ authToken: dummyAuthToken, body: [dummySubjectDidDoc.publicKey] });
       response = await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, dummySubjectDid, subjectCredentialRequests);
       verStatus = response.body.isVerified;
-      expect(mockGetDIDDoc).toBeCalled();
+      expect(mockGetDidDocKeys).toBeCalled();
     });
 
     it('verifies the subject credential request', async () => {
@@ -157,14 +157,16 @@ describe('verifySubjectCredentialRequest', () => {
         publicKey: []
       };
       const dummyResponseHeaders = { 'x-auth-token': dummyAuthToken };
-      mockGetDIDDoc.mockResolvedValue({ body: dummyDidDocWithoutKeys, headers: dummyResponseHeaders });
+      mockGetDidDocKeys.mockResolvedValue({ authToken: dummyAuthToken, body: [] });
       const response = await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, dummySubjectDid, subjectCredentialRequests);
       expect(response.body.isVerified).toBe(false);
       expect(response.body.message).toBe(`Public key not found for the subject did ${subjectCredentialRequests[0].proof.verificationMethod}`);
     });
 
     it('returns a 404 status code if the did document is not found', async () => {
-      mockGetDIDDoc.mockResolvedValue(new CustError(404, 'DID Document not found.'));
+      mockGetDidDocKeys.mockImplementation(() => {
+        throw new CustError(404, 'DID Document not found.');
+      });
 
       try {
         response = await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, dummySubjectDid, subjectCredentialRequests);
