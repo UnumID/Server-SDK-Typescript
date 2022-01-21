@@ -146,9 +146,9 @@ exports.verifySubjectCredentialRequests = verifySubjectCredentialRequests;
 function verifySubjectCredentialRequest(authToken, issuerDid, credentialRequest) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
-        var verificationMethod, signatureValue, publicKeyInfoResponse, publicKeyInfoList, _c, publicKey, encoding, unsignedCredentialRequest, bytes, isVerified;
-        return __generator(this, function (_d) {
-            switch (_d.label) {
+        var verificationMethod, signatureValue, publicKeyInfoResponse, publicKeyInfoList, isVerified, unsignedCredentialRequest, bytes, _i, publicKeyInfoList_1, publicKeyInfo, publicKey, encoding;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
                 case 0:
                     verificationMethod = (_a = credentialRequest.proof) === null || _a === void 0 ? void 0 : _a.verificationMethod;
                     signatureValue = (_b = credentialRequest.proof) === null || _b === void 0 ? void 0 : _b.signatureValue;
@@ -164,7 +164,7 @@ function verifySubjectCredentialRequest(authToken, issuerDid, credentialRequest)
                     }
                     return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authToken, verificationMethod, 'secp256r1')];
                 case 1:
-                    publicKeyInfoResponse = _d.sent();
+                    publicKeyInfoResponse = _c.sent();
                     publicKeyInfoList = publicKeyInfoResponse.body;
                     authToken = publicKeyInfoResponse.authToken;
                     if (publicKeyInfoList.length === 0) {
@@ -176,10 +176,18 @@ function verifySubjectCredentialRequest(authToken, issuerDid, credentialRequest)
                                 }
                             }];
                     }
-                    _c = publicKeyInfoList[0], publicKey = _c.publicKey, encoding = _c.encoding;
+                    isVerified = false;
                     unsignedCredentialRequest = lodash_1.omit(credentialRequest, 'proof');
                     bytes = types_1.CredentialRequestPb.encode(unsignedCredentialRequest).finish();
-                    isVerified = verify_1.doVerify(signatureValue, bytes, publicKey, encoding);
+                    // check all the public keys to see if any work, stop if one does
+                    for (_i = 0, publicKeyInfoList_1 = publicKeyInfoList; _i < publicKeyInfoList_1.length; _i++) {
+                        publicKeyInfo = publicKeyInfoList_1[_i];
+                        publicKey = publicKeyInfo.publicKey, encoding = publicKeyInfo.encoding;
+                        // verify the signature
+                        isVerified = verify_1.doVerify(signatureValue, bytes, publicKey, encoding);
+                        if (isVerified)
+                            break;
+                    }
                     if (!isVerified) {
                         return [2 /*return*/, {
                                 authToken: authToken,
