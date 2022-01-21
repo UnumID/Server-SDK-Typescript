@@ -295,17 +295,18 @@ export const verifyPresentationHelper = async (authorization: string, presentati
       validatePresentationMeetsRequestedCredentials(presentation, credentialRequests as CredentialRequest[]);
     }
 
-    // proof.verificationMethod is the subject's did
-    // grab all 'secp256r1' keys from the DID document
-    const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, proof.verificationMethod, 'secp256r1');
-    const publicKeyInfoList: PublicKeyInfo[] = publicKeyInfoResponse.body;
-    let authToken = publicKeyInfoResponse.authToken;
-
-    // Verify the data given.  As of now only one secp256r1 public key is expected.
-    // In future, there is a possibility that, more than one secp256r1 public key can be there for a given DID.
-    // This scenario will be handled later.
-    let isPresentationVerified = false;
     try {
+      // proof.verificationMethod is the subject's did
+      // grab all 'secp256r1' keys from the DID document
+      const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, proof.verificationMethod, 'secp256r1');
+      const publicKeyInfoList: PublicKeyInfo[] = publicKeyInfoResponse.body;
+      const authToken = publicKeyInfoResponse.authToken;
+
+      // Verify the data given.  As of now only one secp256r1 public key is expected.
+      // In future, there is a possibility that, more than one secp256r1 public key can be there for a given DID.
+      // This scenario will be handled later.
+      let isPresentationVerified = false;
+
       // create byte array from protobuf helpers
       const bytes = UnsignedPresentationPb.encode(data).finish();
 
