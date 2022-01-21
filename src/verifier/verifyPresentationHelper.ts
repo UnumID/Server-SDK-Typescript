@@ -247,13 +247,13 @@ function validatePresentationMeetsRequestedCredentials (presentation: Presentati
 
 /**
  * Handler to send information regarding the user agreeing to share a credential Presentation.
- * @param authToken
+ * @param authorization
  * @param presentation
  * @param verifier
  */
-export const verifyPresentationHelper = async (authToken: string, presentation: PresentationPb, verifier: string, credentialRequests: CredentialRequest[], requestUuid: string): Promise<UnumDto<VerifiedStatus>> => {
+export const verifyPresentationHelper = async (authorization: string, presentation: PresentationPb, verifier: string, credentialRequests: CredentialRequest[], requestUuid: string): Promise<UnumDto<VerifiedStatus>> => {
   try {
-    requireAuth(authToken);
+    requireAuth(authorization);
 
     if (!presentation) {
       throw new CustError(400, 'presentation is required.');
@@ -278,7 +278,7 @@ export const verifyPresentationHelper = async (authToken: string, presentation: 
       const message = `The presentation was meant for verifier, ${presentation.verifierDid}, not the provided verifier, ${verifier}.`;
 
       // send PresentationVerified receipt
-      authToken = await sendPresentationVerifiedReceipt(authToken, verifier, proof.verificationMethod, 'approved', false, presentation.presentationRequestId, requestUuid, message, issuers, credentialTypes, credentialIds);
+      const authToken = await sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, presentation.presentationRequestId, requestUuid, message, issuers, credentialTypes, credentialIds);
 
       const result: UnumDto<VerifiedStatus> = {
         authToken,
@@ -295,17 +295,17 @@ export const verifyPresentationHelper = async (authToken: string, presentation: 
       validatePresentationMeetsRequestedCredentials(presentation, credentialRequests as CredentialRequest[]);
     }
 
-    const isPresentationVerified = false;
+    // proof.verificationMethod is the subject's did
+    // grab all 'secp256r1' keys from the DID document
+    const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, proof.verificationMethod, 'secp256r1');
+    const publicKeyInfoList: PublicKeyInfo[] = publicKeyInfoResponse.body;
+    let authToken = publicKeyInfoResponse.authToken;
 
+    // Verify the data given.  As of now only one secp256r1 public key is expected.
+    // In future, there is a possibility that, more than one secp256r1 public key can be there for a given DID.
+    // This scenario will be handled later.
+    let isPresentationVerified = false;
     try {
-      // proof.verificationMethod is the subject's did
-      // grab all 'secp256r1' keys from the DID document
-      const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authToken, proof.verificationMethod, 'secp256r1');
-      const publicKeyInfoList: PublicKeyInfo[] = publicKeyInfoResponse.body;
-      authToken = publicKeyInfoResponse.authToken;
-
-      let isPresentationVerified = false;
-
       // create byte array from protobuf helpers
       const bytes = UnsignedPresentationPb.encode(data).finish();
 
