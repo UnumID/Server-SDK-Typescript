@@ -280,18 +280,11 @@ var validateSendRequestBodyDeprecated = function (sendRequestBody) {
  * @param holderAppUuid
  */
 exports.sendRequest = function (authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expirationDate, metadata) { return __awaiter(void 0, void 0, void 0, function () {
-    var id, responseV2, response;
+    var id, response;
     return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                id = helpers_1.getUUID();
-                return [4 /*yield*/, exports.sendRequestDeprecated(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata)];
-            case 1:
-                responseV2 = _a.sent();
-                authorization = responseV2.authToken ? responseV2.authToken : authorization;
-                response = exports.sendRequestV3(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata);
-                return [2 /*return*/, response];
-        }
+        id = helpers_1.getUUID();
+        response = exports.sendRequestV3(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata);
+        return [2 /*return*/, response];
     });
 }); };
 /**

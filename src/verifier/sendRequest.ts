@@ -2,7 +2,7 @@ import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
 import { CryptoError } from '@unumid/library-crypto';
 import { PresentationRequestPostDto as PresentationRequestPostDtoDeprecatedV2, UnsignedPresentationRequest as UnsignedPresentationRequestDeprecatedV2, SignedPresentationRequest as SignedPresentationRequestDeprecatedV2, Proof } from '@unumid/types-v2';
-import { CredentialRequest, PresentationRequestPostDto, UnsignedPresentationRequestPb, PresentationRequestPb, ProofPb, SignedPresentationRequest, CredentialRequestPb, JSONObj } from '@unumid/types';
+import { CredentialRequest, PresentationRequestPostDto, UnsignedPresentationRequestPb, PresentationRequestPb, ProofPb, SignedPresentationRequest, CredentialRequestPb, JSONObj, PresentationRequestDto } from '@unumid/types';
 
 import { RESTData, SendRequestReqBody, UnumDto } from '../types';
 import logger from '../logger';
@@ -320,13 +320,13 @@ export const sendRequest = async (
   holderAppUuid: string,
   expirationDate?: Date,
   metadata?: Record<string, unknown>
-): Promise<UnumDto<PresentationRequestPostDto>> => {
+): Promise<UnumDto<PresentationRequestDto>> => {
   // create an indentifier that ties together these related requests of different versions.
   const id = getUUID();
 
-  // create and send a v2 presentation request for backwards compatibility
-  const responseV2 = await sendRequestDeprecated(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata);
-  authorization = responseV2.authToken ? responseV2.authToken : authorization;
+  // // create and send a v2 presentation request for backwards compatibility
+  // const responseV2 = await sendRequestDeprecated(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata);
+  // authorization = responseV2.authToken ? responseV2.authToken : authorization;
 
   const response = sendRequestV3(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata);
   return response;
@@ -349,7 +349,7 @@ export const sendRequestV3 = async (
   id: string,
   expirationDate?: Date,
   metadata?: any
-): Promise<UnumDto<PresentationRequestPostDto>> => {
+): Promise<UnumDto<PresentationRequestDto>> => {
   try {
     requireAuth(authorization);
 
@@ -372,11 +372,11 @@ export const sendRequestV3 = async (
       data: signedPR
     };
 
-    const restResp = await makeNetworkRequest<PresentationRequestPostDto>(restData);
+    const restResp = await makeNetworkRequest<PresentationRequestDto>(restData);
 
     const authToken: string = handleAuthTokenHeader(restResp, authorization);
 
-    const presentationRequestResponse: UnumDto<PresentationRequestPostDto> = { body: { ...restResp.body }, authToken };
+    const presentationRequestResponse: UnumDto<PresentationRequestDto> = { body: { ...restResp.body }, authToken };
 
     return presentationRequestResponse;
   } catch (error) {
