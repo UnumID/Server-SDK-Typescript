@@ -40,6 +40,7 @@ export const verifyCredential = async (authToken: string, credential: Credential
       const { publicKey, encoding } = publicKeyInfo;
 
       isVerified = doVerify(proof.signatureValue, bytes, publicKey, encoding);
+      if (isVerified) break;
     }
 
     const result: UnumDto<boolean> = {
