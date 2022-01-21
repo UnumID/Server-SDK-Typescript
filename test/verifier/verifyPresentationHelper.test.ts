@@ -1,9 +1,7 @@
-import { verifyNoPresentationHelper } from '../../src/verifier/verifyNoPresentationHelper';
 
-import { getUUID } from '../../src/utils/helpers';
-import { PresentationPb, JSONObj, Presentation } from '@unumid/types';
-import { UnumDto, VerifiedStatus, CustError, verifyPresentation, checkCredentialStatuses } from '../../src';
-import { getDIDDoc, getDidDocPublicKeys } from '../../src/utils/didHelper';
+import { PresentationPb, JSONObj } from '@unumid/types';
+import { UnumDto, VerifiedStatus, CustError, checkCredentialStatuses } from '../../src';
+import { getDidDocPublicKeys } from '../../src/utils/didHelper';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { getCredentialStatusFromMap } from '../../src/utils/getCredentialStatusFromMap';
 import { doVerify } from '../../src/utils/verify';
@@ -11,7 +9,6 @@ import { isCredentialExpired } from '../../src/verifier/isCredentialExpired';
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { verifyPresentationHelper } from '../../src/verifier/verifyPresentationHelper';
 import { makeDummyPresentation, makeDummyUnsignedCredential, makeDummyCredential, dummyCredentialRequest, makeDummyUnsignedPresentationRequest, makeDummyPresentationRequestResponse, makeDummyUnsignedPresentation, makeDummyDidDocument, dummyAuthToken, dummyIssuerDid } from './mocks';
-import { encryptBytes } from '@unumid/library-crypto';
 
 jest.mock('../../src/utils/didHelper', () => {
   const actual = jest.requireActual('../../src/utils/didHelper');

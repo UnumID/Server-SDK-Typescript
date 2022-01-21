@@ -13,7 +13,7 @@ import { configData } from '../config';
  * @param authorization
  * @param did
  */
-export const getDIDDoc = async (baseUrl: string, authorization: string, did: string): Promise<RESTResponse<DidDocument | PublicKeyInfo> | CustError> => {
+const getDIDDoc = async (baseUrl: string, authorization: string, did: string): Promise<RESTResponse<DidDocument | PublicKeyInfo> | CustError> => {
   try {
     const restData: RESTData = {
       method: 'GET',
@@ -38,7 +38,7 @@ export const getDIDDoc = async (baseUrl: string, authorization: string, did: str
  * @param didDocument DiDDocument
  * @param type DidKeyType
  */
-export const getKeysFromDIDDoc = (didDocument: DidDocument, type: DidKeyType): PublicKeyInfo[] => {
+const getKeysFromDIDDoc = (didDocument: DidDocument, type: DidKeyType): PublicKeyInfo[] => {
   const publicKeyInfos = didDocument.publicKey.filter(publicKeyInfo => publicKeyInfo.type === type);
 
   if (publicKeyInfos.length === 0) {
@@ -89,29 +89,3 @@ export const getDidDocPublicKeys = async (authorization: string, subjectDid: str
     body: publicKeyInfoList
   };
 };
-
-// export const getDidDocPublicKeysR = async (authorization: string, subjectDid: string): Promise<PublicKeyInfo[]> => {
-//   const didDocumentResponse = await getDIDDoc(configData.SaaSUrl, authorization as string, subjectDid);
-
-//   if (didDocumentResponse instanceof Error) {
-//     throw didDocumentResponse;
-//   }
-
-//   // // need to get the issuer's DID doc's 'secp256r1' public key(s)
-//   // const didDocumentService = app.service('didDocument');
-//   const did = subjectDid.split('#')[0];
-//   const didKeyId = subjectDid.split('#')[1];
-
-//   let publicKeyInfoList: PublicKeyInfo[];
-
-//   if (didKeyId) {
-//     /**
-//        * If making a request to the Did Document service with a did and did fragment, only a single PublicKeyInfo object is returned.
-//        * Putting in array for uniform handling with the case no fragment is included, in which case all the matching keys will need to be tried until one works.
-//        */
-//     publicKeyInfoList = [await didDocumentResponse.body as PublicKeyInfo];
-//   } else {
-//     const didDoc = await didDocumentResponse.body as DidDocument;
-//     publicKeyInfoList = getKeysFromDIDDoc(didDoc, 'secp256r1');
-//   }
-// };

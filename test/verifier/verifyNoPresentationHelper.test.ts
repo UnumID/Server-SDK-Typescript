@@ -1,9 +1,9 @@
 import { omit } from 'lodash';
 
 import { VerifiedStatus, UnumDto } from '../../src/types';
-import { dummyAuthToken, dummySubjectDid, dummyVerifierDid, makeDummyDidDocument, makeDummyPresentation } from './mocks';
+import { dummyAuthToken, makeDummyDidDocument, makeDummyPresentation } from './mocks';
 import { verifyNoPresentationHelper as verifyNoPresentation } from '../../src/verifier/verifyNoPresentationHelper';
-import { getDIDDoc, getDidDocPublicKeys } from '../../src/utils/didHelper';
+import { getDidDocPublicKeys } from '../../src/utils/didHelper';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { doVerify } from '../../src/utils/verify';
 import { PresentationPb } from '@unumid/types';

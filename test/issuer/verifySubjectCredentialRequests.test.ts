@@ -1,7 +1,7 @@
 
 import { JSONObj } from '@unumid/types';
 import { UnumDto, VerifiedStatus, CustError } from '../../src';
-import { getDIDDoc, getDidDocPublicKeys } from '../../src/utils/didHelper';
+import { getDidDocPublicKeys } from '../../src/utils/didHelper';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { doVerify } from '../../src/utils/verify';
 import { verifySubjectCredentialRequests } from '../../src/issuer/verifySubjectCredentialRequests';

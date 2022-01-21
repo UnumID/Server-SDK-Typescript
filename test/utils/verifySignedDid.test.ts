@@ -1,9 +1,9 @@
 
 import { JSONObj, SignedDidDocument } from '@unumid/types';
 import { UnumDto, VerifiedStatus, CustError, verifySignedDid } from '../../src';
-import { getDIDDoc, getDidDocPublicKeys } from '../../src/utils/didHelper';
+import { getDidDocPublicKeys } from '../../src/utils/didHelper';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
-import { doVerify, doVerifyDeprecated } from '../../src/utils/verify';
+import { doVerify } from '../../src/utils/verify';
 import { makeDummyUnsignedCredential, makeDummyCredential, dummyCredentialRequest, makeDummyDidDocument, dummyAuthToken, dummyIssuerDid, makeDummySubjectCredentialRequest, dummySubjectDid, makeDummySignedDidDocument } from '../issuer/mocks';
 import { createKeyPairSet } from '../../src/utils/createKeyPairs';
 

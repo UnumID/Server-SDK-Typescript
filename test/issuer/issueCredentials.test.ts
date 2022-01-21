@@ -5,7 +5,7 @@ import { UnumDto } from '../../src/types';
 import { CredentialSubject, Credential, CredentialData, CredentialPb } from '@unumid/types';
 import { CustError } from '../../src/utils/error';
 import * as createKeyPairs from '../../src/utils/createKeyPairs';
-import { getDIDDoc, getDidDocPublicKeys } from '../../src/utils/didHelper';
+import { getDidDocPublicKeys } from '../../src/utils/didHelper';
 import { doEncrypt, doEncryptPb } from '../../src/utils/encrypt';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { omit } from 'lodash';

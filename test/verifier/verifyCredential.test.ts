@@ -1,7 +1,7 @@
-import { CredentialPb, CredentialRequestPb, UnsignedCredentialPb } from '@unumid/types';
+import { CredentialPb, UnsignedCredentialPb } from '@unumid/types';
 
 import { UnumDto } from '../../src/types';
-import { getDIDDoc, getDidDocPublicKeys } from '../../src/utils/didHelper';
+import { getDidDocPublicKeys } from '../../src/utils/didHelper';
 import { doVerify } from '../../src/utils/verify';
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { DummyCredentialOptions, makeDummyCredential, makeDummyDidDocument, makeDummyUnsignedCredential } from './mocks';
