@@ -394,7 +394,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
         break;
       }
 
-      const isVerifiedResponse: UnumDto<boolean> = await verifyCredential(credential, authToken);
+      const isVerifiedResponse: UnumDto<boolean> = await verifyCredential(authToken, credential);
       const isVerified = isVerifiedResponse.body;
       authToken = isVerifiedResponse.authToken;
 
