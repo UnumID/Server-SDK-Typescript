@@ -17,9 +17,13 @@ import { UnsignedSubjectCredentialRequests } from '@unumid/types/build/protos/cr
  * Validates the attributes for a credential request to UnumID's SaaS.
  * @param requests CredentialRequest
  */
-const validateCredentialRequests = (requests: SubjectCredentialRequests, subjectDid: string): string => {
-  if (isArrayEmpty(requests) || !requests) {
-    throw new CustError(400, 'subjectCredentialRequests must be a non-empty array.');
+const validateSubjectCredentialRequests = (requests: SubjectCredentialRequests, subjectDid: string): string => {
+  if (!requests) {
+    throw new CustError(400, 'SubjectCredentialRequests must be defined.');
+  }
+
+  if (isArrayEmpty(requests.credentialRequests)) {
+    throw new CustError(400, 'Subject credentialRequests must be a non-empty array.');
   }
 
   if (!requests.proof) {
@@ -63,7 +67,7 @@ export async function verifySubjectCredentialRequests (authorization: string, is
   requireAuth(authorization);
 
   // validate credentialRequests input; and grab the subjectDid for reference later
-  validateCredentialRequests(credentialRequests, subjectDid);
+  validateSubjectCredentialRequests(credentialRequests, subjectDid);
 
   const result: UnumDto<VerifiedStatus> = await verifySubjectCredentialRequestsHelper(authorization, issuerDid, credentialRequests);
   let authToken = result.authToken;

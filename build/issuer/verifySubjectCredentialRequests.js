@@ -53,7 +53,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifySubjectCredentialRequestsHelper = exports.verifySubjectCredentialRequests = void 0;
 var requireAuth_1 = require("../requireAuth");
 var error_1 = require("../utils/error");
-var helpers_1 = require("../utils/helpers");
 var lodash_1 = require("lodash");
 var didHelper_1 = require("../utils/didHelper");
 var config_1 = require("../config");
@@ -66,8 +65,8 @@ var credential_1 = require("@unumid/types/build/protos/credential");
  * Validates the attributes for a credential request to UnumID's SaaS.
  * @param requests CredentialRequest
  */
-var validateCredentialRequests = function (requests, subjectDid) {
-    if (helpers_1.isArrayEmpty(requests) || !requests) {
+var validateSubjectCredentialRequests = function (requests, subjectDid) {
+    if (!requests) {
         throw new error_1.CustError(400, 'subjectCredentialRequests must be a non-empty array.');
     }
     if (!requests.proof) {
@@ -107,7 +106,7 @@ function verifySubjectCredentialRequests(authorization, issuerDid, subjectDid, c
                 case 0:
                     requireAuth_1.requireAuth(authorization);
                     // validate credentialRequests input; and grab the subjectDid for reference later
-                    validateCredentialRequests(credentialRequests, subjectDid);
+                    validateSubjectCredentialRequests(credentialRequests, subjectDid);
                     return [4 /*yield*/, verifySubjectCredentialRequestsHelper(authorization, issuerDid, credentialRequests)];
                 case 1:
                     result = _b.sent();

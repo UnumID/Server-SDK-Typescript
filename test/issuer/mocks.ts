@@ -1,6 +1,6 @@
 
-import { Issuer, DidDocument, UnsignedCredential, Credential, CredentialSubject, SubjectCredentialRequest, CredentialRequestPb, SignedDidDocument } from '@unumid/types';
-import { CredentialRequest } from '@unumid/types/build/protos/credential';
+import { Issuer, DidDocument, UnsignedCredential, Credential, CredentialSubject, SubjectCredentialRequest, CredentialRequestPb, SignedDidDocument, SubjectCredentialRequests } from '@unumid/types';
+import { CredentialRequest, UnsignedSubjectCredentialRequests } from '@unumid/types/build/protos/credential';
 import { configData } from '../../src/config';
 import { RESTResponse } from '../../src/types';
 import { createKeyPairSet } from '../../src/utils/createKeyPairs';
@@ -51,16 +51,32 @@ export const dummySubjectCredentialRequest = {
   required: true
 };
 
-export const makeDummySubjectCredentialRequest = async (request: CredentialRequestPb, subjectPrivateKey: string, subjectDid: string): Promise<SubjectCredentialRequest> => {
+export const makeDummySubjectCredentialRequests = async (requests: CredentialRequest[], subjectPrivateKey: string, subjectDid: string): Promise<SubjectCredentialRequests> => {
+  // create UnsignedSubjectCredentialRequests
+  const unsignedSubjectCredentialRequests: UnsignedSubjectCredentialRequests = {
+    credentialRequests: requests
+  };
+
   // convert the protobuf to a byte array
-  const bytes: Uint8Array = CredentialRequestPb.encode(request).finish();
+  const bytes: Uint8Array = UnsignedSubjectCredentialRequests.encode(unsignedSubjectCredentialRequests).finish();
   const proof = await createProofPb(bytes, subjectPrivateKey, subjectDid, undefined);
 
   return {
-    ...dummyCredentialRequest,
+    ...unsignedSubjectCredentialRequests,
     proof: proof
   };
 };
+
+// export const makeDummySubjectCredentialRequest = async (request: CredentialRequestPb, subjectPrivateKey: string, subjectDid: string): Promise<SubjectCredentialRequest> => {
+//   // convert the protobuf to a byte array
+//   const bytes: Uint8Array = CredentialRequestPb.encode(request).finish();
+//   const proof = await createProofPb(bytes, subjectPrivateKey, subjectDid, undefined);
+
+//   return {
+//     ...dummyCredentialRequest,
+//     proof: proof
+//   };
+// };
 
 export const makeDummySignedDidDocument = async (didDoc: DidDocument, subjectPrivateKey: string, subjectDid: string): Promise<SignedDidDocument> => {
   const proof = await createProof(didDoc, subjectPrivateKey, subjectDid, 'pem');
