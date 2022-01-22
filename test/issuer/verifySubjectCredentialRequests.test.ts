@@ -1,12 +1,13 @@
 
-import { JSONObj } from '@unumid/types';
+import { CredentialRequestPb, JSONObj } from '@unumid/types';
 import { UnumDto, VerifiedStatus, CustError } from '../../src';
 import { getDidDocPublicKeys } from '../../src/utils/didHelper';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { doVerify } from '../../src/utils/verify';
 import { verifySubjectCredentialRequests } from '../../src/issuer/verifySubjectCredentialRequests';
-import { makeDummyUnsignedCredential, makeDummyCredential, dummyCredentialRequest, makeDummyDidDocument, dummyAuthToken, dummyIssuerDid, makeDummySubjectCredentialRequest, dummySubjectDid } from './mocks';
+import { makeDummyUnsignedCredential, makeDummyCredential, dummyCredentialRequest, makeDummyDidDocument, dummyAuthToken, dummyIssuerDid, dummySubjectDid, makeDummySubjectCredentialRequests } from './mocks';
 import { createKeyPairSet } from '../../src/utils/createKeyPairs';
+import { CredentialRequest, SubjectCredentialRequests } from '@unumid/types/build/protos/credential';
 
 jest.mock('../../src/utils/didHelper', () => {
   const actual = jest.requireActual('../../src/utils/didHelper');
@@ -50,8 +51,8 @@ const populateMockData = async (): Promise<JSONObj> => {
   const credentialRequests = [credentialRequest];
 
   const keyPair = await createKeyPairSet('pem');
-  const subjectCredentialRequest = await makeDummySubjectCredentialRequest(dummyCredentialRequest, keyPair.signing.privateKey, dummySubjectDid);
-  const subjectCredentialRequests = [subjectCredentialRequest];
+  const subjectCredentialRequests = await makeDummySubjectCredentialRequests(credentialRequests, keyPair.signing.privateKey, dummySubjectDid);
+  // const subjectCredentialRequests = [subjectCredentialRequest];
 
   const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
 
@@ -61,7 +62,7 @@ const populateMockData = async (): Promise<JSONObj> => {
     verifiableCredential,
     presentationRequestId,
     credentialRequests,
-    subjectCredentialRequest,
+    // subjectCredentialRequest,
     subjectCredentialRequests,
     authHeader,
     verifier
@@ -69,14 +70,13 @@ const populateMockData = async (): Promise<JSONObj> => {
 };
 
 describe('verifySubjectCredentialRequest', () => {
-  let credentialRequests, subjectCredentialRequests, subjectCredentialRequest;
+  let credentialRequests, subjectCredentialRequests;
 
   beforeAll(async () => {
     const dummyData = await populateMockData();
 
     credentialRequests = dummyData.credentialRequests;
     subjectCredentialRequests = dummyData.subjectCredentialRequests;
-    subjectCredentialRequest = dummyData.subjectCredentialRequest;
   });
 
   afterAll(() => {
@@ -160,7 +160,7 @@ describe('verifySubjectCredentialRequest', () => {
       mockGetDidDocKeys.mockResolvedValue({ authToken: dummyAuthToken, body: [] });
       const response = await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, dummySubjectDid, subjectCredentialRequests);
       expect(response.body.isVerified).toBe(false);
-      expect(response.body.message).toBe(`Public key not found for the subject did ${subjectCredentialRequests[0].proof.verificationMethod}`);
+      expect(response.body.message).toBe(`Public key not found for the subject did ${subjectCredentialRequests.proof.verificationMethod}`);
     });
 
     it('returns a 404 status code if the did document is not found', async () => {
@@ -178,37 +178,58 @@ describe('verifySubjectCredentialRequest', () => {
   });
 
   describe('verifySubjectCredentialRequest - Validation Failures', () => {
-    it('returns a 400 status code with a descriptive error message when subjectCredentialRequests is not a non empty array', async () => {
+    it('returns a 400 status code with a descriptive error message when subjectCredentialRequests is not defined', async () => {
       try {
-        await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, dummySubjectDid, []);
+        await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, dummySubjectDid, undefined);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
-        expect(e.message).toBe('subjectCredentialRequests must be a non-empty array.');
+        expect(e.message).toBe('SubjectCredentialRequests must be defined.');
+      }
+    });
+
+    it('returns a 400 status code with a descriptive error message when subject CredentialRequests is not a non empty array', async () => {
+      const badSubjectRequests: SubjectCredentialRequests = {
+        ...subjectCredentialRequests,
+        credentialRequests: []
+      };
+
+      try {
+        await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, dummySubjectDid, badSubjectRequests);
+        fail();
+      } catch (e) {
+        expect(e.code).toBe(400);
+        expect(e.message).toBe('Subject credentialRequests must be a non-empty array.');
       }
     });
 
     it('returns a 400 status code with a descriptive error message when proof is missing', async () => {
       try {
-        const badRequest = {
-          ...subjectCredentialRequest,
+        const badSubjectRequests: SubjectCredentialRequests = {
+          ...subjectCredentialRequests,
           proof: undefined
         };
-        await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, dummySubjectDid, [badRequest]);
+
+        await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, dummySubjectDid, badSubjectRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
-        expect(e.message).toBe('Invalid SubjectCredentialRequest[0]: proof must be defined.');
+        expect(e.message).toBe('Invalid SubjectCredentialRequest: proof must be defined.');
       }
     });
 
     it('returns a 400 status code with a descriptive error message when type is missing', async () => {
       const badRequest = {
-        ...subjectCredentialRequest,
+        ...dummyCredentialRequest,
         type: undefined
       };
+
+      const badSubjectRequests: SubjectCredentialRequests = {
+        ...subjectCredentialRequests,
+        credentialRequests: [badRequest]
+      };
       try {
-        await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, dummySubjectDid, [badRequest]);
+        await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, dummySubjectDid, badSubjectRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -218,11 +239,17 @@ describe('verifySubjectCredentialRequest', () => {
 
     it('returns a 400 status code with a descriptive error message when required is missing', async () => {
       const badRequest = {
-        ...subjectCredentialRequest,
+        ...dummyCredentialRequest,
         required: undefined
       };
+
+      const badSubjectRequests: SubjectCredentialRequests = {
+        ...subjectCredentialRequests,
+        credentialRequests: [badRequest]
+      };
+
       try {
-        await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, dummySubjectDid, [badRequest]);
+        await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, dummySubjectDid, badSubjectRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -232,11 +259,17 @@ describe('verifySubjectCredentialRequest', () => {
 
     it('returns a 400 status code with a descriptive error message when type is not a string', async () => {
       const badRequest = {
-        ...subjectCredentialRequest,
+        ...dummyCredentialRequest,
         type: []
       };
+
+      const badSubjectRequests: SubjectCredentialRequests = {
+        ...subjectCredentialRequests,
+        credentialRequests: [badRequest]
+      };
+
       try {
-        await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, dummySubjectDid, [badRequest]);
+        await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, dummySubjectDid, badSubjectRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
@@ -245,13 +278,18 @@ describe('verifySubjectCredentialRequest', () => {
     });
 
     it('returns a 400 status code with a descriptive error message when issuers is missing', async () => {
-      const badRequest = {
-        ...subjectCredentialRequest,
+      const badRequest: CredentialRequestPb = {
+        ...dummyCredentialRequest,
         issuers: undefined
       };
 
+      const badSubjectRequests: SubjectCredentialRequests = {
+        ...subjectCredentialRequests,
+        credentialRequests: [badRequest]
+      };
+
       try {
-        await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, dummySubjectDid, [badRequest]);
+        await verifySubjectCredentialRequests(dummyAuthToken, dummyIssuerDid, dummySubjectDid, badSubjectRequests);
         fail();
       } catch (e) {
         expect(e.code).toBe(400);
