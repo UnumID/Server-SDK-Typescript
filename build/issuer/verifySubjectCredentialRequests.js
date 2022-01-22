@@ -51,6 +51,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifySubjectCredentialRequestsHelper = exports.verifySubjectCredentialRequests = void 0;
+var types_1 = require("@unumid/types");
 var requireAuth_1 = require("../requireAuth");
 var error_1 = require("../utils/error");
 var helpers_1 = require("../utils/helpers");
@@ -61,7 +62,6 @@ var verify_1 = require("../utils/verify");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var validateProof_1 = require("../verifier/validateProof");
 var logger_1 = __importDefault(require("../logger"));
-var credential_1 = require("@unumid/types/build/protos/credential");
 /**
  * Validates the attributes for a credential request to UnumID's SaaS.
  * @param requests CredentialRequest
@@ -174,7 +174,7 @@ function verifySubjectCredentialRequestsHelper(authToken, issuerDid, subjectCred
                     }
                     isVerified = false;
                     unsignedSubjectCredentialRequests = lodash_1.omit(subjectCredentialRequests, 'proof');
-                    bytes = credential_1.UnsignedSubjectCredentialRequests.encode(unsignedSubjectCredentialRequests).finish();
+                    bytes = types_1.UnsignedSubjectCredentialRequests.encode(unsignedSubjectCredentialRequests).finish();
                     // check all the public keys to see if any work, stop if one does
                     for (_i = 0, publicKeyInfoList_1 = publicKeyInfoList; _i < publicKeyInfoList_1.length; _i++) {
                         publicKeyInfo = publicKeyInfoList_1[_i];

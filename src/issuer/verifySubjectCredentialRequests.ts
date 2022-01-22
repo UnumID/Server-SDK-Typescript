@@ -1,6 +1,6 @@
 
 import { RESTData, UnumDto, VerifiedStatus } from '../types';
-import { CredentialRequestInfoBasic, CredentialRequestPb, JSONObj, ReceiptOptions, ReceiptSubjectCredentialRequestVerifiedData, PublicKeyInfo, SubjectCredentialRequests, CredentialRequest } from '@unumid/types';
+import { JSONObj, ReceiptOptions, ReceiptSubjectCredentialRequestVerifiedData, PublicKeyInfo, UnsignedSubjectCredentialRequests, SubjectCredentialRequests, CredentialRequest } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
 import { CustError } from '../utils/error';
 import { isArrayEmpty } from '../utils/helpers';
@@ -11,7 +11,6 @@ import { doVerify } from '../utils/verify';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
 import { validateProof } from '../verifier/validateProof';
 import logger from '../logger';
-import { UnsignedSubjectCredentialRequests } from '@unumid/types/build/protos/credential';
 
 /**
  * Validates the attributes for a credential request to UnumID's SaaS.
