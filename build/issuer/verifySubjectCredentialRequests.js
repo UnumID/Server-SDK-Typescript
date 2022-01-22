@@ -53,6 +53,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifySubjectCredentialRequestsHelper = exports.verifySubjectCredentialRequests = void 0;
 var requireAuth_1 = require("../requireAuth");
 var error_1 = require("../utils/error");
+var helpers_1 = require("../utils/helpers");
 var lodash_1 = require("lodash");
 var didHelper_1 = require("../utils/didHelper");
 var config_1 = require("../config");
@@ -67,7 +68,10 @@ var credential_1 = require("@unumid/types/build/protos/credential");
  */
 var validateSubjectCredentialRequests = function (requests, subjectDid) {
     if (!requests) {
-        throw new error_1.CustError(400, 'subjectCredentialRequests must be a non-empty array.');
+        throw new error_1.CustError(400, 'SubjectCredentialRequests must be defined.');
+    }
+    if (helpers_1.isArrayEmpty(requests.credentialRequests)) {
+        throw new error_1.CustError(400, 'Subject credentialRequests must be a non-empty array.');
     }
     if (!requests.proof) {
         throw new error_1.CustError(400, 'Invalid SubjectCredentialRequest: proof must be defined.');
