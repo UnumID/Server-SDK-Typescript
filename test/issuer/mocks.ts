@@ -67,17 +67,6 @@ export const makeDummySubjectCredentialRequests = async (requests: CredentialReq
   };
 };
 
-// export const makeDummySubjectCredentialRequest = async (request: CredentialRequestPb, subjectPrivateKey: string, subjectDid: string): Promise<SubjectCredentialRequest> => {
-//   // convert the protobuf to a byte array
-//   const bytes: Uint8Array = CredentialRequestPb.encode(request).finish();
-//   const proof = await createProofPb(bytes, subjectPrivateKey, subjectDid, undefined);
-
-//   return {
-//     ...dummyCredentialRequest,
-//     proof: proof
-//   };
-// };
-
 export const makeDummySignedDidDocument = async (didDoc: DidDocument, subjectPrivateKey: string, subjectDid: string): Promise<SignedDidDocument> => {
   const proof = await createProof(didDoc, subjectPrivateKey, subjectDid, 'pem');
   return {

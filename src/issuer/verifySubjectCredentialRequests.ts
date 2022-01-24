@@ -62,46 +62,18 @@ const validateSubjectCredentialRequests = (requests: SubjectCredentialRequests, 
 /**
  * Verify the CredentialRequests signatures.
  */
-export async function verifySubjectCredentialRequests (authorization: string, issuerDid: string, subjectDid: string, credentialRequests: SubjectCredentialRequests): Promise<UnumDto<VerifiedStatus>> {
+export async function verifySubjectCredentialRequests (authorization: string, issuerDid: string, subjectDid: string, subjectCredentialRequests: SubjectCredentialRequests): Promise<UnumDto<VerifiedStatus>> {
   requireAuth(authorization);
 
   // validate credentialRequests input; and grab the subjectDid for reference later
-  validateSubjectCredentialRequests(credentialRequests, subjectDid);
+  validateSubjectCredentialRequests(subjectCredentialRequests, subjectDid);
 
-  const result: UnumDto<VerifiedStatus> = await verifySubjectCredentialRequestsHelper(authorization, issuerDid, credentialRequests);
+  const result: UnumDto<VerifiedStatus> = await verifySubjectCredentialRequestsHelper(authorization, issuerDid, subjectCredentialRequests);
   let authToken = result.authToken;
   const { isVerified, message } = result.body;
 
-  // let authToken = authorization;
-  // for (const credentialRequest of credentialRequests) {
-  //   const result: UnumDto<VerifiedStatus> = await verifySubjectCredentialRequestsHelper(authToken, issuerDid, credentialRequest);
-  //   const { isVerified, message } = result.body;
-  //   authToken = result.authToken;
-
-  //   // can stop here is not verified
-  //   if (!result.body.isVerified) {
-  //     // handle sending back the ReceiptSubjectCredentialRequestVerifiedData receipt with the verification failure reason
-  //     authToken = await handleSubjectCredentialsRequestsVerificationReceipt(authToken, issuerDid, subjectDid, credentialRequests, isVerified, message);
-
-  //     return {
-  //       ...result,
-  //       authToken
-  //     };
-  //   }
-  // }
-
-  // if (!result.body.isVerified) {
-  //   // handle sending back the ReceiptSubjectCredentialRequestVerifiedData receipt with the verification failure reason
-  //   authToken = await handleSubjectCredentialsRequestsVerificationReceipt(authToken, issuerDid, subjectDid, credentialRequests, isVerified, message);
-
-  //   return {
-  //     ...result,
-  //     authToken
-  //   };
-  // }
-
   // handle sending back the ReceiptSubjectCredentialRequestVerifiedData receipt with the verification status
-  authToken = await handleSubjectCredentialsRequestsVerificationReceipt(authToken, issuerDid, subjectDid, credentialRequests, isVerified, message);
+  authToken = await handleSubjectCredentialsRequestsVerificationReceipt(authToken, issuerDid, subjectDid, subjectCredentialRequests, isVerified, message);
 
   return {
     ...result,
@@ -112,17 +84,6 @@ export async function verifySubjectCredentialRequests (authorization: string, is
 export async function verifySubjectCredentialRequestsHelper (authToken: string, issuerDid: string, subjectCredentialRequests: SubjectCredentialRequests): Promise<UnumDto<VerifiedStatus>> {
   const verificationMethod = subjectCredentialRequests.proof?.verificationMethod as string;
   const signatureValue = subjectCredentialRequests.proof?.signatureValue as string;
-
-  // // validate that the issueDid is present in the request issuer array
-  // if (!credentialRequests.issuers.includes(issuerDid)) {
-  //   return {
-  //     authToken,
-  //     body: {
-  //       isVerified: false,
-  //       message: `Issuer DID, ${issuerDid}, not found in credential request issuers ${credentialRequest.issuers}`
-  //     }
-  //   };
-  // }
 
   const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authToken, verificationMethod, 'secp256r1');
   const publicKeyInfoList: PublicKeyInfo[] = publicKeyInfoResponse.body;
@@ -172,76 +133,11 @@ export async function verifySubjectCredentialRequestsHelper (authToken: string, 
   };
 }
 
-// export async function verifySubjectCredentialRequestsHelper (authToken: string, issuerDid: string, credentialRequests: SubjectCredentialRequests): Promise<UnumDto<VerifiedStatus>> {
-//   const verificationMethod = credentialRequests.proof?.verificationMethod as string;
-//   const signatureValue = credentialRequests.proof?.signatureValue as string;
-
-//   // // validate that the issueDid is present in the request issuer array
-//   // if (!credentialRequests.issuers.includes(issuerDid)) {
-//   //   return {
-//   //     authToken,
-//   //     body: {
-//   //       isVerified: false,
-//   //       message: `Issuer DID, ${issuerDid}, not found in credential request issuers ${credentialRequest.issuers}`
-//   //     }
-//   //   };
-//   // }
-
-//   const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authToken, verificationMethod, 'secp256r1');
-//   const publicKeyInfoList: PublicKeyInfo[] = publicKeyInfoResponse.body;
-//   authToken = publicKeyInfoResponse.authToken;
-
-//   if (publicKeyInfoList.length === 0) {
-//     return {
-//       authToken,
-//       body: {
-//         isVerified: false,
-//         message: `Public key not found for the subject did ${verificationMethod}`
-//       }
-//     };
-//   }
-
-//   let isVerified = false;
-
-//   const unsignedCredentialRequest: CredentialRequestPb = omit(credentialRequest, 'proof');
-
-//   // convert to bytes
-//   const bytes: Uint8Array = CredentialRequestPb.encode(unsignedCredentialRequest).finish();
-
-//   // check all the public keys to see if any work, stop if one does
-//   for (const publicKeyInfo of publicKeyInfoList) {
-//     const { publicKey, encoding } = publicKeyInfo;
-
-//     // verify the signature
-//     isVerified = doVerify(signatureValue, bytes, publicKey, encoding);
-//     if (isVerified) break;
-//   }
-
-//   if (!isVerified) {
-//     return {
-//       authToken,
-//       body: {
-//         isVerified: false,
-//         message: 'SubjectCredentialRequest signature can not be verified.'
-//       }
-//     };
-//   }
-
-//   return {
-//     authToken,
-//     body: {
-//       isVerified: true
-//     }
-//   };
-// }
-
 /**
  * Handle sending back the SubjectCredentialRequestVerified receipt
  */
 async function handleSubjectCredentialsRequestsVerificationReceipt (authorization: string, issuerDid: string, subjectDid: string, subjectCredentialRequests: SubjectCredentialRequests, isVerified: boolean, message?:string): Promise<string> {
   try {
-    // const requestInfo: CredentialRequest[] = subjectCredentialRequests.credentialRequests.map((request) => request);
-    // const requstInfo: CredentialRequest[] = flatten2DArray(subjectCredentialRequests.credentialRequests);
     const requestInfo: CredentialRequest[] = subjectCredentialRequests.credentialRequests;
 
     const data: ReceiptSubjectCredentialRequestVerifiedData = {
