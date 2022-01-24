@@ -174,23 +174,29 @@ Response Body: **Empty**. If unsuccessful and exception will be thrown.
 {}
 ```
 
-### verifySubjectCredentialRequest
-Verify a Subject's request for credentials.
+### verifySubjectCredentialRequests
+Verify a Subject's requests for credentials.
 
-You need to provide the your issuer's `did` along with the SubjectCredentialRequest array from your `/credentialRequest` [endpoint](https://gist.github.com/UnumIDAdmin/d76d9fe46e459e529d7f7b6f9319a0b6).
+You need to provide the your issuer's `did` along with the SubjectCredentialRequest array from your `/userCredentialRequest` [endpoint](https://gist.github.com/UnumIDAdmin/fd75b174b33ff0c5b4de87118cb11188).
 
-Each request is cryptographically signed by the subject's private key. This function verifies the signatures are valid. Furthermore, it validates that all requests are from the same subject and that requested Issuer requirements are met. After which, your application code will need to evaluate wether it can issue the requested credentials. An example implementation can be found [here](https://github.com/UnumID/demo-issuer-server/blob/main/src/services/api/credentialRequest/credentialRequest.class.ts).
+The array of CredentialRequests are signed by the subject's private key. This function verifies the cryptographic signature is valid. Furthermore, it validates that all requests are from the same subject and that requested Issuer requirements are met. After which, your application code will need to evaluate wether it can issue the requested credentials. An example implementation can be found [here](https://github.com/UnumID/demo-issuer-server/blob/main/src/services/api/credentialRequest/credentialRequest.class.ts).
 
 The main use case of this to allow bootstrapping users that just installed the Unum ID Wallet with credentials necessary to use across the network, i.e for instant sign ups with a partner. 
 
-_Note_: Despite this having "verify" in its name, this function only serves Issuers in determining whether a subject's request for credentials is valid. It is up to you application logic to determine whether you have the data relating to the the subject to issue the requested credentials.
+_Note_: Despite this having "verify" in its name, this function serves Issuers in determining whether a subject's request for credentials is valid. It is up to your application logic to determine whether you have the data relating to the the subject to issue the requested credentials.
 
 
 ```typescript
-export type SubjectCredentialRequest = {
+export type CredentialRequest = {
   type: string; // the string matching the desire credential type
   issuers: string[]; //list of acceptable issuer DIDs that have issued the credential
   required: boolean; // to denote wether this particular credential is required. Defaults behavior resolves this to true.
+}
+```
+
+```typescript
+export type SubjectCredentialRequests = {
+  credentialRequests: CredentialRequests[]; // the string matching the desire credential type
   proof: Proof; // proof signed by the subject
 }
 ```
@@ -200,15 +206,15 @@ Parameters
 {
   "authorization": string // auth token
   "issuerDid": string // the did of your issuer
-  "credentialRequests: SubjectCredentialRequest[] // array of credential requests signed by the Subject
+  "subjectDid": string // the did of the subject
+  "subjectCredentialRequests: SubjectCredentialRequests // object containing list of CredentialRequests with a Proof signed by the Subject
 }
 ```
 
-Response Body: [**SubjectCredentialRequestVerifiedStatus**]. 
+Response Body: [**VerifiedStatus**]. 
 ```typescript
 export interface SubjectCredentialRequestVerifiedStatus {
-  subjectDid: string; // returns the subject DID that made and signed all the requests
-  isVerified: boolean; // returns true if all requests are verified and validation requirements are met
+  isVerified: boolean; // returns true if the requests are verified and validation requirements are met
   message?: string; // (optional) only populated iff isVerified is false
 }
 ```
