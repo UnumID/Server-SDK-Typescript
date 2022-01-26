@@ -25,7 +25,7 @@ describe('registerIssuer', () => {
     const dummyIssuerResponse = makeDummyIssuerResponse({ issuer: dummyIssuer }); // Already has the auth header as part of the dummy function call.
     mockMakeNetworkRequest.mockResolvedValueOnce(dummyIssuerResponse);
 
-    responseDto = await registerIssuer(name, customerUuid, dummyIssuerApiKey);
+    responseDto = await registerIssuer(name, dummyIssuerApiKey);
     response = responseDto.body;
     responseAuthToken = responseDto.authToken;
   });
@@ -67,7 +67,7 @@ describe('registerIssuer - Failure cases', () => {
 
   it('returns a CustError with a descriptive error message if apiKey is missing', async () => {
     try {
-      await registerIssuer(customerUuid, '', url);
+      await registerIssuer('', url);
       fail();
     } catch (e) {
       expect(e).toEqual(new CustError(401, 'Not authenticated: apiKey is required'));
@@ -78,7 +78,7 @@ describe('registerIssuer - Failure cases', () => {
 
   it('returns a CustError with a descriptive error message if url is missing', async () => {
     try {
-      await registerIssuer(customerUuid, dummyIssuerApiKey, undefined);
+      await registerIssuer(dummyIssuerApiKey, undefined);
       fail();
     } catch (e) {
       expect(e).toEqual(new CustError(400, 'Invalid Issuer: url is required.'));
@@ -91,7 +91,7 @@ describe('registerIssuer - Failure cases', () => {
     // const badVersionInfo: VersionInfo[] = [{ target: { version: '1.0.x' }, sdkVersion: '3.0.0' }];
     const badVersionInfo: VersionInfo[] = [{ sdkVersion: '3.0.0' }];
     try {
-      await registerIssuer(customerUuid, dummyIssuerApiKey, url, badVersionInfo);
+      await registerIssuer(dummyIssuerApiKey, url, badVersionInfo);
       fail();
     } catch (e) {
       expect(e).toEqual(new CustError(400, '\'versionInfo[0].target\' must be defined.'));
@@ -103,7 +103,7 @@ describe('registerIssuer - Failure cases', () => {
   it('returns a CustError with a descriptive error message if versionInfo url or version is missing', async () => {
     const badVersionInfo: VersionInfo[] = [{ target: { hat: '1.0.x' }, sdkVersion: '3.0.0' }];
     try {
-      await registerIssuer(customerUuid, dummyIssuerApiKey, url, badVersionInfo);
+      await registerIssuer(dummyIssuerApiKey, url, badVersionInfo);
       fail();
     } catch (e) {
       expect(e).toEqual(new CustError(400, '\'versionInfo[0].target.version\' or \'versionInfo[0].target.url\' must be defined.'));
@@ -115,7 +115,7 @@ describe('registerIssuer - Failure cases', () => {
   it('returns a CustError with a descriptive error message if versionInfo version is not in semver notation', async () => {
     const badVersionInfo: VersionInfo[] = [{ target: { version: '1.0.x' }, sdkVersion: '3.0.0' }];
     try {
-      await registerIssuer(customerUuid, dummyIssuerApiKey, url, badVersionInfo);
+      await registerIssuer(dummyIssuerApiKey, url, badVersionInfo);
       fail();
     } catch (e) {
       expect(e).toEqual(new CustError(400, '\'versionInfo[0].target.version\' must be valid semver notation.'));
@@ -127,7 +127,7 @@ describe('registerIssuer - Failure cases', () => {
   it('returns a CustError with a descriptive error message if versionInfo sdkVersion is not in semver notation', async () => {
     const badVersionInfo: VersionInfo[] = [{ target: { version: '1.0.0' }, sdkVersion: '3.0.x' }];
     try {
-      await registerIssuer(customerUuid, dummyIssuerApiKey, url, badVersionInfo);
+      await registerIssuer(dummyIssuerApiKey, url, badVersionInfo);
       fail();
     } catch (e) {
       expect(e).toEqual(new CustError(400, '\'versionInfo[0].sdkVersion\' must be valid semver notation.'));
@@ -142,20 +142,11 @@ describe('registerIssuer - Failure cases - SaaS Errors', () => {
   const customerUuid = '5e46f1ba-4c82-471d-bbc7-251924a90532';
   const url = 'dummy.com';
 
-  it('Response code should be 403 when uuid is not valid', async () => {
-    mockMakeNetworkRequest.mockRejectedValueOnce(new CustError(403, 'Forbidden'));
-    try {
-      await registerIssuer('123', dummyIssuerApiKey, url);
-    } catch (e) {
-      expect(e.code).toBe(403);
-    }
-  });
-
   it('Response code should be 403 when API Key is not valid', async () => {
     mockMakeNetworkRequest.mockRejectedValueOnce(new CustError(403, 'Forbidden'));
 
     try {
-      await registerIssuer(customerUuid, 'abc', url);
+      await registerIssuer('abc', url);
     } catch (e) {
       expect(e.code).toBe(403);
     }
