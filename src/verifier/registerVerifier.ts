@@ -61,7 +61,7 @@ const validateInParams = (url: string, apiKey: string, versionInfo: VersionInfo[
  * @param apiKey
  * @param versionInfo
  */
-export const registerVerifier = async (url: string, apiKey: string, versionInfo: VersionInfo[] = [{ target: { version: '1.0.0' }, sdkVersion: '3.0.0' }]): Promise<UnumDto<RegisteredVerifier>> => {
+export const registerVerifier = async (apiKey: string, url: string, versionInfo: VersionInfo[] = [{ target: { version: '1.0.0' }, sdkVersion: '3.0.0' }]): Promise<UnumDto<RegisteredVerifier>> => {
   try {
     validateInParams(url, apiKey, versionInfo);
 
