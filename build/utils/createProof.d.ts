@@ -15,5 +15,5 @@ export declare const createProof: (data: JSONObj, privateKey: string, method: st
  * @param method
  * @param encoding
  */
-export declare const createProofPb: (data: Uint8Array, privateKey: string, method: string, encoding: 'base58' | 'pem') => ProofPb;
+export declare const createProofPb: (data: Uint8Array, privateKey: string, method: string) => ProofPb;
 //# sourceMappingURL=createProof.d.ts.map
