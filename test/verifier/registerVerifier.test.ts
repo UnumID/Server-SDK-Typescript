@@ -84,17 +84,6 @@ describe('registerVerifier - Failure cases', () => {
   const customerUuid = '5e46f1ba-4c82-471d-bbc7-251924a90532';
   const url = 'https://customer-api.dev-unum.id/presentation';
 
-  it('returns a CustError with a descriptive error message if customerUuid is missing', async () => {
-    try {
-      await registerVerifier('', url, dummyVerifierApiKey);
-      fail();
-    } catch (e) {
-      expect(e).toEqual(new CustError(400, 'Invalid Verifier Options: customerUuid is required.'));
-      expect(e.code).toEqual(400);
-      expect(e.message).toEqual('Invalid Verifier Options: customerUuid is required.');
-    }
-  });
-
   it('returns a CustError with a descriptive error message if url is missing', async () => {
     try {
       await registerVerifier(customerUuid, '', dummyVerifierApiKey);

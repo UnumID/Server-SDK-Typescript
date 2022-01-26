@@ -42,11 +42,7 @@ const constructKeyObjs = (kpSet: KeyPairSet): Array<PublicKeyInfo> => {
  * Validates request input parameters.
  * @param req Request
  */
-const validateInParams = (customerUuid: string, url: string, apiKey: string, versionInfo: VersionInfo[]): void => {
-  if (!customerUuid) {
-    throw new CustError(400, 'Invalid Verifier Options: customerUuid is required.');
-  }
-
+const validateInParams = (url: string, apiKey: string, versionInfo: VersionInfo[]): void => {
   if (!url) {
     throw new CustError(400, 'Invalid Verifier Options: url is required.');
   }
@@ -65,12 +61,12 @@ const validateInParams = (customerUuid: string, url: string, apiKey: string, ver
  * @param apiKey
  * @param versionInfo
  */
-export const registerVerifier = async (customerUuid: string, url: string, apiKey: string, versionInfo: VersionInfo[] = [{ target: { version: '1.0.0' }, sdkVersion: '3.0.0' }]): Promise<UnumDto<RegisteredVerifier>> => {
+export const registerVerifier = async (url: string, apiKey: string, versionInfo: VersionInfo[] = [{ target: { version: '1.0.0' }, sdkVersion: '3.0.0' }]): Promise<UnumDto<RegisteredVerifier>> => {
   try {
-    validateInParams(customerUuid, url, apiKey, versionInfo);
+    validateInParams(url, apiKey, versionInfo);
 
     const kpSet: KeyPairSet = await createKeyPairSet();
-    const verifierOpt: VerifierOptions = { customerUuid, url, publicKeyInfo: constructKeyObjs(kpSet), versionInfo };
+    const verifierOpt: VerifierOptions = { url, publicKeyInfo: constructKeyObjs(kpSet), versionInfo };
     const restData: RESTData = {
       method: 'POST',
       baseUrl: configData.SaaSUrl,

@@ -65,17 +65,6 @@ describe('registerIssuer - Failure cases', () => {
   const customerUuid = '5e46f1ba-4c82-471d-bbc7-251924a90532';
   const url = 'dummy.com';
 
-  it('returns a CustError with a descriptive error message if customerUuid is missing', async () => {
-    try {
-      await registerIssuer('', dummyIssuerApiKey, url);
-      fail();
-    } catch (e) {
-      expect(e).toEqual(new CustError(400, 'Invalid Issuer: customerUuid is required.'));
-      expect(e.code).toEqual(400);
-      expect(e.message).toEqual('Invalid Issuer: customerUuid is required.');
-    }
-  });
-
   it('returns a CustError with a descriptive error message if apiKey is missing', async () => {
     try {
       await registerIssuer(customerUuid, '', url);

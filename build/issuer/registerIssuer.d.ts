@@ -5,5 +5,5 @@ import { VersionInfo } from '@unumid/types';
  * @param customerUuid
  * @param apiKey
  */
-export declare const registerIssuer: (customerUuid: string, apiKey: string, url: string, versionInfo?: VersionInfo[]) => Promise<UnumDto<RegisteredIssuer>>;
+export declare const registerIssuer: (apiKey: string, url: string, versionInfo?: VersionInfo[]) => Promise<UnumDto<RegisteredIssuer>>;
 //# sourceMappingURL=registerIssuer.d.ts.map
