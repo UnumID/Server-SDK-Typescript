@@ -132,9 +132,21 @@
 				</a>
 				<p>Register an issuer corresponding to your customer UUID and issuer API key provided by UnumID. As a customer, you can register as many issuers as you like (or none at all), depending on your use case. Note, however, that you&#39;ll need a unique issuer API key for each one.</p>
 				<p>You should store the DID (<code>did</code>) and encryption and signing key pairs (<code>keys</code>) that this returns. You&#39;ll need these to issue credentials to users.</p>
-				<p>Parameters:</p>
-				<pre><code class="language-typescript"><span style="color: #A31515">&quot;customerUuid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// your customer UUID</span>
-<span style="color: #A31515">&quot;apiKey&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// your issuer API key</span>
+				<pre><code class="language-typescript"><span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">type</span><span style="color: #000000"> </span><span style="color: #267F99">TargetInfo</span><span style="color: #000000"> = {</span>
+<span style="color: #000000">  [</span><span style="color: #001080">key</span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000">]: </span><span style="color: #267F99">any</span><span style="color: #000000">, </span><span style="color: #008000">// To be able to handle generic HTTP header requirements, i.e. version, accept, appId, etc</span>
+<span style="color: #000000">  </span><span style="color: #001080">url</span><span style="color: #000000">?: </span><span style="color: #267F99">string</span><span style="color: #000000"> </span><span style="color: #008000">// Versions denoted via a different url.</span>
+<span style="color: #000000">}</span>
+</code></pre>
+				<pre><code class="language-typescript"><span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">type</span><span style="color: #000000"> </span><span style="color: #267F99">VersionInfo</span><span style="color: #000000"> = {</span>
+<span style="color: #000000">  </span><span style="color: #001080">target</span><span style="color: #000000">: </span><span style="color: #267F99">TargetInfo</span><span style="color: #000000">, </span><span style="color: #008000">// The information of how to target a customer&#039;s application to communication with the corresponding Server sdkVersion.</span>
+<span style="color: #000000">  </span><span style="color: #001080">sdkVersion</span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000"> </span><span style="color: #008000">// Server sdk version. Ought to be in Semver notation however opting to keep a string type for simplicity.</span>
+<span style="color: #000000">}</span>
+
+<span style="color: #267F99">Parameters</span><span style="color: #000000">:</span>
+<span style="color: #A31515">```typescript</span>
+<span style="color: #A31515">&quot;apiKey&quot;: string // your issuer API key</span>
+<span style="color: #A31515">&quot;url&quot;: string, // the url of which UnumID&#039;s SaaS will interface with</span>
+<span style="color: #A31515">&quot;versionInfo&quot;: VersionInfo[] // arrays of objects for how to contact specific version of your verifier and subsequently the sever sdk. </span>
 </code></pre>
 				<p>Response Body:  <a href="https://docs.unumid.co/Server-SDK-Typescript/interfaces/registeredissuer.html"><strong>RegisteredIssuer</strong></a></p>
 				<pre><code class="language-typescript"><span style="color: #000000">{</span>
@@ -223,18 +235,22 @@
 				<p>Response Body: <strong>Empty</strong>. If unsuccessful and exception will be thrown.</p>
 				<pre><code class="language-typescript"><span style="color: #000000">{}</span>
 </code></pre>
-				<a href="#verifysubjectcredentialrequest" id="verifysubjectcredentialrequest" style="color: inherit; text-decoration: none;">
-					<h3>verifySubjectCredentialRequest</h3>
+				<a href="#verifysubjectcredentialrequests" id="verifysubjectcredentialrequests" style="color: inherit; text-decoration: none;">
+					<h3>verifySubjectCredentialRequests</h3>
 				</a>
-				<p>Verify a Subject&#39;s request for credentials.</p>
-				<p>You need to provide the your issuer&#39;s <code>did</code> along with the SubjectCredentialRequest array from your <code>/credentialRequest</code> <a href="https://gist.github.com/UnumIDAdmin/d76d9fe46e459e529d7f7b6f9319a0b6">endpoint</a>.</p>
-				<p>Each request is cryptographically signed by the subject&#39;s private key. This function verifies the signatures are valid. Furthermore, it validates that all requests are from the same subject and that requested Issuer requirements are met. After which, your application code will need to evaluate wether it can issue the requested credentials. An example implementation can be found <a href="https://github.com/UnumID/demo-issuer-server/blob/main/src/services/api/credentialRequest/credentialRequest.class.ts">here</a>.</p>
+				<p>Verify a Subject&#39;s requests for credentials.</p>
+				<p>You need to provide the your issuer&#39;s <code>did</code> along with the SubjectCredentialRequest array from your <code>/userCredentialRequest</code> <a href="https://gist.github.com/UnumIDAdmin/fd75b174b33ff0c5b4de87118cb11188">endpoint</a>.</p>
+				<p>The array of CredentialRequests are signed by the subject&#39;s private key. This function verifies the cryptographic signature is valid. Furthermore, it validates that all requests are from the same subject and that requested Issuer requirements are met. After which, your application code will need to evaluate wether it can issue the requested credentials. An example implementation can be found <a href="https://github.com/UnumID/demo-issuer-server/blob/main/src/services/api/credentialRequest/credentialRequest.class.ts">here</a>.</p>
 				<p>The main use case of this to allow bootstrapping users that just installed the Unum ID Wallet with credentials necessary to use across the network, i.e for instant sign ups with a partner. </p>
-				<p><em>Note</em>: Despite this having &quot;verify&quot; in its name, this function only serves Issuers in determining whether a subject&#39;s request for credentials is valid. It is up to you application logic to determine whether you have the data relating to the the subject to issue the requested credentials.</p>
-				<pre><code class="language-typescript"><span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">type</span><span style="color: #000000"> </span><span style="color: #267F99">SubjectCredentialRequest</span><span style="color: #000000"> = {</span>
+				<p><em>Note</em>: Despite this having &quot;verify&quot; in its name, this function serves Issuers in determining whether a subject&#39;s request for credentials is valid. It is up to your application logic to determine whether you have the data relating to the the subject to issue the requested credentials.</p>
+				<pre><code class="language-typescript"><span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">type</span><span style="color: #000000"> </span><span style="color: #267F99">CredentialRequest</span><span style="color: #000000"> = {</span>
 <span style="color: #000000">  </span><span style="color: #001080">type</span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000">; </span><span style="color: #008000">// the string matching the desire credential type</span>
 <span style="color: #000000">  </span><span style="color: #001080">issuers</span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000">[]; </span><span style="color: #008000">//list of acceptable issuer DIDs that have issued the credential</span>
 <span style="color: #000000">  </span><span style="color: #001080">required</span><span style="color: #000000">: </span><span style="color: #267F99">boolean</span><span style="color: #000000">; </span><span style="color: #008000">// to denote wether this particular credential is required. Defaults behavior resolves this to true.</span>
+<span style="color: #000000">}</span>
+</code></pre>
+				<pre><code class="language-typescript"><span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">type</span><span style="color: #000000"> </span><span style="color: #267F99">SubjectCredentialRequests</span><span style="color: #000000"> = {</span>
+<span style="color: #000000">  </span><span style="color: #001080">credentialRequests</span><span style="color: #000000">: </span><span style="color: #267F99">CredentialRequests</span><span style="color: #000000">[]; </span><span style="color: #008000">// the string matching the desire credential type</span>
 <span style="color: #000000">  </span><span style="color: #001080">proof</span><span style="color: #000000">: </span><span style="color: #267F99">Proof</span><span style="color: #000000">; </span><span style="color: #008000">// proof signed by the subject</span>
 <span style="color: #000000">}</span>
 </code></pre>
@@ -242,13 +258,13 @@
 				<pre><code class="language-typescript"><span style="color: #000000">{</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;authorization&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// auth token</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;issuerDid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// the did of your issuer</span>
-<span style="color: #000000">  </span><span style="color: #A31515">&quot;credentialRequests: SubjectCredentialRequest[] // array of credential requests signed by the Subjec</span><span style="color: #CD3131">t</span>
+<span style="color: #000000">  </span><span style="color: #A31515">&quot;subjectDid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// the did of the subject</span>
+<span style="color: #000000">  </span><span style="color: #A31515">&quot;subjectCredentialRequests: SubjectCredentialRequests // object containing list of CredentialRequests with a Proof signed by the Subjec</span><span style="color: #CD3131">t</span>
 <span style="color: #000000">}</span>
 </code></pre>
-				<p>Response Body: [<strong>SubjectCredentialRequestVerifiedStatus</strong>]. </p>
+				<p>Response Body: [<strong>VerifiedStatus</strong>]. </p>
 				<pre><code class="language-typescript"><span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">interface</span><span style="color: #000000"> </span><span style="color: #267F99">SubjectCredentialRequestVerifiedStatus</span><span style="color: #000000"> {</span>
-<span style="color: #000000">  </span><span style="color: #001080">subjectDid</span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000">; </span><span style="color: #008000">// returns the subject DID that made and signed all the requests</span>
-<span style="color: #000000">  </span><span style="color: #001080">isVerified</span><span style="color: #000000">: </span><span style="color: #267F99">boolean</span><span style="color: #000000">; </span><span style="color: #008000">// returns true if all requests are verified and validation requirements are met</span>
+<span style="color: #000000">  </span><span style="color: #001080">isVerified</span><span style="color: #000000">: </span><span style="color: #267F99">boolean</span><span style="color: #000000">; </span><span style="color: #008000">// returns true if the requests are verified and validation requirements are met</span>
 <span style="color: #000000">  </span><span style="color: #001080">message</span><span style="color: #000000">?: </span><span style="color: #267F99">string</span><span style="color: #000000">; </span><span style="color: #008000">// (optional) only populated iff isVerified is false</span>
 <span style="color: #000000">}</span>
 </code></pre>
@@ -261,10 +277,20 @@
 				</a>
 				<p>Register a verifier corresponding to your customer UUID and verifier API key that UnumID provides. As a customer, you can register as many verifiers as you like (or none at all), depending on your use case. Note, however, that you&#39;ll need a unique verifier API key for each one.</p>
 				<p>You should store the DID (<code>did</code>) and signing key pair (<code>keys</code>) that this returns. You&#39;ll need these to create requests for (presentations of) credentials from users.</p>
+				<pre><code class="language-typescript"><span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">type</span><span style="color: #000000"> </span><span style="color: #267F99">TargetInfo</span><span style="color: #000000"> = {</span>
+<span style="color: #000000">  [</span><span style="color: #001080">key</span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000">]: </span><span style="color: #267F99">any</span><span style="color: #000000">, </span><span style="color: #008000">// To be able to handle generic HTTP header requirements, i.e. version, accept, appId, etc</span>
+<span style="color: #000000">  </span><span style="color: #001080">url</span><span style="color: #000000">?: </span><span style="color: #267F99">string</span><span style="color: #000000"> </span><span style="color: #008000">// Versions denoted via a different url.</span>
+<span style="color: #000000">}</span>
+</code></pre>
+				<pre><code class="language-typescript"><span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">type</span><span style="color: #000000"> </span><span style="color: #267F99">VersionInfo</span><span style="color: #000000"> = {</span>
+<span style="color: #000000">  </span><span style="color: #001080">target</span><span style="color: #000000">: </span><span style="color: #267F99">TargetInfo</span><span style="color: #000000">, </span><span style="color: #008000">// The information of how to target a customer&#039;s application to communication with the corresponding Server sdkVersion.</span>
+<span style="color: #000000">  </span><span style="color: #001080">sdkVersion</span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000"> </span><span style="color: #008000">// Server sdk version. Ought to be in Semver notation however opting to keep a string type for simplicity.</span>
+<span style="color: #000000">}</span>
+</code></pre>
 				<p>Parameters</p>
-				<pre><code class="language-typescript"><span style="color: #A31515">&quot;customerUuid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// your customer UUID</span>
+				<pre><code class="language-typescript"><span style="color: #A31515">&quot;apiKey&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// your verifier API key</span>
 <span style="color: #A31515">&quot;url&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #008000">// the url of which UnumID&#039;s SaaS will interface with</span>
-<span style="color: #A31515">&quot;apiKey&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// your verifier API key</span>
+<span style="color: #A31515">&quot;versionInfo&quot;</span><span style="color: #000000">: </span><span style="color: #001080">VersionInfo</span><span style="color: #000000">[] </span><span style="color: #008000">// arrays of objects for how to contact specific version of your verifier and subsequently the sever sdk. </span>
 </code></pre>
 				<p>Response body: <a href="https://docs.unumid.co/Server-SDK-Typescript/interfaces/registeredverifier.html"><strong>RegisteredVerifier</strong></a></p>
 				<pre><code class="language-typescript"><span style="color: #000000">{</span>

@@ -94,7 +94,7 @@ var validateInParams = function (url, apiKey, versionInfo) {
  * @param apiKey
  * @param versionInfo
  */
-exports.registerVerifier = function (url, apiKey, versionInfo) {
+exports.registerVerifier = function (apiKey, url, versionInfo) {
     if (versionInfo === void 0) { versionInfo = [{ target: { version: '1.0.0' }, sdkVersion: '3.0.0' }]; }
     return __awaiter(void 0, void 0, void 0, function () {
         var kpSet, verifierOpt, restData, restResp, authToken, verifierResp, error_1;
