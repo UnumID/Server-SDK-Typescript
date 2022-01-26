@@ -78,10 +78,7 @@ var constructKeyObjs = function (kpSet) {
  * @param customerUuid string
  * @param apiKey string
  */
-var validateInParams = function (customerUuid, apiKey, url, versionInfo) {
-    if (!customerUuid) {
-        throw new error_1.CustError(400, 'Invalid Issuer: customerUuid is required.');
-    }
+var validateInParams = function (apiKey, url, versionInfo) {
     if (!apiKey) {
         throw new error_1.CustError(401, 'Not authenticated: apiKey is required');
     }
@@ -95,7 +92,7 @@ var validateInParams = function (customerUuid, apiKey, url, versionInfo) {
  * @param customerUuid
  * @param apiKey
  */
-exports.registerIssuer = function (customerUuid, apiKey, url, versionInfo) {
+exports.registerIssuer = function (apiKey, url, versionInfo) {
     if (versionInfo === void 0) { versionInfo = [{ target: { version: '1.0.0' }, sdkVersion: '3.0.0' }]; }
     return __awaiter(void 0, void 0, void 0, function () {
         var kpSet, issuerOpt, restData, restResp, authToken, issuerResp, error_2;
@@ -103,12 +100,11 @@ exports.registerIssuer = function (customerUuid, apiKey, url, versionInfo) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 3, , 4]);
-                    validateInParams(customerUuid, apiKey, url, versionInfo);
+                    validateInParams(apiKey, url, versionInfo);
                     return [4 /*yield*/, createKeyPairs_1.createKeyPairSet()];
                 case 1:
                     kpSet = _a.sent();
                     issuerOpt = {
-                        customerUuid: customerUuid,
                         publicKeyInfo: constructKeyObjs(kpSet),
                         url: url,
                         versionInfo: versionInfo

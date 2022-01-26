@@ -45,7 +45,7 @@ describe('registerVerifier', () => {
     const dummyVerifierResponse = makeDummyVerifierResponse({ verifier: dummyVerifier, authToken: dummyAuthToken });
     mockMakeNetworkRequest.mockResolvedValue(dummyVerifierResponse);
 
-    responseDto = await registerVerifier(customerUuid, url, dummyVerifierApiKey, versionInfo);
+    responseDto = await registerVerifier(dummyVerifierApiKey, url, versionInfo);
     response = responseDto.body;
     responseAuthToken = responseDto.authToken;
   });
@@ -84,20 +84,9 @@ describe('registerVerifier - Failure cases', () => {
   const customerUuid = '5e46f1ba-4c82-471d-bbc7-251924a90532';
   const url = 'https://customer-api.dev-unum.id/presentation';
 
-  it('returns a CustError with a descriptive error message if customerUuid is missing', async () => {
-    try {
-      await registerVerifier('', url, dummyVerifierApiKey);
-      fail();
-    } catch (e) {
-      expect(e).toEqual(new CustError(400, 'Invalid Verifier Options: customerUuid is required.'));
-      expect(e.code).toEqual(400);
-      expect(e.message).toEqual('Invalid Verifier Options: customerUuid is required.');
-    }
-  });
-
   it('returns a CustError with a descriptive error message if url is missing', async () => {
     try {
-      await registerVerifier(customerUuid, '', dummyVerifierApiKey);
+      await registerVerifier(dummyVerifierApiKey, '');
       fail();
     } catch (e) {
       expect(e).toEqual(new CustError(400, 'Invalid Verifier Options: url is required.'));
@@ -108,7 +97,7 @@ describe('registerVerifier - Failure cases', () => {
 
   it('returns a CustError with a descriptive error message if apiKey is missing', async () => {
     try {
-      await registerVerifier(customerUuid, url, '');
+      await registerVerifier('', url);
       fail();
     } catch (e) {
       expect(e).toEqual(new CustError(401, 'Not authenticated: apiKey is required.'));
@@ -121,7 +110,7 @@ describe('registerVerifier - Failure cases', () => {
     // const badVersionInfo: VersionInfo[] = [{ target: { version: '1.0.x' }, sdkVersion: '3.0.0' }];
     const badVersionInfo: VersionInfo[] = [{ sdkVersion: '3.0.0' }];
     try {
-      await registerVerifier(customerUuid, url, dummyVerifierApiKey, badVersionInfo);
+      await registerVerifier(dummyVerifierApiKey, url, badVersionInfo);
       fail();
     } catch (e) {
       expect(e).toEqual(new CustError(400, '\'versionInfo[0].target\' must be defined.'));
@@ -133,7 +122,7 @@ describe('registerVerifier - Failure cases', () => {
   it('returns a CustError with a descriptive error message if versionInfo url or version is missing', async () => {
     const badVersionInfo: VersionInfo[] = [{ target: { hat: '1.0.x' }, sdkVersion: '3.0.0' }];
     try {
-      await registerVerifier(customerUuid, url, dummyVerifierApiKey, badVersionInfo);
+      await registerVerifier(dummyVerifierApiKey, url, badVersionInfo);
       fail();
     } catch (e) {
       expect(e).toEqual(new CustError(400, '\'versionInfo[0].target.version\' or \'versionInfo[0].target.url\' must be defined.'));
@@ -145,7 +134,7 @@ describe('registerVerifier - Failure cases', () => {
   it('returns a CustError with a descriptive error message if versionInfo version is not in semver notation', async () => {
     const badVersionInfo: VersionInfo[] = [{ target: { version: '1.0.x' }, sdkVersion: '3.0.0' }];
     try {
-      await registerVerifier(customerUuid, url, dummyVerifierApiKey, badVersionInfo);
+      await registerVerifier(dummyVerifierApiKey, url, badVersionInfo);
       fail();
     } catch (e) {
       expect(e).toEqual(new CustError(400, '\'versionInfo[0].target.version\' must be valid semver notation.'));
@@ -157,7 +146,7 @@ describe('registerVerifier - Failure cases', () => {
   it('returns a CustError with a descriptive error message if versionInfo sdkVersion is not in semver notation', async () => {
     const badVersionInfo: VersionInfo[] = [{ target: { version: '1.0.0' }, sdkVersion: '3.0.x' }];
     try {
-      await registerVerifier(customerUuid, url, dummyVerifierApiKey, badVersionInfo);
+      await registerVerifier(dummyVerifierApiKey, url, badVersionInfo);
       fail();
     } catch (e) {
       expect(e).toEqual(new CustError(400, '\'versionInfo[0].sdkVersion\' must be valid semver notation.'));
@@ -172,20 +161,11 @@ describe('registerVerifier - Failure cases - SaaS Errors', () => {
   const customerUuid = '5e46f1ba-4c82-471d-bbc7-251924a90532';
   const url = 'https://customer-api.dev-unum.id/presentation';
 
-  it('Response code should be 403 when uuid is not valid', async () => {
-    mockMakeNetworkRequest.mockRejectedValueOnce(new CustError(403, 'Forbidden'));
-    try {
-      await registerVerifier('123', url, dummyVerifierApiKey);
-    } catch (e) {
-      expect(e.code).toBe(403);
-    }
-  });
-
   it('Response code should be 403 when API Key is not valid', async () => {
     mockMakeNetworkRequest.mockRejectedValueOnce(new CustError(403, 'Forbidden'));
 
     try {
-      await registerVerifier(customerUuid, url, 'abc');
+      await registerVerifier('abc', url);
     } catch (e) {
       expect(e.code).toBe(403);
     }

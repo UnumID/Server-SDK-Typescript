@@ -43,11 +43,7 @@ const constructKeyObjs = (kpSet: KeyPairSet): Array<PublicKeyInfo> => {
  * @param customerUuid string
  * @param apiKey string
  */
-const validateInParams = (customerUuid: string, apiKey: string, url: string, versionInfo: VersionInfo[]) => {
-  if (!customerUuid) {
-    throw new CustError(400, 'Invalid Issuer: customerUuid is required.');
-  }
-
+const validateInParams = (apiKey: string, url: string, versionInfo: VersionInfo[]) => {
   if (!apiKey) {
     throw new CustError(401, 'Not authenticated: apiKey is required');
   }
@@ -64,13 +60,12 @@ const validateInParams = (customerUuid: string, apiKey: string, url: string, ver
  * @param customerUuid
  * @param apiKey
  */
-export const registerIssuer = async (customerUuid: string, apiKey: string, url:string, versionInfo: VersionInfo[] = [{ target: { version: '1.0.0' }, sdkVersion: '3.0.0' }]): Promise<UnumDto<RegisteredIssuer>> => {
+export const registerIssuer = async (apiKey: string, url:string, versionInfo: VersionInfo[] = [{ target: { version: '1.0.0' }, sdkVersion: '3.0.0' }]): Promise<UnumDto<RegisteredIssuer>> => {
   try {
-    validateInParams(customerUuid, apiKey, url, versionInfo);
+    validateInParams(apiKey, url, versionInfo);
 
     const kpSet: KeyPairSet = await createKeyPairSet();
     const issuerOpt: IssuerOptions = {
-      customerUuid,
       publicKeyInfo: constructKeyObjs(kpSet),
       url,
       versionInfo

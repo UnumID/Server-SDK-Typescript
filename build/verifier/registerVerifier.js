@@ -78,10 +78,7 @@ var constructKeyObjs = function (kpSet) {
  * Validates request input parameters.
  * @param req Request
  */
-var validateInParams = function (customerUuid, url, apiKey, versionInfo) {
-    if (!customerUuid) {
-        throw new __1.CustError(400, 'Invalid Verifier Options: customerUuid is required.');
-    }
+var validateInParams = function (url, apiKey, versionInfo) {
     if (!url) {
         throw new __1.CustError(400, 'Invalid Verifier Options: url is required.');
     }
@@ -97,7 +94,7 @@ var validateInParams = function (customerUuid, url, apiKey, versionInfo) {
  * @param apiKey
  * @param versionInfo
  */
-exports.registerVerifier = function (customerUuid, url, apiKey, versionInfo) {
+exports.registerVerifier = function (url, apiKey, versionInfo) {
     if (versionInfo === void 0) { versionInfo = [{ target: { version: '1.0.0' }, sdkVersion: '3.0.0' }]; }
     return __awaiter(void 0, void 0, void 0, function () {
         var kpSet, verifierOpt, restData, restResp, authToken, verifierResp, error_1;
@@ -105,11 +102,11 @@ exports.registerVerifier = function (customerUuid, url, apiKey, versionInfo) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 3, , 4]);
-                    validateInParams(customerUuid, url, apiKey, versionInfo);
+                    validateInParams(url, apiKey, versionInfo);
                     return [4 /*yield*/, createKeyPairs_1.createKeyPairSet()];
                 case 1:
                     kpSet = _a.sent();
-                    verifierOpt = { customerUuid: customerUuid, url: url, publicKeyInfo: constructKeyObjs(kpSet), versionInfo: versionInfo };
+                    verifierOpt = { url: url, publicKeyInfo: constructKeyObjs(kpSet), versionInfo: versionInfo };
                     restData = {
                         method: 'POST',
                         baseUrl: config_1.configData.SaaSUrl,

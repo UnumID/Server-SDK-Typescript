@@ -102,7 +102,7 @@ var validateSubjectCredentialRequests = function (requests, subjectDid) {
 /**
  * Verify the CredentialRequests signatures.
  */
-function verifySubjectCredentialRequests(authorization, issuerDid, subjectDid, credentialRequests) {
+function verifySubjectCredentialRequests(authorization, issuerDid, subjectDid, subjectCredentialRequests) {
     return __awaiter(this, void 0, void 0, function () {
         var result, authToken, _a, isVerified, message;
         return __generator(this, function (_b) {
@@ -110,37 +110,14 @@ function verifySubjectCredentialRequests(authorization, issuerDid, subjectDid, c
                 case 0:
                     requireAuth_1.requireAuth(authorization);
                     // validate credentialRequests input; and grab the subjectDid for reference later
-                    validateSubjectCredentialRequests(credentialRequests, subjectDid);
-                    return [4 /*yield*/, verifySubjectCredentialRequestsHelper(authorization, issuerDid, credentialRequests)];
+                    validateSubjectCredentialRequests(subjectCredentialRequests, subjectDid);
+                    return [4 /*yield*/, verifySubjectCredentialRequestsHelper(authorization, issuerDid, subjectCredentialRequests)];
                 case 1:
                     result = _b.sent();
                     authToken = result.authToken;
                     _a = result.body, isVerified = _a.isVerified, message = _a.message;
-                    return [4 /*yield*/, handleSubjectCredentialsRequestsVerificationReceipt(authToken, issuerDid, subjectDid, credentialRequests, isVerified, message)];
+                    return [4 /*yield*/, handleSubjectCredentialsRequestsVerificationReceipt(authToken, issuerDid, subjectDid, subjectCredentialRequests, isVerified, message)];
                 case 2:
-                    // let authToken = authorization;
-                    // for (const credentialRequest of credentialRequests) {
-                    //   const result: UnumDto<VerifiedStatus> = await verifySubjectCredentialRequestsHelper(authToken, issuerDid, credentialRequest);
-                    //   const { isVerified, message } = result.body;
-                    //   authToken = result.authToken;
-                    //   // can stop here is not verified
-                    //   if (!result.body.isVerified) {
-                    //     // handle sending back the ReceiptSubjectCredentialRequestVerifiedData receipt with the verification failure reason
-                    //     authToken = await handleSubjectCredentialsRequestsVerificationReceipt(authToken, issuerDid, subjectDid, credentialRequests, isVerified, message);
-                    //     return {
-                    //       ...result,
-                    //       authToken
-                    //     };
-                    //   }
-                    // }
-                    // if (!result.body.isVerified) {
-                    //   // handle sending back the ReceiptSubjectCredentialRequestVerifiedData receipt with the verification failure reason
-                    //   authToken = await handleSubjectCredentialsRequestsVerificationReceipt(authToken, issuerDid, subjectDid, credentialRequests, isVerified, message);
-                    //   return {
-                    //     ...result,
-                    //     authToken
-                    //   };
-                    // }
                     // handle sending back the ReceiptSubjectCredentialRequestVerifiedData receipt with the verification status
                     authToken = _b.sent();
                     return [2 /*return*/, __assign(__assign({}, result), { authToken: authToken })];
@@ -204,58 +181,6 @@ function verifySubjectCredentialRequestsHelper(authToken, issuerDid, subjectCred
     });
 }
 exports.verifySubjectCredentialRequestsHelper = verifySubjectCredentialRequestsHelper;
-// export async function verifySubjectCredentialRequestsHelper (authToken: string, issuerDid: string, credentialRequests: SubjectCredentialRequests): Promise<UnumDto<VerifiedStatus>> {
-//   const verificationMethod = credentialRequests.proof?.verificationMethod as string;
-//   const signatureValue = credentialRequests.proof?.signatureValue as string;
-//   // // validate that the issueDid is present in the request issuer array
-//   // if (!credentialRequests.issuers.includes(issuerDid)) {
-//   //   return {
-//   //     authToken,
-//   //     body: {
-//   //       isVerified: false,
-//   //       message: `Issuer DID, ${issuerDid}, not found in credential request issuers ${credentialRequest.issuers}`
-//   //     }
-//   //   };
-//   // }
-//   const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authToken, verificationMethod, 'secp256r1');
-//   const publicKeyInfoList: PublicKeyInfo[] = publicKeyInfoResponse.body;
-//   authToken = publicKeyInfoResponse.authToken;
-//   if (publicKeyInfoList.length === 0) {
-//     return {
-//       authToken,
-//       body: {
-//         isVerified: false,
-//         message: `Public key not found for the subject did ${verificationMethod}`
-//       }
-//     };
-//   }
-//   let isVerified = false;
-//   const unsignedCredentialRequest: CredentialRequestPb = omit(credentialRequest, 'proof');
-//   // convert to bytes
-//   const bytes: Uint8Array = CredentialRequestPb.encode(unsignedCredentialRequest).finish();
-//   // check all the public keys to see if any work, stop if one does
-//   for (const publicKeyInfo of publicKeyInfoList) {
-//     const { publicKey, encoding } = publicKeyInfo;
-//     // verify the signature
-//     isVerified = doVerify(signatureValue, bytes, publicKey, encoding);
-//     if (isVerified) break;
-//   }
-//   if (!isVerified) {
-//     return {
-//       authToken,
-//       body: {
-//         isVerified: false,
-//         message: 'SubjectCredentialRequest signature can not be verified.'
-//       }
-//     };
-//   }
-//   return {
-//     authToken,
-//     body: {
-//       isVerified: true
-//     }
-//   };
-// }
 /**
  * Handle sending back the SubjectCredentialRequestVerified receipt
  */
