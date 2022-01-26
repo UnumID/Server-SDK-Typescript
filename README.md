@@ -63,10 +63,24 @@ Register an issuer corresponding to your customer UUID and issuer API key provid
 
 You should store the DID (`did`) and encryption and signing key pairs (`keys`) that this returns. You'll need these to issue credentials to users.
 
+```typescript
+export type TargetInfo = {
+  [key: string]: any, // To be able to handle generic HTTP header requirements, i.e. version, accept, appId, etc
+  url?: string // Versions denoted via a different url.
+}
+```
+
+```typescript
+export type VersionInfo = {
+  target: TargetInfo, // The information of how to target a customer's application to communication with the corresponding Server sdkVersion.
+  sdkVersion: string // Server sdk version. Ought to be in Semver notation however opting to keep a string type for simplicity.
+}
+
 Parameters:
 ```typescript
-"customerUuid": string, // your customer UUID
 "apiKey": string // your issuer API key
+"url": string, // the url of which UnumID's SaaS will interface with
+"versionInfo": VersionInfo[] // arrays of objects for how to contact specific version of your verifier and subsequently the sever sdk. 
 ```
 
 Response Body:  [**RegisteredIssuer**](https://docs.unumid.co/Server-SDK-Typescript/interfaces/registeredissuer.html)
@@ -227,11 +241,25 @@ Register a verifier corresponding to your customer UUID and verifier API key tha
 
 You should store the DID (`did`) and signing key pair (`keys`) that this returns. You'll need these to create requests for (presentations of) credentials from users.
 
+```typescript
+export type TargetInfo = {
+  [key: string]: any, // To be able to handle generic HTTP header requirements, i.e. version, accept, appId, etc
+  url?: string // Versions denoted via a different url.
+}
+```
+
+```typescript
+export type VersionInfo = {
+  target: TargetInfo, // The information of how to target a customer's application to communication with the corresponding Server sdkVersion.
+  sdkVersion: string // Server sdk version. Ought to be in Semver notation however opting to keep a string type for simplicity.
+}
+```
+
 Parameters
 ```typescript
-"customerUuid": string, // your customer UUID
-"url": string, // the url of which UnumID's SaaS will interface with
 "apiKey": string // your verifier API key
+"url": string, // the url of which UnumID's SaaS will interface with
+"versionInfo": VersionInfo[] // arrays of objects for how to contact specific version of your verifier and subsequently the sever sdk. 
 ```
 
 Response body: [**RegisteredVerifier**](https://docs.unumid.co/Server-SDK-Typescript/interfaces/registeredverifier.html)
