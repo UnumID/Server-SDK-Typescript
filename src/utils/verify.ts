@@ -1,6 +1,6 @@
 import logger from '../logger';
 import { JSONObj, PublicKeyInfo } from '@unumid/types';
-import { verify, verifyBytesV2, verifyString } from '@unumid/library-crypto';
+import { verify, verifyBytes, verifyString } from '@unumid/library-crypto';
 import { isEqual } from 'lodash';
 
 /**
@@ -13,7 +13,7 @@ import { isEqual } from 'lodash';
 // export const doVerify = (signature: string, data: Uint8Array, publicKey: string, encoding: 'base58' | 'pem' = 'pem'): boolean => {
 export const doVerify = (signature: string, data: Uint8Array, publicKey: PublicKeyInfo): boolean => {
   logger.debug(`Signature data verification using public key ${publicKey}`);
-  const result:boolean = verifyBytesV2(signature, data, publicKey);
+  const result:boolean = verifyBytes(signature, data, publicKey);
 
   logger.debug(`Signature data is valid: ${result}.`);
   return result;

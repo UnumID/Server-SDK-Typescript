@@ -233,7 +233,7 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                 if (presentationRequest && presentationRequest.verifier.did !== verifierDid) {
                     throw new error_1.CustError(400, "verifier provided, " + verifierDid + ", does not match the presentation request verifier, " + presentationRequest.verifier.did + ".");
                 }
-                presentationBytes = library_crypto_1.decryptBytesV2(encryptionPrivateKey, encryptedPresentation);
+                presentationBytes = library_crypto_1.decryptBytes(encryptionPrivateKey, encryptedPresentation);
                 presentation = types_1.PresentationPb.decode(presentationBytes);
                 if (config_1.configData.debug) {
                     logger_1.default.debug("Decrypted Presentation: " + JSON.stringify(presentation));

@@ -2,7 +2,7 @@
 import { DecryptedPresentation, UnumDto, VerifiedStatus } from '../types';
 import { Presentation, CredentialRequest, PresentationRequestDto, EncryptedData, PresentationRequest, PresentationPb, PresentationRequestPb, ProofPb, UnsignedPresentationRequestPb, WithVersion, PublicKeyInfo } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
-import { CryptoError, decryptBytes, decryptBytesV2 } from '@unumid/library-crypto';
+import { CryptoError, decryptBytes } from '@unumid/library-crypto';
 import logger from '../logger';
 import { verifyNoPresentationHelper } from './verifyNoPresentationHelper';
 import { verifyPresentationHelper } from './verifyPresentationHelper';
@@ -215,7 +215,7 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
 
     // decrypt the presentation
     // const presentationBytes = decryptBytes(encryptionPrivateKey, encryptedPresentation);
-    const presentationBytes = decryptBytesV2(encryptionPrivateKey, encryptedPresentation);
+    const presentationBytes = decryptBytes(encryptionPrivateKey, encryptedPresentation);
     const presentation: PresentationPb = PresentationPb.decode(presentationBytes);
 
     if (configData.debug) {

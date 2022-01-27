@@ -33,7 +33,7 @@ exports.doEncryptPb = function (did, publicKeyObj, data) {
     //   publicKeyObj.encoding,
     //   publicKeyObj.rsaPadding
     // );
-    var result = library_crypto_1.encryptBytesV2(did + '#' + publicKeyObj.id, publicKeyObj, data);
+    var result = library_crypto_1.encryptBytes(did + '#' + publicKeyObj.id, publicKeyObj, data);
     logger_1.default.debug("Encrypted data result: " + result.data);
     return result;
 };

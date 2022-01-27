@@ -1,6 +1,6 @@
 import { EncryptedData, JSONObj, PublicKeyInfo } from '@unumid/types';
 import logger from '../logger';
-import { encrypt, encryptBytes, encryptBytesV2 } from '@unumid/library-crypto';
+import { encrypt, encryptBytes } from '@unumid/library-crypto';
 
 /**
  * Encrypt the provided data object.
@@ -38,7 +38,7 @@ export const doEncryptPb = (did: string, publicKeyObj: PublicKeyInfo, data: Uint
   //   publicKeyObj.rsaPadding
   // );
 
-  const result = encryptBytesV2(
+  const result = encryptBytes(
     did + '#' + publicKeyObj.id,
     publicKeyObj,
     data
