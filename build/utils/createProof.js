@@ -34,7 +34,6 @@ exports.createProof = function (data, privateKey, method, encoding) {
  * @param method
  * @param encoding
  */
-// export const createProofPb = (data: Uint8Array, privateKey: string, method: string, encoding: 'base58' | 'pem'): ProofPb => {
 exports.createProofPb = function (data, privateKey, method) {
     var signature = library_crypto_1.signBytes(data, privateKey);
     var proof = {

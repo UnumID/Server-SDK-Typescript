@@ -100,7 +100,6 @@ export const constructSignedPresentationRequest = (unsignedPresentationRequest: 
       bytes,
       privateKey,
       unsignedPresentationRequest.verifier
-      // 'pem'
     );
 
     const signedPresentationRequest: PresentationRequestPb = {

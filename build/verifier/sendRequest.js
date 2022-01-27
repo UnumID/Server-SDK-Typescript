@@ -121,9 +121,7 @@ exports.constructSignedPresentationRequest = function (unsignedPresentationReque
     try {
         // convert the protobuf to a byte array
         var bytes = types_1.UnsignedPresentationRequestPb.encode(unsignedPresentationRequest).finish();
-        var proof = createProof_1.createProofPb(bytes, privateKey, unsignedPresentationRequest.verifier
-        // 'pem'
-        );
+        var proof = createProof_1.createProofPb(bytes, privateKey, unsignedPresentationRequest.verifier);
         var signedPresentationRequest = __assign(__assign({}, unsignedPresentationRequest), { proof: proof });
         return signedPresentationRequest;
     }

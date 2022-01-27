@@ -155,9 +155,7 @@ function verifySubjectCredentialRequestsHelper(authToken, issuerDid, subjectCred
                     // check all the public keys to see if any work, stop if one does
                     for (_i = 0, publicKeyInfoList_1 = publicKeyInfoList; _i < publicKeyInfoList_1.length; _i++) {
                         publicKeyInfo = publicKeyInfoList_1[_i];
-                        // const { publicKey, encoding } = publicKeyInfo;
                         // verify the signature
-                        // isVerified = doVerify(signatureValue, bytes, publicKey, encoding);
                         isVerified = verify_1.doVerify(signatureValue, bytes, publicKeyInfo);
                         if (isVerified)
                             break;

@@ -108,10 +108,7 @@ export async function verifySubjectCredentialRequestsHelper (authToken: string, 
 
   // check all the public keys to see if any work, stop if one does
   for (const publicKeyInfo of publicKeyInfoList) {
-    // const { publicKey, encoding } = publicKeyInfo;
-
     // verify the signature
-    // isVerified = doVerify(signatureValue, bytes, publicKey, encoding);
     isVerified = doVerify(signatureValue, bytes, publicKeyInfo);
     if (isVerified) break;
   }

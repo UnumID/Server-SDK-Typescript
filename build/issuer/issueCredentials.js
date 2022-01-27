@@ -115,7 +115,6 @@ var constructSignedCredentialPbObj = function (usCred, privateKey) {
     try {
         // convert the protobuf to a byte array
         var bytes = types_1.UnsignedCredentialPb.encode(usCred).finish();
-        // const proof: ProofPb = createProofPb(bytes, privateKey, usCred.issuer, 'pem');
         var proof = createProof_1.createProofPb(bytes, privateKey, usCred.issuer);
         var credential = {
             context: usCred.context,

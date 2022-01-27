@@ -305,9 +305,7 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 // check all the public keys to see if any work, stop if one does
                 for (_i = 0, publicKeyInfoList_1 = publicKeyInfoList; _i < publicKeyInfoList_1.length; _i++) {
                     publicKeyInfo = publicKeyInfoList_1[_i];
-                    // const { publicKey, encoding } = publicKeyInfo;
                     // verify the signature
-                    // isPresentationVerified = doVerify(proof.signatureValue, bytes, publicKey, encoding);
                     isPresentationVerified = verify_1.doVerify(proof.signatureValue, bytes, publicKeyInfo);
                     if (isPresentationVerified)
                         break;

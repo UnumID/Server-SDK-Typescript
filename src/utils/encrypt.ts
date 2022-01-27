@@ -30,13 +30,6 @@ export const doEncrypt = (did: string, publicKeyObj: PublicKeyInfo, data: JSONOb
  */
 export const doEncryptPb = (did: string, publicKeyObj: PublicKeyInfo, data: Uint8Array): EncryptedData => {
   logger.debug('Performing byte array encryption using public key', publicKeyObj);
-  // const result = encryptBytes(
-  //   did + '#' + publicKeyObj.id,
-  //   publicKeyObj.publicKey,
-  //   data,
-  //   publicKeyObj.encoding,
-  //   publicKeyObj.rsaPadding
-  // );
 
   const result = encryptBytes(
     did + '#' + publicKeyObj.id,

@@ -73,7 +73,6 @@ const constructSignedCredentialPbObj = (usCred: UnsignedCredentialPb, privateKey
     // convert the protobuf to a byte array
     const bytes: Uint8Array = UnsignedCredentialPb.encode(usCred).finish();
 
-    // const proof: ProofPb = createProofPb(bytes, privateKey, usCred.issuer, 'pem');
     const proof: ProofPb = createProofPb(bytes, privateKey, usCred.issuer);
 
     const credential: CredentialPb = {

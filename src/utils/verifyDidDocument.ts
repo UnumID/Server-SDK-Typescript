@@ -75,10 +75,7 @@ async function verifyDid (authToken: string, did: DID): Promise<UnumDto<Verified
 
   // check all the public keys to see if any work, stop if one does
   for (const publicKeyInfo of publicKeyInfoList) {
-    // const { publicKey, encoding } = publicKeyInfo;
-
     // verify the signature over the byte array
-    // isVerified = doVerify(signatureValue, bytes, publicKey, encoding);
     isVerified = doVerify(signatureValue, bytes, publicKeyInfo);
 
     if (isVerified) {

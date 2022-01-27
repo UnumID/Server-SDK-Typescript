@@ -73,8 +73,7 @@ exports.verifyCredential = function (authorization, credential) { return __await
                     // check all the public keys to see if any work, stop if one does
                     for (_i = 0, publicKeyInfoList_1 = publicKeyInfoList; _i < publicKeyInfoList_1.length; _i++) {
                         publicKeyInfo = publicKeyInfoList_1[_i];
-                        // const { publicKey, encoding } = publicKeyInfo;
-                        // isVerified = doVerify(proof.signatureValue, bytes, publicKey, encoding);
+                        // verify the signature
                         isVerified = verify_1.doVerify(proof.signatureValue, bytes, publicKeyInfo);
                         if (isVerified)
                             break;

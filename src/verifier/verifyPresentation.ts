@@ -160,8 +160,6 @@ async function verifyPresentationRequest (authorization: string, presentationReq
 
   // check all the public keys to see if any work, stop if one does
   for (const publicKeyInfo of publicKeyInfoList) {
-    // const { publicKey, encoding } = publicKeyInfo;
-
     // verify the signature
     isVerified = doVerify(signatureValue, bytes, publicKeyInfo);
     if (isVerified) break;
@@ -214,7 +212,6 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
     }
 
     // decrypt the presentation
-    // const presentationBytes = decryptBytes(encryptionPrivateKey, encryptedPresentation);
     const presentationBytes = decryptBytes(encryptionPrivateKey, encryptedPresentation);
     const presentation: PresentationPb = PresentationPb.decode(presentationBytes);
 
