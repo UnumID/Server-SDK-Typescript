@@ -56,11 +56,15 @@ describe('doVerify, Verifies the given data - Success Scenario', () => {
   const bytes: Uint8Array = UnsignedCredentialPb.encode(data).finish();
   // const data = { test: 'Data to Verify' };
   // const dataString = "{ test: 'Data to Verify' }";
-  let keyPair: KeyPair, verifySpy, signature, retVal;
+  let keyPair: KeyPair, verifySpy, signature, retVal, publicKeyInfo;
 
   beforeAll(async () => {
     verifySpy = jest.spyOn(cryptoLib, 'verifyBytes', 'get');
     keyPair = await cryptoLib.generateEccKeyPair();
+    publicKeyInfo = {
+      publicKey: keyPair.publicKey,
+      encoding: 'pem'
+    };
     signature = cryptoLib.signBytes(bytes, keyPair.privateKey);
   });
 
@@ -69,7 +73,7 @@ describe('doVerify, Verifies the given data - Success Scenario', () => {
   });
 
   it('verify crypto library should have been called', () => {
-    retVal = doVerify(signature, bytes, keyPair.publicKey, 'pem');
+    retVal = doVerify(signature, bytes, publicKeyInfo);
     expect(verifySpy).toBeCalled();
   });
 
@@ -79,7 +83,7 @@ describe('doVerify, Verifies the given data - Success Scenario', () => {
   });
 
   it('doVerify should return true while passing valid stringData optional param', () => {
-    retVal = doVerify(signature, bytes, keyPair.publicKey, 'pem');
+    retVal = doVerify(signature, bytes, publicKeyInfo);
     expect(verifySpy).toBeCalled();
     expect(retVal).toBeDefined();
     expect(retVal).toBe(true);

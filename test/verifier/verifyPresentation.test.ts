@@ -13,6 +13,7 @@ import { doVerify } from '../../src/utils/verify';
 import logger from '../../src/logger';
 import { extractPresentationRequest, getPresentationRequest } from '../../src/verifier/getPresentationRequest';
 import { getCredentialStatusFromMap } from '../../src/utils/getCredentialStatusFromMap';
+import { PublicKeyInfo } from '@unumid/types/build/protos/crypto';
 
 jest.mock('../../src/verifier/getPresentationRequest', () => {
   const actual = jest.requireActual('../../src/verifier/getPresentationRequest');
@@ -69,7 +70,13 @@ const callVerifyEncryptedPresentation = async (context, type, verifiableCredenti
 
   // const encryptedPresentation = encrypt(`did:unum:${getUUID()}`, dummyRsaPublicKey, presentation, 'pem');
   const bytes: Uint8Array = PresentationPb.encode(presentation).finish();
-  const encryptedPresentation = encryptBytes(`did:unum:${getUUID()}`, dummyRsaPublicKey, bytes, 'pem');
+
+  const publicKeyInfo = {
+    publicKey: dummyRsaPublicKey,
+    encoding: 'pem'
+  };
+
+  const encryptedPresentation = encryptBytes(`did:unum:${getUUID()}`, publicKeyInfo as PublicKeyInfo, bytes);
   return verifyPresentation(auth, encryptedPresentation, verifier, dummyRsaPrivateKey, presentationRequest);
 };
 
@@ -86,7 +93,12 @@ const callVerifyEncryptedPresentationManual = (context, type, verifiableCredenti
   // const encryptedPresentation = encrypt(`did:unum:${getUUID()}`, dummyRsaPublicKey, presentation, 'pem');
   try {
     const bytes: Uint8Array = PresentationPb.encode(presentation).finish();
-    const encryptedPresentation = encryptBytes(`did:unum:${getUUID()}`, dummyRsaPublicKey, bytes, 'pem');
+    const publicKeyInfo = {
+      publicKey: dummyRsaPublicKey,
+      encoding: 'pem'
+    };
+
+    const encryptedPresentation = encryptBytes(`did:unum:${getUUID()}`, publicKeyInfo as PublicKeyInfo, bytes);
     return verifyPresentation(auth, encryptedPresentation, verifier, dummyRsaPrivateKey, presentationRequest);
   } catch (e) {
     logger.error(e);
@@ -435,7 +447,12 @@ describe('verifyPresentation', () => {
       mockDoVerify.mockReturnValueOnce(false);
 
       const bytes: Uint8Array = PresentationPb.encode(presentation).finish();
-      const encryptedPresentation = encryptBytes(`did:unum:${getUUID()}`, dummyRsaPublicKey, bytes, 'pem');
+      const publicKeyInfo = {
+        publicKey: dummyRsaPublicKey,
+        encoding: 'pem'
+      };
+
+      const encryptedPresentation = encryptBytes(`did:unum:${getUUID()}`, publicKeyInfo as PublicKeyInfo, bytes);
 
       const fakeBadPresentationRequestDto = {
         presentationRequest: {
