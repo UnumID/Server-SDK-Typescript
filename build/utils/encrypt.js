@@ -26,7 +26,14 @@ exports.doEncrypt = function (did, publicKeyObj, data) {
  */
 exports.doEncryptPb = function (did, publicKeyObj, data) {
     logger_1.default.debug('Performing byte array encryption using public key', publicKeyObj);
-    var result = library_crypto_1.encryptBytes(did + '#' + publicKeyObj.id, publicKeyObj.publicKey, data, publicKeyObj.encoding, publicKeyObj.rsaPadding);
+    // const result = encryptBytes(
+    //   did + '#' + publicKeyObj.id,
+    //   publicKeyObj.publicKey,
+    //   data,
+    //   publicKeyObj.encoding,
+    //   publicKeyObj.rsaPadding
+    // );
+    var result = library_crypto_1.encryptBytesV2(did + '#' + publicKeyObj.id, publicKeyObj, data);
     logger_1.default.debug("Encrypted data result: " + result.data);
     return result;
 };

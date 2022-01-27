@@ -129,7 +129,7 @@ exports.verifySubjectCredentialRequests = verifySubjectCredentialRequests;
 function verifySubjectCredentialRequestsHelper(authToken, issuerDid, subjectCredentialRequests) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
-        var verificationMethod, signatureValue, publicKeyInfoResponse, publicKeyInfoList, isVerified, unsignedSubjectCredentialRequests, bytes, _i, publicKeyInfoList_1, publicKeyInfo, publicKey, encoding;
+        var verificationMethod, signatureValue, publicKeyInfoResponse, publicKeyInfoList, isVerified, unsignedSubjectCredentialRequests, bytes, _i, publicKeyInfoList_1, publicKeyInfo;
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
@@ -155,9 +155,10 @@ function verifySubjectCredentialRequestsHelper(authToken, issuerDid, subjectCred
                     // check all the public keys to see if any work, stop if one does
                     for (_i = 0, publicKeyInfoList_1 = publicKeyInfoList; _i < publicKeyInfoList_1.length; _i++) {
                         publicKeyInfo = publicKeyInfoList_1[_i];
-                        publicKey = publicKeyInfo.publicKey, encoding = publicKeyInfo.encoding;
+                        // const { publicKey, encoding } = publicKeyInfo;
                         // verify the signature
-                        isVerified = verify_1.doVerify(signatureValue, bytes, publicKey, encoding);
+                        // isVerified = doVerify(signatureValue, bytes, publicKey, encoding);
+                        isVerified = verify_1.doVerify(signatureValue, bytes, publicKeyInfo);
                         if (isVerified)
                             break;
                     }

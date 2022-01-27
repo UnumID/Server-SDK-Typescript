@@ -311,10 +311,11 @@ export const verifyPresentationHelper = async (authorization: string, presentati
 
       // check all the public keys to see if any work, stop if one does
       for (const publicKeyInfo of publicKeyInfoList) {
-        const { publicKey, encoding } = publicKeyInfo;
+        // const { publicKey, encoding } = publicKeyInfo;
 
         // verify the signature
-        isPresentationVerified = doVerify(proof.signatureValue, bytes, publicKey, encoding);
+        // isPresentationVerified = doVerify(proof.signatureValue, bytes, publicKey, encoding);
+        isPresentationVerified = doVerify(proof.signatureValue, bytes, publicKeyInfo);
         if (isPresentationVerified) break;
       }
     } catch (e) {

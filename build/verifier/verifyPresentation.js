@@ -162,7 +162,7 @@ var validateCredentialRequests = function (requests) {
  */
 function verifyPresentationRequest(authorization, presentationRequest) {
     return __awaiter(this, void 0, void 0, function () {
-        var _a, verificationMethod, signatureValue, publicKeyInfoResponse, publicKeyInfoList, authToken, unsignedPresentationRequest, bytes, isVerified, _i, publicKeyInfoList_1, publicKeyInfo, publicKey, encoding, result_1, result;
+        var _a, verificationMethod, signatureValue, publicKeyInfoResponse, publicKeyInfoList, authToken, unsignedPresentationRequest, bytes, isVerified, _i, publicKeyInfoList_1, publicKeyInfo, result_1, result;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
@@ -181,9 +181,9 @@ function verifyPresentationRequest(authorization, presentationRequest) {
                     // check all the public keys to see if any work, stop if one does
                     for (_i = 0, publicKeyInfoList_1 = publicKeyInfoList; _i < publicKeyInfoList_1.length; _i++) {
                         publicKeyInfo = publicKeyInfoList_1[_i];
-                        publicKey = publicKeyInfo.publicKey, encoding = publicKeyInfo.encoding;
+                        // const { publicKey, encoding } = publicKeyInfo;
                         // verify the signature
-                        isVerified = verify_1.doVerify(signatureValue, bytes, publicKey, encoding);
+                        isVerified = verify_1.doVerify(signatureValue, bytes, publicKeyInfo);
                         if (isVerified)
                             break;
                     }
@@ -233,7 +233,7 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                 if (presentationRequest && presentationRequest.verifier.did !== verifierDid) {
                     throw new error_1.CustError(400, "verifier provided, " + verifierDid + ", does not match the presentation request verifier, " + presentationRequest.verifier.did + ".");
                 }
-                presentationBytes = library_crypto_1.decryptBytes(encryptionPrivateKey, encryptedPresentation);
+                presentationBytes = library_crypto_1.decryptBytesV2(encryptionPrivateKey, encryptedPresentation);
                 presentation = types_1.PresentationPb.decode(presentationBytes);
                 if (config_1.configData.debug) {
                     logger_1.default.debug("Decrypted Presentation: " + JSON.stringify(presentation));

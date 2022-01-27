@@ -14,10 +14,10 @@ var lodash_1 = require("lodash");
  * @param publicKey
  * @param encoding String ('base58' | 'pem'), defaults to 'pem'
  */
-exports.doVerify = function (signature, data, publicKey, encoding) {
-    if (encoding === void 0) { encoding = 'pem'; }
+// export const doVerify = (signature: string, data: Uint8Array, publicKey: string, encoding: 'base58' | 'pem' = 'pem'): boolean => {
+exports.doVerify = function (signature, data, publicKey) {
     logger_1.default.debug("Signature data verification using public key " + publicKey);
-    var result = library_crypto_1.verifyBytes(signature, data, publicKey, encoding);
+    var result = library_crypto_1.verifyBytesV2(signature, data, publicKey);
     logger_1.default.debug("Signature data is valid: " + result + ".");
     return result;
 };

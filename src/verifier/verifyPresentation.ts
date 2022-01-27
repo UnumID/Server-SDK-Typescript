@@ -2,7 +2,7 @@
 import { DecryptedPresentation, UnumDto, VerifiedStatus } from '../types';
 import { Presentation, CredentialRequest, PresentationRequestDto, EncryptedData, PresentationRequest, PresentationPb, PresentationRequestPb, ProofPb, UnsignedPresentationRequestPb, WithVersion, PublicKeyInfo } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
-import { CryptoError, decryptBytes } from '@unumid/library-crypto';
+import { CryptoError, decryptBytes, decryptBytesV2 } from '@unumid/library-crypto';
 import logger from '../logger';
 import { verifyNoPresentationHelper } from './verifyNoPresentationHelper';
 import { verifyPresentationHelper } from './verifyPresentationHelper';
@@ -160,10 +160,10 @@ async function verifyPresentationRequest (authorization: string, presentationReq
 
   // check all the public keys to see if any work, stop if one does
   for (const publicKeyInfo of publicKeyInfoList) {
-    const { publicKey, encoding } = publicKeyInfo;
+    // const { publicKey, encoding } = publicKeyInfo;
 
     // verify the signature
-    isVerified = doVerify(signatureValue, bytes, publicKey, encoding);
+    isVerified = doVerify(signatureValue, bytes, publicKeyInfo);
     if (isVerified) break;
   }
 
@@ -214,7 +214,8 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
     }
 
     // decrypt the presentation
-    const presentationBytes = decryptBytes(encryptionPrivateKey, encryptedPresentation);
+    // const presentationBytes = decryptBytes(encryptionPrivateKey, encryptedPresentation);
+    const presentationBytes = decryptBytesV2(encryptionPrivateKey, encryptedPresentation);
     const presentation: PresentationPb = PresentationPb.decode(presentationBytes);
 
     if (configData.debug) {

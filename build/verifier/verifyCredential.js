@@ -53,7 +53,7 @@ var __1 = require("..");
  * @param authorization
  */
 exports.verifyCredential = function (authorization, credential) { return __awaiter(void 0, void 0, void 0, function () {
-    var proof, publicKeyInfoResponse, publicKeyInfoList, authToken, data, bytes, isVerified, _i, publicKeyInfoList_1, publicKeyInfo, publicKey, encoding, result, result;
+    var proof, publicKeyInfoResponse, publicKeyInfoList, authToken, data, bytes, isVerified, _i, publicKeyInfoList_1, publicKeyInfo, result, result;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -73,8 +73,9 @@ exports.verifyCredential = function (authorization, credential) { return __await
                     // check all the public keys to see if any work, stop if one does
                     for (_i = 0, publicKeyInfoList_1 = publicKeyInfoList; _i < publicKeyInfoList_1.length; _i++) {
                         publicKeyInfo = publicKeyInfoList_1[_i];
-                        publicKey = publicKeyInfo.publicKey, encoding = publicKeyInfo.encoding;
-                        isVerified = verify_1.doVerify(proof.signatureValue, bytes, publicKey, encoding);
+                        // const { publicKey, encoding } = publicKeyInfo;
+                        // isVerified = doVerify(proof.signatureValue, bytes, publicKey, encoding);
+                        isVerified = verify_1.doVerify(proof.signatureValue, bytes, publicKeyInfo);
                         if (isVerified)
                             break;
                     }
