@@ -255,7 +255,7 @@ function validatePresentationMeetsRequestedCredentials(presentation, credentialR
  * @param verifier
  */
 exports.verifyPresentationHelper = function (authorization, presentation, verifier, credentialRequests, requestUuid) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, proof, subject, credentialTypes, credentialIds, issuers, message, authToken_1, result_1, publicKeyInfoResponse, publicKeyInfoList, authToken, isPresentationVerified, bytes, _i, publicKeyInfoList_1, publicKeyInfo, publicKey, encoding, e_1, message, result_2, message, result_3, areCredentialsValid, credentialInvalidMessage, presentationCredentialIds, isStatusValidResponse, _a, _b, credential, isExpired, isStatusValid, isVerifiedResponse, isVerified_1, result_4, isVerified, result, error_2;
+    var data, proof, subject, credentialTypes, credentialIds, issuers, message, authToken_1, result_1, publicKeyInfoResponse, publicKeyInfoList, authToken, isPresentationVerified, bytes, _i, publicKeyInfoList_1, publicKeyInfo, e_1, message, result_2, message, result_3, areCredentialsValid, credentialInvalidMessage, presentationCredentialIds, isStatusValidResponse, _a, _b, credential, isExpired, isStatusValid, isVerifiedResponse, isVerified_1, result_4, isVerified, result, error_2;
     return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
@@ -305,9 +305,8 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 // check all the public keys to see if any work, stop if one does
                 for (_i = 0, publicKeyInfoList_1 = publicKeyInfoList; _i < publicKeyInfoList_1.length; _i++) {
                     publicKeyInfo = publicKeyInfoList_1[_i];
-                    publicKey = publicKeyInfo.publicKey, encoding = publicKeyInfo.encoding;
                     // verify the signature
-                    isPresentationVerified = verify_1.doVerify(proof.signatureValue, bytes, publicKey, encoding);
+                    isPresentationVerified = verify_1.doVerify(proof.signatureValue, bytes, publicKeyInfo);
                     if (isPresentationVerified)
                         break;
                 }

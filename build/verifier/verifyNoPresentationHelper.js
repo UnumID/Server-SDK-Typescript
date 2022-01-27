@@ -87,7 +87,7 @@ exports.validateNoPresentationParams = function (noPresentation) {
  * @param verifier
  */
 exports.verifyNoPresentationHelper = function (authToken, noPresentation, verifier, requestUuid) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, verificationMethod, signatureValue, verifierDid, message_1, result_1, publicKeyInfoResponse, publicKeyInfoList, unsignedNoPresentation, bytes, isVerified, _i, publicKeyInfoList_1, publicKeyInfo, publicKey, encoding, message, result, e_1;
+    var _a, verificationMethod, signatureValue, verifierDid, message_1, result_1, publicKeyInfoResponse, publicKeyInfoList, unsignedNoPresentation, bytes, isVerified, _i, publicKeyInfoList_1, publicKeyInfo, message, result, e_1;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -123,9 +123,8 @@ exports.verifyNoPresentationHelper = function (authToken, noPresentation, verifi
                 // check all the public keys to see if any work, stop if one does
                 for (_i = 0, publicKeyInfoList_1 = publicKeyInfoList; _i < publicKeyInfoList_1.length; _i++) {
                     publicKeyInfo = publicKeyInfoList_1[_i];
-                    publicKey = publicKeyInfo.publicKey, encoding = publicKeyInfo.encoding;
                     // verify the signature
-                    isVerified = verify_1.doVerify(signatureValue, bytes, publicKey, encoding);
+                    isVerified = verify_1.doVerify(signatureValue, bytes, publicKeyInfo);
                     if (isVerified)
                         break;
                 }

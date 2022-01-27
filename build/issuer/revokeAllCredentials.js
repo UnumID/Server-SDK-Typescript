@@ -96,7 +96,7 @@ exports.revokeAllCredentials = function (authorization, issuerDid, signingPrivat
                     did: subjectDid
                 };
                 bytes = types_1.UnsignedRevokeAllCredentials.encode(unsignedDto).finish();
-                proof = __1.createProofPb(bytes, signingPrivateKey, issuerDid, 'pem');
+                proof = __1.createProofPb(bytes, signingPrivateKey, issuerDid);
                 signedDto = __assign(__assign({}, unsignedDto), { proof: proof });
                 restData = {
                     method: 'POST',

@@ -36,8 +36,8 @@ export const createProof = (data: JSONObj, privateKey: string, method: string, e
  * @param method
  * @param encoding
  */
-export const createProofPb = (data: Uint8Array, privateKey: string, method: string, encoding: 'base58' | 'pem'): ProofPb => {
-  const signature = signBytes(data, privateKey, encoding);
+export const createProofPb = (data: Uint8Array, privateKey: string, method: string): ProofPb => {
+  const signature = signBytes(data, privateKey);
 
   const proof: ProofPb = {
     created: new Date(),

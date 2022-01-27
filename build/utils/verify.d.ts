@@ -1,4 +1,4 @@
-import { JSONObj } from '@unumid/types';
+import { JSONObj, PublicKeyInfo } from '@unumid/types';
 /**
  * Verify the signature on the provided byte array.
  * @param signature
@@ -6,7 +6,7 @@ import { JSONObj } from '@unumid/types';
  * @param publicKey
  * @param encoding String ('base58' | 'pem'), defaults to 'pem'
  */
-export declare const doVerify: (signature: string, data: Uint8Array, publicKey: string, encoding?: 'base58' | 'pem') => boolean;
+export declare const doVerify: (signature: string, data: Uint8Array, publicKey: PublicKeyInfo) => boolean;
 /**
  * Verify the signature on the provided data object or optional dataString.
  * Deprecated in favor of doVerifyBytes which is made to be leveraged with Protobufs for deterministic byte array (de)serialization.

@@ -34,8 +34,8 @@ exports.createProof = function (data, privateKey, method, encoding) {
  * @param method
  * @param encoding
  */
-exports.createProofPb = function (data, privateKey, method, encoding) {
-    var signature = library_crypto_1.signBytes(data, privateKey, encoding);
+exports.createProofPb = function (data, privateKey, method) {
+    var signature = library_crypto_1.signBytes(data, privateKey);
     var proof = {
         created: new Date(),
         signatureValue: signature,

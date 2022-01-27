@@ -35,9 +35,8 @@ export const verifyCredential = async (authorization: string, credential: Creden
 
     // check all the public keys to see if any work, stop if one does
     for (const publicKeyInfo of publicKeyInfoList) {
-      const { publicKey, encoding } = publicKeyInfo;
-
-      isVerified = doVerify(proof.signatureValue, bytes, publicKey, encoding);
+      // verify the signature
+      isVerified = doVerify(proof.signatureValue, bytes, publicKeyInfo);
       if (isVerified) break;
     }
 

@@ -99,8 +99,7 @@ export const constructSignedPresentationRequest = (unsignedPresentationRequest: 
     const proof: ProofPb = createProofPb(
       bytes,
       privateKey,
-      unsignedPresentationRequest.verifier,
-      'pem'
+      unsignedPresentationRequest.verifier
     );
 
     const signedPresentationRequest: PresentationRequestPb = {
