@@ -11,7 +11,7 @@ import { isEqual } from 'lodash';
  * @param encoding String ('base58' | 'pem'), defaults to 'pem'
  */
 export const doVerify = (signature: string, data: Uint8Array, publicKey: PublicKeyInfo): boolean => {
-  logger.debug(`Signature data verification using public key ${publicKey}`);
+  logger.debug(`Signature data verification using public key ${JSON.stringify(publicKey)}`);
   const result:boolean = verifyBytes(signature, data, publicKey);
 
   logger.debug(`Signature data is valid: ${result}.`);
@@ -47,7 +47,7 @@ export const doVerifyDeprecated = (signature: string, data: JSONObj, publicKey: 
  * @param encoding String ('base58' | 'pem'), defaults to 'pem'
  */
 const doVerifyData = (signature: string, data: JSONObj, publicKey: string, encoding: 'base58' | 'pem' = 'pem'): boolean => {
-  logger.debug(`Signature data verification using public key ${publicKey}`);
+  logger.debug(`Signature data verification using public key ${JSON.stringify(publicKey)}`);
   const result:boolean = verify(signature, data, publicKey, encoding);
 
   logger.debug(`Signature data is valid: ${result}.`);
@@ -70,7 +70,7 @@ const doVerifyString = (signature: string, data: JSONObj, publicKey: string, dat
     return false;
   }
 
-  logger.debug(`Signature unsignedString verification using public key ${publicKey}`);
+  logger.debug(`Signature unsignedString verification using public key ${JSON.stringify(publicKey)}`);
   const result:boolean = verifyString(signature, dataString, publicKey, encoding);
 
   logger.debug(`Signature unsignedString is valid: ${result}.`);

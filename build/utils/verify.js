@@ -15,7 +15,7 @@ var lodash_1 = require("lodash");
  * @param encoding String ('base58' | 'pem'), defaults to 'pem'
  */
 exports.doVerify = function (signature, data, publicKey) {
-    logger_1.default.debug("Signature data verification using public key " + publicKey);
+    logger_1.default.debug("Signature data verification using public key " + JSON.stringify(publicKey));
     var result = library_crypto_1.verifyBytes(signature, data, publicKey);
     logger_1.default.debug("Signature data is valid: " + result + ".");
     return result;
@@ -49,7 +49,7 @@ exports.doVerifyDeprecated = function (signature, data, publicKey, encoding, dat
  */
 var doVerifyData = function (signature, data, publicKey, encoding) {
     if (encoding === void 0) { encoding = 'pem'; }
-    logger_1.default.debug("Signature data verification using public key " + publicKey);
+    logger_1.default.debug("Signature data verification using public key " + JSON.stringify(publicKey));
     var result = library_crypto_1.verify(signature, data, publicKey, encoding);
     logger_1.default.debug("Signature data is valid: " + result + ".");
     return result;
@@ -70,7 +70,7 @@ var doVerifyString = function (signature, data, publicKey, dataString, encoding)
         logger_1.default.debug('No Signature unsignedString value; skipping string verification.');
         return false;
     }
-    logger_1.default.debug("Signature unsignedString verification using public key " + publicKey);
+    logger_1.default.debug("Signature unsignedString verification using public key " + JSON.stringify(publicKey));
     var result = library_crypto_1.verifyString(signature, dataString, publicKey, encoding);
     logger_1.default.debug("Signature unsignedString is valid: " + result + ".");
     var finalResult = false;
