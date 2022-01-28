@@ -146,6 +146,7 @@ const validateCredentialInput = (credentials: CredentialPb[]): JSONObj => {
  * @param presentation Presentation
  */
 const validatePresentation = (presentation: PresentationPb): PresentationPb => {
+  logger.debug('Validating a Presentation input');
   const { type, verifiableCredential, proof, presentationRequestId, verifierDid, context } = presentation;
   let retObj: JSONObj = {};
 
@@ -197,6 +198,7 @@ const validatePresentation = (presentation: PresentationPb): PresentationPb => {
   // Check proof object is formatted correctly
   presentation.proof = validateProof(proof);
 
+  logger.debug('Presentation input is validated');
   return presentation;
 };
 
@@ -280,6 +282,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
       // send PresentationVerified receipt
       const authToken = await sendPresentationVerifiedReceipt(authorization, verifier, proof.verificationMethod, 'approved', false, presentation.presentationRequestId, requestUuid, message, issuers, credentialTypes, credentialIds);
 
+      logger.warn(`Presentation verifier not matching input verifier. ${message}`);
       const result: UnumDto<VerifiedStatus> = {
         authToken,
         body: {
@@ -301,9 +304,6 @@ export const verifyPresentationHelper = async (authorization: string, presentati
     const publicKeyInfoList: PublicKeyInfo[] = publicKeyInfoResponse.body;
     let authToken = publicKeyInfoResponse.authToken;
 
-    // Verify the data given.  As of now only one secp256r1 public key is expected.
-    // In future, there is a possibility that, more than one secp256r1 public key can be there for a given DID.
-    // This scenario will be handled later.
     let isPresentationVerified = false;
     try {
       // create byte array from protobuf helpers
@@ -351,6 +351,8 @@ export const verifyPresentationHelper = async (authorization: string, presentati
           message
         }
       };
+
+      logger.warn(`Presentation signature can not be verified. ${message}`);
       return result;
     }
 
@@ -402,6 +404,8 @@ export const verifyPresentationHelper = async (authorization: string, presentati
           message: credentialInvalidMessage
         }
       };
+
+      logger.warn(`Presentation credentials are not valid. ${credentialInvalidMessage}`);
       return result;
     }
 
@@ -416,6 +420,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
       }
     };
 
+    logger.debug(`Presentation is verify: ${isVerified}`);
     return result;
   } catch (error) {
     logger.error('Error verifying Presentation.', error);

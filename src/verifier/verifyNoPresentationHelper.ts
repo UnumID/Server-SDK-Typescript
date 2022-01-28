@@ -17,6 +17,8 @@ import { sendPresentationVerifiedReceipt } from './sendPresentationVerifiedRecei
  * @param noPresentation NoPresentation
  */
 export const validateNoPresentationParams = (noPresentation: PresentationPb): PresentationPb => {
+  logger.debug('Validating a NoPresentation input');
+
   const {
     type,
     proof,
@@ -55,6 +57,7 @@ export const validateNoPresentationParams = (noPresentation: PresentationPb): Pr
 
   validateProof(proof);
 
+  logger.debug('NoPresentation input is validated');
   return noPresentation;
 };
 
@@ -124,6 +127,8 @@ export const verifyNoPresentationHelper = async (authToken: string, noPresentati
         message
       }
     };
+
+    logger.debug(`NoPresentation is verified: ${isVerified}. ${message}`);
 
     return result;
   } catch (e) {

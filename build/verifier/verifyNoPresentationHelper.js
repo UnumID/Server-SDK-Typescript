@@ -55,6 +55,7 @@ var sendPresentationVerifiedReceipt_1 = require("./sendPresentationVerifiedRecei
  * @param noPresentation NoPresentation
  */
 exports.validateNoPresentationParams = function (noPresentation) {
+    logger_1.default.debug('Validating a NoPresentation input');
     var type = noPresentation.type, proof = noPresentation.proof, presentationRequestId = noPresentation.presentationRequestId, verifiableCredential = noPresentation.verifiableCredential, verifierDid = noPresentation.verifierDid;
     if (!type) {
         throw new error_1.CustError(400, 'Invalid Presentation: type is required.');
@@ -78,6 +79,7 @@ exports.validateNoPresentationParams = function (noPresentation) {
         throw new error_1.CustError(400, 'Invalid Declined Presentation: verifiableCredential must be undefined or empty.'); // this should never happen base on upstream logic
     }
     validateProof_1.validateProof(proof);
+    logger_1.default.debug('NoPresentation input is validated');
     return noPresentation;
 };
 /**
@@ -139,6 +141,7 @@ exports.verifyNoPresentationHelper = function (authToken, noPresentation, verifi
                         message: message
                     }
                 };
+                logger_1.default.debug("NoPresentation is verified: " + isVerified + ". " + message);
                 return [2 /*return*/, result];
             case 5:
                 e_1 = _b.sent();
