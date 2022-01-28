@@ -356,6 +356,8 @@ export const verifyPresentationHelper = async (authorization: string, presentati
       return result;
     }
 
+    logger.debug(`Presentation signature verified: ${isPresentationVerified}.`);
+
     let areCredentialsValid = true;
     let credentialInvalidMessage;
 
@@ -408,6 +410,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
       logger.warn(`Presentation credentials are not valid. ${credentialInvalidMessage}`);
       return result;
     }
+    logger.debug(`Credential signatures are verified: ${areCredentialsValid}`);
 
     const isVerified = isPresentationVerified && areCredentialsValid; // always true if here
 
@@ -420,7 +423,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
       }
     };
 
-    logger.debug(`Presentation is verify: ${isVerified}`);
+    logger.info(`Presentation is verified: ${isVerified}`);
     return result;
   } catch (error) {
     logger.error('Error verifying Presentation.', error);

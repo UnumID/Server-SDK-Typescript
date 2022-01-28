@@ -352,6 +352,7 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 logger_1.default.warn("Presentation signature can not be verified. " + message);
                 return [2 /*return*/, result_3];
             case 9:
+                logger_1.default.debug("Presentation signature verified: " + isPresentationVerified + ".");
                 areCredentialsValid = true;
                 credentialInvalidMessage = void 0;
                 presentationCredentialIds = presentation.verifiableCredential.map(function (credential) { return credential.id; });
@@ -407,6 +408,7 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 logger_1.default.warn("Presentation credentials are not valid. " + credentialInvalidMessage);
                 return [2 /*return*/, result_4];
             case 16:
+                logger_1.default.debug("Credential signatures are verified: " + areCredentialsValid);
                 isVerified = isPresentationVerified && areCredentialsValid;
                 return [4 /*yield*/, sendPresentationVerifiedReceipt_1.sendPresentationVerifiedReceipt(authToken, verifier, subject, 'approved', isVerified, presentation.presentationRequestId, requestUuid, undefined, issuers, credentialTypes, credentialIds)];
             case 17:
@@ -417,7 +419,7 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                         isVerified: isVerified
                     }
                 };
-                logger_1.default.debug("Presentation is verify: " + isVerified);
+                logger_1.default.info("Presentation is verified: " + isVerified);
                 return [2 /*return*/, result];
             case 18:
                 error_2 = _c.sent();
