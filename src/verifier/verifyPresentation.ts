@@ -140,6 +140,8 @@ const validateCredentialRequests = (requests: CredentialRequest[]): void => {
  * Verify the PresentationRequest signature as a way to side step verifier MITM attacks where an entity spoofs requests.
  */
 async function verifyPresentationRequest (authorization: string, presentationRequest: PresentationRequestPb): Promise<UnumDto<VerifiedStatus>> {
+  logger.debug(`Verifying the presentation request ${presentationRequest.uuid}`);
+
   if (!presentationRequest.proof) {
     throw new CustError(400, 'Invalid PresentationRequest: proof is required.');
   }
@@ -166,6 +168,8 @@ async function verifyPresentationRequest (authorization: string, presentationReq
   }
 
   if (!isVerified) {
+    logger.warn(`Presentation request ${presentationRequest.uuid} signature can not be verified.`);
+
     const result: UnumDto<VerifiedStatus> = {
       authToken,
       body: {
@@ -182,6 +186,8 @@ async function verifyPresentationRequest (authorization: string, presentationReq
       isVerified: true
     }
   };
+
+  logger.debug(`Presentation request ${presentationRequest.uuid} signature verified.`);
   return result;
 }
 

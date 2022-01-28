@@ -166,6 +166,7 @@ function verifyPresentationRequest(authorization, presentationRequest) {
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
+                    logger_1.default.debug("Verifying the presentation request " + presentationRequest.uuid);
                     if (!presentationRequest.proof) {
                         throw new error_1.CustError(400, 'Invalid PresentationRequest: proof is required.');
                     }
@@ -187,6 +188,7 @@ function verifyPresentationRequest(authorization, presentationRequest) {
                             break;
                     }
                     if (!isVerified) {
+                        logger_1.default.warn("Presentation request " + presentationRequest.uuid + " signature can not be verified.");
                         result_1 = {
                             authToken: authToken,
                             body: {
@@ -202,6 +204,7 @@ function verifyPresentationRequest(authorization, presentationRequest) {
                             isVerified: true
                         }
                     };
+                    logger_1.default.debug("Presentation request " + presentationRequest.uuid + " signature verified.");
                     return [2 /*return*/, result];
             }
         });
