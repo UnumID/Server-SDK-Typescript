@@ -96,7 +96,7 @@ exports.getDidDocPublicKeys = function (authorization, subjectDid, type) { retur
             case 0: return [4 /*yield*/, exports.getDIDDoc(config_1.configData.SaaSUrl, authorization, subjectDid)];
             case 1:
                 didDocResponse = _a.sent();
-                logger_1.default.debug("DidDoc repsonse: " + didDocResponse);
+                logger_1.default.debug("DidDoc repsonse: " + JSON.stringify(didDocResponse));
                 if (didDocResponse instanceof Error) {
                     throw didDocResponse;
                 }
