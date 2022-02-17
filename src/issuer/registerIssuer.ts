@@ -17,7 +17,7 @@ import { validateVersionInfo } from '../utils/validateVersionInfo';
 const constructKeyObj = (kp: KeyPair, type: DidKeyType): PublicKeyInfo => {
   const now = new Date();
   return {
-    id: getUUID(),
+    id: kp.id,
     encoding: 'pem',
     type: type,
     status: 'valid',

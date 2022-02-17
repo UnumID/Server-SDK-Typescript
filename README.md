@@ -94,10 +94,12 @@ Response Body:  [**RegisteredIssuer**](https://docs.unumid.co/Server-SDK-Typescr
   "updatedAt": string, // when issuer was last updated
   "keys": {
     "signing": {
+      "id": string, // identifies the key within the did doc. Used to specify the exact key used to create a signature.
       "privateKey": string, // you use this to create signatures on credentials
       "publicKey": string, // subjects and verifiers use this to verify your signatures on credentials
     }
     "encryption": {
+      "id": string, // identifies the key within the did doc
       "privateKey": string, // not used
       "publicKey": string, // not used; but part of the issuer did doc
     }
@@ -273,9 +275,11 @@ Response body: [**RegisteredVerifier**](https://docs.unumid.co/Server-SDK-Typesc
   "updatedAt": string, // when verifier was last updated (ISO 8601 date/time)
   "keys": {
     "signing": {
+      "id": string, // identifies the key within the did doc. Used to specify the exact key used to create a signature.
       "privateKey": string, // you use this to create signatures on requests
       "publicKey": string, // subjects use this to verify your signatures on requests
     }, "encryption": {
+      "id": string, // identifies the key within the did doc
       "privateKey": string, // you use this to decrypt presentations you receive from subjects
       "publicKey": string, // subjects use this to encrypt presentations they send to you
     }
