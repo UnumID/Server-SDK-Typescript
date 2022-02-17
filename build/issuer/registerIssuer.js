@@ -42,7 +42,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerIssuer = void 0;
 var config_1 = require("../config");
 var logger_1 = __importDefault(require("../logger"));
-var helpers_1 = require("../utils/helpers");
 var error_1 = require("../utils/error");
 var createKeyPairs_1 = require("../utils/createKeyPairs");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
@@ -55,7 +54,7 @@ var validateVersionInfo_1 = require("../utils/validateVersionInfo");
 var constructKeyObj = function (kp, type) {
     var now = new Date();
     return {
-        id: helpers_1.getUUID(),
+        id: kp.id,
         encoding: 'pem',
         type: type,
         status: 'valid',
