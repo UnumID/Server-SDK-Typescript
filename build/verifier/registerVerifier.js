@@ -44,7 +44,6 @@ var config_1 = require("../config");
 var logger_1 = __importDefault(require("../logger"));
 var __1 = require("..");
 var createKeyPairs_1 = require("../utils/createKeyPairs");
-var helpers_1 = require("../utils/helpers");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var validateVersionInfo_1 = require("../utils/validateVersionInfo");
 /**
@@ -55,7 +54,7 @@ var validateVersionInfo_1 = require("../utils/validateVersionInfo");
 var constructKeyObj = function (kp, type) {
     var now = new Date();
     return {
-        id: helpers_1.getUUID(),
+        id: kp.id,
         encoding: 'pem',
         type: type,
         status: 'valid',
