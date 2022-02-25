@@ -22,7 +22,7 @@ export const createProof = (data: JSONObj, privateKey: string, method: string, e
     unsignedValue: stringify(data),
     type: 'secp256r1Signature2020',
     verificationMethod: method,
-    proofPurpose: 'AssertionMethod'
+    proofPurpose: 'assertionMethod'
   };
 
   logger.debug(`Successfully created proof ${JSON.stringify(proof)}`);
@@ -44,7 +44,7 @@ export const createProofPb = (data: Uint8Array, privateKey: string, method: stri
     signatureValue: signature,
     type: 'secp256r1Signature2020',
     verificationMethod: method,
-    proofPurpose: 'AssertionMethod'
+    proofPurpose: 'assertionMethod'
   };
 
   logger.debug(`Successfully created proof ${JSON.stringify(proof)}`);
