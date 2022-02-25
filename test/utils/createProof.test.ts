@@ -31,7 +31,7 @@ describe('Signs the given data and returns Proof object', () => {
     expect(proof.signatureValue).toBeDefined();
     expect(proof.type).toBe('secp256r1Signature2020');
     expect(proof.verificationMethod).toBe(method);
-    expect(proof.proofPurpose).toBe('AssertionMethod');
+    expect(proof.proofPurpose).toBe('assertionMethod');
   });
 });
 
@@ -74,6 +74,6 @@ describe('Signs the data using protobufs btye array and returns Proof object', (
     expect(proof.signatureValue).toBeDefined();
     expect(proof.type).toBe('secp256r1Signature2020');
     expect(proof.verificationMethod).toBe(method);
-    expect(proof.proofPurpose).toBe('AssertionMethod');
+    expect(proof.proofPurpose).toBe('assertionMethod');
   });
 });
