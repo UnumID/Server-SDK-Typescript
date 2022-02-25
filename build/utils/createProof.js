@@ -22,7 +22,7 @@ exports.createProof = function (data, privateKey, method, encoding) {
         unsignedValue: fast_json_stable_stringify_1.default(data),
         type: 'secp256r1Signature2020',
         verificationMethod: method,
-        proofPurpose: 'AssertionMethod'
+        proofPurpose: 'assertionMethod'
     };
     logger_1.default.debug("Successfully created proof " + JSON.stringify(proof));
     return (proof);
@@ -41,7 +41,7 @@ exports.createProofPb = function (data, privateKey, method) {
         signatureValue: signature,
         type: 'secp256r1Signature2020',
         verificationMethod: method,
-        proofPurpose: 'AssertionMethod'
+        proofPurpose: 'assertionMethod'
     };
     logger_1.default.debug("Successfully created proof " + JSON.stringify(proof));
     return (proof);
