@@ -19,11 +19,11 @@ function getSaasUrl(env) {
         case 'local':
             return 'http://localhost:3030/';
         case 'dev':
-            return 'https://api.dev-unum.id/';
+            return 'https://api.dev-unumid.co/';
         case 'sandbox':
-            return 'https://api.sandbox-unum.id/';
+            return 'https://api.sandbox-unumid.co/';
         case 'production':
-            return 'https://api.unum.id/';
+            return 'https://api.unumid.co/';
         default:
             return 'http://localhost:3030/';
     }
