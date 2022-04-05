@@ -33,8 +33,8 @@ var env = process.env.UNUM_ENV || 'sandbox';
 var configData = {
     nodeEnv: env,
     SaaSUrl: process.env.UNUM_SAAS_URL || getSaasUrl(env),
-    debug: process.env.DEBUG === 'true' || false,
-    logLevel: process.env.LOG_LEVEL || 'info' // Winston defaults to info if not set however being explicit here
+    debug: process.env.UNUM_DEBUG === 'true' || process.env.DEBUG === 'true' || false,
+    logLevel: process.env.UNUM_LOG_LEVEL || process.env.LOG_LEVEL || 'info' // Winston defaults to info if not set however being explicit here
 };
 exports.configData = configData;
 //# sourceMappingURL=config.js.map
