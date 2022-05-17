@@ -101,7 +101,8 @@ var constructEncryptedCredentialOpts = function (cred, publicKeyInfos) {
             subject: subjectDidWithKeyFragment,
             issuer: cred.issuer,
             type: credentialType,
-            data: encryptedData
+            data: encryptedData,
+            expirationDate: cred.expirationDate,
         };
         return encryptedCredentialOptions;
     });

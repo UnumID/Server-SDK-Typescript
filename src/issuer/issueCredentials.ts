@@ -56,7 +56,8 @@ const constructEncryptedCredentialOpts = (cred: Credential | CredentialPb, publi
       subject: subjectDidWithKeyFragment,
       issuer: cred.issuer,
       type: credentialType,
-      data: encryptedData
+      data: encryptedData,
+      expirationDate: cred.expirationDate,
     };
 
     return encryptedCredentialOptions;
