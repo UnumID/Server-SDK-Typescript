@@ -262,7 +262,7 @@ Parameters
 Response Body: [**VerifiedStatus**]. 
 ```typescript
 export interface VerifiedStatus {
-  isVerified: boolean; // returns true if the requests are verified and validation requirements are met
+  isVerified: boolean; // returns true if the signature of the DID is verified to be signed by the DID signing key
   message?: string; // (optional) only populated iff isVerified is false
 }
 ```
