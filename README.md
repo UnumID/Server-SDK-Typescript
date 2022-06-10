@@ -220,7 +220,6 @@ export type SubjectCredentialRequests = {
 Parameters
 ```typescript
 {
-  "authorization": string // auth token
   "issuerDid": string // the did of your issuer
   "subjectDid": string // the did of the subject
   "subjectCredentialRequests: SubjectCredentialRequests // object containing list of CredentialRequests with a Proof signed by the Subject
@@ -231,6 +230,39 @@ Response Body: [**VerifiedStatus**].
 ```typescript
 export interface SubjectCredentialRequestVerifiedStatus {
   isVerified: boolean; // returns true if the requests are verified and validation requirements are met
+  message?: string; // (optional) only populated iff isVerified is false
+}
+```
+
+### verifySignedDid
+Verify a signed Decentralized Identifier.
+
+You need to provide the your issuer's `did` along with the signed DID object.
+
+The DID string is signed by the subject's ECC private key. This function verifies the cryptographic signature is valid. 
+
+The main use case is for the `/userCredentialRequests` required Issuer endpoint. It facilitates getting DID information for users within your service. The User DID is necessary to then issue re-usable identity credentials to.
+
+
+```typescript
+export type DID = {
+  id: string; // the string matching the desire credential type
+  proof: Proof; //list of acceptable issuer DIDs that have issued the credential
+}
+```
+
+Parameters
+```typescript
+{
+  "issuerDid": string // the did of your issuer
+  "signedDid": DID // the signed DID object
+}
+```
+
+Response Body: [**VerifiedStatus**]. 
+```typescript
+export interface VerifiedStatus {
+  isVerified: boolean; // returns true if the signature of the DID is verified to be signed by the DID signing key
   message?: string; // (optional) only populated iff isVerified is false
 }
 ```

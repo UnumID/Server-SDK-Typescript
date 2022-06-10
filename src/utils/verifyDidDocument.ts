@@ -41,7 +41,7 @@ export async function verifySignedDid (authorization: string, issuerDid: string,
 
   let authToken = authorization;
 
-  const result: UnumDto<VerifiedStatus> = await verifyDid(authToken, signedDid);
+  const result: UnumDto<VerifiedStatus> = await verifyDidSignature(authToken, signedDid);
   const { isVerified, message } = result.body;
   authToken = result.authToken;
 
@@ -57,7 +57,13 @@ export async function verifySignedDid (authorization: string, issuerDid: string,
   };
 }
 
-async function verifyDid (authToken: string, did: DID): Promise<UnumDto<VerifiedStatus>> {
+/**
+ * Helper function to verify a Did signature.
+ * @param authToken
+ * @param did
+ * @returns
+ */
+async function verifyDidSignature (authToken: string, did: DID): Promise<UnumDto<VerifiedStatus>> {
   const verificationMethod = did.proof.verificationMethod as string;
   const signatureValue = did.proof.signatureValue as string;
 
