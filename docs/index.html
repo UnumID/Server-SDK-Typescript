@@ -258,7 +258,6 @@
 </code></pre>
 				<p>Parameters</p>
 				<pre><code class="language-typescript"><span style="color: #000000">{</span>
-<span style="color: #000000">  </span><span style="color: #A31515">&quot;authorization&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// auth token</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;issuerDid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// the did of your issuer</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;subjectDid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// the did of the subject</span>
 <span style="color: #000000">  </span><span style="color: #A31515">&quot;subjectCredentialRequests: SubjectCredentialRequests // object containing list of CredentialRequests with a Proof signed by the Subjec</span><span style="color: #CD3131">t</span>
@@ -267,6 +266,30 @@
 				<p>Response Body: [<strong>VerifiedStatus</strong>]. </p>
 				<pre><code class="language-typescript"><span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">interface</span><span style="color: #000000"> </span><span style="color: #267F99">SubjectCredentialRequestVerifiedStatus</span><span style="color: #000000"> {</span>
 <span style="color: #000000">  </span><span style="color: #001080">isVerified</span><span style="color: #000000">: </span><span style="color: #267F99">boolean</span><span style="color: #000000">; </span><span style="color: #008000">// returns true if the requests are verified and validation requirements are met</span>
+<span style="color: #000000">  </span><span style="color: #001080">message</span><span style="color: #000000">?: </span><span style="color: #267F99">string</span><span style="color: #000000">; </span><span style="color: #008000">// (optional) only populated iff isVerified is false</span>
+<span style="color: #000000">}</span>
+</code></pre>
+				<a href="#verifysigneddid" id="verifysigneddid" style="color: inherit; text-decoration: none;">
+					<h3>verifySignedDid</h3>
+				</a>
+				<p>Verify a signed Decentralized Identifier.</p>
+				<p>You need to provide the your issuer&#39;s <code>did</code> along with the signed DID object.</p>
+				<p>The DID string is signed by the subject&#39;s ECC private key. This function verifies the cryptographic signature is valid. </p>
+				<p>The main use case is for the <code>/userCredentialRequests</code> required Issuer endpoint. It facilitates getting DID information for users within your service. The User DID is necessary to then issue re-usable identity credentials to.</p>
+				<pre><code class="language-typescript"><span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">type</span><span style="color: #000000"> </span><span style="color: #267F99">DID</span><span style="color: #000000"> = {</span>
+<span style="color: #000000">  </span><span style="color: #001080">id</span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000">; </span><span style="color: #008000">// the string matching the desire credential type</span>
+<span style="color: #000000">  </span><span style="color: #001080">proof</span><span style="color: #000000">: </span><span style="color: #267F99">Proof</span><span style="color: #000000">; </span><span style="color: #008000">//list of acceptable issuer DIDs that have issued the credential</span>
+<span style="color: #000000">}</span>
+</code></pre>
+				<p>Parameters</p>
+				<pre><code class="language-typescript"><span style="color: #000000">{</span>
+<span style="color: #000000">  </span><span style="color: #A31515">&quot;issuerDid&quot;</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000"> </span><span style="color: #008000">// the did of your issuer</span>
+<span style="color: #000000">  </span><span style="color: #A31515">&quot;signedDid&quot;</span><span style="color: #000000">: </span><span style="color: #0070C1">DID</span><span style="color: #000000"> </span><span style="color: #008000">// the signed DID object</span>
+<span style="color: #000000">}</span>
+</code></pre>
+				<p>Response Body: [<strong>VerifiedStatus</strong>]. </p>
+				<pre><code class="language-typescript"><span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">interface</span><span style="color: #000000"> </span><span style="color: #267F99">VerifiedStatus</span><span style="color: #000000"> {</span>
+<span style="color: #000000">  </span><span style="color: #001080">isVerified</span><span style="color: #000000">: </span><span style="color: #267F99">boolean</span><span style="color: #000000">; </span><span style="color: #008000">// returns true if the signature of the DID is verified to be signed by the DID signing key</span>
 <span style="color: #000000">  </span><span style="color: #001080">message</span><span style="color: #000000">?: </span><span style="color: #267F99">string</span><span style="color: #000000">; </span><span style="color: #008000">// (optional) only populated iff isVerified is false</span>
 <span style="color: #000000">}</span>
 </code></pre>
