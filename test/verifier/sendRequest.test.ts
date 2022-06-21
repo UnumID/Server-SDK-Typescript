@@ -428,27 +428,6 @@ describe('sendRequest - Failure cases for credentialRequests element', () => {
     }
   });
 
-  it('returns a 400 status code with a descriptive error message when holderAppUuid is missing', async () => {
-    const credRequest: CredentialRequest = { issuers: credentialRequests[0].issuers, type: undefined };
-
-    try {
-      await callSendRequests(
-        verifier,
-        credentialRequests,
-        metadata,
-        expiresAt,
-        eccPrivateKey,
-        undefined as unknown as string,
-        authToken
-      );
-      fail();
-    } catch (e) {
-      expect(e).toEqual(new CustError(400, 'Invalid PresentationRequest options: holderAppUuid is required.'));
-      expect(e.code).toEqual(400);
-      expect(e.message).toEqual('Invalid PresentationRequest options: holderAppUuid is required.');
-    }
-  });
-
   it('returns a 400 status code with a descriptive error message when holderAppUuid is not a string', async () => {
     const credRequest: CredentialRequest = { issuers: credentialRequests[0].issuers, type: undefined };
 

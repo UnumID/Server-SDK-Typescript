@@ -1,6 +1,7 @@
 declare const configData: {
     nodeEnv: string;
     SaaSUrl: string;
+    unumWalletHolderApp: string;
     debug: boolean;
     logLevel: string;
 };

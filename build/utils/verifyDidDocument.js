@@ -78,7 +78,7 @@ function verifySignedDid(authorization, issuerDid, signedDid) {
                     // validate the DID
                     validateSignedDid(signedDid);
                     authToken = authorization;
-                    return [4 /*yield*/, verifyDid(authToken, signedDid)];
+                    return [4 /*yield*/, verifyDidSignature(authToken, signedDid)];
                 case 1:
                     result = _b.sent();
                     _a = result.body, isVerified = _a.isVerified, message = _a.message;
@@ -99,7 +99,13 @@ function verifySignedDid(authorization, issuerDid, signedDid) {
     });
 }
 exports.verifySignedDid = verifySignedDid;
-function verifyDid(authToken, did) {
+/**
+ * Helper function to verify a Did signature.
+ * @param authToken
+ * @param did
+ * @returns
+ */
+function verifyDidSignature(authToken, did) {
     return __awaiter(this, void 0, void 0, function () {
         var verificationMethod, signatureValue, publicKeyInfoResponse, publicKeyInfoList, unsignedDid, bytes, isVerified, _i, publicKeyInfoList_1, publicKeyInfo, result_1, result;
         return __generator(this, function (_a) {
