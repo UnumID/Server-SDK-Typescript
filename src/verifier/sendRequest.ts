@@ -316,16 +316,12 @@ export const sendRequest = async (
   verifier: string,
   credentialRequests: CredentialRequestPb[] | CredentialRequest[],
   eccPrivateKey: string,
-  holderAppUuid: string,
+  holderAppUuid: string = configData.unumWalletHolderApp, // defaults to the Unum ID Wallet Holder if no value is present
   expirationDate?: Date,
   metadata?: Record<string, unknown>
 ): Promise<UnumDto<PresentationRequestDto>> => {
   // create an indentifier that ties together these related requests of different versions.
   const id = getUUID();
-
-  // // create and send a v2 presentation request for backwards compatibility
-  // const responseV2 = await sendRequestDeprecated(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata);
-  // authorization = responseV2.authToken ? responseV2.authToken : authorization;
 
   const response = sendRequestV3(authorization, verifier, credentialRequests, eccPrivateKey, holderAppUuid, id, expirationDate, metadata);
   return response;
@@ -378,58 +374,6 @@ export const sendRequestV3 = async (
     const presentationRequestResponse: UnumDto<PresentationRequestDto> = { body: { ...restResp.body }, authToken };
 
     return presentationRequestResponse;
-  } catch (error) {
-    logger.error(`Error sending request to use UnumID Saas. ${error}`);
-    throw error;
-  }
-};
-
-/**
- * Handler for sending a PresentationRequest to UnumID's SaaS.
- * @param authorization
- * @param verifier
- * @param credentialRequests
- * @param eccPrivateKey
- * @param holderAppUuid
- */
-export const sendRequestDeprecated = async (
-  authorization:string,
-  verifier: string,
-  credentialRequests: CredentialRequest[],
-  eccPrivateKey: string,
-  holderAppUuid: string,
-  id: string,
-  expirationDate?: Date,
-  metadata?: Record<string, unknown>
-): Promise<UnumDto<PresentationRequestPostDtoDeprecatedV2>> => {
-  try {
-    requireAuth(authorization);
-
-    const body: SendRequestReqBody = { verifier, credentialRequests, eccPrivateKey, holderAppUuid, expiresAt: expirationDate, metadata, id };
-
-    // Validate inputs
-    validateSendRequestBodyDeprecated(body);
-
-    const unsignedPresentationRequest: UnsignedPresentationRequestDeprecatedV2 = constructUnsignedPresentationRequest(body, '2.0.0');
-
-    // Create the signed presentation object from the unsignedPresentation object
-    const signedPR = constructSignedPresentationRequestDeprecatedV2(unsignedPresentationRequest, eccPrivateKey);
-
-    const restData: RESTData = {
-      method: 'POST',
-      baseUrl: configData.SaaSUrl,
-      endPoint: 'presentationRequest',
-      header: { Authorization: authorization, version: '2.0.0' },
-      data: signedPR
-    };
-
-    const restResp = await makeNetworkRequest<PresentationRequestPostDto>(restData);
-
-    const authToken: string = handleAuthTokenHeader(restResp, authorization);
-
-    const presentationRequestResponse: UnumDto<PresentationRequestPostDto> = { body: { ...restResp.body }, authToken };
-
-    return presentationRequestResponse as UnumDto<PresentationRequestPostDtoDeprecatedV2>;
   } catch (error) {
     logger.error(`Error sending request to use UnumID Saas. ${error}`);
     throw error;

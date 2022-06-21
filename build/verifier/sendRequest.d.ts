@@ -1,4 +1,4 @@
-import { PresentationRequestPostDto as PresentationRequestPostDtoDeprecatedV2, UnsignedPresentationRequest as UnsignedPresentationRequestDeprecatedV2, SignedPresentationRequest as SignedPresentationRequestDeprecatedV2 } from '@unumid/types-v2';
+import { UnsignedPresentationRequest as UnsignedPresentationRequestDeprecatedV2, SignedPresentationRequest as SignedPresentationRequestDeprecatedV2 } from '@unumid/types-v2';
 import { CredentialRequest, UnsignedPresentationRequestPb, PresentationRequestPb, CredentialRequestPb, PresentationRequestDto } from '@unumid/types';
 import { SendRequestReqBody, UnumDto } from '../types';
 /**
@@ -27,7 +27,7 @@ export declare const constructSignedPresentationRequest: (unsignedPresentationRe
  * @param eccPrivateKey
  * @param holderAppUuid
  */
-export declare const sendRequest: (authorization: string, verifier: string, credentialRequests: CredentialRequestPb[] | CredentialRequest[], eccPrivateKey: string, holderAppUuid: string, expirationDate?: Date | undefined, metadata?: Record<string, unknown> | undefined) => Promise<UnumDto<PresentationRequestDto>>;
+export declare const sendRequest: (authorization: string, verifier: string, credentialRequests: CredentialRequestPb[] | CredentialRequest[], eccPrivateKey: string, holderAppUuid?: string, expirationDate?: Date | undefined, metadata?: Record<string, unknown> | undefined) => Promise<UnumDto<PresentationRequestDto>>;
 /**
  * Handler for sending a PresentationRequest to UnumID's SaaS.
  * @param authorization
@@ -37,13 +37,4 @@ export declare const sendRequest: (authorization: string, verifier: string, cred
  * @param holderAppUuid
  */
 export declare const sendRequestV3: (authorization: string, verifier: string, credentialRequests: CredentialRequestPb[], eccPrivateKey: string, holderAppUuid: string, id: string, expirationDate?: Date | undefined, metadata?: any) => Promise<UnumDto<PresentationRequestDto>>;
-/**
- * Handler for sending a PresentationRequest to UnumID's SaaS.
- * @param authorization
- * @param verifier
- * @param credentialRequests
- * @param eccPrivateKey
- * @param holderAppUuid
- */
-export declare const sendRequestDeprecated: (authorization: string, verifier: string, credentialRequests: CredentialRequest[], eccPrivateKey: string, holderAppUuid: string, id: string, expirationDate?: Date | undefined, metadata?: Record<string, unknown> | undefined) => Promise<UnumDto<PresentationRequestPostDtoDeprecatedV2>>;
 //# sourceMappingURL=sendRequest.d.ts.map
