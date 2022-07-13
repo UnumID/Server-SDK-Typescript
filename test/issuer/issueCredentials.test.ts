@@ -271,9 +271,9 @@ describe('issueCredentials', () => {
     expect(createKeyPairSetSpy).toHaveBeenCalled();
   });
 
-  it('encrypts the credential for each public key', () => {
-    expect(mockDoEncrypt).toBeCalledTimes(2);
-    expect(mockDoEncryptPb).toBeCalledTimes(2);
+  it('encrypts the credential for each public key and it\'s "proof-of" credential', () => {
+    expect(mockDoEncrypt).toBeCalledTimes(4);
+    expect(mockDoEncryptPb).toBeCalledTimes(4);
   });
 
   it('sends encrypted credentials of all versions (2,3) to the saas', () => {
