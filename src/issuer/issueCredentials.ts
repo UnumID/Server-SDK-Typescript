@@ -151,26 +151,16 @@ const constructUnsignedCredentialPbObj = (credOpts: CredentialOptions, credentia
 
 /**
  * Creates all the attributes associated with an unsigned 'proof-of' credential.
- * @param credOpts CredentialOptions
- * @param credentialId
- * @param issuanceDate
+ * @param original UnsignedCredentialPb
+ * @return Proof of Original credentials
  */
-const constructUnsignedProofOfCredentialPbObj = (credOpts: CredentialOptions, credentialId: string, issuanceDate: Date = new Date()): UnsignedCredentialPb => {
+const constructUnsignedProofOfCredentialPbObj = (original: UnsignedCredentialPb): UnsignedCredentialPb => {
   // CredentialSubject type is dependent on version. V2 is a string for passing to holder so iOS can handle it as a concrete type instead of a map of unknown keys.
-  const credentialSubject = '{}';
-
   const unsCredObj: UnsignedCredentialPb = {
-    context: ['https://www.w3.org/2018/credentials/v1'],
-    credentialStatus: {
-      id: `${configData.SaaSUrl}/credentialStatus/${credentialId}`,
-      type: 'CredentialStatus'
-    },
-    credentialSubject,
-    issuer: credOpts.issuer,
-    type: ['VerifiableCredential', ...credOpts.type.map((o) => `ProofOf${o}`)],
+    ...original,
+    credentialSubject: JSON.stringify({}),
     id: v4(), // generates a new credential id, different from original credential
-    issuanceDate: issuanceDate,
-    expirationDate: credOpts.expirationDate
+    type: ['VerifiableCredential', ...original.type.map((o) => `ProofOf${o}`)]
   };
 
   return unsCredObj;
@@ -194,7 +184,7 @@ const constructUnsignedCredentialObj = (credOpts: CredentialOptions, credentialI
     credentialSubject,
     issuer: credOpts.issuer,
     type: ['VerifiableCredential', ...credOpts.type],
-    id: v4(),
+    id: credentialId,
     issuanceDate: new Date(),
     expirationDate: credOpts.expirationDate
   };
@@ -204,26 +194,17 @@ const constructUnsignedCredentialObj = (credOpts: CredentialOptions, credentialI
 
 /**
  * Creates all the attributes associated with an unsigned 'proof-of' credential.
- * @param credOpts CredentialOptions
- * @param credentialId
- * @param issuanceDate
+ * @param original UnsignedCredentialV2
+ * @return Proof of Original credential
  */
-const constructUnsignedProofOfCredentialObj = (credOpts: CredentialOptions, credentialId: string, issuanceDate: Date = new Date()): UnsignedCredentialV2 => {
+const constructUnsignedProofOfCredentialObj = (original: UnsignedCredentialV2): UnsignedCredentialV2 => {
   // CredentialSubject type is dependent on version. V2 is a string for passing to holder so iOS can handle it as a concrete type instead of a map of unknown keys.
-  const credentialSubject = '{}';
 
   const unsCredObj: UnsignedCredentialV2 = {
-    '@context': ['https://www.w3.org/2018/credentials/v1'],
-    credentialStatus: {
-      id: `${configData.SaaSUrl}/credentialStatus/${credentialId}`,
-      type: 'CredentialStatus'
-    },
-    credentialSubject,
-    issuer: credOpts.issuer,
-    type: ['VerifiableCredential', ...credOpts.type.map((o) => `ProofOf${o}`)],
+    ...original,
+    credentialSubject: JSON.stringify({}),
     id: v4(), // generates a new credential id, different from original credential
-    issuanceDate: issuanceDate,
-    expirationDate: credOpts.expirationDate
+    type: ['VerifiableCredential', ...original.type.map((o) => `ProofOf${o}`)]
   };
 
   return unsCredObj;
@@ -415,7 +396,7 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
     if (gte(version, '2.0.0') && lt(version, '3.0.0')) {
       // Create latest version of the UnsignedCredential object
       const unsignedCredential: UnsignedCredentialV2 = constructUnsignedCredentialObj(credentialOptions, credentialId);
-      const unsignedProofOfCredential: UnsignedCredentialV2 = constructUnsignedProofOfCredentialObj(credentialOptions, credentialId);
+      const unsignedProofOfCredential: UnsignedCredentialV2 = constructUnsignedProofOfCredentialObj(unsignedCredential);
 
       // Create the signed Credential object from the unsignedCredential object
       const credential: CredentialV2 = constructSignedCredentialObj(unsignedCredential, signingPrivateKey);
@@ -439,7 +420,7 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
 
   // Create latest version of the UnsignedCredential object
   const unsignedCredential = constructUnsignedCredentialPbObj(credentialOptions, credentialId);
-  const unsignedProofOfCredential = constructUnsignedProofOfCredentialPbObj(credentialOptions, credentialId, unsignedCredential.issuanceDate);
+  const unsignedProofOfCredential = constructUnsignedProofOfCredentialPbObj(unsignedCredential);
 
   // Create the signed Credential object from the unsignedCredential object
   const credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
