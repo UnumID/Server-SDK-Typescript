@@ -160,7 +160,7 @@ const constructUnsignedProofOfCredentialPbObj = (original: UnsignedCredentialPb)
     ...original,
     credentialSubject: JSON.stringify({}),
     id: v4(), // generates a new credential id, different from original credential
-    type: ['VerifiableCredential', ...original.type.map((o) => `ProofOf${o}`)]
+    type: original.type.map((o) => `ProofOf${o}`)
   };
 
   return unsCredObj;
@@ -204,7 +204,7 @@ const constructUnsignedProofOfCredentialObj = (original: UnsignedCredentialV2): 
     ...original,
     credentialSubject: JSON.stringify({}),
     id: v4(), // generates a new credential id, different from original credential
-    type: ['VerifiableCredential', ...original.type.map((o) => `ProofOf${o}`)]
+    type: ['VerifiableCredential', ...original.type.filter(o => o !== 'VerifiableCredential').map((o) => `ProofOf${o}`)]
   };
 
   return unsCredObj;
