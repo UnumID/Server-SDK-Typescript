@@ -56,7 +56,7 @@ function callIssueCred (credentialSubject: CredentialSubject, type: string[], is
   return issueCredential(auth, type, issuer, credentialSubject, eccPrivateKey, expirationDate);
 }
 
-function callIssueCreds (issuer: string, subjectDid: string, credentialDataList: CredentialData[], expirationDate: Date, eccPrivateKey: string, auth: string): Promise<UnumDto<(Credential |CredentialPb)[]>> {
+function callIssueCreds (issuer: string, subjectDid: string, credentialDataList: CredentialData[], expirationDate: Date, eccPrivateKey: string, auth: string): Promise<UnumDto<(Credential | CredentialPb)[]>> {
   return issueCredentials(auth, issuer, subjectDid, credentialDataList, eccPrivateKey, expirationDate);
 }
 
@@ -75,8 +75,14 @@ describe('issueCredential', () => {
   beforeEach(async () => {
     const dummyDidDoc = await makeDummyDidDocument();
     const headers = { 'x-auth-token': dummyAuthToken };
-    mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers });
-    mockGetDidDocKeys.mockResolvedValue({ authToken: dummyAuthToken, body: [dummyDidDoc.publicKey] });
+    mockMakeNetworkRequest.mockResolvedValue({
+      body: { success: true },
+      headers
+    });
+    mockGetDidDocKeys.mockResolvedValue({
+      authToken: dummyAuthToken,
+      body: [dummyDidDoc.publicKey]
+    });
 
     responseDto = await callIssueCred(credentialSubject, type, issuer, expirationDate, eccPrivateKey, authHeader);
     response = responseDto.body;
@@ -116,7 +122,7 @@ describe('issueCredential', () => {
     expect(response.credentialStatus).toBeDefined();
     expect(response.credentialSubject).toBeDefined();
     expect(response.proof).toBeDefined();
-    expect(response.credentialStatus.id).toEqual(`${configData.SaaSUrl}/credentialStatus/${response.id}`);
+    expect(response.credentialStatus?.id).toEqual(`${configData.SaaSUrl}/credentialStatus/${response.id}`);
   });
 
   it('returns the auth token', () => {
@@ -226,7 +232,8 @@ describe('issueCredential - Failure cases', () => {
 });
 
 describe('issueCredentials', () => {
-  let responseDto: UnumDto<(Credential | CredentialPb)[]>, response: (Credential | CredentialPb)[], responseAuthToken: string;
+  let responseDto: UnumDto<(Credential | CredentialPb)[]>, response: (Credential | CredentialPb)[],
+    responseAuthToken: string;
   const credentialSubject: CredentialSubject = {
     id: 'did:unum:a0cd2e20-5f3e-423c-8382-afc722eaca9e',
     value: 'dummy value'
@@ -251,8 +258,14 @@ describe('issueCredentials', () => {
     const dummyDidDoc = await makeDummyDidDocument();
     const headers = { 'x-auth-token': dummyAuthToken };
     // mockGetDIDDoc.mockResolvedValue({ body: dummyDidDoc, headers });
-    mockMakeNetworkRequest.mockResolvedValue({ body: { success: true }, headers });
-    mockGetDidDocKeys.mockResolvedValue({ authToken: dummyAuthToken, body: [dummyDidDoc.publicKey] });
+    mockMakeNetworkRequest.mockResolvedValue({
+      body: { success: true },
+      headers
+    });
+    mockGetDidDocKeys.mockResolvedValue({
+      authToken: dummyAuthToken,
+      body: [dummyDidDoc.publicKey]
+    });
 
     responseDto = await callIssueCreds(issuer, credentialSubject.id, credentialData, expirationDate, eccPrivateKey, authHeader);
     response = responseDto.body;
@@ -287,13 +300,56 @@ describe('issueCredentials', () => {
     expect(mockMakeNetworkRequest.mock.calls[0][0].header.version).toEqual('2.0.0');
   });
 
+  it('sends both the encrypted credentials and their respective "proof-of"', () => {
+    expect(mockMakeNetworkRequest).toBeCalled();
+    expect(mockMakeNetworkRequest.mock.calls).toHaveLength(2);
+
+    for (const callArray of mockMakeNetworkRequest.mock.calls) {
+      for (const call of callArray) {
+        expect(call.data).toHaveProperty('credentialRequests');
+        expect(call.data.credentialRequests.length % 2).toEqual(0);
+        const credentialRequests = call.data.credentialRequests;
+
+        for (const request of credentialRequests) {
+          const encryptedCredential = request.encryptedCredentials[0];
+          const proofOfCredential = request.encryptedCredentials[1];
+
+          // Validate Types
+          if ('type' in proofOfCredential) {
+            expect(proofOfCredential.type).toEqual(`ProofOf${encryptedCredential.type}`);
+          }
+
+          if ('types' in proofOfCredential) {
+            expect(encryptedCredential.types.length).toEqual(proofOfCredential.types.length);
+            for (const credType of encryptedCredential.types) {
+              const property = credType === 'VerifiableCredential' ? credType : `ProofOf${credType}`;
+              expect(proofOfCredential.types).toContain(property);
+            }
+          }
+
+          // Validate CredentialID
+          expect(encryptedCredential.credentialId).not.toEqual(proofOfCredential.credentialId);
+
+          // Validate matching issuanceDate
+          expect(proofOfCredential.issuanceDate).toEqual(encryptedCredential.issuanceDate);
+
+          // Validate Issuer
+          expect(proofOfCredential.issuer).toEqual(encryptedCredential.issuer);
+
+          // Validate Subject
+          expect(proofOfCredential.subject).toEqual('undefined#undefined');
+        }
+      }
+    }
+  });
+
   it('returns the credentials', () => {
     expect(response.length).toEqual(2);
     expect(response[0].id).toBeDefined();
     expect(response[0].credentialStatus).toBeDefined();
     expect(response[0].credentialSubject).toBeDefined();
     expect(response[0].proof).toBeDefined();
-    expect(response[0].credentialStatus.id).toEqual(`${configData.SaaSUrl}/credentialStatus/${response[0].id}`);
+    expect(response[0].credentialStatus?.id).toEqual(`${configData.SaaSUrl}/credentialStatus/${response[0].id}`);
   });
 
   it('returns the auth token', () => {

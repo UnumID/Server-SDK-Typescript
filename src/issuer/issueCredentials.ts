@@ -153,10 +153,11 @@ const constructUnsignedCredentialPbObj = (credOpts: CredentialOptions, credentia
  * Creates all the attributes associated with an unsigned 'proof-of' credential.
  * @param credOpts CredentialOptions
  * @param credentialId
+ * @param issuanceDate
  */
-const constructUnsignedProofOfCredentialPbObj = (credOpts: CredentialOptions, credentialId: string): UnsignedCredentialPb => {
+const constructUnsignedProofOfCredentialPbObj = (credOpts: CredentialOptions, credentialId: string, issuanceDate: Date = new Date()): UnsignedCredentialPb => {
   // CredentialSubject type is dependent on version. V2 is a string for passing to holder so iOS can handle it as a concrete type instead of a map of unknown keys.
-  const credentialSubject = JSON.stringify({ id: credOpts.credentialSubject.id });
+  const credentialSubject = '{}';
 
   const unsCredObj: UnsignedCredentialPb = {
     context: ['https://www.w3.org/2018/credentials/v1'],
@@ -167,8 +168,8 @@ const constructUnsignedProofOfCredentialPbObj = (credOpts: CredentialOptions, cr
     credentialSubject,
     issuer: credOpts.issuer,
     type: ['VerifiableCredential', ...credOpts.type.map((o) => `ProofOf${o}`)],
-    id: credentialId,
-    issuanceDate: new Date(),
+    id: v4(), // generates a new credential id, different from original credential
+    issuanceDate: issuanceDate,
     expirationDate: credOpts.expirationDate
   };
 
@@ -205,10 +206,11 @@ const constructUnsignedCredentialObj = (credOpts: CredentialOptions, credentialI
  * Creates all the attributes associated with an unsigned 'proof-of' credential.
  * @param credOpts CredentialOptions
  * @param credentialId
+ * @param issuanceDate
  */
-const constructUnsignedProofOfCredentialObj = (credOpts: CredentialOptions, credentialId: string): UnsignedCredentialV2 => {
+const constructUnsignedProofOfCredentialObj = (credOpts: CredentialOptions, credentialId: string, issuanceDate: Date = new Date()): UnsignedCredentialV2 => {
   // CredentialSubject type is dependent on version. V2 is a string for passing to holder so iOS can handle it as a concrete type instead of a map of unknown keys.
-  const credentialSubject = JSON.stringify({ id: credOpts.credentialSubject.id });
+  const credentialSubject = '{}';
 
   const unsCredObj: UnsignedCredentialV2 = {
     '@context': ['https://www.w3.org/2018/credentials/v1'],
@@ -219,8 +221,8 @@ const constructUnsignedProofOfCredentialObj = (credOpts: CredentialOptions, cred
     credentialSubject,
     issuer: credOpts.issuer,
     type: ['VerifiableCredential', ...credOpts.type.map((o) => `ProofOf${o}`)],
-    id: v4(),
-    issuanceDate: new Date(),
+    id: v4(), // generates a new credential id, different from original credential
+    issuanceDate: issuanceDate,
     expirationDate: credOpts.expirationDate
   };
 
@@ -437,7 +439,7 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
 
   // Create latest version of the UnsignedCredential object
   const unsignedCredential = constructUnsignedCredentialPbObj(credentialOptions, credentialId);
-  const unsignedProofOfCredential = constructUnsignedProofOfCredentialPbObj(credentialOptions, credentialId);
+  const unsignedProofOfCredential = constructUnsignedProofOfCredentialPbObj(credentialOptions, credentialId, unsignedCredential.issuanceDate);
 
   // Create the signed Credential object from the unsignedCredential object
   const credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
