@@ -186,25 +186,12 @@ var constructUnsignedCredentialPbObj = function (credOpts, credentialId) {
 };
 /**
  * Creates all the attributes associated with an unsigned 'proof-of' credential.
- * @param credOpts CredentialOptions
- * @param credentialId
+ * @param original UnsignedCredentialPb
+ * @return Proof of Original credentials
  */
-var constructUnsignedProofOfCredentialPbObj = function (credOpts, credentialId) {
+var constructUnsignedProofOfCredentialPbObj = function (original) {
     // CredentialSubject type is dependent on version. V2 is a string for passing to holder so iOS can handle it as a concrete type instead of a map of unknown keys.
-    var credentialSubject = JSON.stringify({ id: credOpts.credentialSubject.id });
-    var unsCredObj = {
-        context: ['https://www.w3.org/2018/credentials/v1'],
-        credentialStatus: {
-            id: config_1.configData.SaaSUrl + "/credentialStatus/" + credentialId,
-            type: 'CredentialStatus'
-        },
-        credentialSubject: credentialSubject,
-        issuer: credOpts.issuer,
-        type: __spreadArrays(['VerifiableCredential'], credOpts.type.map(function (o) { return "ProofOf" + o; })),
-        id: credentialId,
-        issuanceDate: new Date(),
-        expirationDate: credOpts.expirationDate
-    };
+    var unsCredObj = __assign(__assign({}, original), { credentialSubject: JSON.stringify({}), id: uuid_1.v4(), type: original.type.map(function (o) { return "ProofOf" + o; }) });
     return unsCredObj;
 };
 /**
@@ -224,7 +211,7 @@ var constructUnsignedCredentialObj = function (credOpts, credentialId) {
         credentialSubject: credentialSubject,
         issuer: credOpts.issuer,
         type: __spreadArrays(['VerifiableCredential'], credOpts.type),
-        id: uuid_1.v4(),
+        id: credentialId,
         issuanceDate: new Date(),
         expirationDate: credOpts.expirationDate
     };
@@ -232,25 +219,12 @@ var constructUnsignedCredentialObj = function (credOpts, credentialId) {
 };
 /**
  * Creates all the attributes associated with an unsigned 'proof-of' credential.
- * @param credOpts CredentialOptions
- * @param credentialId
+ * @param original UnsignedCredentialV2
+ * @return Proof of Original credential
  */
-var constructUnsignedProofOfCredentialObj = function (credOpts, credentialId) {
+var constructUnsignedProofOfCredentialObj = function (original) {
     // CredentialSubject type is dependent on version. V2 is a string for passing to holder so iOS can handle it as a concrete type instead of a map of unknown keys.
-    var credentialSubject = JSON.stringify({ id: credOpts.credentialSubject.id });
-    var unsCredObj = {
-        '@context': ['https://www.w3.org/2018/credentials/v1'],
-        credentialStatus: {
-            id: config_1.configData.SaaSUrl + "/credentialStatus/" + credentialId,
-            type: 'CredentialStatus'
-        },
-        credentialSubject: credentialSubject,
-        issuer: credOpts.issuer,
-        type: __spreadArrays(['VerifiableCredential'], credOpts.type.map(function (o) { return "ProofOf" + o; })),
-        id: uuid_1.v4(),
-        issuanceDate: new Date(),
-        expirationDate: credOpts.expirationDate
-    };
+    var unsCredObj = __assign(__assign({}, original), { credentialSubject: JSON.stringify({}), id: uuid_1.v4(), type: __spreadArrays(['VerifiableCredential'], original.type.filter(function (o) { return o !== 'VerifiableCredential'; }).map(function (o) { return "ProofOf" + o; })) });
     return unsCredObj;
 };
 /**
@@ -437,7 +411,7 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
         if (semver_1.gte(version, '2.0.0') && semver_1.lt(version, '3.0.0')) {
             // Create latest version of the UnsignedCredential object
             var unsignedCredential_1 = constructUnsignedCredentialObj(credentialOptions, credentialId);
-            var unsignedProofOfCredential_1 = constructUnsignedProofOfCredentialObj(credentialOptions, credentialId);
+            var unsignedProofOfCredential_1 = constructUnsignedProofOfCredentialObj(unsignedCredential_1);
             // Create the signed Credential object from the unsignedCredential object
             var credential_1 = constructSignedCredentialObj(unsignedCredential_1, signingPrivateKey);
             var proofOfCredential_1 = constructSignedCredentialObj(unsignedProofOfCredential_1, signingPrivateKey);
@@ -455,7 +429,7 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
     var latestVersion = versionList_1.versionList[versionList_1.versionList.length - 1];
     // Create latest version of the UnsignedCredential object
     var unsignedCredential = constructUnsignedCredentialPbObj(credentialOptions, credentialId);
-    var unsignedProofOfCredential = constructUnsignedProofOfCredentialPbObj(credentialOptions, credentialId);
+    var unsignedProofOfCredential = constructUnsignedProofOfCredentialPbObj(unsignedCredential);
     // Create the signed Credential object from the unsignedCredential object
     var credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
     var proofOfCredential = constructSignedCredentialPbObj(unsignedProofOfCredential, signingPrivateKey);
