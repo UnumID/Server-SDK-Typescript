@@ -328,7 +328,7 @@ describe('issueCredentials', () => {
           }
 
           // Validate CredentialID
-          expect(encryptedCredential.credentialId).not.toEqual(proofOfCredential.credentialId);
+          expect(encryptedCredential.credentialId).toEqual(proofOfCredential.credentialId);
 
           // Validate matching issuanceDate
           expect(proofOfCredential.issuanceDate).toEqual(encryptedCredential.issuanceDate);
