@@ -381,27 +381,27 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
     // create a credentialId to be shared between all versions of the same credential
     var credentialId = helpers_1.getUUID();
     logger_1.default.debug("credentialId's " + credentialId + " credentialOptions: " + credentialOptions);
-    /**
-     * Need to loop through all versions except most recent so that can issued credentials could be backwards compatible with older holder versions.
-     * However only care to return the most recent Credential type for customers to use.
-     */
-    for (var v = 0; v < versionList_1.versionList.length - 1; v++) { // note: purposely terminating one index early, which ought to be the most recent version.
-        var version = versionList_1.versionList[v];
-        if (semver_1.gte(version, '2.0.0') && semver_1.lt(version, '3.0.0')) {
-            // Create latest version of the UnsignedCredential object
-            var unsignedCredential_1 = constructUnsignedCredentialObj(credentialOptions, credentialId);
-            // Create the signed Credential object from the unsignedCredential object
-            var credential_1 = constructSignedCredentialObj(unsignedCredential_1, signingPrivateKey);
-            // Create the encrypted credential issuance dto
-            var encryptedCredentialUploadOptions_1 = constructIssueCredentialOptions(credential_1, publicKeyInfos, credentialSubject.id);
-            var credPair_1 = {
-                credential: credential_1,
-                encryptedCredential: encryptedCredentialUploadOptions_1,
-                version: version
-            };
-            results.push(credPair_1);
-        }
-    }
+    // /**
+    //  * Need to loop through all versions except most recent so that can issued credentials could be backwards compatible with older holder versions.
+    //  * However only care to return the most recent Credential type for customers to use.
+    //  */
+    // for (let v = 0; v < versionList.length - 1; v++) { // note: purposely terminating one index early, which ought to be the most recent version.
+    //   const version: string = versionList[v];
+    //   if (gte(version, '2.0.0') && lt(version, '3.0.0')) {
+    //     // Create latest version of the UnsignedCredential object
+    //     const unsignedCredential: UnsignedCredentialV2 = constructUnsignedCredentialObj(credentialOptions, credentialId);
+    //     // Create the signed Credential object from the unsignedCredential object
+    //     const credential: CredentialV2 = constructSignedCredentialObj(unsignedCredential, signingPrivateKey);
+    //     // Create the encrypted credential issuance dto
+    //     const encryptedCredentialUploadOptions: IssueCredentialOptions = constructIssueCredentialOptions(credential, publicKeyInfos, credentialSubject.id);
+    //     const credPair: WithVersion<CredentialPair> = {
+    //       credential,
+    //       encryptedCredential: encryptedCredentialUploadOptions,
+    //       version
+    //     };
+    //     results.push(credPair);
+    //   }
+    // }
     // Grabbing the latest version as defined in the version list, 3.0.0
     var latestVersion = versionList_1.versionList[versionList_1.versionList.length - 1];
     // Create latest version of the UnsignedCredential object
@@ -561,7 +561,7 @@ var validateInputsDeprecated = function (type, issuer, credentialSubject, signin
  * @returns
  */
 var issueCredentialHelperDeprecated = function (authorization, type, issuer, credentialSubject, signingPrivateKey, publicKeyInfos, expirationDate) { return __awaiter(void 0, void 0, void 0, function () {
-    var credentialOptions, credentialId, v, version, unsignedCredential_2, credential_2, encryptedCredentialUploadOptions_2, result_1, latestVersion, unsignedCredential, credential, encryptedCredentialUploadOptions, result, issuedCredential;
+    var credentialOptions, credentialId, v, version, unsignedCredential_1, credential_1, encryptedCredentialUploadOptions_1, result_1, latestVersion, unsignedCredential, credential, encryptedCredentialUploadOptions, result, issuedCredential;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -574,10 +574,10 @@ var issueCredentialHelperDeprecated = function (authorization, type, issuer, cre
                 if (!(v < versionList_1.versionList.length - 1)) return [3 /*break*/, 4];
                 version = versionList_1.versionList[v];
                 if (!(semver_1.gte(version, '2.0.0') && semver_1.lt(version, '3.0.0'))) return [3 /*break*/, 3];
-                unsignedCredential_2 = constructUnsignedCredentialObj(credentialOptions, credentialId);
-                credential_2 = constructSignedCredentialObj(unsignedCredential_2, signingPrivateKey);
-                encryptedCredentialUploadOptions_2 = constructIssueCredentialOptions(credential_2, publicKeyInfos, credentialSubject.id);
-                return [4 /*yield*/, sendEncryptedCredential(authorization, encryptedCredentialUploadOptions_2, version)];
+                unsignedCredential_1 = constructUnsignedCredentialObj(credentialOptions, credentialId);
+                credential_1 = constructSignedCredentialObj(unsignedCredential_1, signingPrivateKey);
+                encryptedCredentialUploadOptions_1 = constructIssueCredentialOptions(credential_1, publicKeyInfos, credentialSubject.id);
+                return [4 /*yield*/, sendEncryptedCredential(authorization, encryptedCredentialUploadOptions_1, version)];
             case 2:
                 result_1 = _a.sent();
                 // authorization = handleAuthTokenHeader(restResp, authorization as string);
