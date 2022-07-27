@@ -3,13 +3,11 @@ import { CredentialSubject, Credential, CredentialPb, CredentialData } from '@un
 /**
  * Multiplexed handler for issuing credentials with UnumID's SaaS.
  * @param authorization
- * @param types
  * @param issuer
  * @param subjectDid
  * @param credentialDataList
  * @param signingPrivateKey
  * @param expirationDate
- * @returns
  */
 export declare const issueCredentials: (authorization: string, issuerDid: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date | undefined, issueCredentialsToSelf?: boolean) => Promise<UnumDto<(CredentialPb | Credential)[]>>;
 /**
