@@ -224,17 +224,25 @@ const validateInputs = (issuer: string, subjectDid: string, credentialDataList: 
  * @param expirationDate
  * @returns
  */
-export const issueCredentials = async (authorization: string, issuer: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date): Promise<UnumDto<(CredentialPb | Credential)[]>> => {
+export const issueCredentials = async (authorization: string, issuerDid: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date, issueCredentialsToSelf = false): Promise<UnumDto<(CredentialPb | Credential)[]>> => {
   // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
   requireAuth(authorization);
 
   // Validate inputs.
-  validateInputs(issuer, subjectDid, credentialDataList, signingPrivateKey, expirationDate);
+  validateInputs(issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate);
 
   // Get target Subject's DID document public keys for encrypting all the credentials issued.
   const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, subjectDid, 'RSA');
   const publicKeyInfos = publicKeyInfoResponse.body;
   authorization = publicKeyInfoResponse.authToken;
+
+  let issuerPublicKeyInfos: PublicKeyInfo[] = [];
+  if (issueCredentialsToSelf) {
+    // need to get the DID document public keys for the issuer in order to issue credentials to self
+    const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, issuerDid, 'RSA');
+    issuerPublicKeyInfos = publicKeyInfoResponse.body;
+    authorization = publicKeyInfoResponse.authToken;
+  }
 
   // loop through the types and credential data lists inputted to create CredentialPairs of each supported version for each
   const creds: WithVersion<CredentialPair>[] = [];
@@ -247,10 +255,21 @@ export const issueCredentials = async (authorization: string, issuer: string, su
     const credSubject: CredentialSubject = { id: subjectDid, ...credData };
 
     // construct the Credentials and their encrypted form for each supported version
-    const credentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, type, issuer, credSubject, signingPrivateKey, publicKeyInfos, expirationDate);
+    const credentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credSubject, signingPrivateKey, publicKeyInfos, expirationDate);
 
     // add all credentialVersionPairs to creds array
     Array.prototype.push.apply(creds, credentialVersionPairs);
+
+    if (issueCredentialsToSelf) {
+      // construct the Credential's credentialSubject for the issuerDid
+      const issuerCredSubject: CredentialSubject = { id: issuerDid, ...credData };
+
+      // construct the Credentials and their encrypted form for each supported version for the issuer
+      const issuerCredentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, issuerCredSubject, signingPrivateKey, issuerPublicKeyInfos, expirationDate);
+
+      // add all issuerCredentialVersionPairs to creds array
+      Array.prototype.push.apply(creds, issuerCredentialVersionPairs);
+    }
   }
 
   // loop through the versions list and send all the encrypted credentials to the saas grouped by version
@@ -329,7 +348,8 @@ const constructCredentialOptions = (type: string|string[], issuer: string, crede
 };
 
 /**
- * Helper to construct versioned CredentialPairs
+ * Helper to construct versioned CredentialPairs of each version.
+ * Also, handles issuing credentials to the Issuer's DID if desired..
  * @param authorization
  * @param type
  * @param issuer
@@ -339,6 +359,7 @@ const constructCredentialOptions = (type: string|string[], issuer: string, crede
  * @param expirationDate
  * @returns
  */
+// const constructEncryptedCredentialOfEachVersion = (authorization: string, type: string | string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, publicKeyInfos: PublicKeyInfo[], issuerPublicKeyInfos: PublicKeyInfo[], expirationDate?: Date): WithVersion<CredentialPair>[] => {
 const constructEncryptedCredentialOfEachVersion = (authorization: string, type: string | string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, publicKeyInfos: PublicKeyInfo[], expirationDate?: Date): WithVersion<CredentialPair>[] => {
   const credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, expirationDate);
 

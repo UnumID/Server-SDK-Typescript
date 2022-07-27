@@ -11,7 +11,7 @@ import { CredentialSubject, Credential, CredentialPb, CredentialData } from '@un
  * @param expirationDate
  * @returns
  */
-export declare const issueCredentials: (authorization: string, issuer: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date | undefined) => Promise<UnumDto<(CredentialPb | Credential)[]>>;
+export declare const issueCredentials: (authorization: string, issuerDid: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date | undefined, issueCredentialsToSelf?: boolean) => Promise<UnumDto<(CredentialPb | Credential)[]>>;
 /**
  * Handles issuing a credential with UnumID's SaaS.
  *

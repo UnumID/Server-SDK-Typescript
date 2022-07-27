@@ -249,65 +249,83 @@ var validateInputs = function (issuer, subjectDid, credentialDataList, signingPr
  * @param expirationDate
  * @returns
  */
-exports.issueCredentials = function (authorization, issuer, subjectDid, credentialDataList, signingPrivateKey, expirationDate) { return __awaiter(void 0, void 0, void 0, function () {
-    var publicKeyInfoResponse, publicKeyInfos, creds, i, type, credData, credSubject, credentialVersionPairs, _loop_1, _i, versionList_2, version, latestVersion, resultantCredentials;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
-                requireAuth_1.requireAuth(authorization);
-                // Validate inputs.
-                validateInputs(issuer, subjectDid, credentialDataList, signingPrivateKey, expirationDate);
-                return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authorization, subjectDid, 'RSA')];
-            case 1:
-                publicKeyInfoResponse = _a.sent();
-                publicKeyInfos = publicKeyInfoResponse.body;
-                authorization = publicKeyInfoResponse.authToken;
-                creds = [];
-                for (i = 0; i < credentialDataList.length; i++) {
-                    type = credentialDataList[i].type;
-                    credData = lodash_1.omit(credentialDataList[i], 'type');
-                    credSubject = __assign({ id: subjectDid }, credData);
-                    credentialVersionPairs = constructEncryptedCredentialOfEachVersion(authorization, type, issuer, credSubject, signingPrivateKey, publicKeyInfos, expirationDate);
-                    // add all credentialVersionPairs to creds array
-                    Array.prototype.push.apply(creds, credentialVersionPairs);
-                }
-                _loop_1 = function (version) {
-                    var resultantEncryptedCredentials, result;
-                    return __generator(this, function (_a) {
-                        switch (_a.label) {
-                            case 0:
-                                resultantEncryptedCredentials = creds.filter(function (credPair) { return credPair.version === version; }).map(function (credPair) { return credPair.encryptedCredential; });
-                                return [4 /*yield*/, sendEncryptedCredentials(authorization, { credentialRequests: resultantEncryptedCredentials }, version)];
-                            case 1:
-                                result = _a.sent();
-                                authorization = result.authToken;
-                                return [2 /*return*/];
+exports.issueCredentials = function (authorization, issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate, issueCredentialsToSelf) {
+    if (issueCredentialsToSelf === void 0) { issueCredentialsToSelf = false; }
+    return __awaiter(void 0, void 0, void 0, function () {
+        var publicKeyInfoResponse, publicKeyInfos, issuerPublicKeyInfos, publicKeyInfoResponse_1, creds, i, type, credData, credSubject, credentialVersionPairs, issuerCredSubject, issuerCredentialVersionPairs, _loop_1, _i, versionList_2, version, latestVersion, resultantCredentials;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
+                    requireAuth_1.requireAuth(authorization);
+                    // Validate inputs.
+                    validateInputs(issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate);
+                    return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authorization, subjectDid, 'RSA')];
+                case 1:
+                    publicKeyInfoResponse = _a.sent();
+                    publicKeyInfos = publicKeyInfoResponse.body;
+                    authorization = publicKeyInfoResponse.authToken;
+                    issuerPublicKeyInfos = [];
+                    if (!issueCredentialsToSelf) return [3 /*break*/, 3];
+                    return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authorization, issuerDid, 'RSA')];
+                case 2:
+                    publicKeyInfoResponse_1 = _a.sent();
+                    issuerPublicKeyInfos = publicKeyInfoResponse_1.body;
+                    authorization = publicKeyInfoResponse_1.authToken;
+                    _a.label = 3;
+                case 3:
+                    creds = [];
+                    for (i = 0; i < credentialDataList.length; i++) {
+                        type = credentialDataList[i].type;
+                        credData = lodash_1.omit(credentialDataList[i], 'type');
+                        credSubject = __assign({ id: subjectDid }, credData);
+                        credentialVersionPairs = constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credSubject, signingPrivateKey, publicKeyInfos, expirationDate);
+                        // add all credentialVersionPairs to creds array
+                        Array.prototype.push.apply(creds, credentialVersionPairs);
+                        if (issueCredentialsToSelf) {
+                            issuerCredSubject = __assign({ id: issuerDid }, credData);
+                            issuerCredentialVersionPairs = constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, issuerCredSubject, signingPrivateKey, issuerPublicKeyInfos, expirationDate);
+                            // add all issuerCredentialVersionPairs to creds array
+                            Array.prototype.push.apply(creds, issuerCredentialVersionPairs);
                         }
-                    });
-                };
-                _i = 0, versionList_2 = versionList_1.versionList;
-                _a.label = 2;
-            case 2:
-                if (!(_i < versionList_2.length)) return [3 /*break*/, 5];
-                version = versionList_2[_i];
-                return [5 /*yield**/, _loop_1(version)];
-            case 3:
-                _a.sent();
-                _a.label = 4;
-            case 4:
-                _i++;
-                return [3 /*break*/, 2];
-            case 5:
-                latestVersion = versionList_1.versionList[versionList_1.versionList.length - 1];
-                resultantCredentials = creds.filter(function (credPair) { return credPair.version === latestVersion; }).map(function (credPair) { return credPair.credential; });
-                return [2 /*return*/, {
-                        authToken: authorization,
-                        body: resultantCredentials
-                    }];
-        }
+                    }
+                    _loop_1 = function (version) {
+                        var resultantEncryptedCredentials, result;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    resultantEncryptedCredentials = creds.filter(function (credPair) { return credPair.version === version; }).map(function (credPair) { return credPair.encryptedCredential; });
+                                    return [4 /*yield*/, sendEncryptedCredentials(authorization, { credentialRequests: resultantEncryptedCredentials }, version)];
+                                case 1:
+                                    result = _a.sent();
+                                    authorization = result.authToken;
+                                    return [2 /*return*/];
+                            }
+                        });
+                    };
+                    _i = 0, versionList_2 = versionList_1.versionList;
+                    _a.label = 4;
+                case 4:
+                    if (!(_i < versionList_2.length)) return [3 /*break*/, 7];
+                    version = versionList_2[_i];
+                    return [5 /*yield**/, _loop_1(version)];
+                case 5:
+                    _a.sent();
+                    _a.label = 6;
+                case 6:
+                    _i++;
+                    return [3 /*break*/, 4];
+                case 7:
+                    latestVersion = versionList_1.versionList[versionList_1.versionList.length - 1];
+                    resultantCredentials = creds.filter(function (credPair) { return credPair.version === latestVersion; }).map(function (credPair) { return credPair.credential; });
+                    return [2 /*return*/, {
+                            authToken: authorization,
+                            body: resultantCredentials
+                        }];
+            }
+        });
     });
-}); };
+};
 /**
  * Handles issuing a credential with UnumID's SaaS.
  *
@@ -365,7 +383,8 @@ var constructCredentialOptions = function (type, issuer, credentialSubject, expi
     return (credOpt);
 };
 /**
- * Helper to construct versioned CredentialPairs
+ * Helper to construct versioned CredentialPairs of each version.
+ * Also, handles issuing credentials to the Issuer's DID if desired..
  * @param authorization
  * @param type
  * @param issuer
@@ -375,6 +394,7 @@ var constructCredentialOptions = function (type, issuer, credentialSubject, expi
  * @param expirationDate
  * @returns
  */
+// const constructEncryptedCredentialOfEachVersion = (authorization: string, type: string | string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, publicKeyInfos: PublicKeyInfo[], issuerPublicKeyInfos: PublicKeyInfo[], expirationDate?: Date): WithVersion<CredentialPair>[] => {
 var constructEncryptedCredentialOfEachVersion = function (authorization, type, issuer, credentialSubject, signingPrivateKey, publicKeyInfos, expirationDate) {
     var credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, expirationDate);
     var results = [];
