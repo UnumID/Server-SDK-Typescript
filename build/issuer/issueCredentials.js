@@ -273,7 +273,7 @@ var validateInputs = function (issuer, subjectDid, credentialDataList, signingPr
  * @param expirationDate
  */
 exports.issueCredentials = function (authorization, issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate, issueCredentialsToSelf) {
-    if (issueCredentialsToSelf === void 0) { issueCredentialsToSelf = false; }
+    if (issueCredentialsToSelf === void 0) { issueCredentialsToSelf = true; }
     return __awaiter(void 0, void 0, void 0, function () {
         var publicKeyInfoResponse, publicKeyInfos, issuerPublicKeyInfos, publicKeyInfoResponse_1, creds, i, type, credData, credSubject, credentialVersionPairs, issuerCredSubject, issuerCredentialVersionPairs, _loop_1, _i, versionList_2, version, latestVersion, resultantCredentials;
         return __generator(this, function (_a) {

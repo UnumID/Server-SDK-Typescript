@@ -264,7 +264,7 @@ const validateInputs = (issuer: string, subjectDid: string, credentialDataList: 
  * @param signingPrivateKey
  * @param expirationDate
  */
-export const issueCredentials = async (authorization: string, issuerDid: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date, issueCredentialsToSelf = false): Promise<UnumDto<(CredentialPb | Credential)[]>> => {
+export const issueCredentials = async (authorization: string, issuerDid: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date, issueCredentialsToSelf = true): Promise<UnumDto<(CredentialPb | Credential)[]>> => {
   // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
   requireAuth(authorization);
 
