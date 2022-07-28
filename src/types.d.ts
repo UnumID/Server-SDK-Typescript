@@ -40,6 +40,7 @@ export interface RESTResponse<T = Record<string, unknown>> {
  * Encapsulates necessary Credential entity attributes during creation.
  */
 export interface CredentialOptions {
+  credentialId: string;
   credentialSubject: CredentialSubject;
   issuer: string;
   type: string[];
