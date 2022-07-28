@@ -187,7 +187,6 @@ var constructUnsignedCredentialPbObj = function (credOpts) {
 /**
  * Creates all the attributes associated with an unsigned credential.
  * @param credOpts CredentialOptions
- * @param credentialId UUIDv4
  * @return Unsigned credential
  */
 var constructUnsignedCredentialObj = function (credOpts) {
@@ -393,7 +392,6 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
         if (semver_1.gte(version, '2.0.0') && semver_1.lt(version, '3.0.0')) {
             // Create latest version of the UnsignedCredential object
             var unsignedCredential_1 = constructUnsignedCredentialObj(credentialOptions);
-            // const unsignedProofOfCredential: UnsignedCredentialV2 = constructUnsignedCredentialObj(proofOfCredentialOptions);
             // Create the signed Credential object from the unsignedCredential object
             var credential_1 = constructSignedCredentialObj(unsignedCredential_1, signingPrivateKey);
             // Create the encrypted credential issuance dto
@@ -431,7 +429,6 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
  * @param subjectDid
  * @returns
  */
-// const constructIssueCredentialOptions = (credential: Credential | CredentialPb, proofOfCredential: Credential | CredentialPb | undefined, publicKeyInfos: PublicKeyInfo[], subjectDid: string): IssueCredentialOptions => {
 var constructIssueCredentialOptions = function (credential, publicKeyInfos, subjectDid) {
     // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
     var encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos);
