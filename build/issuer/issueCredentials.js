@@ -185,17 +185,6 @@ var constructUnsignedCredentialPbObj = function (credOpts) {
     return unsCredObj;
 };
 /**
- * Creates all the attributes associated with an unsigned 'proof-of' credential.
- * @param original UnsignedCredentialPb
- * @param credentialId UUIDv4
- * @return Proof of Original credential
- */
-var constructUnsignedProofOfCredentialPbObj = function (original, credentialId) {
-    // CredentialSubject type is dependent on version. V2 is a string for passing to holder so iOS can handle it as a concrete type instead of a map of unknown keys.
-    var unsCredObj = __assign(__assign({}, original), { id: credentialId, credentialSubject: JSON.stringify({}), type: __spreadArrays(['VerifiableCredential'], original.type.filter(function (o) { return o !== 'VerifiableCredential'; }).map(function (o) { return "ProofOf" + o; })) });
-    return unsCredObj;
-};
-/**
  * Creates all the attributes associated with an unsigned credential.
  * @param credOpts CredentialOptions
  * @param credentialId UUIDv4
@@ -218,18 +207,6 @@ var constructUnsignedCredentialObj = function (credOpts) {
         issuanceDate: new Date(),
         expirationDate: expirationDate
     };
-    return unsCredObj;
-};
-/**
- * Creates all the attributes associated with an unsigned 'proof-of' credential.
- * @param original UnsignedCredentialV2
- * @param credentialId UUIDv4
- * @return Proof of Original credential
- */
-// TODO DELETE
-var constructUnsignedProofOfCredentialObj = function (original, credentialId) {
-    // CredentialSubject type is dependent on version. V2 is a string for passing to holder so iOS can handle it as a concrete type instead of a map of unknown keys.
-    var unsCredObj = __assign(__assign({}, original), { id: credentialId, credentialSubject: JSON.stringify({}), type: __spreadArrays(['VerifiableCredential'], original.type.filter(function (o) { return o !== 'VerifiableCredential'; }).map(function (o) { return "ProofOf" + o; })) });
     return unsCredObj;
 };
 /**
@@ -392,31 +369,6 @@ var constructCredentialOptions = function (type, issuer, credentialId, credentia
     return (credOpt);
 };
 /**
- * Helper to construct a ProofOf Credential's CredentialOptions
- * @param type
- * @param issuer
- * @param credentialSubject
- * @param expirationDate
- * @returns
- */
-var constructProofOfCredentialOptions = function (type, issuer, credentialSubject, expirationDate) {
-    // HACK ALERT: removing duplicate 'VerifiableCredential' if present in type string[]
-    var typeList = ['VerifiableCredential'].concat(type); // Need to have some value in the "base" array so just using the keyword we are going to filter over.
-    // adding 'ProofOf' prefix to the type(s)
-    var types = typeList.filter(function (t) { return t !== 'VerifiableCredential'; }).map(function (credType) { return "ProofOf" + credType; });
-    var credOpt = {
-        // Note: a proofOf credential has no data in the credentialSubject
-        credentialSubject: {
-            id: credentialSubject.id
-        },
-        issuer: issuer,
-        type: types,
-        expirationDate: expirationDate,
-        credentialId: helpers_1.getUUID()
-    };
-    return (credOpt);
-};
-/**
  * Helper to construct versioned CredentialPairs of each version.
  * Also, handles issuing credentials to the Issuer's DID if desired..
  * @param authorization
@@ -428,13 +380,10 @@ var constructProofOfCredentialOptions = function (type, issuer, credentialSubjec
  * @param expirationDate
  * @returns
  */
-// const constructEncryptedCredentialOfEachVersion = (authorization: string, type: string | string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, publicKeyInfos: PublicKeyInfo[], issuerPublicKeyInfos: PublicKeyInfo[], expirationDate?: Date): WithVersion<CredentialPair>[] => {
 var constructEncryptedCredentialOfEachVersion = function (authorization, type, issuer, credentialId, credentialSubject, signingPrivateKey, publicKeyInfos, expirationDate) {
     var credentialOptions = constructCredentialOptions(type, issuer, credentialId, credentialSubject, expirationDate);
     var results = [];
     logger_1.default.debug("credentialId's " + credentialOptions.credentialId + " credentialOptions: " + credentialOptions);
-    // // Handle creating the CredentialSubject for the ProofOf credential, which does not have any credential data.
-    // const proofOfCredentialOptions = constructProofOfCredentialOptions(type, issuer, credentialSubject, expirationDate);
     /**
      * Need to loop through all versions except most recent so that can issued credentials could be backwards compatible with older holder versions.
      * However only care to return the most recent Credential type for customers to use.
@@ -447,7 +396,6 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
             // const unsignedProofOfCredential: UnsignedCredentialV2 = constructUnsignedCredentialObj(proofOfCredentialOptions);
             // Create the signed Credential object from the unsignedCredential object
             var credential_1 = constructSignedCredentialObj(unsignedCredential_1, signingPrivateKey);
-            // const proofOfCredential: CredentialV2 = constructSignedCredentialObj(unsignedProofOfCredential, signingPrivateKey);
             // Create the encrypted credential issuance dto
             var encryptedCredentialUploadOptions_1 = constructIssueCredentialOptions(credential_1, publicKeyInfos, credentialSubject.id);
             var credPair_1 = {
@@ -465,7 +413,6 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
     // const unsignedProofOfCredential = constructUnsignedCredentialPbObj(proofOfCredentialOptions);
     // Create the signed Credential object from the unsignedCredential object
     var credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
-    // const proofOfCredential = constructSignedCredentialPbObj(unsignedProofOfCredential, signingPrivateKey);
     // Create the encrypted credential issuance dto
     var encryptedCredentialUploadOptions = constructIssueCredentialOptions(credential, publicKeyInfos, credentialSubject.id);
     var credPair = {
@@ -488,7 +435,6 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
 var constructIssueCredentialOptions = function (credential, publicKeyInfos, subjectDid) {
     // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
     var encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos);
-    // const encryptedProofOfCredentialOptions = proofOfCredential ? constructEncryptedCredentialOpts(proofOfCredential, publicKeyInfos) : [];
     // Removing the 'credential' of "VerifiableCredential" from the Unum ID internal type for simplicity
     var credentialType = getCredentialType_1.getCredentialType(credential.type);
     var encryptedCredentialUploadOptions = {
