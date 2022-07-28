@@ -453,7 +453,7 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
 
   // Create latest version of the UnsignedCredential object
   const unsignedCredential = constructUnsignedCredentialPbObj(credentialOptions, credentialId);
-  const unsignedProofOfCredential = constructUnsignedProofOfCredentialPbObj(unsignedCredential, credentialId);
+  const unsignedProofOfCredential = constructUnsignedCredentialPbObj(proofOfCredentialOptions, credentialId);
 
   // Create the signed Credential object from the unsignedCredential object
   const credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);

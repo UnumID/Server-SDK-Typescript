@@ -459,7 +459,7 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
     var latestVersion = versionList_1.versionList[versionList_1.versionList.length - 1];
     // Create latest version of the UnsignedCredential object
     var unsignedCredential = constructUnsignedCredentialPbObj(credentialOptions, credentialId);
-    var unsignedProofOfCredential = constructUnsignedProofOfCredentialPbObj(unsignedCredential, credentialId);
+    var unsignedProofOfCredential = constructUnsignedCredentialPbObj(proofOfCredentialOptions, credentialId);
     // Create the signed Credential object from the unsignedCredential object
     var credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
     var proofOfCredential = constructSignedCredentialPbObj(unsignedProofOfCredential, signingPrivateKey);
