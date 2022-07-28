@@ -5,7 +5,7 @@ import { sendSms } from './verifier/sendSms';
 import { UnumDto, RegisteredVerifier, RegisteredIssuer, VerifiedStatus, DecryptedPresentation, CredentialInfo, CredentialStatusInfo } from './types';
 import { verifyPresentation } from './verifier/verifyPresentation';
 import { registerIssuer } from './issuer/registerIssuer';
-import { issueCredential, issueCredentials } from './issuer/issueCredentials';
+import { issueCredentials } from './issuer/issueCredentials';
 import { updateCredentialStatus } from './issuer/updateCredentialStatus';
 import { extractCredentialInfo } from './utils/extractCredentialInfo';
 import { CredentialSubject, Presentation, Proof, Credential } from '@unumid/types';
@@ -19,5 +19,5 @@ import { verifySignedDid } from './utils/verifyDidDocument';
 import { revokeAllCredentials } from './issuer/revokeAllCredentials';
 import { updateCredentialStatuses } from './issuer/updateCredentialStatuses';
 import { checkCredentialStatuses } from './verifier/checkCredentialStatuses';
-export { registerIssuer, issueCredential, issueCredentials, updateCredentialStatus, updateCredentialStatuses, verifySubjectCredentialRequests, revokeAllCredentials, registerVerifier, sendEmail, sendRequest, sendSms, verifyPresentation, checkCredentialStatuses, getRequest, getVersionedRequest, UnumDto, RegisteredVerifier, VerifiedStatus, Presentation, RegisteredIssuer, CredentialSubject, DecryptedPresentation, CredentialStatusInfo, CustError, Proof, Credential, CredentialInfo, extractCredentialInfo, verifySignedDid, createProof, createProofPb, convertCredentialSubject };
+export { registerIssuer, issueCredentials, updateCredentialStatus, updateCredentialStatuses, verifySubjectCredentialRequests, revokeAllCredentials, registerVerifier, sendEmail, sendRequest, sendSms, verifyPresentation, checkCredentialStatuses, getRequest, getVersionedRequest, UnumDto, RegisteredVerifier, VerifiedStatus, Presentation, RegisteredIssuer, CredentialSubject, DecryptedPresentation, CredentialStatusInfo, CustError, Proof, Credential, CredentialInfo, extractCredentialInfo, verifySignedDid, createProof, createProofPb, convertCredentialSubject };
 //# sourceMappingURL=index.d.ts.map

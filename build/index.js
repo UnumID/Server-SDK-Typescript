@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.convertCredentialSubject = exports.createProofPb = exports.createProof = exports.verifySignedDid = exports.extractCredentialInfo = exports.CustError = exports.getVersionedRequest = exports.getRequest = exports.checkCredentialStatuses = exports.verifyPresentation = exports.sendSms = exports.sendRequest = exports.sendEmail = exports.registerVerifier = exports.revokeAllCredentials = exports.verifySubjectCredentialRequests = exports.updateCredentialStatuses = exports.updateCredentialStatus = exports.issueCredentials = exports.issueCredential = exports.registerIssuer = void 0;
+exports.convertCredentialSubject = exports.createProofPb = exports.createProof = exports.verifySignedDid = exports.extractCredentialInfo = exports.CustError = exports.getVersionedRequest = exports.getRequest = exports.checkCredentialStatuses = exports.verifyPresentation = exports.sendSms = exports.sendRequest = exports.sendEmail = exports.registerVerifier = exports.revokeAllCredentials = exports.verifySubjectCredentialRequests = exports.updateCredentialStatuses = exports.updateCredentialStatus = exports.issueCredentials = exports.registerIssuer = void 0;
 var registerVerifier_1 = require("./verifier/registerVerifier");
 Object.defineProperty(exports, "registerVerifier", { enumerable: true, get: function () { return registerVerifier_1.registerVerifier; } });
 var sendEmail_1 = require("./verifier/sendEmail");
@@ -14,7 +14,6 @@ Object.defineProperty(exports, "verifyPresentation", { enumerable: true, get: fu
 var registerIssuer_1 = require("./issuer/registerIssuer");
 Object.defineProperty(exports, "registerIssuer", { enumerable: true, get: function () { return registerIssuer_1.registerIssuer; } });
 var issueCredentials_1 = require("./issuer/issueCredentials");
-Object.defineProperty(exports, "issueCredential", { enumerable: true, get: function () { return issueCredentials_1.issueCredential; } });
 Object.defineProperty(exports, "issueCredentials", { enumerable: true, get: function () { return issueCredentials_1.issueCredentials; } });
 var updateCredentialStatus_1 = require("./issuer/updateCredentialStatus");
 Object.defineProperty(exports, "updateCredentialStatus", { enumerable: true, get: function () { return updateCredentialStatus_1.updateCredentialStatus; } });

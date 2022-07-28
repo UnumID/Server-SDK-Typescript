@@ -1,5 +1,5 @@
 import { UnumDto } from '../types';
-import { CredentialSubject, Credential, CredentialPb, CredentialData } from '@unumid/types';
+import { Credential, CredentialPb, CredentialData } from '@unumid/types';
 /**
  * Multiplexed handler for issuing credentials with UnumID's SaaS.
  * @param authorization
@@ -10,15 +10,4 @@ import { CredentialSubject, Credential, CredentialPb, CredentialData } from '@un
  * @param expirationDate
  */
 export declare const issueCredentials: (authorization: string, issuerDid: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date | undefined, issueCredentialsToSelf?: boolean) => Promise<UnumDto<(CredentialPb | Credential)[]>>;
-/**
- * Handles issuing a credential with UnumID's SaaS.
- *
- * @param authorization
- * @param type
- * @param issuer
- * @param credentialSubject
- * @param signingPrivateKey
- * @param expirationDate
- */
-export declare const issueCredential: (authorization: string, type: string | string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, expirationDate?: Date | undefined) => Promise<UnumDto<CredentialPb>>;
 //# sourceMappingURL=issueCredentials.d.ts.map

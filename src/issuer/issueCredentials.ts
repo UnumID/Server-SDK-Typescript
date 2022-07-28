@@ -291,6 +291,7 @@ export const issueCredentials = async (authorization: string, issuerDid: string,
 
   // loop through the types and credential data lists inputted to create CredentialPairs of each supported version for each
   const creds: WithVersion<CredentialPair>[] = [];
+  const proofOfCreds: WithVersion<CredentialPair>[] = [];
 
   for (let i = 0; i < credentialDataList.length; i++) {
     const type = credentialDataList[i].type;
@@ -305,6 +306,16 @@ export const issueCredentials = async (authorization: string, issuerDid: string,
     // add all credentialVersionPairs to creds array
     Array.prototype.push.apply(creds, credentialVersionPairs);
 
+    /**
+     * Handle construction of the ProofOfCredentials and their encrypted form for each supported version
+     */
+    const proofOfType = `ProofOf${type}`; // prefixing the type with ProofOf
+    const proofOfCredentialSubject = { id: credSubject.id }; // no credential data for a ProofOf Credential
+    const proofOfCredentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, proofOfType, issuerDid, proofOfCredentialSubject, signingPrivateKey, publicKeyInfos, expirationDate);
+
+    // add all proofOfCredentialVersionPairs to creds array
+    Array.prototype.push.apply(proofOfCreds, proofOfCredentialVersionPairs);
+
     if (issueCredentialsToSelf) {
       // construct the Credential's credentialSubject for the issuerDid
       const issuerCredSubject: CredentialSubject = { id: issuerDid, ...credData };
@@ -314,19 +325,37 @@ export const issueCredentials = async (authorization: string, issuerDid: string,
 
       // add all issuerCredentialVersionPairs to creds array
       Array.prototype.push.apply(creds, issuerCredentialVersionPairs);
+
+      /**
+       * Handle construction of the ProofOfCredentials and their encrypted form for each supported version
+       */
+      const issuerProofOfType = `ProofOf${type}`; // prefixing the type with ProofOf
+      const issuerProofOfCredentialSubject = { id: issuerCredSubject.id }; // no credential data for a ProofOf Credential
+      const issuerProofOfCredentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, issuerProofOfType, issuerDid, issuerProofOfCredentialSubject, signingPrivateKey, publicKeyInfos, expirationDate);
+
+      // add all proofOfCredentialVersionPairs to creds array
+      Array.prototype.push.apply(proofOfCreds, issuerProofOfCredentialVersionPairs);
     }
   }
 
-  // loop through the versions list and send all the encrypted credentials to the saas grouped by version
+  // loop through the versions list and send all the encrypted credentials to the saas grouped by version and credentialIds.
+  // Note: proofOf Credentials have a separate credentialId but the issuerCredentials share one (because same credential data)
   for (const version of versionList) {
     // only grab the encrypted credentials of the current version
     const resultantEncryptedCredentials: IssueCredentialOptions[] = creds.filter(credPair => credPair.version === version).map(credPair => credPair.encryptedCredential);
 
     const result = await sendEncryptedCredentials(authorization, { credentialRequests: resultantEncryptedCredentials }, version);
     authorization = result.authToken;
+
+    // only grab the proof of encrypted credentials of the current version
+    const proofOfResultantEncryptedCredentials: IssueCredentialOptions[] = proofOfCreds.filter(credPair => credPair.version === version).map(credPair => credPair.encryptedCredential);
+
+    const proofOfResult = await sendEncryptedCredentials(authorization, { credentialRequests: proofOfResultantEncryptedCredentials }, version);
+    authorization = proofOfResult.authToken;
   }
 
   // grab all the credentials of the latest version from the CredentialPairs for the response
+  // Note: not returning the ProofOf credentials.
   const latestVersion = versionList[versionList.length - 1];
   const resultantCredentials: (Credential | CredentialPb)[] = creds.filter(credPair => credPair.version === latestVersion).map(credPair => credPair.credential);
 
@@ -334,39 +363,6 @@ export const issueCredentials = async (authorization: string, issuerDid: string,
     authToken: authorization,
     body: resultantCredentials
   };
-};
-
-/**
- * Handles issuing a credential with UnumID's SaaS.
- *
- * @param authorization
- * @param type
- * @param issuer
- * @param credentialSubject
- * @param signingPrivateKey
- * @param expirationDate
- */
-// DEPRECATED; No longer exposed. However keeping around as maybe nice to have internally.
-export const issueCredential = async (authorization: string, type: string | string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, expirationDate?: Date): Promise<UnumDto<CredentialPb>> => {
-  try {
-    // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
-    requireAuth(authorization);
-
-    // Validate the inputs
-    validateInputsDeprecated(type, issuer, credentialSubject, signingPrivateKey, expirationDate);
-
-    // Get target Subject's DID document public keys for encrypting all the credentials issued.
-    const subjectDid = credentialSubject.id;
-
-    const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, subjectDid, 'RSA');
-    const publicKeyInfos = publicKeyInfoResponse.body;
-    authorization = publicKeyInfoResponse.authToken;
-
-    return issueCredentialHelperDeprecated(authorization, type, issuer, credentialSubject, signingPrivateKey, publicKeyInfos, expirationDate);
-  } catch (error) {
-    logger.error(`Error issuing a credential with UnumID SaaS. ${error}`);
-    throw error;
-  }
 };
 
 /**
@@ -442,8 +438,8 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
 
   logger.debug(`credentialId's ${credentialOptions.credentialId} credentialOptions: ${credentialOptions}`);
 
-  // Handle creating the CredentialSubject for the ProofOf credential, which does not have any credential data.
-  const proofOfCredentialOptions = constructProofOfCredentialOptions(type, issuer, credentialSubject, expirationDate);
+  // // Handle creating the CredentialSubject for the ProofOf credential, which does not have any credential data.
+  // const proofOfCredentialOptions = constructProofOfCredentialOptions(type, issuer, credentialSubject, expirationDate);
 
   /**
    * Need to loop through all versions except most recent so that can issued credentials could be backwards compatible with older holder versions.
@@ -455,14 +451,14 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
     if (gte(version, '2.0.0') && lt(version, '3.0.0')) {
       // Create latest version of the UnsignedCredential object
       const unsignedCredential: UnsignedCredentialV2 = constructUnsignedCredentialObj(credentialOptions);
-      const unsignedProofOfCredential: UnsignedCredentialV2 = constructUnsignedCredentialObj(proofOfCredentialOptions);
+      // const unsignedProofOfCredential: UnsignedCredentialV2 = constructUnsignedCredentialObj(proofOfCredentialOptions);
 
       // Create the signed Credential object from the unsignedCredential object
       const credential: CredentialV2 = constructSignedCredentialObj(unsignedCredential, signingPrivateKey);
-      const proofOfCredential: CredentialV2 = constructSignedCredentialObj(unsignedProofOfCredential, signingPrivateKey);
+      // const proofOfCredential: CredentialV2 = constructSignedCredentialObj(unsignedProofOfCredential, signingPrivateKey);
 
       // Create the encrypted credential issuance dto
-      const encryptedCredentialUploadOptions: IssueCredentialOptions = constructIssueCredentialOptions(credential, proofOfCredential, publicKeyInfos, credentialSubject.id);
+      const encryptedCredentialUploadOptions: IssueCredentialOptions = constructIssueCredentialOptions(credential, publicKeyInfos, credentialSubject.id);
 
       const credPair: WithVersion<CredentialPair> = {
         credential,
@@ -479,14 +475,14 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
 
   // Create latest version of the UnsignedCredential object
   const unsignedCredential = constructUnsignedCredentialPbObj(credentialOptions);
-  const unsignedProofOfCredential = constructUnsignedCredentialPbObj(proofOfCredentialOptions);
+  // const unsignedProofOfCredential = constructUnsignedCredentialPbObj(proofOfCredentialOptions);
 
   // Create the signed Credential object from the unsignedCredential object
   const credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
-  const proofOfCredential = constructSignedCredentialPbObj(unsignedProofOfCredential, signingPrivateKey);
+  // const proofOfCredential = constructSignedCredentialPbObj(unsignedProofOfCredential, signingPrivateKey);
 
   // Create the encrypted credential issuance dto
-  const encryptedCredentialUploadOptions: IssueCredentialOptions = constructIssueCredentialOptions(credential, proofOfCredential, publicKeyInfos, credentialSubject.id);
+  const encryptedCredentialUploadOptions: IssueCredentialOptions = constructIssueCredentialOptions(credential, publicKeyInfos, credentialSubject.id);
   const credPair: WithVersion<CredentialPair> = {
     credential,
     encryptedCredential: encryptedCredentialUploadOptions,
@@ -506,10 +502,11 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
  * @param subjectDid
  * @returns
  */
-const constructIssueCredentialOptions = (credential: Credential | CredentialPb, proofOfCredential: Credential | CredentialPb | undefined, publicKeyInfos: PublicKeyInfo[], subjectDid: string): IssueCredentialOptions => {
+// const constructIssueCredentialOptions = (credential: Credential | CredentialPb, proofOfCredential: Credential | CredentialPb | undefined, publicKeyInfos: PublicKeyInfo[], subjectDid: string): IssueCredentialOptions => {
+const constructIssueCredentialOptions = (credential: Credential | CredentialPb, publicKeyInfos: PublicKeyInfo[], subjectDid: string): IssueCredentialOptions => {
   // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
   const encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos);
-  const encryptedProofOfCredentialOptions = proofOfCredential ? constructEncryptedCredentialOpts(proofOfCredential, publicKeyInfos) : [];
+  // const encryptedProofOfCredentialOptions = proofOfCredential ? constructEncryptedCredentialOpts(proofOfCredential, publicKeyInfos) : [];
 
   // Removing the 'credential' of "VerifiableCredential" from the Unum ID internal type for simplicity
   const credentialType = getCredentialType(credential.type);
@@ -519,10 +516,7 @@ const constructIssueCredentialOptions = (credential: Credential | CredentialPb, 
     subject: subjectDid,
     issuer: credential.issuer,
     type: credentialType,
-    encryptedCredentials: [
-      ...encryptedCredentialOptions,
-      ...encryptedProofOfCredentialOptions
-    ]
+    encryptedCredentials: encryptedCredentialOptions
   };
 
   return encryptedCredentialUploadOptions;
@@ -564,145 +558,3 @@ function validateCredentialDataList (credentialDataList: CredentialData[]) {
     }
   }
 }
-
-/**
- * Helper to handle sending a single encrypted credential, IssueCredentialOptions, to the Saas
- * @param authorization
- * @param encryptedCredentialUploadOptions
- * @param version
- * @returns
- */
-const sendEncryptedCredential = async (authorization: string, encryptedCredentialUploadOptions: IssueCredentialOptions, version: string) :Promise<UnumDto<void>> => {
-  const restData: RESTData = {
-    method: 'POST',
-    baseUrl: configData.SaaSUrl,
-    endPoint: 'credentialRepository',
-    header: { Authorization: authorization, version },
-    data: encryptedCredentialUploadOptions
-  };
-
-  const restResp: JSONObj = await makeNetworkRequest(restData);
-
-  const authToken: string = handleAuthTokenHeader(restResp, authorization as string);
-
-  const issuedCredential: UnumDto<void> = { body: restResp.body, authToken };
-
-  return issuedCredential;
-};
-
-/**
- * Handle input validation.
- * @param type
- * @param issuer
- * @param credentialSubject
- * @param signingPrivateKey
- * @param expirationDate
- */
-const validateInputsDeprecated = (type: string|string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, expirationDate?: Date): void => {
-  if (!type) {
-    // type element is mandatory, and it can be either string or an array
-    throw new CustError(400, 'type is required.');
-  }
-
-  if (!issuer) {
-    throw new CustError(400, 'issuer is required.');
-  }
-
-  if (!credentialSubject) {
-    throw new CustError(400, 'credentialSubject is required.');
-  }
-
-  if (!signingPrivateKey) {
-    throw new CustError(400, 'signingPrivateKey is required.');
-  }
-
-  // id must be present in credentialSubject input parameter
-  if (!credentialSubject.id) {
-    throw new CustError(400, 'Invalid credentialSubject: id is required.');
-  }
-
-  if (!Array.isArray(type) && typeof type !== 'string') {
-    throw new CustError(400, 'type must be an array or a string.');
-  }
-
-  if (typeof issuer !== 'string') {
-    throw new CustError(400, 'issuer must be a string.');
-  }
-
-  if (typeof signingPrivateKey !== 'string') {
-    throw new CustError(400, 'signingPrivateKey must be a string.');
-  }
-
-  // expirationDate must be a Date object and return a properly formed time. Invalid Date.getTime() will produce NaN
-  if (expirationDate && (!(expirationDate instanceof Date) || isNaN(expirationDate.getTime()))) {
-    throw new CustError(400, 'expirationDate must be a valid Date object.');
-  }
-
-  if (expirationDate && expirationDate < new Date()) {
-    throw new CustError(400, 'expirationDate must be in the future.');
-  }
-};
-
-/**
- * Helper to handle creating and sending encrypted credentials to Saas while sending back the latest credential version
- * @param authorization
- * @param type
- * @param issuer
- * @param credentialSubject
- * @param signingPrivateKey
- * @param publicKeyInfos
- * @param expirationDate
- * @returns
- */
-const issueCredentialHelperDeprecated = async (authorization: string, type: string | string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, publicKeyInfos: PublicKeyInfo[], expirationDate?: Date): Promise<UnumDto<CredentialPb>> => {
-  // Construct CredentialOptions object
-  const credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, expirationDate);
-
-  // create a credentialId to be shared between all versions of the same credential
-  const credentialId: string = getUUID();
-
-  logger.debug(`credentialId's ${credentialId} credentialOptions: ${credentialOptions}`);
-  /**
-   * Need to loop through all versions except most recent so that can issued credentials could be backwards compatible with older holder versions.
-   * However only care to return the most recent Credential type for customers to use.
-   */
-  for (let v = 0; v < versionList.length - 1; v++) { // note: purposely terminating one index early, which ought to be the most recent version.
-    const version: string = versionList[v];
-
-    if (gte(version, '2.0.0') && lt(version, '3.0.0')) {
-      // Create latest version of the UnsignedCredential object
-      const unsignedCredential: UnsignedCredentialV2 = constructUnsignedCredentialObj(credentialOptions);
-
-      // Create the signed Credential object from the unsignedCredential object
-      const credential: CredentialV2 = constructSignedCredentialObj(unsignedCredential, signingPrivateKey);
-
-      // Create the encrypted credential issuance dto
-      const encryptedCredentialUploadOptions: IssueCredentialOptions = constructIssueCredentialOptions(credential, undefined, publicKeyInfos, credentialSubject.id);
-
-      // Send encrypted credential to Saas
-      const result = await sendEncryptedCredential(authorization, encryptedCredentialUploadOptions, version);
-
-      // authorization = handleAuthTokenHeader(restResp, authorization as string);
-      authorization = result.authToken;
-    }
-  }
-
-  // Grabbing the latest version as defined in the version list, 3.0.0
-  const latestVersion: string = versionList[versionList.length - 1];
-
-  // Create latest version of the UnsignedCredential object
-  const unsignedCredential = constructUnsignedCredentialPbObj(credentialOptions);
-
-  // Create the signed Credential object from the unsignedCredential object
-  const credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
-
-  // Create the encrypted credential issuance dto
-  const encryptedCredentialUploadOptions: IssueCredentialOptions = constructIssueCredentialOptions(credential, undefined, publicKeyInfos, credentialSubject.id);
-
-  // Send encrypted credential to Saas
-  const result = await sendEncryptedCredential(authorization, encryptedCredentialUploadOptions, latestVersion);
-
-  const issuedCredential: UnumDto<CredentialPb> = { body: credential, authToken: result.authToken };
-
-  return issuedCredential;
-};
