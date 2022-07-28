@@ -200,6 +200,7 @@ const constructUnsignedCredentialObj = (credOpts: CredentialOptions, credentialI
  * @param credentialId UUIDv4
  * @return Proof of Original credential
  */
+// TODO DELETE
 const constructUnsignedProofOfCredentialObj = (original: UnsignedCredentialV2, credentialId: string): UnsignedCredentialV2 => {
   // CredentialSubject type is dependent on version. V2 is a string for passing to holder so iOS can handle it as a concrete type instead of a map of unknown keys.
 
@@ -411,6 +412,14 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
   logger.debug(`credentialId's ${credentialId} credentialOptions: ${credentialOptions}`);
 
   /**
+   * Handle creating the CredentialSubject for the ProofOf credential, which does not have any credential data.
+   */
+  const proofOfCredentialSubject = {
+    id: credentialSubject.id
+  };
+  const proofOfCredentialOptions = constructCredentialOptions(type, issuer, proofOfCredentialSubject, expirationDate);
+
+  /**
    * Need to loop through all versions except most recent so that can issued credentials could be backwards compatible with older holder versions.
    * However only care to return the most recent Credential type for customers to use.
    */
@@ -420,7 +429,7 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
     if (gte(version, '2.0.0') && lt(version, '3.0.0')) {
       // Create latest version of the UnsignedCredential object
       const unsignedCredential: UnsignedCredentialV2 = constructUnsignedCredentialObj(credentialOptions, credentialId);
-      const unsignedProofOfCredential: UnsignedCredentialV2 = constructUnsignedProofOfCredentialObj(unsignedCredential, credentialId);
+      const unsignedProofOfCredential: UnsignedCredentialV2 = constructUnsignedCredentialObj(proofOfCredentialOptions, credentialId);
 
       // Create the signed Credential object from the unsignedCredential object
       const credential: CredentialV2 = constructSignedCredentialObj(unsignedCredential, signingPrivateKey);
