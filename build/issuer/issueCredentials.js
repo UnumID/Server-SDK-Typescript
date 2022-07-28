@@ -226,7 +226,7 @@ var constructUnsignedCredentialObj = function (credOpts, credentialId) {
  */
 var constructUnsignedProofOfCredentialObj = function (original, credentialId) {
     // CredentialSubject type is dependent on version. V2 is a string for passing to holder so iOS can handle it as a concrete type instead of a map of unknown keys.
-    var unsCredObj = __assign(__assign({}, original), { id: credentialId, credentialSubject: JSON.stringify({}), type: __spreadArrays(['VerifiableCredential'], original.type.filter(function (o) { return o !== 'VerifiableCredential'; }).map(function (o) { return "ProofOf" + o; })) });
+    var unsCredObj = __assign(__assign({}, original), { id: credentialId, type: __spreadArrays(['VerifiableCredential'], original.type.filter(function (credType) { return credType !== 'VerifiableCredential'; }).map(function (credType) { return "ProofOf" + credType; })) });
     return unsCredObj;
 };
 /**

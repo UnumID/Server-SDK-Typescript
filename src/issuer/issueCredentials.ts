@@ -206,8 +206,7 @@ const constructUnsignedProofOfCredentialObj = (original: UnsignedCredentialV2, c
   const unsCredObj: UnsignedCredentialV2 = {
     ...original,
     id: credentialId,
-    credentialSubject: JSON.stringify({}),
-    type: ['VerifiableCredential', ...original.type.filter(o => o !== 'VerifiableCredential').map((o) => `ProofOf${o}`)]
+    type: ['VerifiableCredential', ...original.type.filter(credType => credType !== 'VerifiableCredential').map((credType) => `ProofOf${credType}`)]
   };
 
   return unsCredObj;
