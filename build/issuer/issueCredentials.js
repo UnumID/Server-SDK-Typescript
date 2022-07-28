@@ -278,7 +278,7 @@ var validateInputs = function (issuer, subjectDid, credentialDataList, signingPr
 exports.issueCredentials = function (authorization, issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate, issueCredentialsToSelf) {
     if (issueCredentialsToSelf === void 0) { issueCredentialsToSelf = true; }
     return __awaiter(void 0, void 0, void 0, function () {
-        var publicKeyInfoResponse, publicKeyInfos, issuerPublicKeyInfos, publicKeyInfoResponse_1, creds, proofOfCreds, i, type, credData, credSubject, credentialVersionPairs, proofOfType, proofOfCredentialSubject, proofOfCredentialVersionPairs, issuerCredSubject, issuerCredentialVersionPairs, issuerProofOfType, issuerProofOfCredentialSubject, issuerProofOfCredentialVersionPairs, _loop_1, _i, versionList_2, version, latestVersion, resultantCredentials;
+        var publicKeyInfoResponse, publicKeyInfos, issuerPublicKeyInfos, publicKeyInfoResponse_1, creds, proofOfCreds, i, type, credData, credSubject, credentialId, credentialVersionPairs, proofOfType, proofOfCredentialSubject, proofOfCredentailId, proofOfCredentialVersionPairs, issuerCredSubject, issuerCredentialVersionPairs, issuerProofOfType, issuerProofOfCredentialSubject, issuerProofOfCredentialVersionPairs, _loop_1, _i, versionList_2, version, latestVersion, resultantCredentials;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -306,22 +306,24 @@ exports.issueCredentials = function (authorization, issuerDid, subjectDid, crede
                         type = credentialDataList[i].type;
                         credData = lodash_1.omit(credentialDataList[i], 'type');
                         credSubject = __assign({ id: subjectDid }, credData);
-                        credentialVersionPairs = constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credSubject, signingPrivateKey, publicKeyInfos, expirationDate);
+                        credentialId = helpers_1.getUUID();
+                        credentialVersionPairs = constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, credSubject, signingPrivateKey, publicKeyInfos, expirationDate);
                         // add all credentialVersionPairs to creds array
                         Array.prototype.push.apply(creds, credentialVersionPairs);
                         proofOfType = "ProofOf" + type;
                         proofOfCredentialSubject = { id: credSubject.id };
-                        proofOfCredentialVersionPairs = constructEncryptedCredentialOfEachVersion(authorization, proofOfType, issuerDid, proofOfCredentialSubject, signingPrivateKey, publicKeyInfos, expirationDate);
+                        proofOfCredentailId = helpers_1.getUUID();
+                        proofOfCredentialVersionPairs = constructEncryptedCredentialOfEachVersion(authorization, proofOfType, issuerDid, proofOfCredentailId, proofOfCredentialSubject, signingPrivateKey, publicKeyInfos, expirationDate);
                         // add all proofOfCredentialVersionPairs to creds array
                         Array.prototype.push.apply(proofOfCreds, proofOfCredentialVersionPairs);
                         if (issueCredentialsToSelf) {
                             issuerCredSubject = __assign({ id: issuerDid }, credData);
-                            issuerCredentialVersionPairs = constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, issuerCredSubject, signingPrivateKey, issuerPublicKeyInfos, expirationDate);
+                            issuerCredentialVersionPairs = constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, issuerCredSubject, signingPrivateKey, issuerPublicKeyInfos, expirationDate);
                             // add all issuerCredentialVersionPairs to creds array
                             Array.prototype.push.apply(creds, issuerCredentialVersionPairs);
                             issuerProofOfType = "ProofOf" + type;
                             issuerProofOfCredentialSubject = { id: issuerCredSubject.id };
-                            issuerProofOfCredentialVersionPairs = constructEncryptedCredentialOfEachVersion(authorization, issuerProofOfType, issuerDid, issuerProofOfCredentialSubject, signingPrivateKey, publicKeyInfos, expirationDate);
+                            issuerProofOfCredentialVersionPairs = constructEncryptedCredentialOfEachVersion(authorization, issuerProofOfType, issuerDid, proofOfCredentailId, issuerProofOfCredentialSubject, signingPrivateKey, publicKeyInfos, expirationDate);
                             // add all proofOfCredentialVersionPairs to creds array
                             Array.prototype.push.apply(proofOfCreds, issuerProofOfCredentialVersionPairs);
                         }
@@ -376,7 +378,7 @@ exports.issueCredentials = function (authorization, issuerDid, subjectDid, crede
  * @param expirationDate
  * @returns
  */
-var constructCredentialOptions = function (type, issuer, credentialSubject, expirationDate) {
+var constructCredentialOptions = function (type, issuer, credentialId, credentialSubject, expirationDate) {
     // HACK ALERT: removing duplicate 'VerifiableCredential' if present in type string[]
     var typeList = ['VerifiableCredential'].concat(type); // Need to have some value in the "base" array so just using the keyword we are going to filter over.
     var types = typeList.filter(function (t) { return t !== 'VerifiableCredential'; });
@@ -385,7 +387,7 @@ var constructCredentialOptions = function (type, issuer, credentialSubject, expi
         issuer: issuer,
         type: types,
         expirationDate: expirationDate,
-        credentialId: helpers_1.getUUID()
+        credentialId: credentialId
     };
     return (credOpt);
 };
@@ -427,8 +429,8 @@ var constructProofOfCredentialOptions = function (type, issuer, credentialSubjec
  * @returns
  */
 // const constructEncryptedCredentialOfEachVersion = (authorization: string, type: string | string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, publicKeyInfos: PublicKeyInfo[], issuerPublicKeyInfos: PublicKeyInfo[], expirationDate?: Date): WithVersion<CredentialPair>[] => {
-var constructEncryptedCredentialOfEachVersion = function (authorization, type, issuer, credentialSubject, signingPrivateKey, publicKeyInfos, expirationDate) {
-    var credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, expirationDate);
+var constructEncryptedCredentialOfEachVersion = function (authorization, type, issuer, credentialId, credentialSubject, signingPrivateKey, publicKeyInfos, expirationDate) {
+    var credentialOptions = constructCredentialOptions(type, issuer, credentialId, credentialSubject, expirationDate);
     var results = [];
     logger_1.default.debug("credentialId's " + credentialOptions.credentialId + " credentialOptions: " + credentialOptions);
     // // Handle creating the CredentialSubject for the ProofOf credential, which does not have any credential data.

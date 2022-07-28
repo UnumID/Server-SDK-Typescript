@@ -299,9 +299,10 @@ export const issueCredentials = async (authorization: string, issuerDid: string,
 
     // construct the Credential's credentialSubject
     const credSubject: CredentialSubject = { id: subjectDid, ...credData };
+    const credentialId = getUUID();
 
     // construct the Credentials and their encrypted form for each supported version
-    const credentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credSubject, signingPrivateKey, publicKeyInfos, expirationDate);
+    const credentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, credSubject, signingPrivateKey, publicKeyInfos, expirationDate);
 
     // add all credentialVersionPairs to creds array
     Array.prototype.push.apply(creds, credentialVersionPairs);
@@ -311,7 +312,8 @@ export const issueCredentials = async (authorization: string, issuerDid: string,
      */
     const proofOfType = `ProofOf${type}`; // prefixing the type with ProofOf
     const proofOfCredentialSubject = { id: credSubject.id }; // no credential data for a ProofOf Credential
-    const proofOfCredentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, proofOfType, issuerDid, proofOfCredentialSubject, signingPrivateKey, publicKeyInfos, expirationDate);
+    const proofOfCredentailId = getUUID(); // proofOf credentials do not share a credentialId because different credential data (empty)
+    const proofOfCredentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, proofOfType, issuerDid, proofOfCredentailId, proofOfCredentialSubject, signingPrivateKey, publicKeyInfos, expirationDate);
 
     // add all proofOfCredentialVersionPairs to creds array
     Array.prototype.push.apply(proofOfCreds, proofOfCredentialVersionPairs);
@@ -321,7 +323,7 @@ export const issueCredentials = async (authorization: string, issuerDid: string,
       const issuerCredSubject: CredentialSubject = { id: issuerDid, ...credData };
 
       // construct the Credentials and their encrypted form for each supported version for the issuer
-      const issuerCredentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, issuerCredSubject, signingPrivateKey, issuerPublicKeyInfos, expirationDate);
+      const issuerCredentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, issuerCredSubject, signingPrivateKey, issuerPublicKeyInfos, expirationDate);
 
       // add all issuerCredentialVersionPairs to creds array
       Array.prototype.push.apply(creds, issuerCredentialVersionPairs);
@@ -331,7 +333,7 @@ export const issueCredentials = async (authorization: string, issuerDid: string,
        */
       const issuerProofOfType = `ProofOf${type}`; // prefixing the type with ProofOf
       const issuerProofOfCredentialSubject = { id: issuerCredSubject.id }; // no credential data for a ProofOf Credential
-      const issuerProofOfCredentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, issuerProofOfType, issuerDid, issuerProofOfCredentialSubject, signingPrivateKey, publicKeyInfos, expirationDate);
+      const issuerProofOfCredentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, issuerProofOfType, issuerDid, proofOfCredentailId, issuerProofOfCredentialSubject, signingPrivateKey, publicKeyInfos, expirationDate);
 
       // add all proofOfCredentialVersionPairs to creds array
       Array.prototype.push.apply(proofOfCreds, issuerProofOfCredentialVersionPairs);
@@ -373,7 +375,7 @@ export const issueCredentials = async (authorization: string, issuerDid: string,
  * @param expirationDate
  * @returns
  */
-const constructCredentialOptions = (type: string|string[], issuer: string, credentialSubject: CredentialSubject, expirationDate?: Date): CredentialOptions => {
+const constructCredentialOptions = (type: string|string[], issuer: string, credentialId: string, credentialSubject: CredentialSubject, expirationDate?: Date): CredentialOptions => {
   // HACK ALERT: removing duplicate 'VerifiableCredential' if present in type string[]
   const typeList: string[] = ['VerifiableCredential'].concat(type); // Need to have some value in the "base" array so just using the keyword we are going to filter over.
   const types = typeList.filter(t => t !== 'VerifiableCredential');
@@ -383,7 +385,7 @@ const constructCredentialOptions = (type: string|string[], issuer: string, crede
     issuer,
     type: types,
     expirationDate: expirationDate,
-    credentialId: getUUID()
+    credentialId
   };
 
   return (credOpt);
@@ -431,8 +433,8 @@ const constructProofOfCredentialOptions = (type: string|string[], issuer: string
  * @returns
  */
 // const constructEncryptedCredentialOfEachVersion = (authorization: string, type: string | string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, publicKeyInfos: PublicKeyInfo[], issuerPublicKeyInfos: PublicKeyInfo[], expirationDate?: Date): WithVersion<CredentialPair>[] => {
-const constructEncryptedCredentialOfEachVersion = (authorization: string, type: string | string[], issuer: string, credentialSubject: CredentialSubject, signingPrivateKey: string, publicKeyInfos: PublicKeyInfo[], expirationDate?: Date): WithVersion<CredentialPair>[] => {
-  const credentialOptions = constructCredentialOptions(type, issuer, credentialSubject, expirationDate);
+const constructEncryptedCredentialOfEachVersion = (authorization: string, type: string | string[], issuer: string, credentialId: string, credentialSubject: CredentialSubject, signingPrivateKey: string, publicKeyInfos: PublicKeyInfo[], expirationDate?: Date): WithVersion<CredentialPair>[] => {
+  const credentialOptions = constructCredentialOptions(type, issuer, credentialId, credentialSubject, expirationDate);
 
   const results: WithVersion<CredentialPair>[] = [];
 
