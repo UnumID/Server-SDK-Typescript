@@ -154,7 +154,6 @@ const constructUnsignedCredentialPbObj = (credOpts: CredentialOptions): Unsigned
 /**
  * Creates all the attributes associated with an unsigned credential.
  * @param credOpts CredentialOptions
- * @param credentialId UUIDv4
  * @return Unsigned credential
  */
 const constructUnsignedCredentialObj = (credOpts: CredentialOptions): UnsignedCredentialV2 => {
@@ -382,7 +381,6 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
     if (gte(version, '2.0.0') && lt(version, '3.0.0')) {
       // Create latest version of the UnsignedCredential object
       const unsignedCredential: UnsignedCredentialV2 = constructUnsignedCredentialObj(credentialOptions);
-      // const unsignedProofOfCredential: UnsignedCredentialV2 = constructUnsignedCredentialObj(proofOfCredentialOptions);
 
       // Create the signed Credential object from the unsignedCredential object
       const credential: CredentialV2 = constructSignedCredentialObj(unsignedCredential, signingPrivateKey);
@@ -431,7 +429,6 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
  * @param subjectDid
  * @returns
  */
-// const constructIssueCredentialOptions = (credential: Credential | CredentialPb, proofOfCredential: Credential | CredentialPb | undefined, publicKeyInfos: PublicKeyInfo[], subjectDid: string): IssueCredentialOptions => {
 const constructIssueCredentialOptions = (credential: Credential | CredentialPb, publicKeyInfos: PublicKeyInfo[], subjectDid: string): IssueCredentialOptions => {
   // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
   const encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos);
