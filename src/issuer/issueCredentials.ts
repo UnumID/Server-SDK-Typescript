@@ -389,6 +389,34 @@ const constructCredentialOptions = (type: string|string[], issuer: string, crede
 };
 
 /**
+ * Helper to construct a ProofOf Credential's CredentialOptions
+ * @param type
+ * @param issuer
+ * @param credentialSubject
+ * @param expirationDate
+ * @returns
+ */
+const constructProofOfCredentialOptions = (type: string|string[], issuer: string, credentialSubject: CredentialSubject, expirationDate?: Date): CredentialOptions => {
+  // HACK ALERT: removing duplicate 'VerifiableCredential' if present in type string[]
+  const typeList: string[] = ['VerifiableCredential'].concat(type); // Need to have some value in the "base" array so just using the keyword we are going to filter over.
+
+  // adding 'ProofOf' prefix to the type(s)
+  const types = typeList.filter(t => t !== 'VerifiableCredential').map(credType => `ProofOf${credType}`);
+
+  const credOpt: CredentialOptions = {
+    // Note: a proofOf credential has no data in the credentialSubject
+    credentialSubject: {
+      id: credentialSubject.id
+    },
+    issuer,
+    type: types,
+    expirationDate: expirationDate
+  };
+
+  return (credOpt);
+};
+
+/**
  * Helper to construct versioned CredentialPairs of each version.
  * Also, handles issuing credentials to the Issuer's DID if desired..
  * @param authorization
@@ -411,13 +439,8 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
 
   logger.debug(`credentialId's ${credentialId} credentialOptions: ${credentialOptions}`);
 
-  /**
-   * Handle creating the CredentialSubject for the ProofOf credential, which does not have any credential data.
-   */
-  const proofOfCredentialSubject = {
-    id: credentialSubject.id
-  };
-  const proofOfCredentialOptions = constructCredentialOptions(type, issuer, proofOfCredentialSubject, expirationDate);
+  // Handle creating the CredentialSubject for the ProofOf credential, which does not have any credential data.
+  const proofOfCredentialOptions = constructProofOfCredentialOptions(type, issuer, credentialSubject, expirationDate);
 
   /**
    * Need to loop through all versions except most recent so that can issued credentials could be backwards compatible with older holder versions.

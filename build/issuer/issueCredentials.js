@@ -407,6 +407,30 @@ var constructCredentialOptions = function (type, issuer, credentialSubject, expi
     return (credOpt);
 };
 /**
+ * Helper to construct a ProofOf Credential's CredentialOptions
+ * @param type
+ * @param issuer
+ * @param credentialSubject
+ * @param expirationDate
+ * @returns
+ */
+var constructProofOfCredentialOptions = function (type, issuer, credentialSubject, expirationDate) {
+    // HACK ALERT: removing duplicate 'VerifiableCredential' if present in type string[]
+    var typeList = ['VerifiableCredential'].concat(type); // Need to have some value in the "base" array so just using the keyword we are going to filter over.
+    // adding 'ProofOf' prefix to the type(s)
+    var types = typeList.filter(function (t) { return t !== 'VerifiableCredential'; }).map(function (credType) { return "ProofOf" + credType; });
+    var credOpt = {
+        // Note: a proofOf credential has no data in the credentialSubject
+        credentialSubject: {
+            id: credentialSubject.id
+        },
+        issuer: issuer,
+        type: types,
+        expirationDate: expirationDate
+    };
+    return (credOpt);
+};
+/**
  * Helper to construct versioned CredentialPairs of each version.
  * Also, handles issuing credentials to the Issuer's DID if desired..
  * @param authorization
@@ -425,13 +449,8 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
     // create a credentialId to be shared between all versions of the same credential
     var credentialId = helpers_1.getUUID();
     logger_1.default.debug("credentialId's " + credentialId + " credentialOptions: " + credentialOptions);
-    /**
-     * Handle creating the CredentialSubject for the ProofOf credential, which does not have any credential data.
-     */
-    var proofOfCredentialSubject = {
-        id: credentialSubject.id
-    };
-    var proofOfCredentialOptions = constructCredentialOptions(type, issuer, proofOfCredentialSubject, expirationDate);
+    // Handle creating the CredentialSubject for the ProofOf credential, which does not have any credential data.
+    var proofOfCredentialOptions = constructProofOfCredentialOptions(type, issuer, credentialSubject, expirationDate);
     /**
      * Need to loop through all versions except most recent so that can issued credentials could be backwards compatible with older holder versions.
      * However only care to return the most recent Credential type for customers to use.
