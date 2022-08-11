@@ -481,5 +481,9 @@ function validateCredentialDataList (credentialDataList: CredentialData[]) {
     if (!data.type) {
       throw new CustError(400, 'Credential Data needs to contain the credential type');
     }
+
+    if (data.id) {
+      throw new CustError(400, 'Credential Data has an invalid `id` key');
+    }
   }
 }
