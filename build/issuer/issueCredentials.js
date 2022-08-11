@@ -293,7 +293,7 @@ exports.issueCredentials = function (authorization, issuerDid, subjectDid, crede
                         // add all proofOfCredentialVersionPairs to creds array
                         Array.prototype.push.apply(proofOfCreds, proofOfCredentialVersionPairs);
                         if (issueCredentialsToSelf) {
-                            issuerCredSubject = __assign({ id: issuerDid }, credData);
+                            issuerCredSubject = __assign(__assign({}, credData), { id: issuerDid });
                             issuerCredentialVersionPairs = constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, issuerCredSubject, signingPrivateKey, issuerPublicKeyInfos, expirationDate);
                             // add all issuerCredentialVersionPairs to creds array
                             Array.prototype.push.apply(creds, issuerCredentialVersionPairs);
@@ -480,6 +480,9 @@ function validateCredentialDataList(credentialDataList) {
         var data = credentialDataList_1[_i];
         if (!data.type) {
             throw new error_1.CustError(400, 'Credential Data needs to contain the credential type');
+        }
+        if (data.id) {
+            throw new error_1.CustError(400, 'Credential Data has an invalid `id` key');
         }
     }
 }
