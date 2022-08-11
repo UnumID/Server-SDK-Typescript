@@ -229,6 +229,9 @@ var validateInputs = function (issuer, subjectDid, credentialDataList, signingPr
     if (typeof issuer !== 'string') {
         throw new error_1.CustError(400, 'issuer must be a string.');
     }
+    if (typeof subjectDid !== 'string') {
+        throw new error_1.CustError(400, 'subjectDid must be a string.');
+    }
     if (typeof signingPrivateKey !== 'string') {
         throw new error_1.CustError(400, 'signingPrivateKey must be a string.');
     }

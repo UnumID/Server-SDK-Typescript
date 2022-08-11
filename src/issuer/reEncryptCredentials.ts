@@ -1,13 +1,14 @@
 import { configData } from '../config';
 import { RESTData, UnumDto } from '../types';
 import { requireAuth } from '../requireAuth';
-import { Credential, JSONObj, CredentialPb, CredentialData, EncryptedCredentialDto } from '@unumid/types';
+import { Credential, JSONObj, CredentialPb, CredentialData, EncryptedCredentialDto, EncryptedCredentialEnrichedDto } from '@unumid/types';
 
 import { CustError } from '../utils/error';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
 import _ from 'lodash';
 import { doDecrypt } from '../utils/decrypt';
 import { issueCredentials } from './issueCredentials';
+import { sdkMajorVersion } from '../utils/constants';
 
 /**
  * Helper to facilitate an issuer re-encrypting any credentials it has issued to a target subject.
@@ -19,20 +20,30 @@ import { issueCredentials } from './issueCredentials';
  * @param encryptionPrivateKey
  * @param subjectDid
  */
-export const reEncryptCredentials = async (authorization: string, issuerDid: string, signingPrivateKey: string, encryptionPrivateKey: string, subjectDid: string): Promise<UnumDto<(CredentialPb | Credential)[]>> => {
+export const reEncryptCredentials = async (authorization: string, issuerDid: string, signingPrivateKey: string, encryptionPrivateKey: string, subjectDid: string, issuerEncryptionKeyId: string): Promise<UnumDto<(CredentialPb | Credential)[]>> => {
   // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
   requireAuth(authorization);
 
   // Validate inputs.
-  validateInputs(issuerDid, subjectDid, signingPrivateKey);
+  validateInputs(issuerDid, signingPrivateKey, encryptionPrivateKey, subjectDid, issuerEncryptionKeyId);
 
-  // // Get target Subject's DID document public keys for encrypting all the credentials issued.
-  // const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, subjectDid, 'RSA');
-  // const publicKeyInfos = publicKeyInfoResponse.body;
-  // authorization = publicKeyInfoResponse.authToken;
+  /**
+   * Not handling case with the issuer Enrollment Key Id is not passed currently.
+  if (!issuerEncryptionKeyId) {
+    // Get target Issuer's DID document public keys for the key id.
+    const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, subjectDid, 'RSA');
+    const publicKeyInfos = publicKeyInfoResponse.body;
+    authorization = publicKeyInfoResponse.authToken;
+  }
+  */
+
+  // create the did + fragment
+  const issuerDidWithFragment = `${issuerDid}#${issuerEncryptionKeyId}`;
 
   // get all the credentials issued by the issuer to the subject
-  const credentials: EncryptedCredentialDto[] = getRelevantCredentials(authorization, issuerDid, subjectDid); // TODO
+  const credentialsResponse: UnumDto<EncryptedCredentialEnrichedDto[]> = await getRelevantCredentials(authorization, issuerDidWithFragment, subjectDid);
+  authorization = credentialsResponse.authToken;
+  const credentials = credentialsResponse.body;
 
   // verify all the credentials
 
@@ -41,7 +52,7 @@ export const reEncryptCredentials = async (authorization: string, issuerDid: str
 
   for (const credential of credentials) {
     // decrypt the credential into a byte array
-    const decryptedCredentialBytes = await doDecrypt(encryptionPrivateKey, credential.data);
+    const decryptedCredentialBytes = await doDecrypt(encryptionPrivateKey, credential.encryptedCredential.data);
 
     // create a protobuf Credential object from the byte array
     const decryptedCredential = CredentialPb.decode(decryptedCredentialBytes);
@@ -57,10 +68,12 @@ export const reEncryptCredentials = async (authorization: string, issuerDid: str
   }
 
   // (re)issue the credentials to the target subject
-  const reissuedCredentials = issueCredentials(authorization, issuerDid, subjectDid, credentialData, signingPrivateKey, undefined, false);
+  const reissuedCredentials = await issueCredentials(authorization, issuerDid, subjectDid, credentialData, signingPrivateKey, undefined, false);
+
+  return reissuedCredentials;
 };
 
-function validateInputs (issuerDid: string, subjectDid: string, signingPrivateKey: string) {
+function validateInputs (issuerDid: string, signingPrivateKey: string, encryptionPrivateKey: string, subjectDid: string, issuerEncryptionKeyId: string) {
   if (!issuerDid) {
     throw new CustError(400, 'issuerDid is required.');
   }
@@ -71,6 +84,14 @@ function validateInputs (issuerDid: string, subjectDid: string, signingPrivateKe
 
   if (!signingPrivateKey) {
     throw new CustError(400, 'signingPrivateKey is required.');
+  }
+
+  if (!encryptionPrivateKey) {
+    throw new CustError(400, 'encryptionPrivateKey is required.');
+  }
+
+  if (!issuerEncryptionKeyId) {
+    throw new CustError(400, 'issuerEncryptionKeyId is required.');
   }
 
   if (typeof issuerDid !== 'string') {
@@ -84,6 +105,14 @@ function validateInputs (issuerDid: string, subjectDid: string, signingPrivateKe
   if (typeof signingPrivateKey !== 'string') {
     throw new CustError(400, 'signingPrivateKey must be a string.');
   }
+
+  if (typeof encryptionPrivateKey !== 'string') {
+    throw new CustError(400, 'encryptionPrivateKey must be a string.');
+  }
+
+  if (typeof issuerEncryptionKeyId !== 'string') {
+    throw new CustError(400, 'issuerEncryptionKeyId must be a string.');
+  }
 }
 
 /**
@@ -93,20 +122,19 @@ function validateInputs (issuerDid: string, subjectDid: string, signingPrivateKe
  * @param subjectDid
  * @returns
  */
-const getRelevantCredentials = async (authorization: string, issuerDid: string, subjectDid: string) :Promise<UnumDto<void>> => {
+const getRelevantCredentials = async (authorization: string, issuerDidWithFragment: string, subjectDid: string) :Promise<UnumDto<EncryptedCredentialEnrichedDto[]>> => {
   const restData: RESTData = {
-    method: 'POST',
+    method: 'GET',
     baseUrl: configData.SaaSUrl,
-    endPoint: 'credentialsRepositoryV2/',
-    header: { Authorization: authorization, version },
-    data: encryptedCredentialUploadOptions
+    endPoint: `credentialReIssuanceRepository/${issuerDidWithFragment}?subject=${subjectDid}&version=${sdkMajorVersion}`,
+    header: { Authorization: authorization, version: sdkMajorVersion }
   };
 
   const restResp: JSONObj = await makeNetworkRequest(restData);
 
   const authToken: string = handleAuthTokenHeader(restResp, authorization as string);
 
-  const issuedCredential: UnumDto<void> = { body: restResp.body, authToken };
+  const encryptedCredentials: UnumDto<EncryptedCredentialEnrichedDto[]> = { body: restResp.body, authToken };
 
-  return issuedCredential;
+  return encryptedCredentials;
 };
