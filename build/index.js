@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.convertCredentialSubject = exports.createProofPb = exports.createProof = exports.verifySignedDid = exports.extractCredentialInfo = exports.CustError = exports.getVersionedRequest = exports.getRequest = exports.checkCredentialStatuses = exports.verifyPresentation = exports.sendSms = exports.sendRequest = exports.sendEmail = exports.registerVerifier = exports.revokeAllCredentials = exports.verifySubjectCredentialRequests = exports.updateCredentialStatuses = exports.updateCredentialStatus = exports.issueCredentials = exports.registerIssuer = void 0;
+exports.convertCredentialSubject = exports.createProofPb = exports.createProof = exports.verifySignedDid = exports.extractCredentialInfo = exports.CustError = exports.getVersionedRequest = exports.getRequest = exports.checkCredentialStatuses = exports.verifyPresentation = exports.sendSms = exports.sendRequest = exports.sendEmail = exports.registerVerifier = exports.revokeAllCredentials = exports.verifySubjectCredentialRequests = exports.updateCredentialStatuses = exports.updateCredentialStatus = exports.reEncryptCredentials = exports.issueCredentials = exports.registerIssuer = void 0;
 var registerVerifier_1 = require("./verifier/registerVerifier");
 Object.defineProperty(exports, "registerVerifier", { enumerable: true, get: function () { return registerVerifier_1.registerVerifier; } });
 var sendEmail_1 = require("./verifier/sendEmail");
@@ -40,4 +40,6 @@ var updateCredentialStatuses_1 = require("./issuer/updateCredentialStatuses");
 Object.defineProperty(exports, "updateCredentialStatuses", { enumerable: true, get: function () { return updateCredentialStatuses_1.updateCredentialStatuses; } });
 var checkCredentialStatuses_1 = require("./verifier/checkCredentialStatuses");
 Object.defineProperty(exports, "checkCredentialStatuses", { enumerable: true, get: function () { return checkCredentialStatuses_1.checkCredentialStatuses; } });
+var reEncryptCredentials_1 = require("./issuer/reEncryptCredentials");
+Object.defineProperty(exports, "reEncryptCredentials", { enumerable: true, get: function () { return reEncryptCredentials_1.reEncryptCredentials; } });
 //# sourceMappingURL=index.js.map

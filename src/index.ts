@@ -19,11 +19,13 @@ import { verifySignedDid } from './utils/verifyDidDocument';
 import { revokeAllCredentials } from './issuer/revokeAllCredentials';
 import { updateCredentialStatuses } from './issuer/updateCredentialStatuses';
 import { checkCredentialStatuses } from './verifier/checkCredentialStatuses';
+import { reEncryptCredentials } from './issuer/reEncryptCredentials';
 
 export {
   // Issuer Functions
   registerIssuer,
   issueCredentials,
+  reEncryptCredentials,
   updateCredentialStatus,
   updateCredentialStatuses,
   verifySubjectCredentialRequests,
