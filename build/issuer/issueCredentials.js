@@ -337,7 +337,7 @@ exports.issueCredentials = function (authorization, issuerDid, subjectDid, crede
                     return [3 /*break*/, 4];
                 case 7:
                     latestVersion = versionList_1.versionList[versionList_1.versionList.length - 1];
-                    resultantCredentials = creds.filter(function (credPair) { return credPair.version === latestVersion; }).map(function (credPair) { return credPair.credential; });
+                    resultantCredentials = creds.filter(function (credPair) { return (credPair.version === latestVersion && credPair.encryptedCredential.subject === subjectDid); }).map(function (credPair) { return credPair.credential; });
                     return [2 /*return*/, {
                             authToken: authorization,
                             body: resultantCredentials

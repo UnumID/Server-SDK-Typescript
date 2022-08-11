@@ -321,10 +321,10 @@ export const issueCredentials = async (authorization: string, issuerDid: string,
     authorization = proofOfResult.authToken;
   }
 
-  // grab all the credentials of the latest version from the CredentialPairs for the response
+  // grab all the credentials of the latest version and that were issued to the subject (to prevent duplicates if also "issuedToSelf", the issuer) from the CredentialPairs for the response
   // Note: not returning the ProofOf credentials.
   const latestVersion = versionList[versionList.length - 1];
-  const resultantCredentials: (Credential | CredentialPb)[] = creds.filter(credPair => credPair.version === latestVersion).map(credPair => credPair.credential);
+  const resultantCredentials: (Credential | CredentialPb)[] = creds.filter(credPair => (credPair.version === latestVersion && credPair.encryptedCredential.subject === subjectDid)).map(credPair => credPair.credential);
 
   return {
     authToken: authorization,

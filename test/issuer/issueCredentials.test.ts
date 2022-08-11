@@ -168,7 +168,7 @@ describe('issueCredentials', () => {
   // });
 
   it('returns the credentials', () => {
-    expect(response.length).toEqual(4);
+    expect(response.length).toEqual(2);
     expect(response[0].id).toBeDefined();
     expect(response[0].credentialStatus).toBeDefined();
     expect(response[0].credentialSubject).toBeDefined();
