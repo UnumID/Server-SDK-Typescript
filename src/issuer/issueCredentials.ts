@@ -281,7 +281,7 @@ export const issueCredentials = async (authorization: string, issuerDid: string,
 
     if (issueCredentialsToSelf) {
       // construct the Credential's credentialSubject for the issuerDid
-      const issuerCredSubject: CredentialSubject = { id: issuerDid, ...credData };
+      const issuerCredSubject: CredentialSubject = { ...credData, id: issuerDid };
 
       // construct the Credentials and their encrypted form for each supported version for the issuer
       const issuerCredentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, issuerCredSubject, signingPrivateKey, issuerPublicKeyInfos, expirationDate);
@@ -480,6 +480,10 @@ function validateCredentialDataList (credentialDataList: CredentialData[]) {
   for (const data of credentialDataList) {
     if (!data.type) {
       throw new CustError(400, 'Credential Data needs to contain the credential type');
+    }
+
+    if (data.id) {
+      throw new CustError(400, 'Credential Data has an invalid `id` key');
     }
   }
 }
