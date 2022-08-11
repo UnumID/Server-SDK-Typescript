@@ -281,7 +281,7 @@ export const issueCredentials = async (authorization: string, issuerDid: string,
 
     if (issueCredentialsToSelf) {
       // construct the Credential's credentialSubject for the issuerDid
-      const issuerCredSubject: CredentialSubject = { id: issuerDid, ...credData };
+      const issuerCredSubject: CredentialSubject = { ...credData, id: issuerDid };
 
       // construct the Credentials and their encrypted form for each supported version for the issuer
       const issuerCredentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, issuerCredSubject, signingPrivateKey, issuerPublicKeyInfos, expirationDate);

@@ -293,7 +293,7 @@ exports.issueCredentials = function (authorization, issuerDid, subjectDid, crede
                         // add all proofOfCredentialVersionPairs to creds array
                         Array.prototype.push.apply(proofOfCreds, proofOfCredentialVersionPairs);
                         if (issueCredentialsToSelf) {
-                            issuerCredSubject = __assign({ id: issuerDid }, credData);
+                            issuerCredSubject = __assign(__assign({}, credData), { id: issuerDid });
                             issuerCredentialVersionPairs = constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, issuerCredSubject, signingPrivateKey, issuerPublicKeyInfos, expirationDate);
                             // add all issuerCredentialVersionPairs to creds array
                             Array.prototype.push.apply(creds, issuerCredentialVersionPairs);
