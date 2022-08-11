@@ -254,7 +254,7 @@ var validateInputs = function (issuer, subjectDid, credentialDataList, signingPr
 exports.issueCredentials = function (authorization, issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate, issueCredentialsToSelf) {
     if (issueCredentialsToSelf === void 0) { issueCredentialsToSelf = true; }
     return __awaiter(void 0, void 0, void 0, function () {
-        var publicKeyInfoResponse, publicKeyInfos, issuerPublicKeyInfos, publicKeyInfoResponse_1, creds, proofOfCreds, i, type, credData, credSubject, credentialId, credentialVersionPairs, proofOfType, proofOfCredentialSubject, proofOfCredentailId, proofOfCredentialVersionPairs, issuerCredSubject, issuerCredentialVersionPairs, issuerProofOfType, issuerProofOfCredentialSubject, issuerProofOfCredentialVersionPairs, _loop_1, _i, versionList_2, version, latestVersion, resultantCredentials;
+        var publicKeyInfoResponse, publicKeyInfos, issuerPublicKeyInfos, publicKeyInfoResponse_1, creds, proofOfCreds, i, type, credData, credSubject, credentialId, credentialVersionPairs, proofOfType, proofOfCredentialSubject, proofOfCredentailId, proofOfCredentialVersionPairs, issuerCredSubject, issuerCredentialVersionPairs, issuerProofOfType, issuerProofOfCredentialSubject, issuerProofOfCredentialVersionPairs, credentialResults, _loop_1, _i, versionList_2, version, resolvedResults, latestVersion, resultantCredentials;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -304,38 +304,29 @@ exports.issueCredentials = function (authorization, issuerDid, subjectDid, crede
                             Array.prototype.push.apply(proofOfCreds, issuerProofOfCredentialVersionPairs);
                         }
                     }
+                    credentialResults = [];
                     _loop_1 = function (version) {
-                        var resultantEncryptedCredentials, result, proofOfResultantEncryptedCredentials, proofOfResult;
-                        return __generator(this, function (_a) {
-                            switch (_a.label) {
-                                case 0:
-                                    resultantEncryptedCredentials = creds.filter(function (credPair) { return credPair.version === version; }).map(function (credPair) { return credPair.encryptedCredential; });
-                                    return [4 /*yield*/, sendEncryptedCredentials(authorization, { credentialRequests: resultantEncryptedCredentials }, version)];
-                                case 1:
-                                    result = _a.sent();
-                                    authorization = result.authToken;
-                                    proofOfResultantEncryptedCredentials = proofOfCreds.filter(function (credPair) { return credPair.version === version; }).map(function (credPair) { return credPair.encryptedCredential; });
-                                    return [4 /*yield*/, sendEncryptedCredentials(authorization, { credentialRequests: proofOfResultantEncryptedCredentials }, version)];
-                                case 2:
-                                    proofOfResult = _a.sent();
-                                    authorization = proofOfResult.authToken;
-                                    return [2 /*return*/];
-                            }
-                        });
+                        // only grab the encrypted credentials of the current version
+                        var resultantEncryptedCredentials = creds.filter(function (credPair) { return credPair.version === version; }).map(function (credPair) { return credPair.encryptedCredential; });
+                        credentialResults.push(sendEncryptedCredentials(authorization, { credentialRequests: resultantEncryptedCredentials }, version));
+                        // const result = await sendEncryptedCredentials(authorization, { credentialRequests: resultantEncryptedCredentials }, version);
+                        // authorization = result.authToken;
+                        // only grab the proof of encrypted credentials of the current version
+                        var proofOfResultantEncryptedCredentials = proofOfCreds.filter(function (credPair) { return credPair.version === version; }).map(function (credPair) { return credPair.encryptedCredential; });
+                        // const proofOfResult = await sendEncryptedCredentials(authorization, { credentialRequests: proofOfResultantEncryptedCredentials }, version);
+                        // authorization = proofOfResult.authToken;
+                        credentialResults.push(sendEncryptedCredentials(authorization, { credentialRequests: proofOfResultantEncryptedCredentials }, version));
                     };
-                    _i = 0, versionList_2 = versionList_1.versionList;
-                    _a.label = 4;
+                    for (_i = 0, versionList_2 = versionList_1.versionList; _i < versionList_2.length; _i++) {
+                        version = versionList_2[_i];
+                        _loop_1(version);
+                    }
+                    return [4 /*yield*/, Promise.all(credentialResults)];
                 case 4:
-                    if (!(_i < versionList_2.length)) return [3 /*break*/, 7];
-                    version = versionList_2[_i];
-                    return [5 /*yield**/, _loop_1(version)];
+                    resolvedResults = _a.sent();
+                    return [4 /*yield*/, resolvedResults[resolvedResults.length - 1]];
                 case 5:
-                    _a.sent();
-                    _a.label = 6;
-                case 6:
-                    _i++;
-                    return [3 /*break*/, 4];
-                case 7:
+                    authorization = (_a.sent()).authToken;
                     latestVersion = versionList_1.versionList[versionList_1.versionList.length - 1];
                     resultantCredentials = creds.filter(function (credPair) { return credPair.version === latestVersion; }).map(function (credPair) { return credPair.credential; });
                     return [2 /*return*/, {

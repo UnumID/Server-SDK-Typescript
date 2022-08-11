@@ -303,19 +303,25 @@ export const issueCredentials = async (authorization: string, issuerDid: string,
 
   // loop through the versions list and send all the encrypted credentials to the saas grouped by version and credentialIds.
   // Note: proofOf Credentials have a separate credentialId but the issuerCredentials share one (because same credential data)
+  const credentialResults = [];
   for (const version of versionList) {
     // only grab the encrypted credentials of the current version
     const resultantEncryptedCredentials: IssueCredentialOptions[] = creds.filter(credPair => credPair.version === version).map(credPair => credPair.encryptedCredential);
 
-    const result = await sendEncryptedCredentials(authorization, { credentialRequests: resultantEncryptedCredentials }, version);
-    authorization = result.authToken;
+    credentialResults.push(sendEncryptedCredentials(authorization, { credentialRequests: resultantEncryptedCredentials }, version));
+    // const result = await sendEncryptedCredentials(authorization, { credentialRequests: resultantEncryptedCredentials }, version);
+    // authorization = result.authToken;
 
     // only grab the proof of encrypted credentials of the current version
     const proofOfResultantEncryptedCredentials: IssueCredentialOptions[] = proofOfCreds.filter(credPair => credPair.version === version).map(credPair => credPair.encryptedCredential);
 
-    const proofOfResult = await sendEncryptedCredentials(authorization, { credentialRequests: proofOfResultantEncryptedCredentials }, version);
-    authorization = proofOfResult.authToken;
+    // const proofOfResult = await sendEncryptedCredentials(authorization, { credentialRequests: proofOfResultantEncryptedCredentials }, version);
+    // authorization = proofOfResult.authToken;
+    credentialResults.push(sendEncryptedCredentials(authorization, { credentialRequests: proofOfResultantEncryptedCredentials }, version));
   }
+
+  const resolvedResults = await Promise.all(credentialResults);
+  authorization = (await resolvedResults[resolvedResults.length - 1]).authToken;
 
   // grab all the credentials of the latest version from the CredentialPairs for the response
   // Note: not returning the ProofOf credentials.
