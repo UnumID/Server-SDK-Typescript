@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyCredential = void 0;
+exports.verifyCredentialHelper = exports.verifyCredential = void 0;
 var library_crypto_1 = require("@unumid/library-crypto");
 var lodash_1 = require("lodash");
 var logger_1 = __importDefault(require("../logger"));
@@ -53,7 +53,7 @@ var __1 = require("..");
  * @param authorization
  */
 exports.verifyCredential = function (authorization, credential) { return __awaiter(void 0, void 0, void 0, function () {
-    var proof, publicKeyInfoResponse, publicKeyInfoList, authToken, data, bytes, isVerified, _i, publicKeyInfoList_1, publicKeyInfo, result, result;
+    var proof, publicKeyInfoResponse, publicKeyInfoList, authToken, isVerified;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -66,39 +66,46 @@ exports.verifyCredential = function (authorization, credential) { return __await
                 publicKeyInfoResponse = _a.sent();
                 publicKeyInfoList = publicKeyInfoResponse.body;
                 authToken = publicKeyInfoResponse.authToken;
-                data = lodash_1.omit(credential, 'proof');
-                try {
-                    bytes = types_1.UnsignedCredentialPb.encode(data).finish();
-                    isVerified = false;
-                    // check all the public keys to see if any work, stop if one does
-                    for (_i = 0, publicKeyInfoList_1 = publicKeyInfoList; _i < publicKeyInfoList_1.length; _i++) {
-                        publicKeyInfo = publicKeyInfoList_1[_i];
-                        // verify the signature
-                        isVerified = verify_1.doVerify(proof.signatureValue, bytes, publicKeyInfo);
-                        if (isVerified)
-                            break;
-                    }
-                    result = {
+                isVerified = exports.verifyCredentialHelper(credential, publicKeyInfoList);
+                return [2 /*return*/, {
                         authToken: authToken,
                         body: isVerified
-                    };
-                    return [2 /*return*/, result];
-                }
-                catch (e) {
-                    if (e instanceof library_crypto_1.CryptoError) {
-                        logger_1.default.error('Crypto error verifying the credential signature', e);
-                    }
-                    else {
-                        logger_1.default.error("Error verifying credential " + credential.id + " signature", e);
-                    }
-                    result = {
-                        authToken: authToken,
-                        body: false
-                    };
-                    return [2 /*return*/, result];
-                }
-                return [2 /*return*/];
+                    }];
         }
     });
 }); };
+/**
+ * Used to verify the credential signature given the corresponding Did document's public key.
+ * @param credential
+ * @param authorization
+ */
+exports.verifyCredentialHelper = function (credential, publicKeyInfoList) {
+    var proof = credential.proof;
+    if (!proof) {
+        throw new __1.CustError(400, "Credential " + credential.id + " does not contain a proof attribute.");
+    }
+    var data = lodash_1.omit(credential, 'proof');
+    try {
+        var bytes = types_1.UnsignedCredentialPb.encode(data).finish();
+        var isVerified = false;
+        // check all the public keys to see if any work, stop if one does
+        for (var _i = 0, publicKeyInfoList_1 = publicKeyInfoList; _i < publicKeyInfoList_1.length; _i++) {
+            var publicKeyInfo = publicKeyInfoList_1[_i];
+            // verify the signature
+            isVerified = verify_1.doVerify(proof.signatureValue, bytes, publicKeyInfo);
+            if (isVerified)
+                return true;
+        }
+        return false;
+    }
+    catch (e) {
+        if (e instanceof library_crypto_1.CryptoError) {
+            logger_1.default.error('Crypto error verifying the credential signature', e);
+        }
+        else {
+            logger_1.default.error("Error verifying credential " + credential.id + " signature", e);
+        }
+        return false;
+    }
+};
 //# sourceMappingURL=verifyCredential.js.map

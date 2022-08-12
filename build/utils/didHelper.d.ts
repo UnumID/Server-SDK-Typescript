@@ -15,5 +15,6 @@ export declare const getDIDDoc: (baseUrl: string, authorization: string, did: st
  * @param type DidKeyType
  */
 export declare const getKeysFromDIDDoc: (didDocument: DidDocument, type: DidKeyType) => PublicKeyInfo[];
-export declare const getDidDocPublicKeys: (authorization: string, subjectDid: string, type: DidKeyType) => Promise<UnumDto<PublicKeyInfo[]>>;
+export declare const getDidDocPublicKeys: (authorization: string, targetDid: string, type: DidKeyType) => Promise<UnumDto<PublicKeyInfo[]>>;
+export declare const getDidDocPublicKey: (authorization: string, targetDidWithKeyId: string) => Promise<UnumDto<PublicKeyInfo>>;
 //# sourceMappingURL=didHelper.d.ts.map

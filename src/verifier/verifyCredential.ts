@@ -26,6 +26,26 @@ export const verifyCredential = async (authorization: string, credential: Creden
   const publicKeyInfoList: PublicKeyInfo[] = publicKeyInfoResponse.body;
   const authToken = publicKeyInfoResponse.authToken;
 
+  const isVerified = verifyCredentialHelper(credential, publicKeyInfoList);
+
+  return {
+    authToken,
+    body: isVerified
+  };
+};
+
+/**
+ * Used to verify the credential signature given the corresponding Did document's public key.
+ * @param credential
+ * @param authorization
+ */
+export const verifyCredentialHelper = (credential: CredentialPb, publicKeyInfoList: PublicKeyInfo[]): boolean => {
+  const { proof } = credential;
+
+  if (!proof) {
+    throw new CustError(400, `Credential ${credential.id} does not contain a proof attribute.`);
+  }
+
   const data: UnsignedCredentialPb = omit(credential, 'proof');
 
   try {
@@ -37,15 +57,10 @@ export const verifyCredential = async (authorization: string, credential: Creden
     for (const publicKeyInfo of publicKeyInfoList) {
       // verify the signature
       isVerified = doVerify(proof.signatureValue, bytes, publicKeyInfo);
-      if (isVerified) break;
+      if (isVerified) return true;
     }
 
-    const result: UnumDto<boolean> = {
-      authToken,
-      body: isVerified
-    };
-
-    return result;
+    return false;
   } catch (e) {
     if (e instanceof CryptoError) {
       logger.error('Crypto error verifying the credential signature', e);
@@ -53,12 +68,6 @@ export const verifyCredential = async (authorization: string, credential: Creden
       logger.error(`Error verifying credential ${credential.id} signature`, e);
     }
 
-    // need to return the UnumDto with the (potentially) updated authToken
-    const result: UnumDto<boolean> = {
-      authToken,
-      body: false
-    };
-
-    return result;
+    return false;
   }
 };

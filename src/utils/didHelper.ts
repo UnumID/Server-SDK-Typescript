@@ -49,18 +49,17 @@ export const getKeysFromDIDDoc = (didDocument: DidDocument, type: DidKeyType): P
   return publicKeyInfos;
 };
 
-export const getDidDocPublicKeys = async (authorization: string, subjectDid: string, type: DidKeyType): Promise<UnumDto<PublicKeyInfo[]>> => {
+export const getDidDocPublicKeys = async (authorization: string, targetDid: string, type: DidKeyType): Promise<UnumDto<PublicKeyInfo[]>> => {
   // resolve the subject's DID
-  const didDocResponse = await getDIDDoc(configData.SaaSUrl, authorization, subjectDid);
+  const didDocResponse = await getDIDDoc(configData.SaaSUrl, authorization, targetDid);
 
-  logger.debug(`DidDoc repsonse: ${JSON.stringify(didDocResponse)}`);
+  logger.debug(`DidDoc response: ${JSON.stringify(didDocResponse)}`);
 
   if (didDocResponse instanceof Error) {
     throw didDocResponse;
   }
 
-  // const did = subjectDid.split('#')[0];
-  const didKeyId = subjectDid.split('#')[1];
+  const didKeyId = targetDid.split('#')[1];
 
   let publicKeyInfoList: PublicKeyInfo[];
 
@@ -80,7 +79,7 @@ export const getDidDocPublicKeys = async (authorization: string, subjectDid: str
   // const publicKeyInfos = getKeysFromDIDDoc(didDocResponse.body, 'RSA');
 
   if (publicKeyInfoList.length === 0) {
-    throw new CustError(404, `${type} public keys not found for the DID ${subjectDid}`);
+    throw new CustError(404, `${type} public keys not found for the DID ${targetDid}`);
   }
 
   const authToken: string = handleAuthTokenHeader(didDocResponse, authorization);
@@ -88,5 +87,28 @@ export const getDidDocPublicKeys = async (authorization: string, subjectDid: str
   return {
     authToken,
     body: publicKeyInfoList
+  };
+};
+
+export const getDidDocPublicKey = async (authorization: string, targetDidWithKeyId: string): Promise<UnumDto<PublicKeyInfo>> => {
+  // ensure the did actually has a fragment (aka key id) with it
+  if (targetDidWithKeyId.split('#').length < 2) {
+    throw new CustError(400, `Did ${targetDidWithKeyId} does not have a key id. Need to use the getDidDocPublicKey helper.`);
+  }
+
+  // resolve the subject's DID
+  const didDocResponse = await getDIDDoc(configData.SaaSUrl, authorization, targetDidWithKeyId);
+
+  logger.debug(`DidDoc by keyId response: ${JSON.stringify(didDocResponse)}`);
+
+  if (didDocResponse instanceof Error) {
+    throw didDocResponse;
+  }
+
+  const authToken: string = handleAuthTokenHeader(didDocResponse, authorization);
+
+  return {
+    authToken,
+    body: didDocResponse.body as PublicKeyInfo
   };
 };

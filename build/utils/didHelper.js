@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getDidDocPublicKeys = exports.getKeysFromDIDDoc = exports.getDIDDoc = void 0;
+exports.getDidDocPublicKey = exports.getDidDocPublicKeys = exports.getKeysFromDIDDoc = exports.getDIDDoc = void 0;
 var error_1 = require("./error");
 var logger_1 = __importDefault(require("../logger"));
 var networkRequestHelper_1 = require("./networkRequestHelper");
@@ -89,18 +89,18 @@ exports.getKeysFromDIDDoc = function (didDocument, type) {
     }
     return publicKeyInfos;
 };
-exports.getDidDocPublicKeys = function (authorization, subjectDid, type) { return __awaiter(void 0, void 0, void 0, function () {
+exports.getDidDocPublicKeys = function (authorization, targetDid, type) { return __awaiter(void 0, void 0, void 0, function () {
     var didDocResponse, didKeyId, publicKeyInfoList, didDoc, authToken;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4 /*yield*/, exports.getDIDDoc(config_1.configData.SaaSUrl, authorization, subjectDid)];
+            case 0: return [4 /*yield*/, exports.getDIDDoc(config_1.configData.SaaSUrl, authorization, targetDid)];
             case 1:
                 didDocResponse = _a.sent();
-                logger_1.default.debug("DidDoc repsonse: " + JSON.stringify(didDocResponse));
+                logger_1.default.debug("DidDoc response: " + JSON.stringify(didDocResponse));
                 if (didDocResponse instanceof Error) {
                     throw didDocResponse;
                 }
-                didKeyId = subjectDid.split('#')[1];
+                didKeyId = targetDid.split('#')[1];
                 if (!didKeyId) return [3 /*break*/, 3];
                 return [4 /*yield*/, didDocResponse.body];
             case 2:
@@ -120,12 +120,36 @@ exports.getDidDocPublicKeys = function (authorization, subjectDid, type) { retur
                 // // get subject's public key info from its DID document
                 // const publicKeyInfos = getKeysFromDIDDoc(didDocResponse.body, 'RSA');
                 if (publicKeyInfoList.length === 0) {
-                    throw new error_1.CustError(404, type + " public keys not found for the DID " + subjectDid);
+                    throw new error_1.CustError(404, type + " public keys not found for the DID " + targetDid);
                 }
                 authToken = networkRequestHelper_1.handleAuthTokenHeader(didDocResponse, authorization);
                 return [2 /*return*/, {
                         authToken: authToken,
                         body: publicKeyInfoList
+                    }];
+        }
+    });
+}); };
+exports.getDidDocPublicKey = function (authorization, targetDidWithKeyId) { return __awaiter(void 0, void 0, void 0, function () {
+    var didDocResponse, authToken;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                // ensure the did actually has a fragment (aka key id) with it
+                if (targetDidWithKeyId.split('#').length < 2) {
+                    throw new error_1.CustError(400, "Did " + targetDidWithKeyId + " does not have a key id. Need to use the getDidDocPublicKey helper.");
+                }
+                return [4 /*yield*/, exports.getDIDDoc(config_1.configData.SaaSUrl, authorization, targetDidWithKeyId)];
+            case 1:
+                didDocResponse = _a.sent();
+                logger_1.default.debug("DidDoc by keyId response: " + JSON.stringify(didDocResponse));
+                if (didDocResponse instanceof Error) {
+                    throw didDocResponse;
+                }
+                authToken = networkRequestHelper_1.handleAuthTokenHeader(didDocResponse, authorization);
+                return [2 /*return*/, {
+                        authToken: authToken,
+                        body: didDocResponse.body
                     }];
         }
     });

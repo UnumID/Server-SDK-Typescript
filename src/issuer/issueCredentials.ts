@@ -204,6 +204,10 @@ const validateInputs = (issuer: string, subjectDid: string, credentialDataList: 
     throw new CustError(400, 'issuer must be a string.');
   }
 
+  if (typeof subjectDid !== 'string') {
+    throw new CustError(400, 'subjectDid must be a string.');
+  }
+
   if (typeof signingPrivateKey !== 'string') {
     throw new CustError(400, 'signingPrivateKey must be a string.');
   }

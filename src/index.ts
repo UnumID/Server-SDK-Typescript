@@ -19,11 +19,14 @@ import { verifySignedDid } from './utils/verifyDidDocument';
 import { revokeAllCredentials } from './issuer/revokeAllCredentials';
 import { updateCredentialStatuses } from './issuer/updateCredentialStatuses';
 import { checkCredentialStatuses } from './verifier/checkCredentialStatuses';
+import { reEncryptCredentials } from './issuer/reEncryptCredentials';
+import { extractCredentialType } from './utils/extractCredentialType';
 
 export {
   // Issuer Functions
   registerIssuer,
   issueCredentials,
+  reEncryptCredentials,
   updateCredentialStatus,
   updateCredentialStatuses,
   verifySubjectCredentialRequests,
@@ -53,6 +56,7 @@ export {
   CredentialInfo,
   // Util Functions
   extractCredentialInfo,
+  extractCredentialType,
   verifySignedDid,
   createProof,
   createProofPb,
