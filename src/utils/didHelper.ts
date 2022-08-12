@@ -90,6 +90,12 @@ export const getDidDocPublicKeys = async (authorization: string, targetDid: stri
   };
 };
 
+/**
+ * Helper to get a DID Doc key. Requires a did with a key id.
+ * @param authorization
+ * @param targetDidWithKeyId
+ * @returns
+ */
 export const getDidDocPublicKey = async (authorization: string, targetDidWithKeyId: string): Promise<UnumDto<PublicKeyInfo>> => {
   // ensure the did actually has a fragment (aka key id) with it
   if (targetDidWithKeyId.split('#').length < 2) {

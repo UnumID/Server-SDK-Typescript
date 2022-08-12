@@ -10,7 +10,7 @@ import { doVerify } from '../utils/verify';
 import { CustError } from '..';
 
 /**
- * Used to verify the credential signature given the corresponding Did document's public key.
+ * Used to verify the credential signature after fetching the Did document's public key(s).
  * @param credential
  * @param authorization
  */
@@ -35,7 +35,7 @@ export const verifyCredential = async (authorization: string, credential: Creden
 };
 
 /**
- * Used to verify the credential signature given the corresponding Did document's public key.
+ * Used to verify the credential signature given the corresponding Did document's public key(s).
  * @param credential
  * @param authorization
  */
