@@ -16,5 +16,11 @@ export declare const getDIDDoc: (baseUrl: string, authorization: string, did: st
  */
 export declare const getKeysFromDIDDoc: (didDocument: DidDocument, type: DidKeyType) => PublicKeyInfo[];
 export declare const getDidDocPublicKeys: (authorization: string, targetDid: string, type: DidKeyType) => Promise<UnumDto<PublicKeyInfo[]>>;
+/**
+ * Helper to get a DID Doc key. Requires a did with a key id.
+ * @param authorization
+ * @param targetDidWithKeyId
+ * @returns
+ */
 export declare const getDidDocPublicKey: (authorization: string, targetDidWithKeyId: string) => Promise<UnumDto<PublicKeyInfo>>;
 //# sourceMappingURL=didHelper.d.ts.map

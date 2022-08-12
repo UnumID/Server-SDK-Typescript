@@ -74,8 +74,10 @@ var didHelper_1 = require("../utils/didHelper");
  * @param signingPrivateKey
  * @param encryptionPrivateKey
  * @param subjectDid
+ * @param issuerEncryptionKeyId
+ * @param credentialTypes
  */
-exports.reEncryptCredentials = function (authorization, issuerDid, signingPrivateKey, encryptionPrivateKey, subjectDid, issuerEncryptionKeyId, credentialTypes) {
+exports.reEncryptCredentials = function (authorization, issuerDid, signingPrivateKey, encryptionPrivateKey, issuerEncryptionKeyId, subjectDid, credentialTypes) {
     if (credentialTypes === void 0) { credentialTypes = []; }
     return __awaiter(void 0, void 0, void 0, function () {
         var issuerDidWithFragment, credentialsResponse, credentials, credentialDataList, publicKeyInfoResponse, publicKeyInfo, authToken, _i, credentials_1, credential, decryptedCredentialBytes, decryptedCredential, isVerified, credentialSubject, credentialData, reissuedCredentials;
@@ -173,6 +175,7 @@ function validateInputs(issuerDid, signingPrivateKey, encryptionPrivateKey, subj
  * @param authorization
  * @param issuerDid w/ keyId
  * @param subjectDid
+ * @param credentialTypes
  * @returns
  */
 var getRelevantCredentials = function (authorization, issuerDidWithFragment, subjectDid, credentialTypes) { return __awaiter(void 0, void 0, void 0, function () {

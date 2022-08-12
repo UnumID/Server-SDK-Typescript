@@ -9,6 +9,8 @@ import { Credential, CredentialPb } from '@unumid/types';
  * @param signingPrivateKey
  * @param encryptionPrivateKey
  * @param subjectDid
+ * @param issuerEncryptionKeyId
+ * @param credentialTypes
  */
-export declare const reEncryptCredentials: (authorization: string, issuerDid: string, signingPrivateKey: string, encryptionPrivateKey: string, subjectDid: string, issuerEncryptionKeyId: string, credentialTypes?: string[]) => Promise<UnumDto<(CredentialPb | Credential)[]>>;
+export declare const reEncryptCredentials: (authorization: string, issuerDid: string, signingPrivateKey: string, encryptionPrivateKey: string, issuerEncryptionKeyId: string, subjectDid: string, credentialTypes?: string[]) => Promise<UnumDto<(CredentialPb | Credential)[]>>;
 //# sourceMappingURL=reEncryptCredentials.d.ts.map
