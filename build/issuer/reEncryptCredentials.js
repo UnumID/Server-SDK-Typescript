@@ -61,6 +61,7 @@ var decrypt_1 = require("../utils/decrypt");
 var issueCredentials_1 = require("./issueCredentials");
 var constants_1 = require("../utils/constants");
 var extractCredentialType_1 = require("../utils/extractCredentialType");
+var queryStringHelper_1 = require("../utils/queryStringHelper");
 /**
  * Helper to facilitate an issuer re-encrypting any credentials it has issued to a target subject.
  * This is useful in the case of needing to provide a subject credential data encrypted with a new RSA key id.
@@ -71,52 +72,55 @@ var extractCredentialType_1 = require("../utils/extractCredentialType");
  * @param encryptionPrivateKey
  * @param subjectDid
  */
-exports.reEncryptCredentials = function (authorization, issuerDid, signingPrivateKey, encryptionPrivateKey, subjectDid, issuerEncryptionKeyId) { return __awaiter(void 0, void 0, void 0, function () {
-    var issuerDidWithFragment, credentialsResponse, credentials, credentialDataList, _i, credentials_1, credential, decryptedCredentialBytes, decryptedCredential, credentialSubject, credentialData, reissuedCredentials;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
-                requireAuth_1.requireAuth(authorization);
-                // Validate inputs.
-                validateInputs(issuerDid, signingPrivateKey, encryptionPrivateKey, subjectDid, issuerEncryptionKeyId);
-                issuerDidWithFragment = issuerDid + "#" + issuerEncryptionKeyId;
-                return [4 /*yield*/, getRelevantCredentials(authorization, issuerDidWithFragment, subjectDid)];
-            case 1:
-                credentialsResponse = _a.sent();
-                authorization = credentialsResponse.authToken;
-                credentials = credentialsResponse.body;
-                credentialDataList = [];
-                _i = 0, credentials_1 = credentials;
-                _a.label = 2;
-            case 2:
-                if (!(_i < credentials_1.length)) return [3 /*break*/, 5];
-                credential = credentials_1[_i];
-                return [4 /*yield*/, decrypt_1.doDecrypt(encryptionPrivateKey, credential.encryptedCredential.data)];
-            case 3:
-                decryptedCredentialBytes = _a.sent();
-                decryptedCredential = types_1.CredentialPb.decode(decryptedCredentialBytes);
-                credentialSubject = JSON.parse(decryptedCredential.credentialSubject);
-                credentialData = __assign(__assign({}, lodash_1.default.omit(credentialSubject, 'id')), { 
-                    /**
-                     * HACK ALERT: assuming the credential type is ultimately only of length 2 with the first element being the 'VerifiableCredential' indicator.
-                     * This will need to be updated if we want to actually sport multiple credential types being defined in one credential.
-                     * However, lots of other parts of our product would have to updated too.
-                     */
-                    type: extractCredentialType_1.extractCredentialType(decryptedCredential.type)[0] });
-                // push the credential data to the array
-                credentialDataList.push(credentialData);
-                _a.label = 4;
-            case 4:
-                _i++;
-                return [3 /*break*/, 2];
-            case 5: return [4 /*yield*/, issueCredentials_1.issueCredentials(authorization, issuerDid, subjectDid, credentialDataList, signingPrivateKey, undefined, false)];
-            case 6:
-                reissuedCredentials = _a.sent();
-                return [2 /*return*/, reissuedCredentials];
-        }
+exports.reEncryptCredentials = function (authorization, issuerDid, signingPrivateKey, encryptionPrivateKey, subjectDid, issuerEncryptionKeyId, credentialTypes) {
+    if (credentialTypes === void 0) { credentialTypes = []; }
+    return __awaiter(void 0, void 0, void 0, function () {
+        var issuerDidWithFragment, credentialsResponse, credentials, credentialDataList, _i, credentials_1, credential, decryptedCredentialBytes, decryptedCredential, credentialSubject, credentialData, reissuedCredentials;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
+                    requireAuth_1.requireAuth(authorization);
+                    // Validate inputs.
+                    validateInputs(issuerDid, signingPrivateKey, encryptionPrivateKey, subjectDid, issuerEncryptionKeyId);
+                    issuerDidWithFragment = issuerDid + "#" + issuerEncryptionKeyId;
+                    return [4 /*yield*/, getRelevantCredentials(authorization, issuerDidWithFragment, subjectDid, credentialTypes)];
+                case 1:
+                    credentialsResponse = _a.sent();
+                    authorization = credentialsResponse.authToken;
+                    credentials = credentialsResponse.body;
+                    credentialDataList = [];
+                    _i = 0, credentials_1 = credentials;
+                    _a.label = 2;
+                case 2:
+                    if (!(_i < credentials_1.length)) return [3 /*break*/, 5];
+                    credential = credentials_1[_i];
+                    return [4 /*yield*/, decrypt_1.doDecrypt(encryptionPrivateKey, credential.encryptedCredential.data)];
+                case 3:
+                    decryptedCredentialBytes = _a.sent();
+                    decryptedCredential = types_1.CredentialPb.decode(decryptedCredentialBytes);
+                    credentialSubject = JSON.parse(decryptedCredential.credentialSubject);
+                    credentialData = __assign(__assign({}, lodash_1.default.omit(credentialSubject, 'id')), { 
+                        /**
+                         * HACK ALERT: assuming the credential type is ultimately only of length 2 with the first element being the 'VerifiableCredential' indicator.
+                         * This will need to be updated if we want to actually sport multiple credential types being defined in one credential.
+                         * However, lots of other parts of our product would have to updated too.
+                         */
+                        type: extractCredentialType_1.extractCredentialType(decryptedCredential.type)[0] });
+                    // push the credential data to the array
+                    credentialDataList.push(credentialData);
+                    _a.label = 4;
+                case 4:
+                    _i++;
+                    return [3 /*break*/, 2];
+                case 5: return [4 /*yield*/, issueCredentials_1.issueCredentials(authorization, issuerDid, subjectDid, credentialDataList, signingPrivateKey, undefined, false)];
+                case 6:
+                    reissuedCredentials = _a.sent();
+                    return [2 /*return*/, reissuedCredentials];
+            }
+        });
     });
-}); };
+};
 function validateInputs(issuerDid, signingPrivateKey, encryptionPrivateKey, subjectDid, issuerEncryptionKeyId) {
     if (!issuerDid) {
         throw new error_1.CustError(400, 'issuerDid is required.');
@@ -156,15 +160,16 @@ function validateInputs(issuerDid, signingPrivateKey, encryptionPrivateKey, subj
  * @param subjectDid
  * @returns
  */
-var getRelevantCredentials = function (authorization, issuerDidWithFragment, subjectDid) { return __awaiter(void 0, void 0, void 0, function () {
-    var restData, restResp, authToken, encryptedCredentials;
+var getRelevantCredentials = function (authorization, issuerDidWithFragment, subjectDid, credentialTypes) { return __awaiter(void 0, void 0, void 0, function () {
+    var typesQuery, restData, restResp, authToken, encryptedCredentials;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                typesQuery = queryStringHelper_1.createListQueryString('type', credentialTypes);
                 restData = {
                     method: 'GET',
                     baseUrl: config_1.configData.SaaSUrl,
-                    endPoint: "credentialReIssuanceRepository/" + encodeURIComponent(issuerDidWithFragment) + "?subject=" + encodeURIComponent(subjectDid) + "&version=" + encodeURIComponent(constants_1.sdkMajorVersion),
+                    endPoint: "credentialReIssuanceRepository/" + encodeURIComponent(issuerDidWithFragment) + "?subject=" + encodeURIComponent(subjectDid) + "&version=" + encodeURIComponent(constants_1.sdkMajorVersion) + "&" + typesQuery,
                     header: { Authorization: authorization, version: constants_1.sdkMajorVersion }
                 };
                 return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];

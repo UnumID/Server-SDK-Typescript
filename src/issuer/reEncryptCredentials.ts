@@ -1,7 +1,7 @@
 import { configData } from '../config';
 import { RESTData, UnumDto } from '../types';
 import { requireAuth } from '../requireAuth';
-import { Credential, JSONObj, CredentialPb, CredentialData, EncryptedCredentialDto, EncryptedCredentialEnrichedDto, CredentialSubject } from '@unumid/types';
+import { Credential, JSONObj, CredentialPb, CredentialData, EncryptedCredentialEnrichedDto, CredentialSubject } from '@unumid/types';
 
 import { CustError } from '../utils/error';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
@@ -10,6 +10,7 @@ import { doDecrypt } from '../utils/decrypt';
 import { issueCredentials } from './issueCredentials';
 import { sdkMajorVersion } from '../utils/constants';
 import { extractCredentialType } from '../utils/extractCredentialType';
+import { createListQueryString } from '../utils/queryStringHelper';
 
 /**
  * Helper to facilitate an issuer re-encrypting any credentials it has issued to a target subject.
@@ -21,7 +22,7 @@ import { extractCredentialType } from '../utils/extractCredentialType';
  * @param encryptionPrivateKey
  * @param subjectDid
  */
-export const reEncryptCredentials = async (authorization: string, issuerDid: string, signingPrivateKey: string, encryptionPrivateKey: string, subjectDid: string, issuerEncryptionKeyId: string): Promise<UnumDto<(CredentialPb | Credential)[]>> => {
+export const reEncryptCredentials = async (authorization: string, issuerDid: string, signingPrivateKey: string, encryptionPrivateKey: string, subjectDid: string, issuerEncryptionKeyId: string, credentialTypes: string[] = []): Promise<UnumDto<(CredentialPb | Credential)[]>> => {
   // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
   requireAuth(authorization);
 
@@ -42,7 +43,7 @@ export const reEncryptCredentials = async (authorization: string, issuerDid: str
   const issuerDidWithFragment = `${issuerDid}#${issuerEncryptionKeyId}`;
 
   // get all the credentials issued by the issuer to the subject
-  const credentialsResponse: UnumDto<EncryptedCredentialEnrichedDto[]> = await getRelevantCredentials(authorization, issuerDidWithFragment, subjectDid);
+  const credentialsResponse: UnumDto<EncryptedCredentialEnrichedDto[]> = await getRelevantCredentials(authorization, issuerDidWithFragment, subjectDid, credentialTypes);
   authorization = credentialsResponse.authToken;
   const credentials = credentialsResponse.body;
 
@@ -131,11 +132,13 @@ function validateInputs (issuerDid: string, signingPrivateKey: string, encryptio
  * @param subjectDid
  * @returns
  */
-const getRelevantCredentials = async (authorization: string, issuerDidWithFragment: string, subjectDid: string) :Promise<UnumDto<EncryptedCredentialEnrichedDto[]>> => {
+const getRelevantCredentials = async (authorization: string, issuerDidWithFragment: string, subjectDid: string, credentialTypes: string[]) :Promise<UnumDto<EncryptedCredentialEnrichedDto[]>> => {
+  const typesQuery = createListQueryString('type', credentialTypes);
+
   const restData: RESTData = {
     method: 'GET',
     baseUrl: configData.SaaSUrl,
-    endPoint: `credentialReIssuanceRepository/${encodeURIComponent(issuerDidWithFragment)}?subject=${encodeURIComponent(subjectDid)}&version=${encodeURIComponent(sdkMajorVersion)}`,
+    endPoint: `credentialReIssuanceRepository/${encodeURIComponent(issuerDidWithFragment)}?subject=${encodeURIComponent(subjectDid)}&version=${encodeURIComponent(sdkMajorVersion)}&${typesQuery}`,
     header: { Authorization: authorization, version: sdkMajorVersion }
   };
 
