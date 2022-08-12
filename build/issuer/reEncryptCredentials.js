@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -49,6 +60,7 @@ var lodash_1 = __importDefault(require("lodash"));
 var decrypt_1 = require("../utils/decrypt");
 var issueCredentials_1 = require("./issueCredentials");
 var constants_1 = require("../utils/constants");
+var extractCredentialType_1 = require("../utils/extractCredentialType");
 /**
  * Helper to facilitate an issuer re-encrypting any credentials it has issued to a target subject.
  * This is useful in the case of needing to provide a subject credential data encrypted with a new RSA key id.
@@ -60,7 +72,7 @@ var constants_1 = require("../utils/constants");
  * @param subjectDid
  */
 exports.reEncryptCredentials = function (authorization, issuerDid, signingPrivateKey, encryptionPrivateKey, subjectDid, issuerEncryptionKeyId) { return __awaiter(void 0, void 0, void 0, function () {
-    var issuerDidWithFragment, credentialsResponse, credentials, credentialData, _i, credentials_1, credential, decryptedCredentialBytes, decryptedCredential, credentialSubject, credentialData_1, reissuedCredentials;
+    var issuerDidWithFragment, credentialsResponse, credentials, credentialDataList, _i, credentials_1, credential, decryptedCredentialBytes, decryptedCredential, credentialSubject, credentialData, reissuedCredentials;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -74,7 +86,7 @@ exports.reEncryptCredentials = function (authorization, issuerDid, signingPrivat
                 credentialsResponse = _a.sent();
                 authorization = credentialsResponse.authToken;
                 credentials = credentialsResponse.body;
-                credentialData = [];
+                credentialDataList = [];
                 _i = 0, credentials_1 = credentials;
                 _a.label = 2;
             case 2:
@@ -85,14 +97,20 @@ exports.reEncryptCredentials = function (authorization, issuerDid, signingPrivat
                 decryptedCredentialBytes = _a.sent();
                 decryptedCredential = types_1.CredentialPb.decode(decryptedCredentialBytes);
                 credentialSubject = JSON.parse(decryptedCredential.credentialSubject);
-                credentialData_1 = lodash_1.default.omit(credentialSubject, 'id');
+                credentialData = __assign(__assign({}, lodash_1.default.omit(credentialSubject, 'id')), { 
+                    /**
+                     * HACK ALERT: assuming the credential type is ultimately only of length 2 with the first element being the 'VerifiableCredential' indicator.
+                     * This will need to be updated if we want to actually sport multiple credential types being defined in one credential.
+                     * However, lots of other parts of our product would have to updated too.
+                     */
+                    type: extractCredentialType_1.extractCredentialType(decryptedCredential.type)[0] });
                 // push the credential data to the array
-                credentialData_1.push(credentialData_1);
+                credentialDataList.push(credentialData);
                 _a.label = 4;
             case 4:
                 _i++;
                 return [3 /*break*/, 2];
-            case 5: return [4 /*yield*/, issueCredentials_1.issueCredentials(authorization, issuerDid, subjectDid, credentialData, signingPrivateKey, undefined, false)];
+            case 5: return [4 /*yield*/, issueCredentials_1.issueCredentials(authorization, issuerDid, subjectDid, credentialDataList, signingPrivateKey, undefined, false)];
             case 6:
                 reissuedCredentials = _a.sent();
                 return [2 /*return*/, reissuedCredentials];

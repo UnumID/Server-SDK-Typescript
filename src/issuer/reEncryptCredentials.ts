@@ -1,7 +1,7 @@
 import { configData } from '../config';
 import { RESTData, UnumDto } from '../types';
 import { requireAuth } from '../requireAuth';
-import { Credential, JSONObj, CredentialPb, CredentialData, EncryptedCredentialDto, EncryptedCredentialEnrichedDto } from '@unumid/types';
+import { Credential, JSONObj, CredentialPb, CredentialData, EncryptedCredentialDto, EncryptedCredentialEnrichedDto, CredentialSubject } from '@unumid/types';
 
 import { CustError } from '../utils/error';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
@@ -9,6 +9,7 @@ import _ from 'lodash';
 import { doDecrypt } from '../utils/decrypt';
 import { issueCredentials } from './issueCredentials';
 import { sdkMajorVersion } from '../utils/constants';
+import { extractCredentialType } from '../utils/extractCredentialType';
 
 /**
  * Helper to facilitate an issuer re-encrypting any credentials it has issued to a target subject.
@@ -45,10 +46,10 @@ export const reEncryptCredentials = async (authorization: string, issuerDid: str
   authorization = credentialsResponse.authToken;
   const credentials = credentialsResponse.body;
 
-  // verify all the credentials
+  // TODO: verify all the credentials
 
   // decrypt the credentials
-  const credentialData: CredentialData[] = [];
+  const credentialDataList: CredentialData[] = [];
 
   for (const credential of credentials) {
     // decrypt the credential into a byte array
@@ -58,17 +59,25 @@ export const reEncryptCredentials = async (authorization: string, issuerDid: str
     const decryptedCredential = CredentialPb.decode(decryptedCredentialBytes);
 
     // extract the credential data from the credential for sake of re-issuance
-    const credentialSubject = JSON.parse(decryptedCredential.credentialSubject);
+    const credentialSubject = JSON.parse(decryptedCredential.credentialSubject) as CredentialSubject;
 
     // omit the id which is added to credential data to make the subject
-    const credentialData = _.omit(credentialSubject, 'id');
+    const credentialData = {
+      ..._.omit(credentialSubject, 'id'),
+      /**
+       * HACK ALERT: assuming the credential type is ultimately only of length 2 with the first element being the 'VerifiableCredential' indicator.
+       * This will need to be updated if we want to actually sport multiple credential types being defined in one credential.
+       * However, lots of other parts of our product would have to updated too.
+       */
+      type: extractCredentialType(decryptedCredential.type)[0]
+    };
 
     // push the credential data to the array
-    credentialData.push(credentialData);
+    credentialDataList.push(credentialData);
   }
 
   // (re)issue the credentials to the target subject
-  const reissuedCredentials = await issueCredentials(authorization, issuerDid, subjectDid, credentialData, signingPrivateKey, undefined, false);
+  const reissuedCredentials = await issueCredentials(authorization, issuerDid, subjectDid, credentialDataList, signingPrivateKey, undefined, false);
 
   return reissuedCredentials;
 };
