@@ -13,11 +13,6 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v2
 
-      # ensure on main branch, ref: https://stackoverflow.com/questions/59874409/trigger-github-workflow-only-if-pushed-to-specific-branch-and-tag-exists
-      - name: Exit if not on main branch
-        if: endsWith(github.ref, 'main') == false
-        run: exit -1
-
       # ref: https://stackoverflow.com/questions/58177786/get-the-current-pushed-tag-in-github-actions
       - name: Set version env
         run: |
