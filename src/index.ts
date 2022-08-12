@@ -20,6 +20,7 @@ import { revokeAllCredentials } from './issuer/revokeAllCredentials';
 import { updateCredentialStatuses } from './issuer/updateCredentialStatuses';
 import { checkCredentialStatuses } from './verifier/checkCredentialStatuses';
 import { reEncryptCredentials } from './issuer/reEncryptCredentials';
+import { extractCredentialType } from './utils/extractCredentialType';
 
 export {
   // Issuer Functions
@@ -55,6 +56,7 @@ export {
   CredentialInfo,
   // Util Functions
   extractCredentialInfo,
+  extractCredentialType,
   verifySignedDid,
   createProof,
   createProofPb,
