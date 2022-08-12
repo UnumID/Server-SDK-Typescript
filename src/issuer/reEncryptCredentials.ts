@@ -126,7 +126,7 @@ const getRelevantCredentials = async (authorization: string, issuerDidWithFragme
   const restData: RESTData = {
     method: 'GET',
     baseUrl: configData.SaaSUrl,
-    endPoint: `credentialReIssuanceRepository/${issuerDidWithFragment}?subject=${subjectDid}&version=${sdkMajorVersion}`,
+    endPoint: encodeURI(`credentialReIssuanceRepository/${issuerDidWithFragment}?subject=${subjectDid}&version=${sdkMajorVersion}`),
     header: { Authorization: authorization, version: sdkMajorVersion }
   };
 

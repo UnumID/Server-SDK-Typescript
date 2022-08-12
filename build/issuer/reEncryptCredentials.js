@@ -146,7 +146,7 @@ var getRelevantCredentials = function (authorization, issuerDidWithFragment, sub
                 restData = {
                     method: 'GET',
                     baseUrl: config_1.configData.SaaSUrl,
-                    endPoint: "credentialReIssuanceRepository/" + issuerDidWithFragment + "?subject=" + subjectDid + "&version=" + constants_1.sdkMajorVersion,
+                    endPoint: encodeURI("credentialReIssuanceRepository/" + issuerDidWithFragment + "?subject=" + subjectDid + "&version=" + constants_1.sdkMajorVersion),
                     header: { Authorization: authorization, version: constants_1.sdkMajorVersion }
                 };
                 return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];
