@@ -48,7 +48,7 @@ var didHelper_1 = require("../utils/didHelper");
 var verify_1 = require("../utils/verify");
 var __1 = require("..");
 /**
- * Used to verify the credential signature given the corresponding Did document's public key.
+ * Used to verify the credential signature after fetching the Did document's public key(s).
  * @param credential
  * @param authorization
  */
@@ -75,7 +75,7 @@ exports.verifyCredential = function (authorization, credential) { return __await
     });
 }); };
 /**
- * Used to verify the credential signature given the corresponding Did document's public key.
+ * Used to verify the credential signature given the corresponding Did document's public key(s).
  * @param credential
  * @param authorization
  */

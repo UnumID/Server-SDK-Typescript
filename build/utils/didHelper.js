@@ -130,6 +130,12 @@ exports.getDidDocPublicKeys = function (authorization, targetDid, type) { return
         }
     });
 }); };
+/**
+ * Helper to get a DID Doc key. Requires a did with a key id.
+ * @param authorization
+ * @param targetDidWithKeyId
+ * @returns
+ */
 exports.getDidDocPublicKey = function (authorization, targetDidWithKeyId) { return __awaiter(void 0, void 0, void 0, function () {
     var didDocResponse, authToken;
     return __generator(this, function (_a) {

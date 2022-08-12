@@ -27,7 +27,7 @@ import { getDidDocPublicKey, getDidDocPublicKeys } from '../utils/didHelper';
  * @param issuerEncryptionKeyId
  * @param credentialTypes
  */
-export const reEncryptCredentials = async (authorization: string, issuerDid: string, signingPrivateKey: string, encryptionPrivateKey: string, subjectDid: string, issuerEncryptionKeyId: string, credentialTypes: string[] = []): Promise<UnumDto<(CredentialPb | Credential)[]>> => {
+export const reEncryptCredentials = async (authorization: string, issuerDid: string, signingPrivateKey: string, encryptionPrivateKey: string, issuerEncryptionKeyId: string, subjectDid: string, credentialTypes: string[] = []): Promise<UnumDto<(CredentialPb | Credential)[]>> => {
   // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
   requireAuth(authorization);
 
