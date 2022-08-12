@@ -1,7 +1,7 @@
 import { configData } from '../config';
 import { RESTData, UnumDto } from '../types';
 import { requireAuth } from '../requireAuth';
-import { Credential, JSONObj, CredentialPb, CredentialData, EncryptedCredentialEnrichedDto, CredentialSubject } from '@unumid/types';
+import { Credential, JSONObj, CredentialPb, CredentialData, EncryptedCredentialEnrichedDto, CredentialSubject, PublicKeyInfo } from '@unumid/types';
 
 import { CustError } from '../utils/error';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
@@ -11,8 +11,9 @@ import { issueCredentials } from './issueCredentials';
 import { sdkMajorVersion } from '../utils/constants';
 import { extractCredentialType } from '../utils/extractCredentialType';
 import { createListQueryString } from '../utils/queryStringHelper';
-import { verifyCredential } from '../verifier/verifyCredential';
+import { verifyCredential, verifyCredentialHelper } from '../verifier/verifyCredential';
 import logger from '../logger';
+import { getDidDocPublicKey, getDidDocPublicKeys } from '../utils/didHelper';
 
 /**
  * Helper to facilitate an issuer re-encrypting any credentials it has issued to a target subject.
@@ -31,16 +32,6 @@ export const reEncryptCredentials = async (authorization: string, issuerDid: str
   // Validate inputs.
   validateInputs(issuerDid, signingPrivateKey, encryptionPrivateKey, subjectDid, issuerEncryptionKeyId);
 
-  /**
-   * Not handling case with the issuer Enrollment Key Id is not passed currently.
-    if (!issuerEncryptionKeyId) {
-      // Get target Issuer's DID document public keys for the key id.
-      const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, subjectDid, 'RSA');
-      const publicKeyInfos = publicKeyInfoResponse.body;
-      authorization = publicKeyInfoResponse.authToken;
-    }
-  */
-
   // create the did + fragment
   const issuerDidWithFragment = `${issuerDid}#${issuerEncryptionKeyId}`;
 
@@ -49,9 +40,15 @@ export const reEncryptCredentials = async (authorization: string, issuerDid: str
   authorization = credentialsResponse.authToken;
   const credentials = credentialsResponse.body;
 
-  // decrypt the credentials
+  // result list to house the decrypted and verified credential data
   const credentialDataList: CredentialData[] = [];
 
+  // grab all 'secp256r1' keys from the DID + fragment document for credential verification.
+  const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, issuerDid, 'secp256r1');
+  const publicKeyInfo: PublicKeyInfo[] = publicKeyInfoResponse.body;
+  const authToken = publicKeyInfoResponse.authToken;
+
+  // decrypt and verify the credentials
   for (const credential of credentials) {
     // decrypt the credential into a byte array
     const decryptedCredentialBytes = await doDecrypt(encryptionPrivateKey, credential.encryptedCredential.data);
@@ -60,7 +57,7 @@ export const reEncryptCredentials = async (authorization: string, issuerDid: str
     const decryptedCredential = CredentialPb.decode(decryptedCredentialBytes);
 
     // verify the credential signature
-    const isVerified = await verifyCredential(authorization, decryptedCredential);
+    const isVerified = await verifyCredentialHelper(decryptedCredential, publicKeyInfo);
     if (!isVerified) {
       logger.warn(`Credential ${decryptedCredential.id} signature could not be verified. This should never happen and is very suspicious. Please contact UnumID support.`);
       continue;
@@ -84,8 +81,8 @@ export const reEncryptCredentials = async (authorization: string, issuerDid: str
     credentialDataList.push(credentialData);
   }
 
-  // (re)issue the credentials to the target subject
-  const reissuedCredentials = await issueCredentials(authorization, issuerDid, subjectDid, credentialDataList, signingPrivateKey, undefined, false);
+  // (re)issue (aka re-encrypt) the credentials to the target subject
+  const reissuedCredentials = await issueCredentials(authToken, issuerDid, subjectDid, credentialDataList, signingPrivateKey, undefined, false);
 
   return reissuedCredentials;
 };
