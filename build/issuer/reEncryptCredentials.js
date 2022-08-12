@@ -62,6 +62,8 @@ var issueCredentials_1 = require("./issueCredentials");
 var constants_1 = require("../utils/constants");
 var extractCredentialType_1 = require("../utils/extractCredentialType");
 var queryStringHelper_1 = require("../utils/queryStringHelper");
+var verifyCredential_1 = require("../verifier/verifyCredential");
+var logger_1 = __importDefault(require("../logger"));
 /**
  * Helper to facilitate an issuer re-encrypting any credentials it has issued to a target subject.
  * This is useful in the case of needing to provide a subject credential data encrypted with a new RSA key id.
@@ -75,7 +77,7 @@ var queryStringHelper_1 = require("../utils/queryStringHelper");
 exports.reEncryptCredentials = function (authorization, issuerDid, signingPrivateKey, encryptionPrivateKey, subjectDid, issuerEncryptionKeyId, credentialTypes) {
     if (credentialTypes === void 0) { credentialTypes = []; }
     return __awaiter(void 0, void 0, void 0, function () {
-        var issuerDidWithFragment, credentialsResponse, credentials, credentialDataList, _i, credentials_1, credential, decryptedCredentialBytes, decryptedCredential, credentialSubject, credentialData, reissuedCredentials;
+        var issuerDidWithFragment, credentialsResponse, credentials, credentialDataList, _i, credentials_1, credential, decryptedCredentialBytes, decryptedCredential, isVerified, credentialSubject, credentialData, reissuedCredentials;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -93,12 +95,19 @@ exports.reEncryptCredentials = function (authorization, issuerDid, signingPrivat
                     _i = 0, credentials_1 = credentials;
                     _a.label = 2;
                 case 2:
-                    if (!(_i < credentials_1.length)) return [3 /*break*/, 5];
+                    if (!(_i < credentials_1.length)) return [3 /*break*/, 6];
                     credential = credentials_1[_i];
                     return [4 /*yield*/, decrypt_1.doDecrypt(encryptionPrivateKey, credential.encryptedCredential.data)];
                 case 3:
                     decryptedCredentialBytes = _a.sent();
                     decryptedCredential = types_1.CredentialPb.decode(decryptedCredentialBytes);
+                    return [4 /*yield*/, verifyCredential_1.verifyCredential(authorization, decryptedCredential)];
+                case 4:
+                    isVerified = _a.sent();
+                    if (!isVerified) {
+                        logger_1.default.warn("Credential " + decryptedCredential.id + " signature could not be verified. This should never happen and is very suspicious. Please contact UnumID support.");
+                        return [3 /*break*/, 5];
+                    }
                     credentialSubject = JSON.parse(decryptedCredential.credentialSubject);
                     credentialData = __assign(__assign({}, lodash_1.default.omit(credentialSubject, 'id')), { 
                         /**
@@ -109,12 +118,12 @@ exports.reEncryptCredentials = function (authorization, issuerDid, signingPrivat
                         type: extractCredentialType_1.extractCredentialType(decryptedCredential.type)[0] });
                     // push the credential data to the array
                     credentialDataList.push(credentialData);
-                    _a.label = 4;
-                case 4:
+                    _a.label = 5;
+                case 5:
                     _i++;
                     return [3 /*break*/, 2];
-                case 5: return [4 /*yield*/, issueCredentials_1.issueCredentials(authorization, issuerDid, subjectDid, credentialDataList, signingPrivateKey, undefined, false)];
-                case 6:
+                case 6: return [4 /*yield*/, issueCredentials_1.issueCredentials(authorization, issuerDid, subjectDid, credentialDataList, signingPrivateKey, undefined, false)];
+                case 7:
                     reissuedCredentials = _a.sent();
                     return [2 /*return*/, reissuedCredentials];
             }

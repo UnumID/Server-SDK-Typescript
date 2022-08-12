@@ -11,6 +11,8 @@ import { issueCredentials } from './issueCredentials';
 import { sdkMajorVersion } from '../utils/constants';
 import { extractCredentialType } from '../utils/extractCredentialType';
 import { createListQueryString } from '../utils/queryStringHelper';
+import { verifyCredential } from '../verifier/verifyCredential';
+import logger from '../logger';
 
 /**
  * Helper to facilitate an issuer re-encrypting any credentials it has issued to a target subject.
@@ -31,12 +33,12 @@ export const reEncryptCredentials = async (authorization: string, issuerDid: str
 
   /**
    * Not handling case with the issuer Enrollment Key Id is not passed currently.
-  if (!issuerEncryptionKeyId) {
-    // Get target Issuer's DID document public keys for the key id.
-    const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, subjectDid, 'RSA');
-    const publicKeyInfos = publicKeyInfoResponse.body;
-    authorization = publicKeyInfoResponse.authToken;
-  }
+    if (!issuerEncryptionKeyId) {
+      // Get target Issuer's DID document public keys for the key id.
+      const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, subjectDid, 'RSA');
+      const publicKeyInfos = publicKeyInfoResponse.body;
+      authorization = publicKeyInfoResponse.authToken;
+    }
   */
 
   // create the did + fragment
@@ -47,8 +49,6 @@ export const reEncryptCredentials = async (authorization: string, issuerDid: str
   authorization = credentialsResponse.authToken;
   const credentials = credentialsResponse.body;
 
-  // TODO: verify all the credentials
-
   // decrypt the credentials
   const credentialDataList: CredentialData[] = [];
 
@@ -58,6 +58,13 @@ export const reEncryptCredentials = async (authorization: string, issuerDid: str
 
     // create a protobuf Credential object from the byte array
     const decryptedCredential = CredentialPb.decode(decryptedCredentialBytes);
+
+    // verify the credential signature
+    const isVerified = await verifyCredential(authorization, decryptedCredential);
+    if (!isVerified) {
+      logger.warn(`Credential ${decryptedCredential.id} signature could not be verified. This should never happen and is very suspicious. Please contact UnumID support.`);
+      continue;
+    }
 
     // extract the credential data from the credential for sake of re-issuance
     const credentialSubject = JSON.parse(decryptedCredential.credentialSubject) as CredentialSubject;
