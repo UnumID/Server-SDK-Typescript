@@ -3,10 +3,9 @@ import { requireAuth } from '../requireAuth';
 
 import { RESTData, UnumDto } from '../types';
 import logger from '../logger';
-import { CredentialStatusOptions, JSONObj, _CredentialStatusOptions, UnsignedRevokeAllCredentials, RevokeAllCredentials, ProofPb } from '@unumid/types';
+import { JSONObj, UnsignedRevokeAllCredentials, RevokeAllCredentials, ProofPb } from '@unumid/types';
 import { CustError } from '../utils/error';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
-import { sign, signBytes } from '@unumid/library-crypto';
 import { createProofPb } from '..';
 
 /**

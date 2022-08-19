@@ -1,12 +1,12 @@
 import { configData } from '../config';
 import { requireAuth } from '../requireAuth';
 import { CryptoError } from '@unumid/library-crypto';
-import { PresentationRequestPostDto as PresentationRequestPostDtoDeprecatedV2, UnsignedPresentationRequest as UnsignedPresentationRequestDeprecatedV2, SignedPresentationRequest as SignedPresentationRequestDeprecatedV2, Proof } from '@unumid/types-v2';
+import { PresentationRequestPostDto as PresentationRequestPostDtoDeprecatedV3, UnsignedPresentationRequestPb as UnsignedPresentationRequestPbDeprecatedV3, PresentationRequestPb as PresentationRequestPbDeprecatedV3, SignedPresentationRequest as SignedPresentationRequestDeprecatedV3, ProofPb as ProofPbDeprecatedV3 } from '@unumid/types-v3';
 import { CredentialRequest, PresentationRequestPostDto, UnsignedPresentationRequestPb, PresentationRequestPb, ProofPb, SignedPresentationRequest, CredentialRequestPb, JSONObj, PresentationRequestDto } from '@unumid/types';
 
 import { RESTData, SendRequestReqBody, UnumDto } from '../types';
 import logger from '../logger';
-import { createProof, createProofPb } from '../utils/createProof';
+import { createProofPb } from '../utils/createProof';
 import { getUUID } from '../utils/helpers';
 import { makeNetworkRequest, handleAuthTokenHeader } from '../utils/networkRequestHelper';
 import { CustError } from '../utils/error';
@@ -60,16 +60,18 @@ export const constructUnsignedPresentationRequest = (reqBody: SendRequestReqBody
  * @param unsignedPresentationRequest UnsignedPresentationRequest
  * @param privateKey String
  */
-export const constructSignedPresentationRequestDeprecatedV2 = (unsignedPresentationRequest: UnsignedPresentationRequestDeprecatedV2, privateKey: string): SignedPresentationRequestDeprecatedV2 => {
+export const constructSignedPresentationRequestDeprecatedV3 = (unsignedPresentationRequest: UnsignedPresentationRequestPbDeprecatedV3, privateKey: string): PresentationRequestPbDeprecatedV3 => {
   try {
-    const proof: Proof = createProof(
-      unsignedPresentationRequest,
+    // convert the protobuf to a byte array
+    const bytes: Uint8Array = UnsignedPresentationRequestPb.encode(unsignedPresentationRequest).finish();
+
+    const proof: ProofPbDeprecatedV3 = createProofPb(
+      bytes,
       privateKey,
-      unsignedPresentationRequest.verifier,
-      'pem'
+      unsignedPresentationRequest.verifier
     );
 
-    const signedPresentationRequest: SignedPresentationRequestDeprecatedV2 = {
+    const signedPresentationRequest: PresentationRequestPbDeprecatedV3 = {
       ...unsignedPresentationRequest,
       proof: proof
     };
