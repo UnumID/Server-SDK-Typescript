@@ -17,7 +17,7 @@ jobs:
       - restore_cache:
           key: node-v4-{{ checksum "package.json" }}
 
-      - run: npm install
+      - run: npm ci
 
       - save_cache:
           key: v4-npm-deps-{{ checksum "package-lock.json" }}
@@ -30,6 +30,8 @@ jobs:
             - node_modules
 
       - run: npm run lint
+
+      - run: npm run build
 
       - run:
           name: Jest Tests
