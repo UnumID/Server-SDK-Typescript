@@ -1,4 +1,4 @@
-import { JSONObj, PresentationRequestDto, PresentationRequestDtoPb, WithVersion, PresentationRequestRepoDto } from '@unumid/types';
+import { JSONObj, PresentationRequestDtoPb, WithVersion } from '@unumid/types';
 import { isDate, isString } from 'lodash';
 import { configData } from '../config';
 import logger from '../logger';

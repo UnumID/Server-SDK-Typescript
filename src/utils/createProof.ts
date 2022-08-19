@@ -1,5 +1,5 @@
 import { signBytes } from '@unumid/library-crypto';
-import { ProofPb } from '@unumid/types';
+import { Proof } from '@unumid/types';
 import logger from '../logger';
 
 /**
@@ -9,10 +9,10 @@ import logger from '../logger';
  * @param method
  * @param encoding
  */
-export const createProofPb = (data: Uint8Array, privateKey: string, method: string): ProofPb => {
+export const createProof = (data: Uint8Array, privateKey: string, method: string): Proof => {
   const signature = signBytes(data, privateKey);
 
-  const proof: ProofPb = {
+  const proof: Proof = {
     created: new Date(),
     signatureValue: signature,
     type: 'secp256r1Signature2020',

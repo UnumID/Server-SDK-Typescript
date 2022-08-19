@@ -1,6 +1,6 @@
-import { Proof, ProofPb } from '@unumid/types';
+import { Proof } from '@unumid/types';
 /**
  * Convert a json / http Proof type to protobuf
  */
-export declare const convertProof: (proof: Proof) => ProofPb;
+export declare const convertProof: (proof: Proof) => any;
 //# sourceMappingURL=convertToProtobuf.d.ts.map

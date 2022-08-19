@@ -3,7 +3,6 @@ import { KeyPairSet, RegisteredIssuer, RESTData, UnumDto } from '../types';
 
 import logger from '../logger';
 import { DidKeyType, IssuerOptions, JSONObj, KeyPair, PublicKeyInfo, VersionInfo } from '@unumid/types';
-import { getUUID } from '../utils/helpers';
 import { CustError } from '../utils/error';
 import { createKeyPairSet } from '../utils/createKeyPairs';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
