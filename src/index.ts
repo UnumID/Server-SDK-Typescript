@@ -6,11 +6,10 @@ import { UnumDto, RegisteredVerifier, RegisteredIssuer, VerifiedStatus, Decrypte
 import { verifyPresentation } from './verifier/verifyPresentation';
 import { registerIssuer } from './issuer/registerIssuer';
 import { issueCredentials } from './issuer/issueCredentials';
-import { updateCredentialStatus } from './issuer/updateCredentialStatus';
 import { extractCredentialInfo } from './utils/extractCredentialInfo';
 import { CredentialSubject, Presentation, Proof, Credential } from '@unumid/types';
 import { CustError } from './utils/error';
-import { createProof, createProofPb } from './utils/createProof';
+import { createProof } from './utils/createProof';
 import { convertCredentialSubject } from './utils/convertCredentialSubject';
 import { getRequest } from './verifier/getRequest';
 import { getVersionedRequest } from './verifier/getVersionedRequest';
@@ -27,7 +26,6 @@ export {
   registerIssuer,
   issueCredentials,
   reEncryptCredentials,
-  updateCredentialStatus,
   updateCredentialStatuses,
   verifySubjectCredentialRequests,
   revokeAllCredentials,

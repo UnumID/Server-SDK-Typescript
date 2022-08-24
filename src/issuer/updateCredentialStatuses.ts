@@ -6,8 +6,7 @@ import logger from '../logger';
 import { CredentialStatusOptions, JSONObj, _CredentialStatusOptions } from '@unumid/types';
 import { CustError } from '../utils/error';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
-import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
-import { CredentialStatusesOptions } from '@unumid/types/build/protos/credential';
+import { isArrayEmpty } from '../utils/helpers';
 import { createListQueryString } from '../utils/queryStringHelper';
 
 /**
