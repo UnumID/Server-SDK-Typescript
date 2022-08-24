@@ -24,6 +24,113 @@ interface CredentialPair {
   credential: CredentialPb | Credential
 }
 
+/**
+ * Multiplexed handler for issuing credentials with UnumID's SaaS.
+ * @param authorization
+ * @param issuer
+ * @param subjectDid
+ * @param credentialDataList
+ * @param signingPrivateKey
+ * @param expirationDate
+ */
+export const issueCredentials = async (authorization: string, issuerDid: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date, declineIssueCredentialsToSelf = false): Promise<UnumDto<(CredentialPb | Credential)[]>> => {
+  // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
+  requireAuth(authorization);
+
+  // Validate inputs.
+  validateInputs(issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate);
+
+  // Get target Subject's DID document public keys for encrypting all the credentials issued.
+  const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, subjectDid, 'RSA');
+  const publicKeyInfos = publicKeyInfoResponse.body;
+  authorization = publicKeyInfoResponse.authToken;
+
+  let issuerPublicKeyInfos: PublicKeyInfo[] = [];
+  if (!declineIssueCredentialsToSelf) {
+    // need to get the DID document public keys for the issuer in order to issue credentials to self
+    const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, issuerDid, 'RSA');
+    issuerPublicKeyInfos = publicKeyInfoResponse.body;
+    authorization = publicKeyInfoResponse.authToken;
+  }
+
+  // loop through the types and credential data lists inputted to create CredentialPairs of each supported version for each
+  const creds: WithVersion<CredentialPair>[] = [];
+  const proofOfCreds: WithVersion<CredentialPair>[] = [];
+
+  for (let i = 0; i < credentialDataList.length; i++) {
+    const type = credentialDataList[i].type;
+    const credData = omit(credentialDataList[i], 'type');
+
+    // construct the Credential's credentialSubject
+    const credSubject: CredentialSubject = { id: subjectDid, ...credData };
+    const credentialId = getUUID();
+
+    // construct the Credentials and their encrypted form for each supported version
+    const credentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, credSubject, signingPrivateKey, publicKeyInfos, expirationDate);
+
+    // add all credentialVersionPairs to creds array
+    Array.prototype.push.apply(creds, credentialVersionPairs);
+
+    /**
+     * Handle construction of the ProofOfCredentials and their encrypted form for each supported version
+     */
+    const proofOfType = `ProofOf${type}`; // prefixing the type with ProofOf
+    const proofOfCredentialSubject = { id: credSubject.id }; // no credential data for a ProofOf Credential
+    const proofOfCredentailId = getUUID(); // proofOf credentials do not share a credentialId because different credential data (empty)
+    const proofOfCredentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, proofOfType, issuerDid, proofOfCredentailId, proofOfCredentialSubject, signingPrivateKey, publicKeyInfos, expirationDate);
+
+    // add all proofOfCredentialVersionPairs to creds array
+    Array.prototype.push.apply(proofOfCreds, proofOfCredentialVersionPairs);
+
+    if (!declineIssueCredentialsToSelf) {
+      // construct the Credential's credentialSubject for the issuerDid
+      const issuerCredSubject: CredentialSubject = { ...credData, id: issuerDid };
+
+      // construct the Credentials and their encrypted form for each supported version for the issuer
+      const issuerCredentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, issuerCredSubject, signingPrivateKey, issuerPublicKeyInfos, expirationDate);
+
+      // add all issuerCredentialVersionPairs to creds array
+      Array.prototype.push.apply(creds, issuerCredentialVersionPairs);
+
+      /**
+       * Handle construction of the ProofOfCredentials and their encrypted form for each supported version
+       */
+      const issuerProofOfType = `ProofOf${type}`; // prefixing the type with ProofOf
+      const issuerProofOfCredentialSubject = { id: issuerCredSubject.id }; // no credential data for a ProofOf Credential
+      const issuerProofOfCredentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, issuerProofOfType, issuerDid, proofOfCredentailId, issuerProofOfCredentialSubject, signingPrivateKey, publicKeyInfos, expirationDate);
+
+      // add all proofOfCredentialVersionPairs to creds array
+      Array.prototype.push.apply(proofOfCreds, issuerProofOfCredentialVersionPairs);
+    }
+  }
+
+  // loop through the versions list and send all the encrypted credentials to the saas grouped by version and credentialIds.
+  // Note: proofOf Credentials have a separate credentialId but the issuerCredentials share one (because same credential data)
+  for (const version of versionList) {
+    // only grab the encrypted credentials of the current version
+    const resultantEncryptedCredentials: IssueCredentialOptions[] = creds.filter(credPair => credPair.version === version).map(credPair => credPair.encryptedCredential);
+
+    const result = await sendEncryptedCredentials(authorization, { credentialRequests: resultantEncryptedCredentials }, version);
+    authorization = result.authToken;
+
+    // only grab the proof of encrypted credentials of the current version
+    const proofOfResultantEncryptedCredentials: IssueCredentialOptions[] = proofOfCreds.filter(credPair => credPair.version === version).map(credPair => credPair.encryptedCredential);
+
+    const proofOfResult = await sendEncryptedCredentials(authorization, { credentialRequests: proofOfResultantEncryptedCredentials }, version);
+    authorization = proofOfResult.authToken;
+  }
+
+  // grab all the credentials of the latest version and that were issued to the subject (to prevent duplicates if also "issuedToSelf", the issuer) from the CredentialPairs for the response
+  // Note: not returning the ProofOf credentials.
+  const latestVersion = versionList[versionList.length - 1];
+  const resultantCredentials: (Credential | CredentialPb)[] = creds.filter(credPair => (credPair.version === latestVersion && credPair.encryptedCredential.subject === subjectDid)).map(credPair => credPair.credential);
+
+  return {
+    authToken: authorization,
+    body: resultantCredentials
+  };
+};
+
 function isCredentialPb (cred: Credential | CredentialPb): boolean {
   // HACK ALERT: just check if the cred object has a property unique to CredentialPb types
   return (cred as CredentialPb).context !== undefined;
@@ -172,113 +279,6 @@ const validateInputs = (issuer: string, subjectDid: string, credentialDataList: 
 
   // validate credentialDataList
   validateCredentialDataList(credentialDataList);
-};
-
-/**
- * Multiplexed handler for issuing credentials with UnumID's SaaS.
- * @param authorization
- * @param issuer
- * @param subjectDid
- * @param credentialDataList
- * @param signingPrivateKey
- * @param expirationDate
- */
-export const issueCredentials = async (authorization: string, issuerDid: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date, declineIssueCredentialsToSelf = false): Promise<UnumDto<(CredentialPb | Credential)[]>> => {
-  // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
-  requireAuth(authorization);
-
-  // Validate inputs.
-  validateInputs(issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate);
-
-  // Get target Subject's DID document public keys for encrypting all the credentials issued.
-  const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, subjectDid, 'RSA');
-  const publicKeyInfos = publicKeyInfoResponse.body;
-  authorization = publicKeyInfoResponse.authToken;
-
-  let issuerPublicKeyInfos: PublicKeyInfo[] = [];
-  if (!declineIssueCredentialsToSelf) {
-    // need to get the DID document public keys for the issuer in order to issue credentials to self
-    const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, issuerDid, 'RSA');
-    issuerPublicKeyInfos = publicKeyInfoResponse.body;
-    authorization = publicKeyInfoResponse.authToken;
-  }
-
-  // loop through the types and credential data lists inputted to create CredentialPairs of each supported version for each
-  const creds: WithVersion<CredentialPair>[] = [];
-  const proofOfCreds: WithVersion<CredentialPair>[] = [];
-
-  for (let i = 0; i < credentialDataList.length; i++) {
-    const type = credentialDataList[i].type;
-    const credData = omit(credentialDataList[i], 'type');
-
-    // construct the Credential's credentialSubject
-    const credSubject: CredentialSubject = { id: subjectDid, ...credData };
-    const credentialId = getUUID();
-
-    // construct the Credentials and their encrypted form for each supported version
-    const credentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, credSubject, signingPrivateKey, publicKeyInfos, expirationDate);
-
-    // add all credentialVersionPairs to creds array
-    Array.prototype.push.apply(creds, credentialVersionPairs);
-
-    /**
-     * Handle construction of the ProofOfCredentials and their encrypted form for each supported version
-     */
-    const proofOfType = `ProofOf${type}`; // prefixing the type with ProofOf
-    const proofOfCredentialSubject = { id: credSubject.id }; // no credential data for a ProofOf Credential
-    const proofOfCredentailId = getUUID(); // proofOf credentials do not share a credentialId because different credential data (empty)
-    const proofOfCredentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, proofOfType, issuerDid, proofOfCredentailId, proofOfCredentialSubject, signingPrivateKey, publicKeyInfos, expirationDate);
-
-    // add all proofOfCredentialVersionPairs to creds array
-    Array.prototype.push.apply(proofOfCreds, proofOfCredentialVersionPairs);
-
-    if (!declineIssueCredentialsToSelf) {
-      // construct the Credential's credentialSubject for the issuerDid
-      const issuerCredSubject: CredentialSubject = { ...credData, id: issuerDid };
-
-      // construct the Credentials and their encrypted form for each supported version for the issuer
-      const issuerCredentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, issuerCredSubject, signingPrivateKey, issuerPublicKeyInfos, expirationDate);
-
-      // add all issuerCredentialVersionPairs to creds array
-      Array.prototype.push.apply(creds, issuerCredentialVersionPairs);
-
-      /**
-       * Handle construction of the ProofOfCredentials and their encrypted form for each supported version
-       */
-      const issuerProofOfType = `ProofOf${type}`; // prefixing the type with ProofOf
-      const issuerProofOfCredentialSubject = { id: issuerCredSubject.id }; // no credential data for a ProofOf Credential
-      const issuerProofOfCredentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, issuerProofOfType, issuerDid, proofOfCredentailId, issuerProofOfCredentialSubject, signingPrivateKey, publicKeyInfos, expirationDate);
-
-      // add all proofOfCredentialVersionPairs to creds array
-      Array.prototype.push.apply(proofOfCreds, issuerProofOfCredentialVersionPairs);
-    }
-  }
-
-  // loop through the versions list and send all the encrypted credentials to the saas grouped by version and credentialIds.
-  // Note: proofOf Credentials have a separate credentialId but the issuerCredentials share one (because same credential data)
-  for (const version of versionList) {
-    // only grab the encrypted credentials of the current version
-    const resultantEncryptedCredentials: IssueCredentialOptions[] = creds.filter(credPair => credPair.version === version).map(credPair => credPair.encryptedCredential);
-
-    const result = await sendEncryptedCredentials(authorization, { credentialRequests: resultantEncryptedCredentials }, version);
-    authorization = result.authToken;
-
-    // only grab the proof of encrypted credentials of the current version
-    const proofOfResultantEncryptedCredentials: IssueCredentialOptions[] = proofOfCreds.filter(credPair => credPair.version === version).map(credPair => credPair.encryptedCredential);
-
-    const proofOfResult = await sendEncryptedCredentials(authorization, { credentialRequests: proofOfResultantEncryptedCredentials }, version);
-    authorization = proofOfResult.authToken;
-  }
-
-  // grab all the credentials of the latest version and that were issued to the subject (to prevent duplicates if also "issuedToSelf", the issuer) from the CredentialPairs for the response
-  // Note: not returning the ProofOf credentials.
-  const latestVersion = versionList[versionList.length - 1];
-  const resultantCredentials: (Credential | CredentialPb)[] = creds.filter(credPair => (credPair.version === latestVersion && credPair.encryptedCredential.subject === subjectDid)).map(credPair => credPair.credential);
-
-  return {
-    authToken: authorization,
-    body: resultantCredentials
-  };
 };
 
 /**
