@@ -132,7 +132,8 @@ exports.registerIssuer = function (apiKey, url, versionInfo) {
                             keys: kpSet,
                             apiKey: apiKey,
                             url: restResp.body.url,
-                            versionInfo: restResp.body.versionInfo
+                            versionInfo: restResp.body.versionInfo,
+                            cardImageUrl: restResp.body.cardImageUrl
                         }
                     };
                     return [2 /*return*/, issuerResp];

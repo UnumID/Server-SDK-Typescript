@@ -1,6 +1,7 @@
 import { configData } from '../config';
 import { RESTData, UnumDto } from '../types';
 import { requireAuth } from '../requireAuth';
+import { EncryptedCredentialEnrichedDto as EncryptedCredentialEnrichedDtoV3, Proof as ProofV3, Credential as CredentialV3, PublicKeyInfo as PublicKeyInfoV3 } from '@unumid/types-v3';
 import { Credential, JSONObj, CredentialPb, CredentialData, EncryptedCredentialEnrichedDto, CredentialSubject, PublicKeyInfo } from '@unumid/types';
 
 import { CustError } from '../utils/error';
@@ -11,9 +12,9 @@ import { issueCredentials } from './issueCredentials';
 import { sdkMajorVersion } from '../utils/constants';
 import { extractCredentialType } from '../utils/extractCredentialType';
 import { createListQueryString } from '../utils/queryStringHelper';
-import { verifyCredential, verifyCredentialHelper } from '../verifier/verifyCredential';
+import { verifyCredentialHelper } from '../verifier/verifyCredential';
 import logger from '../logger';
-import { getDidDocPublicKey, getDidDocPublicKeys } from '../utils/didHelper';
+import { getDidDocPublicKeys } from '../utils/didHelper';
 
 /**
  * Helper to facilitate an issuer re-encrypting any credentials it has issued to a target subject.

@@ -95,7 +95,8 @@ export const registerIssuer = async (apiKey: string, url:string, versionInfo: Ve
         keys: kpSet,
         apiKey,
         url: restResp.body.url,
-        versionInfo: restResp.body.versionInfo
+        versionInfo: restResp.body.versionInfo,
+        cardImageUrl: restResp.body.cardImageUrl
       }
     };
 
