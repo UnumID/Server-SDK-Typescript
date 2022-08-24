@@ -234,7 +234,7 @@ const validateInputs = (issuer: string, subjectDid: string, credentialDataList: 
  * @param signingPrivateKey
  * @param expirationDate
  */
-export const issueCredentials = async (authorization: string, issuerDid: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date, issueCredentialsToSelf = true): Promise<UnumDto<(CredentialPb | Credential)[]>> => {
+export const issueCredentials = async (authorization: string, issuerDid: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date, declineIssueCredentialsToSelf = false): Promise<UnumDto<(CredentialPb | Credential)[]>> => {
   // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
   requireAuth(authorization);
 
@@ -247,7 +247,7 @@ export const issueCredentials = async (authorization: string, issuerDid: string,
   authorization = publicKeyInfoResponse.authToken;
 
   let issuerPublicKeyInfos: PublicKeyInfo[] = [];
-  if (issueCredentialsToSelf) {
+  if (!declineIssueCredentialsToSelf) {
     // need to get the DID document public keys for the issuer in order to issue credentials to self
     const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, issuerDid, 'RSA');
     issuerPublicKeyInfos = publicKeyInfoResponse.body;
@@ -283,7 +283,7 @@ export const issueCredentials = async (authorization: string, issuerDid: string,
     // add all proofOfCredentialVersionPairs to creds array
     Array.prototype.push.apply(proofOfCreds, proofOfCredentialVersionPairs);
 
-    if (issueCredentialsToSelf) {
+    if (!declineIssueCredentialsToSelf) {
       // construct the Credential's credentialSubject for the issuerDid
       const issuerCredSubject: CredentialSubject = { ...credData, id: issuerDid };
 

@@ -43,8 +43,8 @@
   "dependencies": {
     "@types/semver": "^7.3.4",
     "@types/uuid": "^8.3.0",
-    "@unumid/library-crypto": "https://github.com/UnumID/Library-Crypto-TypeScript.git#base64",
-    "@unumid/types": "git+ssh://git@github.com/UnumID/types.git#v4",
+    "@unumid/library-crypto": "2.0.0",
+    "@unumid/types": "git+ssh://git@github.com/UnumID/types.git#4.0.0",
     "@unumid/types-v3": "npm:@unumid/types@3.53.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
