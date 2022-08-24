@@ -9,5 +9,5 @@ import { Credential, CredentialPb, CredentialData } from '@unumid/types';
  * @param signingPrivateKey
  * @param expirationDate
  */
-export declare const issueCredentials: (authorization: string, issuerDid: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date | undefined, issueCredentialsToSelf?: boolean) => Promise<UnumDto<(CredentialPb | Credential)[]>>;
+export declare const issueCredentials: (authorization: string, issuerDid: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date | undefined, declineIssueCredentialsToSelf?: boolean) => Promise<UnumDto<(CredentialPb | Credential)[]>>;
 //# sourceMappingURL=issueCredentials.d.ts.map

@@ -254,8 +254,8 @@ var validateInputs = function (issuer, subjectDid, credentialDataList, signingPr
  * @param signingPrivateKey
  * @param expirationDate
  */
-exports.issueCredentials = function (authorization, issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate, issueCredentialsToSelf) {
-    if (issueCredentialsToSelf === void 0) { issueCredentialsToSelf = true; }
+exports.issueCredentials = function (authorization, issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate, declineIssueCredentialsToSelf) {
+    if (declineIssueCredentialsToSelf === void 0) { declineIssueCredentialsToSelf = false; }
     return __awaiter(void 0, void 0, void 0, function () {
         var publicKeyInfoResponse, publicKeyInfos, issuerPublicKeyInfos, publicKeyInfoResponse_1, creds, proofOfCreds, i, type, credData, credSubject, credentialId, credentialVersionPairs, proofOfType, proofOfCredentialSubject, proofOfCredentailId, proofOfCredentialVersionPairs, issuerCredSubject, issuerCredentialVersionPairs, issuerProofOfType, issuerProofOfCredentialSubject, issuerProofOfCredentialVersionPairs, _loop_1, _i, versionList_2, version, latestVersion, resultantCredentials;
         return __generator(this, function (_a) {
@@ -271,7 +271,7 @@ exports.issueCredentials = function (authorization, issuerDid, subjectDid, crede
                     publicKeyInfos = publicKeyInfoResponse.body;
                     authorization = publicKeyInfoResponse.authToken;
                     issuerPublicKeyInfos = [];
-                    if (!issueCredentialsToSelf) return [3 /*break*/, 3];
+                    if (!!declineIssueCredentialsToSelf) return [3 /*break*/, 3];
                     return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authorization, issuerDid, 'RSA')];
                 case 2:
                     publicKeyInfoResponse_1 = _a.sent();
@@ -295,7 +295,7 @@ exports.issueCredentials = function (authorization, issuerDid, subjectDid, crede
                         proofOfCredentialVersionPairs = constructEncryptedCredentialOfEachVersion(authorization, proofOfType, issuerDid, proofOfCredentailId, proofOfCredentialSubject, signingPrivateKey, publicKeyInfos, expirationDate);
                         // add all proofOfCredentialVersionPairs to creds array
                         Array.prototype.push.apply(proofOfCreds, proofOfCredentialVersionPairs);
-                        if (issueCredentialsToSelf) {
+                        if (!declineIssueCredentialsToSelf) {
                             issuerCredSubject = __assign(__assign({}, credData), { id: issuerDid });
                             issuerCredentialVersionPairs = constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, issuerCredSubject, signingPrivateKey, issuerPublicKeyInfos, expirationDate);
                             // add all issuerCredentialVersionPairs to creds array
