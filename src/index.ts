@@ -19,7 +19,7 @@ import { updateCredentialStatuses } from './issuer/updateCredentialStatuses';
 import { checkCredentialStatuses } from './verifier/checkCredentialStatuses';
 import { reEncryptCredentials } from './issuer/reEncryptCredentials';
 import { extractCredentialType } from './utils/extractCredentialType';
-import { getPresentationRequest } from './verifier/getPresentationRequest';
+import { getPresentationRequest } from './verifier/getRequestById';
 
 export {
   // Issuer Functions

@@ -63,11 +63,10 @@ var lodash_1 = require("lodash");
 var didHelper_1 = require("../utils/didHelper");
 var config_1 = require("../config");
 var verify_1 = require("../utils/verify");
-var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var validateProof_1 = require("./validateProof");
 var convertToProtobuf_1 = require("../utils/convertToProtobuf");
 var sendPresentationVerifiedReceipt_1 = require("./sendPresentationVerifiedReceipt");
-var getPresentationRequest_1 = require("./getPresentationRequest");
+var getRequestById_1 = require("./getRequestById");
 function isDeclinedPresentation(presentation) {
     return helpers_1.isArrayEmpty(presentation.verifiableCredential);
 }
@@ -217,7 +216,7 @@ function verifyPresentationRequest(authorization, presentationRequest) {
  * @param verifierDid: string
  */
 exports.verifyPresentation = function (authorization, encryptedPresentation, verifierDid, encryptionPrivateKey, presentationRequest) { return __awaiter(void 0, void 0, void 0, function () {
-    var presentationBytes, presentation, presentationRequestResponse, presentationRequestPb, requestVerificationResult, authToken, type, result_2, verificationResult_1, result_3, credentialRequests, verificationResult, result, error_2;
+    var presentationBytes, presentation, presentationRequestUnumDto, presentationRequestPb, requestVerificationResult, authToken, type, result_2, verificationResult_1, result_3, credentialRequests, verificationResult, result, error_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -243,15 +242,15 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                 // validate presentation
                 validatePresentation(presentation);
                 if (!!presentationRequest) return [3 /*break*/, 2];
-                return [4 /*yield*/, getPresentationRequest_1.getPresentationRequest(authorization, presentation.presentationRequestId)];
+                return [4 /*yield*/, getRequestById_1.getPresentationRequest(authorization, presentation.presentationRequestId)];
             case 1:
-                presentationRequestResponse = _a.sent();
-                authorization = networkRequestHelper_1.handleAuthTokenHeader(presentationRequestResponse, authorization);
-                presentationRequest = getPresentationRequest_1.extractPresentationRequest(presentationRequestResponse.body);
+                presentationRequestUnumDto = _a.sent();
+                authorization = presentationRequestUnumDto.authToken;
+                presentationRequest = getRequestById_1.extractPresentationRequest(presentationRequestUnumDto.body);
                 return [3 /*break*/, 3];
             case 2:
                 // need to convert the string date attributes to to Date objects for proto handling
-                presentationRequest = getPresentationRequest_1.handleConvertingPresentationRequestDateAttributes(presentationRequest);
+                presentationRequest = getRequestById_1.handleConvertingPresentationRequestDateAttributes(presentationRequest);
                 _a.label = 3;
             case 3:
                 // verify the presentation request uuid match
