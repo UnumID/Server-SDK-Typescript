@@ -11,7 +11,7 @@ import { CredentialSubject, Presentation, Proof, Credential } from '@unumid/type
 import { CustError } from './utils/error';
 import { createProof } from './utils/createProof';
 import { convertCredentialSubject } from './utils/convertCredentialSubject';
-import { getRequest } from './verifier/getRequest';
+import { getPresentationRequestByUuid } from './verifier/getRequestByUuid';
 import { verifySubjectCredentialRequests } from './issuer/verifySubjectCredentialRequests';
 import { verifySignedDid } from './utils/verifyDidDocument';
 import { revokeAllCredentials } from './issuer/revokeAllCredentials';
@@ -19,6 +19,6 @@ import { updateCredentialStatuses } from './issuer/updateCredentialStatuses';
 import { checkCredentialStatuses } from './verifier/checkCredentialStatuses';
 import { reEncryptCredentials } from './issuer/reEncryptCredentials';
 import { extractCredentialType } from './utils/extractCredentialType';
-import { getPresentationRequest } from './verifier/getPresentationRequest';
-export { registerIssuer, issueCredentials, reEncryptCredentials, updateCredentialStatuses, verifySubjectCredentialRequests, revokeAllCredentials, registerVerifier, sendEmail, sendRequest, sendSms, verifyPresentation, checkCredentialStatuses, getRequest, getPresentationRequest, UnumDto, RegisteredVerifier, VerifiedStatus, Presentation, RegisteredIssuer, CredentialSubject, DecryptedPresentation, CredentialStatusInfo, CustError, Proof, Credential, CredentialInfo, extractCredentialInfo, extractCredentialType, verifySignedDid, createProof, convertCredentialSubject };
+import { getPresentationRequest } from './verifier/getRequestById';
+export { registerIssuer, issueCredentials, reEncryptCredentials, updateCredentialStatuses, verifySubjectCredentialRequests, revokeAllCredentials, registerVerifier, sendEmail, sendRequest, sendSms, verifyPresentation, checkCredentialStatuses, getPresentationRequestByUuid, getPresentationRequest, UnumDto, RegisteredVerifier, VerifiedStatus, Presentation, RegisteredIssuer, CredentialSubject, DecryptedPresentation, CredentialStatusInfo, CustError, Proof, Credential, CredentialInfo, extractCredentialInfo, extractCredentialType, verifySignedDid, createProof, convertCredentialSubject };
 //# sourceMappingURL=index.d.ts.map

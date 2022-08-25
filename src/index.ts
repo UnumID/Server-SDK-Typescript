@@ -11,7 +11,7 @@ import { CredentialSubject, Presentation, Proof, Credential } from '@unumid/type
 import { CustError } from './utils/error';
 import { createProof } from './utils/createProof';
 import { convertCredentialSubject } from './utils/convertCredentialSubject';
-import { getRequest } from './verifier/getRequest';
+import { getPresentationRequestByUuid } from './verifier/getRequestByUuid';
 import { verifySubjectCredentialRequests } from './issuer/verifySubjectCredentialRequests';
 import { verifySignedDid } from './utils/verifyDidDocument';
 import { revokeAllCredentials } from './issuer/revokeAllCredentials';
@@ -36,7 +36,7 @@ export {
   sendSms,
   verifyPresentation,
   checkCredentialStatuses,
-  getRequest,
+  getPresentationRequestByUuid,
   getPresentationRequest,
   // Types
   UnumDto,

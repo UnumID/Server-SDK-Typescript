@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRequest = void 0;
+exports.getPresentationRequestByUuid = void 0;
 var config_1 = require("../config");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var logger_1 = __importDefault(require("../logger"));
@@ -50,7 +50,7 @@ var requireAuth_1 = require("../requireAuth");
  * @param uuid
  * @returns UnumDto<PresentationRequestDto>
 */
-exports.getRequest = function (authorization, uuid) { return __awaiter(void 0, void 0, void 0, function () {
+exports.getPresentationRequestByUuid = function (authorization, uuid) { return __awaiter(void 0, void 0, void 0, function () {
     var data, response, authToken, e_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
@@ -76,4 +76,4 @@ exports.getRequest = function (authorization, uuid) { return __awaiter(void 0, v
         }
     });
 }); };
-//# sourceMappingURL=getRequest.js.map
+//# sourceMappingURL=getRequestByUuid.js.map
