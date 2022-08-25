@@ -6,7 +6,7 @@ import logger from '../logger';
 import { JSONObj, UnsignedRevokeAllCredentials, RevokeAllCredentials, ProofPb } from '@unumid/types';
 import { CustError } from '../utils/error';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
-import { createProofPb } from '..';
+import { createProof } from '../utils/createProof';
 
 /**
  * Helper to validate request inputs.
@@ -49,7 +49,7 @@ export const revokeAllCredentials = async (authorization: string, issuerDid: str
     };
 
     const bytes = UnsignedRevokeAllCredentials.encode(unsignedDto).finish();
-    const proof: ProofPb = createProofPb(bytes, signingPrivateKey, issuerDid);
+    const proof: ProofPb = createProof(bytes, signingPrivateKey, issuerDid);
 
     const signedDto: RevokeAllCredentials = {
       ...unsignedDto,

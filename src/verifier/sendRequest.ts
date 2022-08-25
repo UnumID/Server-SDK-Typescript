@@ -31,13 +31,13 @@ export const sendRequest = async (
 ): Promise<UnumDto<PresentationRequestEnriched>> => {
   requireAuth(authorization);
 
+  // create an indentifier that ties together these related requests of different versions.
+  const id = getUUID();
+
   let body: SendRequestReqBody = { verifier, credentialRequests, eccPrivateKey, holderAppUuid, expiresAt: expirationDate, metadata, id };
 
   // Validate inputs
   body = validateSendRequestBody(body);
-
-  // create an indentifier that ties together these related requests of different versions.
-  const id = getUUID();
 
   const responseV3: UnumDto<PresentationRequestDtoV3> = await sendRequestV3(authorization, eccPrivateKey, body);
   const response: UnumDto<PresentationRequestEnriched> = await sendRequestV4(responseV3.authToken, eccPrivateKey, body);
@@ -101,7 +101,7 @@ export const sendRequestV4 = async (
 ): Promise<UnumDto<PresentationRequestEnriched>> => {
   try {
     // Create the unsigned presentation request object from the unsignedPresentation object
-    const unsignedPresentationRequest = constructUnsignedPresentationRequest(body, '3.0.0');
+    const unsignedPresentationRequest = constructUnsignedPresentationRequest(body, '4.0.0');
 
     // Create the signed presentation request object from the unsignedPresentation object
     const signedPR: PresentationRequestPb = constructSignedPresentationRequest(unsignedPresentationRequest, eccPrivateKey);
@@ -231,7 +231,7 @@ export const constructSignedPresentationRequestV3 = (unsignedPresentationRequest
       unsignedPresentationRequest.verifier
     );
 
-    const signedPresentationRequest: PresentationRequestPb = {
+    const signedPresentationRequest: PresentationRequestPbV3 = {
       ...unsignedPresentationRequest,
       proof: proof
     };

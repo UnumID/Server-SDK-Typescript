@@ -1,10 +1,11 @@
-import { JSONObj, PresentationRequestDtoPb, WithVersion } from '@unumid/types';
+import { PresentationRequestEnriched } from '@unumid/types';
 import { isDate, isString } from 'lodash';
 import { configData } from '../config';
 import logger from '../logger';
-import { RESTData, RESTResponse, UnumDto } from '../types';
+import { RESTData, RESTResponse } from '../types';
+import { sdkMajorVersion } from '../utils/constants';
 import { CustError } from '../utils/error';
-import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
+import { makeNetworkRequest } from '../utils/networkRequestHelper';
 
 /**
  * Helper to get presentationRequests by id from Saas' PresentationRequestRepo
@@ -12,16 +13,17 @@ import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkReque
  * @param id
  * @returns
  */
-export async function getPresentationRequest (authorization: string, id: string): Promise<RESTResponse<PresentationRequestRepoDto>> {
+export async function getPresentationRequest (authorization: string, id: string, version = sdkMajorVersion): Promise<RESTResponse<PresentationRequestEnriched[]>> {
   const receiptCallOptions: RESTData = {
     method: 'GET',
     baseUrl: configData.SaaSUrl,
-    endPoint: `presentationRequestRepository/${id}`,
+    endPoint: `presentationRequest?id=${id}&version=${version}`,
     header: { Authorization: authorization }
   };
 
   try {
-    const resp = await makeNetworkRequest<PresentationRequestRepoDto>(receiptCallOptions);
+    // note: should only ever return array of length 1.
+    const resp = await makeNetworkRequest<PresentationRequestEnriched[]>(receiptCallOptions);
 
     return resp;
   } catch (e) {
@@ -35,13 +37,12 @@ export async function getPresentationRequest (authorization: string, id: string)
  * @param presentationRequestResponse
  * @returns
  */
-export function extractPresentationRequest (presentationRequestResponse: PresentationRequestRepoDto): PresentationRequestDto {
-// export function extractPresentationRequest (presentationRequestDto: PresentationRequestDto): PresentationRequestDto {
+export function extractPresentationRequest (presentationRequestResponse: PresentationRequestEnriched[]): PresentationRequestEnriched {
   try {
-    const presentationRequestDto = presentationRequestResponse.presentationRequests['3.0.0'];
+    const presentationRequestEnrichedDto = presentationRequestResponse[0];
 
     // need to convert the times to Date objects for proto handling
-    return handleConvertingPresentationRequestDateAttributes(presentationRequestDto);
+    return handleConvertingPresentationRequestDateAttributes(presentationRequestEnrichedDto);
   } catch (e) {
     throw new CustError(500, `Error handling presentation request from Saas: Error ${e}`);
   }
@@ -52,7 +53,7 @@ export function extractPresentationRequest (presentationRequestResponse: Present
  * @param presentationRequestDto
  * @returns
  */
-export function handleConvertingPresentationRequestDateAttributes (presentationRequestDto: PresentationRequestDto): PresentationRequestDto {
+export function handleConvertingPresentationRequestDateAttributes (presentationRequestDto: PresentationRequestEnriched): PresentationRequestEnriched {
   const result = {
     ...presentationRequestDto,
     presentationRequest: {

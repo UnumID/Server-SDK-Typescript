@@ -120,7 +120,7 @@ exports.verifyNoPresentationHelper = function (authToken, noPresentation, verifi
                 publicKeyInfoList = publicKeyInfoResponse.body;
                 authToken = publicKeyInfoResponse.authToken;
                 unsignedNoPresentation = lodash_1.omit(noPresentation, 'proof');
-                bytes = types_1.UnsignedPresentationPb.encode(unsignedNoPresentation).finish();
+                bytes = types_1.UnsignedPresentation.encode(unsignedNoPresentation).finish();
                 isVerified = false;
                 // check all the public keys to see if any work, stop if one does
                 for (_i = 0, publicKeyInfoList_1 = publicKeyInfoList; _i < publicKeyInfoList_1.length; _i++) {

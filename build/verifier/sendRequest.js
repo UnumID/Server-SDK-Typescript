@@ -73,15 +73,15 @@ exports.sendRequest = function (authorization, verifier, credentialRequests, ecc
 expirationDate, metadata) {
     if (holderAppUuid === void 0) { holderAppUuid = config_1.configData.unumWalletHolderApp; }
     return __awaiter(void 0, void 0, void 0, function () {
-        var body, id, responseV3, response;
+        var id, body, responseV3, response;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     requireAuth_1.requireAuth(authorization);
+                    id = helpers_1.getUUID();
                     body = { verifier: verifier, credentialRequests: credentialRequests, eccPrivateKey: eccPrivateKey, holderAppUuid: holderAppUuid, expiresAt: expirationDate, metadata: metadata, id: id };
                     // Validate inputs
                     body = validateSendRequestBody(body);
-                    id = helpers_1.getUUID();
                     return [4 /*yield*/, exports.sendRequestV3(authorization, eccPrivateKey, body)];
                 case 1:
                     responseV3 = _a.sent();
@@ -144,7 +144,7 @@ exports.sendRequestV4 = function (authorization, eccPrivateKey, body) { return _
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 2, , 3]);
-                unsignedPresentationRequest = exports.constructUnsignedPresentationRequest(body, '3.0.0');
+                unsignedPresentationRequest = exports.constructUnsignedPresentationRequest(body, '4.0.0');
                 signedPR = exports.constructSignedPresentationRequest(unsignedPresentationRequest, eccPrivateKey);
                 restData = {
                     method: 'POST',

@@ -54,6 +54,7 @@ exports.handleConvertingPresentationRequestDateAttributes = exports.extractPrese
 var lodash_1 = require("lodash");
 var config_1 = require("../config");
 var logger_1 = __importDefault(require("../logger"));
+var constants_1 = require("../utils/constants");
 var error_1 = require("../utils/error");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 /**
@@ -62,7 +63,8 @@ var networkRequestHelper_1 = require("../utils/networkRequestHelper");
  * @param id
  * @returns
  */
-function getPresentationRequest(authorization, id) {
+function getPresentationRequest(authorization, id, version) {
+    if (version === void 0) { version = constants_1.sdkMajorVersion; }
     return __awaiter(this, void 0, void 0, function () {
         var receiptCallOptions, resp, e_1;
         return __generator(this, function (_a) {
@@ -71,7 +73,7 @@ function getPresentationRequest(authorization, id) {
                     receiptCallOptions = {
                         method: 'GET',
                         baseUrl: config_1.configData.SaaSUrl,
-                        endPoint: "presentationRequestRepository/" + id,
+                        endPoint: "presentationRequest?id=" + id + "&version=" + version,
                         header: { Authorization: authorization }
                     };
                     _a.label = 1;
@@ -97,11 +99,10 @@ exports.getPresentationRequest = getPresentationRequest;
  * @returns
  */
 function extractPresentationRequest(presentationRequestResponse) {
-    // export function extractPresentationRequest (presentationRequestDto: PresentationRequestDto): PresentationRequestDto {
     try {
-        var presentationRequestDto = presentationRequestResponse.presentationRequests['3.0.0'];
+        var presentationRequestEnrichedDto = presentationRequestResponse[0];
         // need to convert the times to Date objects for proto handling
-        return handleConvertingPresentationRequestDateAttributes(presentationRequestDto);
+        return handleConvertingPresentationRequestDateAttributes(presentationRequestEnrichedDto);
     }
     catch (e) {
         throw new error_1.CustError(500, "Error handling presentation request from Saas: Error " + e);

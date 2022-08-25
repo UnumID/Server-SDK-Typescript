@@ -6,7 +6,7 @@ import { CredentialSubject, EncryptedCredentialOptions, EncryptedData, Proof, Cr
 
 import logger from '../logger';
 import { getDidDocPublicKeys } from '../utils/didHelper';
-import { doEncrypt, doEncryptPb } from '../utils/encrypt';
+import { doEncrypt } from '../utils/encrypt';
 import { createProof } from '../utils/createProof';
 import { getUUID } from '../utils/helpers';
 import { CustError } from '../utils/error';
@@ -141,7 +141,7 @@ function isCredentialPb (cred: Credential | CredentialPb): boolean {
  * @param cred
  * @param publicKeyInfos
  */
-const constructEncryptedCredentialOpts = (cred: Credential | CredentialPb, publicKeyInfos: PublicKeyInfo[]): EncryptedCredentialOptions[] => {
+const constructEncryptedCredentialOpts = (cred: CredentialPb, publicKeyInfos: PublicKeyInfo[]): EncryptedCredentialOptions[] => {
   const credentialSubject: CredentialSubject = convertCredentialSubject(cred.credentialSubject);
   const subjectDid = credentialSubject.id;
 
@@ -151,9 +151,7 @@ const constructEncryptedCredentialOpts = (cred: Credential | CredentialPb, publi
     const subjectDidWithKeyFragment = `${subjectDid}#${publicKeyInfo.id}`;
 
     // use the protobuf byte array encryption if dealing with a CredentialPb cred type
-    const encryptedData: EncryptedData = isCredentialPb(cred)
-      ? doEncryptPb(subjectDidWithKeyFragment, publicKeyInfo, CredentialPb.encode(cred as CredentialPb).finish())
-      : doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, cred);
+    const encryptedData: EncryptedData = doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, CredentialPb.encode(cred as CredentialPb).finish());
 
     // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
     const credentialType = getCredentialType(cred.type);
@@ -380,7 +378,7 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
  * @param subjectDid
  * @returns
  */
-const constructIssueCredentialOptions = (credential: Credential | CredentialPb, publicKeyInfos: PublicKeyInfo[], subjectDid: string): IssueCredentialOptions => {
+const constructIssueCredentialOptions = (credential: CredentialPb, publicKeyInfos: PublicKeyInfo[], subjectDid: string): IssueCredentialOptions => {
   // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
   const encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos);
 

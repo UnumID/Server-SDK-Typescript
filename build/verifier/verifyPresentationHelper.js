@@ -304,7 +304,7 @@ exports.verifyPresentationHelper = function (authorization, presentation, verifi
                 _c.label = 4;
             case 4:
                 _c.trys.push([4, 5, , 7]);
-                bytes = types_1.UnsignedPresentationPb.encode(data).finish();
+                bytes = types_1.UnsignedPresentation.encode(data).finish();
                 // check all the public keys to see if any work, stop if one does
                 for (_i = 0, publicKeyInfoList_1 = publicKeyInfoList; _i < publicKeyInfoList_1.length; _i++) {
                     publicKeyInfo = publicKeyInfoList_1[_i];

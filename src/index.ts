@@ -12,7 +12,6 @@ import { CustError } from './utils/error';
 import { createProof } from './utils/createProof';
 import { convertCredentialSubject } from './utils/convertCredentialSubject';
 import { getRequest } from './verifier/getRequest';
-import { getVersionedRequest } from './verifier/getVersionedRequest';
 import { verifySubjectCredentialRequests } from './issuer/verifySubjectCredentialRequests';
 import { verifySignedDid } from './utils/verifyDidDocument';
 import { revokeAllCredentials } from './issuer/revokeAllCredentials';
@@ -20,6 +19,7 @@ import { updateCredentialStatuses } from './issuer/updateCredentialStatuses';
 import { checkCredentialStatuses } from './verifier/checkCredentialStatuses';
 import { reEncryptCredentials } from './issuer/reEncryptCredentials';
 import { extractCredentialType } from './utils/extractCredentialType';
+import { getPresentationRequest } from './verifier/getPresentationRequest';
 
 export {
   // Issuer Functions
@@ -37,7 +37,7 @@ export {
   verifyPresentation,
   checkCredentialStatuses,
   getRequest,
-  getVersionedRequest,
+  getPresentationRequest,
   // Types
   UnumDto,
   RegisteredVerifier,
@@ -57,6 +57,5 @@ export {
   extractCredentialType,
   verifySignedDid,
   createProof,
-  createProofPb,
   convertCredentialSubject
 };

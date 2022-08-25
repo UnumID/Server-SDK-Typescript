@@ -1,6 +1,6 @@
-import { EncryptedData, JSONObj, PublicKeyInfo } from '@unumid/types';
+import { EncryptedData } from '@unumid/types';
 import logger from '../logger';
-import { decryptBytes, encrypt, encryptBytes } from '@unumid/library-crypto';
+import { decryptBytes, encryptBytes } from '@unumid/library-crypto';
 
 /**
  * Decrypt the data.

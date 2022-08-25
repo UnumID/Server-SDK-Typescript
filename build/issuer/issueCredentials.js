@@ -195,9 +195,7 @@ var constructEncryptedCredentialOpts = function (cred, publicKeyInfos) {
     return publicKeyInfos.map(function (publicKeyInfo) {
         var subjectDidWithKeyFragment = subjectDid + "#" + publicKeyInfo.id;
         // use the protobuf byte array encryption if dealing with a CredentialPb cred type
-        var encryptedData = isCredentialPb(cred)
-            ? encrypt_1.doEncryptPb(subjectDidWithKeyFragment, publicKeyInfo, types_1.CredentialPb.encode(cred).finish())
-            : encrypt_1.doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, cred);
+        var encryptedData = encrypt_1.doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, types_1.CredentialPb.encode(cred).finish());
         // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
         var credentialType = getCredentialType_1.getCredentialType(cred.type);
         var encryptedCredentialOptions = {

@@ -131,7 +131,7 @@ var validatePresentationRequest = function (presentationRequest) {
     }
     validateCredentialRequests(presentationRequest.credentialRequests);
     // Check proof object is formatted correctly while converting to protobuf type
-    var result = __assign(__assign({}, presentationRequest), { proof: validateProof_1.validateProof(convertToProtobuf_1.convertProof(proof)), expiresAt: presentationRequest.expiresAt ? presentationRequest.expiresAt : undefined, metadata: presentationRequest.metadata ? presentationRequest.metadata : undefined });
+    var result = __assign(__assign({}, presentationRequest), { proof: validateProof_1.validateProof(convertToProtobuf_1.convertProof(proof)), expiresAt: presentationRequest.expiresAt, metadata: presentationRequest.metadata });
     return result;
 };
 /**
