@@ -1,6 +1,6 @@
 
-import { Issuer, DidDocument, UnsignedCredential, Credential, CredentialSubject, SubjectCredentialRequest, CredentialRequestPb, SignedDidDocument, SubjectCredentialRequests } from '@unumid/types';
-import { CredentialRequest, UnsignedSubjectCredentialRequests } from '@unumid/types/build/protos/credential';
+import { Issuer, DidDocument, UnsignedCredential, Credential, CredentialSubject, SubjectCredentialRequest, CredentialRequestPb, SignedDidDocument, SubjectCredentialRequests, UnsignedCredentialPb, Credential } from '@unumid/types';
+import { CredentialRequest, UnsignedCredential, UnsignedSubjectCredentialRequests } from '@unumid/types/build/protos/credential';
 import { configData } from '../../src/config';
 import { RESTResponse } from '../../src/types';
 import { createKeyPairSet } from '../../src/utils/createKeyPairs';
@@ -163,5 +163,49 @@ export const makeDummyCredentialSubject = (options: DummyUnsignedCredentialOptio
   return {
     id: subject,
     ...claims
+  };
+};
+
+export const makeDummyUnsignedCredential = (options: DummyUnsignedCredentialOptions = {}): UnsignedCredential => {
+  const id = getUUID();
+  const issuer = options.issuer || dummyIssuerDid;
+  const subject = options.subject || dummySubjectDid;
+  const type = options.type || 'DummyCredential';
+  const claims = options.claims || { value: 'Dummy' };
+  const credentialSubject = makeDummyCredentialSubject(options);
+
+  return {
+    context: ['https://www.w3.org/2018/credentials/v1'],
+    id,
+    type: ['VerifiableCredential', type],
+    issuer,
+    credentialSubject: JSON.stringify(credentialSubject),
+    credentialStatus: {
+      id: `${configData.SaaSUrl}/credentialStatus/${id}`,
+      type: 'CredentialStatus'
+    },
+    issuanceDate: new Date(),
+    expirationDate: options.expirationDate
+  };
+};
+
+export const makeDummyCredential = async (options: DummyCredentialOptions): Promise<Credential> => {
+  let { privateKey, unsignedCredential, encoding } = options;
+  if (!privateKey) {
+    const keys = await createKeyPairSet(encoding);
+    privateKey = keys.signing.privateKey;
+  }
+
+  const privateKeyId = options.privateKeyId || getUUID();
+
+  const issuerDidWithKeyFragment = `${unsignedCredential.issuer}#${privateKeyId}`;
+
+  const bytes = UnsignedCredentialPb.encode(unsignedCredential).finish();
+
+  const proof = createProof(bytes, privateKey, issuerDidWithKeyFragment);
+
+  return {
+    ...unsignedCredential,
+    proof
   };
 };

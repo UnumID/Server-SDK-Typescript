@@ -1,7 +1,7 @@
 import { PresentationRequestDto } from '@unumid/types';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { configData } from '../../src/config';
-import { dummyAuthToken, makeDummyPresentationRequestDto } from './mocks';
+import { dummyAuthToken, makeDummyPresentationRequestEnriched } from './mocks';
 import { CustError, getRequest } from '../../src';
 import logger from '../../src/logger';
 
@@ -17,7 +17,7 @@ describe('getRequest', () => {
   let dummyPresentationRequestDto: PresentationRequestDto;
 
   beforeEach(async () => {
-    dummyPresentationRequestDto = await makeDummyPresentationRequestDto();
+    dummyPresentationRequestDto = await makeDummyPresentationRequestEnriched();
   });
 
   afterEach(() => {

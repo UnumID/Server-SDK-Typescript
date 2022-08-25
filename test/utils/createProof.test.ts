@@ -1,17 +1,19 @@
 import * as cryptoLib from '@unumid/library-crypto';
-import { Proof, ProofPb, UnsignedCredentialPb } from '@unumid/types';
-import { createProof, createProofPb } from '../../src/utils/createProof';
+import { Proof, ProofPb, UnsignedCredentialPb, UnsignedString } from '@unumid/types';
+import { createProof } from '../../src/utils/createProof';
 
 describe('Signs the given data and returns Proof object', () => {
-  const data = { test: 'test Data Object' };
+  const data: UnsignedString = { data: 'test Data Object' };
+  const dataBytes = UnsignedString.encode(data).finish();
   const method = 'did:unum:9072a539-6a2e-495a-966b-eb03f5273116';
+
   let proof: Proof;
   let signSpy;
 
   beforeAll(async () => {
-    signSpy = jest.spyOn(cryptoLib, 'sign', 'get');
+    signSpy = jest.spyOn(cryptoLib, 'signBytes', 'get');
     const { privateKey } = await cryptoLib.generateEccKeyPair();
-    proof = createProof(data, privateKey, method, 'pem');
+    proof = createProof(dataBytes, privateKey, method);
   });
 
   afterAll(() => {
@@ -54,7 +56,7 @@ describe('Signs the data using protobufs btye array and returns Proof object', (
 
     const bytes = ProofPb.encode(data).finish();
 
-    proof = createProofPb(bytes, privateKey, method, 'pem');
+    proof = createProof(bytes, privateKey, method);
   });
 
   afterAll(() => {

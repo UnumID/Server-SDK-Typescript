@@ -6,7 +6,7 @@ import { CredentialSubject, Credential, CredentialData, CredentialPb } from '@un
 import { CustError } from '../../src/utils/error';
 import * as createKeyPairs from '../../src/utils/createKeyPairs';
 import { getDidDocPublicKeys } from '../../src/utils/didHelper';
-import { doEncrypt, doEncrypt } from '../../src/utils/encrypt';
+import { doEncrypt } from '../../src/utils/encrypt';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { omit } from 'lodash';
 

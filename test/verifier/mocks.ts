@@ -16,7 +16,8 @@ import {
   WithVersion,
   PresentationRequestEnriched,
   PublicKeyInfo,
-  HolderAppInfo
+  HolderAppInfo,
+  UnsignedPresentationRequestPb
 } from '@unumid/types';
 
 import { configData } from '../../src/config';
@@ -405,5 +406,47 @@ export const makeDummyPresentation = async (options: MakeDummyPresentationOption
   return {
     ...unsignedPresentation,
     proof
+  };
+};
+
+export const makeDummyPresentationRequestEnriched = async (options: MakeDummyPresentationRequestOptions = {}): Promise<PresentationRequestEnriched> => {
+  const unsignedPresentationRequest = options.unsignedPresentationRequest || makeDummyUnsignedPresentationRequest();
+  const privateKeyId = options.privateKeyId || getUUID();
+  const encoding = options.encoding || 'pem';
+
+  const now = new Date();
+  const createdAt = options.createdAt || now;
+  const updatedAt = options.updatedAt || now;
+  const deeplink = options.deeplink || `https://unumid.org/${unsignedPresentationRequest.uuid}`;
+  const qrCode = options.qrCode || 'Dummy QR Code data url';
+  const verifier = options.verifier || makeDummyVerifierInfo({ did: unsignedPresentationRequest.verifier });
+
+  const issuers = options.issuers || makeDummyIssuerInfoMap();
+  const holderApp = makeDummyHolderAppInfo(options.holderApp);
+
+  let { privateKey } = options;
+
+  if (!privateKey) {
+    const keypairs = await createKeyPairSet();
+    privateKey = keypairs.signing.privateKey;
+  }
+
+  const verifierDidWithKeyFragment = `${unsignedPresentationRequest.verifier}#${privateKeyId}`;
+
+  const bytes = UnsignedPresentationRequestPb.encode(unsignedPresentationRequest).finish();
+
+  const proof = createProof(bytes, privateKey, verifierDidWithKeyFragment);
+  return {
+    presentationRequest: {
+      ...unsignedPresentationRequest,
+      proof,
+      createdAt,
+      updatedAt
+    },
+    qrCode,
+    deeplink,
+    verifier,
+    issuers,
+    holderApp
   };
 };
