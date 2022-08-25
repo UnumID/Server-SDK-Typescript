@@ -201,7 +201,7 @@ export const makeDummyDidDocument = async (options: Partial<DidDocument> = {}): 
   if (!publicKey) {
     const keypairs = await createKeyPairSet();
 
-    publicKey: PublicKeyInfo = [
+    publicKey = [
       {
         id: getUUID(),
         publicKey: keypairs.signing.publicKey,
