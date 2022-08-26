@@ -2,9 +2,10 @@ import { CredentialRequest, PresentationRequestPostDto, PresentationRequest } fr
 import { sendRequest } from '../../src/index';
 import { UnumDto } from '../../src/types';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
-import { dummyAuthToken, makeDummyPresentationRequestResponse } from './mocks';
+import { dummyAuthToken, makeDummyPresentationRequestEnriched } from './mocks';
 import { CustError } from '../../src/utils/error';
 import * as createKeyPairs from '../../src/utils/createKeyPairs';
+import { PresentationRequestEnriched } from '@unumid/types-v3';
 
 jest.mock('../../src/utils/networkRequestHelper', () => {
   const actual = jest.requireActual('../../src/utils/networkRequestHelper');
@@ -26,7 +27,7 @@ const callSendRequests = (
   eccPrivateKey: string,
   holderAppUuid: string,
   authToken: string
-): Promise<UnumDto<PresentationRequestPostDto>> => {
+): Promise<UnumDto<PresentationRequestEnriched>> => {
   return sendRequest(authToken, verifier, credentialRequests, eccPrivateKey, holderAppUuid, expiresAt, metadata);
 };
 
@@ -64,7 +65,7 @@ describe('sendRequest', () => {
   } = populateMockData();
 
   beforeEach(async () => {
-    const dummyPresentationRequestResponse = await makeDummyPresentationRequestResponse();
+    const dummyPresentationRequestResponse = await makeDummyPresentationRequestEnriched();
     const headers = { 'x-auth-token': dummyAuthToken };
     const dummyApiResponse = { body: dummyPresentationRequestResponse, headers };
     mockMakeNetworkRequest.mockResolvedValue(dummyApiResponse);
@@ -150,7 +151,7 @@ describe('sendRequest', () => {
   });
 
   it('returns undefined auth-token if the SaaS does not return an x-auth-token header', async () => {
-    const dummyPresentationRequestResponse = await makeDummyPresentationRequestResponse();
+    const dummyPresentationRequestResponse = await makeDummyPresentationRequestEnriched();
     const dummyApiResponse = { body: dummyPresentationRequestResponse };
     mockMakeNetworkRequest.mockResolvedValue(dummyApiResponse);
     apiResponse = await callSendRequests(
