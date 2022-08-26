@@ -38,7 +38,7 @@ const populateMockData = async (): Promise<JSONObj> => {
   return ({
     context,
     type,
-    verifiableCredential
+    verifiableCredential,
     proof
   });
 };
