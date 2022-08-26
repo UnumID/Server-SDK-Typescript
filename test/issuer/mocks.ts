@@ -1,5 +1,5 @@
 
-import { Issuer, DidDocument, UnsignedCredential, Credential, CredentialSubject, SubjectCredentialRequest, CredentialRequestPb, SignedDidDocument, SubjectCredentialRequests, UnsignedCredentialPb, Credential } from '@unumid/types';
+import { Issuer, DidDocument, UnsignedCredential, Credential, CredentialSubject, SubjectCredentialRequest, CredentialRequestPb, SignedDidDocument, SubjectCredentialRequests, UnsignedCredentialPb, Credential, UnsignedDID, DID } from '@unumid/types';
 import { CredentialRequest, UnsignedCredential, UnsignedSubjectCredentialRequests } from '@unumid/types/build/protos/credential';
 import { configData } from '../../src/config';
 import { RESTResponse } from '../../src/types';
@@ -64,6 +64,19 @@ export const makeDummySubjectCredentialRequests = async (requests: CredentialReq
   return {
     ...unsignedSubjectCredentialRequests,
     proof: proof
+  };
+};
+
+export const makeDummySignedDidDocument = async (did: string, subjectPrivateKey: string): Promise<DID> => {
+  const unsignedDid: UnsignedDID = {
+    id: did
+  };
+  const bytes = UnsignedDID.encode(unsignedDid).finish();
+
+  const proof = await createProof(bytes, subjectPrivateKey, did);
+  return {
+    ...unsignedDid,
+    proof
   };
 };
 
