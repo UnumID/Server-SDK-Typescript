@@ -1,22 +1,21 @@
 import { UnumDto, CustError, checkCredentialStatuses } from '../../src/index';
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { isCredentialExpired } from '../../src/verifier/isCredentialExpired';
-import { dummyAuthToken, dummyRsaPrivateKey, dummyRsaPublicKey, makeDummyCredential, makeDummyDidDocument, makeDummyPresentation, makeDummyPresentationRequestResponse, makeDummyUnsignedCredential, makeDummyUnsignedPresentation, makeDummyUnsignedPresentationRequest } from './mocks';
+import { dummyAuthToken, dummyRsaPrivateKey, dummyRsaPublicKey, makeDummyCredential, makeDummyDidDocument, makeDummyPresentation, makeDummyPresentationRequestEnriched, makeDummyUnsignedCredential, makeDummyUnsignedPresentation, makeDummyUnsignedPresentationRequest } from './mocks';
 import { encryptBytes } from '@unumid/library-crypto';
 import { DecryptedPresentation } from '../../src/types';
 import { verifyPresentation } from '../../src/verifier/verifyPresentation';
-import { JSONObj, PresentationPb, PresentationRequestRepoDto } from '@unumid/types';
+import { JSONObj, PresentationPb, PresentationRequestEnriched, PublicKeyInfo } from '@unumid/types';
 import { getDidDocPublicKeys } from '../../src/utils/didHelper';
 import { getUUID } from '../../src/utils/helpers';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { doVerify } from '../../src/utils/verify';
 import logger from '../../src/logger';
-import { extractPresentationRequest, getPresentationRequest } from '../../src/verifier/getPresentationRequest';
 import { getCredentialStatusFromMap } from '../../src/utils/getCredentialStatusFromMap';
-import { PublicKeyInfo } from '@unumid/types/build/protos/crypto';
+import { extractPresentationRequest, getPresentationRequest } from '../../src/verifier/getRequestById';
 
-jest.mock('../../src/verifier/getPresentationRequest', () => {
-  const actual = jest.requireActual('../../src/verifier/getPresentationRequest');
+jest.mock('../../src/verifier/getRequestById', () => {
+  const actual = jest.requireActual('../../src/verifier/getRequestById');
   return {
     ...actual,
     getPresentationRequest: jest.fn()
@@ -137,12 +136,9 @@ const populateMockData = async (): Promise<JSONObj> => {
 
   const presentationRequest = await makeDummyUnsignedPresentationRequest({ uuid: presentationRequestUuid, id: presentationRequestId, verifier });
 
-  const presentationRequestDto = await makeDummyPresentationRequestResponse({ unsignedPresentationRequest: presentationRequest });
-  const presentationRequestDtoResponse: PresentationRequestRepoDto = {
-    presentationRequests: {
-      '3.0.0': presentationRequestDto
-    }
-  };
+  const presentationRequestDto = await makeDummyPresentationRequestEnriched({ unsignedPresentationRequest: presentationRequest });
+  const presentationRequestDtoResponse = [presentationRequestDto];
+
   const proof = (await presentationRequestDto).presentationRequest.proof;
 
   const unsignedPresentation = await makeDummyUnsignedPresentation({ verifierDid: verifier, context, type, verifiableCredential: verifiableCredentials, presentationRequestId });
@@ -574,12 +570,10 @@ describe('verifyPresentation', () => {
       mockGetPresentationRequest.mockResolvedValueOnce({ body: badPresentationRequestDtoResponse, headers: headers });
 
       try {
-        extractPresentationRequest(badPresentationRequestDtoResponse);
+        extractPresentationRequest([]);
         fail();
       } catch (e) {
-        expect(e).toEqual(new CustError(500, 'Error handling presentation request from Saas: Error TypeError: Cannot read property \'3.0.0\' of undefined'));
         expect(e.code).toEqual(500);
-        expect(e.message).toEqual('Error handling presentation request from Saas: Error TypeError: Cannot read property \'3.0.0\' of undefined');
       }
     });
   });
