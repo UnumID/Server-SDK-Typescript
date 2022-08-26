@@ -1,1 +1,0 @@
-{"version":3,"file":"verifyDidDocument.d.ts","sourceRoot":"","sources":["../../src/utils/verifyDidDocument.ts"],"names":[],"mappings":"AACA,OAAO,EAAY,OAAO,EAAE,cAAc,EAAE,MAAM,UAAU,CAAC;AAC7D,OAAO,EAAkE,GAAG,EAA8B,MAAM,eAAe,CAAC;AA8BhI;;GAEG;AACH,wBAAsB,eAAe,CAAE,aAAa,EAAE,MAAM,EAAE,SAAS,EAAE,MAAM,EAAE,SAAS,EAAE,GAAG,GAAG,OAAO,CAAC,OAAO,CAAC,cAAc,CAAC,CAAC,CAsBjI"}
