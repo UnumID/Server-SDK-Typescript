@@ -1,0 +1,1 @@
+{"version":3,"file":"sendEmail.d.ts","sourceRoot":"","sources":["../../src/verifier/sendEmail.ts"],"names":[],"mappings":"AAIA,OAAO,EAAE,OAAO,EAAE,MAAM,UAAU,CAAC;AAInC,MAAM,WAAW,iBAAiB;IAChC,OAAO,EAAE,OAAO,CAAC;CAClB;AA8BD;;;;;;GAMG;AACH,eAAO,MAAM,SAAS,kBAAyB,MAAM,MAAM,MAAM,YAAY,MAAM,KAAG,OAAO,CAAC,OAAO,CAAC,SAAS,CAAC,CA6B/G,CAAC"}

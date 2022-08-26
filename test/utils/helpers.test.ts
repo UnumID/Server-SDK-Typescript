@@ -1,8 +1,8 @@
 import * as cryptoLib from '@unumid/library-crypto';
-import { PublicKeyInfo, EncryptedData, KeyPair, UnsignedCredentialPb } from '@unumid/types';
+import { PublicKeyInfo, EncryptedData, KeyPair, UnsignedCredentialPb, UnsignedString } from '@unumid/types';
 import { getDIDDoc, getKeysFromDIDDoc } from '../../src/utils/didHelper';
 import { doEncrypt } from '../../src/utils/encrypt';
-import { doVerify, doVerifyDeprecated } from '../../src/utils/verify';
+import { doVerify } from '../../src/utils/verify';
 import { getUUID } from '../../src/utils/helpers';
 import { makeDummyUnsignedCredential } from '../verifier/mocks';
 
@@ -13,8 +13,10 @@ describe('UUID generation', () => {
 });
 
 describe('Encrypt the given data', () => {
-  const data = { test: 'Data to encrypt' };
+  const data: UnsignedString = { data: 'Data to encrypt' };
+  const dataBytes = UnsignedString.encode(data).finish();
   const did = 'did:unum:3e48b969-5cf3-46c7-9c61-54de886d1382';
+
   let publicKeyObj: PublicKeyInfo[];
   let encryptedData: EncryptedData;
   let encryptSpy;
@@ -22,7 +24,7 @@ describe('Encrypt the given data', () => {
   beforeAll(async () => {
     const baseUrl = 'https://api.dev-unum.id/';
     const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiaXNzdWVyIiwidXVpZCI6ImRmYTllNmY5LWUyMGYtNGU2MS05ODZjLTEwYjRjZDFmMDQxOCIsImRpZCI6ImRpZDp1bnVtOjNlNDhiOTY5LTVjZjMtNDZjNy05YzYxLTU0ZGU4ODZkMTM4MiIsImV4cCI6MTU5Njc2NzAzNi45NjQsImlhdCI6MTU5NzA1MDY4MX0.I-t3mDBTBjKeO_GZDyiXwgKwvlUIy_B6zcB1V3hZ2c0';
-    encryptSpy = jest.spyOn(cryptoLib, 'encrypt', 'get');
+    encryptSpy = jest.spyOn(cryptoLib, 'encryptBytes', 'get');
     const didDocResponse = await getDIDDoc(baseUrl, authHeader, did);
     publicKeyObj = getKeysFromDIDDoc(didDocResponse.body, 'RSA');
   });
@@ -37,7 +39,7 @@ describe('Encrypt the given data', () => {
   });
 
   it('encrypt crypto library should have been called', () => {
-    encryptedData = doEncrypt(did, publicKeyObj[0], data);
+    encryptedData = doEncrypt(did, publicKeyObj[0], dataBytes);
     expect(encryptSpy).toBeCalled();
   });
 
@@ -87,72 +89,5 @@ describe('doVerify, Verifies the given data - Success Scenario', () => {
     expect(verifySpy).toBeCalled();
     expect(retVal).toBeDefined();
     expect(retVal).toBe(true);
-  });
-});
-
-describe('doVerify Deprecated, Verifies the given data - Success Scenario', () => {
-  const data = { test: 'Data to Verify' };
-  const dataString = "{ test: 'Data to Verify' }";
-  let keyPair: KeyPair, verifySpy, signature, retVal;
-
-  beforeAll(async () => {
-    verifySpy = jest.spyOn(cryptoLib, 'verify', 'get');
-    keyPair = await cryptoLib.generateEccKeyPair();
-    signature = cryptoLib.sign(data, keyPair.privateKey);
-  });
-
-  afterAll(() => {
-    jest.clearAllMocks();
-  });
-
-  it('verify crypto library should have been called', () => {
-    retVal = doVerifyDeprecated(signature, data, keyPair.publicKey, 'pem');
-    expect(verifySpy).toBeCalled();
-  });
-
-  it('doVerify should return true', () => {
-    expect(retVal).toBeDefined();
-    expect(retVal).toBe(true);
-  });
-
-  it('doVerify should return true while passing valid stringData optional param', () => {
-    retVal = doVerifyDeprecated(signature, data, keyPair.publicKey, 'pem', dataString);
-    expect(verifySpy).toBeCalled();
-    expect(retVal).toBeDefined();
-    expect(retVal).toBe(true);
-  });
-});
-
-describe('doVerify Deprecated, Verifies the given data - Failure Scenario', () => {
-  const data = { test: 'Data to Verify' };
-  const dataString = "{ test: 'Data to Verify' }";
-  let keyPair: KeyPair, verifySpy, signature, unsignedValue, retVal;
-
-  beforeAll(async () => {
-    verifySpy = jest.spyOn(cryptoLib, 'verify', 'get');
-    keyPair = await cryptoLib.generateEccKeyPair();
-    signature = cryptoLib.sign(data, keyPair.privateKey);
-    unsignedValue = dataString;
-  });
-
-  afterAll(() => {
-    jest.clearAllMocks();
-  });
-
-  it('verify crypto library should have been called', () => {
-    retVal = doVerifyDeprecated(signature, {}, keyPair.publicKey, 'pem');
-    expect(verifySpy).toBeCalled();
-  });
-
-  it('doVerify should return false', () => {
-    expect(retVal).toBeDefined();
-    expect(retVal).toBe(false);
-  });
-
-  it('doVerify should return false - stringData signature passes but does not not match the data object', () => {
-    retVal = doVerifyDeprecated(signature, { nope: 'test' }, keyPair.publicKey, 'pem', dataString);
-    expect(verifySpy).toBeCalled();
-    expect(retVal).toBeDefined();
-    expect(retVal).toBe(false);
   });
 });
