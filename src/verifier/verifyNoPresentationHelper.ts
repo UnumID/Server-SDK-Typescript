@@ -8,7 +8,7 @@ import logger from '../logger';
 import { CustError } from '../utils/error';
 import { isArrayEmpty, isArrayNotEmpty } from '../utils/helpers';
 import { doVerify } from '../utils/verify';
-import { PresentationPb, PublicKeyInfo, UnsignedPresentationPb } from '@unumid/types';
+import { PresentationPb, PublicKeyInfo, UnsignedPresentation } from '@unumid/types';
 import { getDidDocPublicKeys } from '../utils/didHelper';
 import { sendPresentationVerifiedReceipt } from './sendPresentationVerifiedReceipt';
 
@@ -102,10 +102,10 @@ export const verifyNoPresentationHelper = async (authToken: string, noPresentati
     authToken = publicKeyInfoResponse.authToken;
 
     // remove the proof attribute
-    const unsignedNoPresentation: UnsignedPresentationPb = omit(noPresentation, 'proof');
+    const unsignedNoPresentation: UnsignedPresentation = omit(noPresentation, 'proof');
 
     // create byte array from protobuf helpers
-    const bytes = UnsignedPresentationPb.encode(unsignedNoPresentation).finish();
+    const bytes = UnsignedPresentation.encode(unsignedNoPresentation).finish();
 
     let isVerified = false;
 

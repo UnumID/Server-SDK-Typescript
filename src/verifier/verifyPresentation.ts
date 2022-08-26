@@ -1,6 +1,6 @@
 
 import { DecryptedPresentation, UnumDto, VerifiedStatus } from '../types';
-import { Presentation, CredentialRequest, PresentationRequestDto, EncryptedData, PresentationRequest, PresentationPb, PresentationRequestPb, ProofPb, UnsignedPresentationRequestPb, WithVersion, PublicKeyInfo } from '@unumid/types';
+import { Presentation, CredentialRequest, PresentationRequestDto, EncryptedData, PresentationRequest, PresentationPb, PresentationRequestPb, ProofPb, UnsignedPresentationRequestPb, WithVersion, PublicKeyInfo, PresentationRequestEnriched } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
 import { CryptoError, decryptBytes } from '@unumid/library-crypto';
 import logger from '../logger';
@@ -16,7 +16,7 @@ import { handleAuthTokenHeader } from '../utils/networkRequestHelper';
 import { validateProof } from './validateProof';
 import { convertProof } from '../utils/convertToProtobuf';
 import { sendPresentationVerifiedReceipt } from './sendPresentationVerifiedReceipt';
-import { extractPresentationRequest, getPresentationRequest, handleConvertingPresentationRequestDateAttributes } from './getPresentationRequest';
+import { extractPresentationRequest, getPresentationRequest, handleConvertingPresentationRequestDateAttributes } from './getRequestById';
 
 function isDeclinedPresentation (presentation: Presentation | PresentationPb): presentation is Presentation {
   return isArrayEmpty(presentation.verifiableCredential);
@@ -102,8 +102,8 @@ const validatePresentationRequest = (presentationRequest: WithVersion<Presentati
   const result: PresentationRequestPb = {
     ...presentationRequest,
     proof: validateProof(convertProof(proof)),
-    expiresAt: presentationRequest.expiresAt ? presentationRequest.expiresAt : undefined,
-    metadata: presentationRequest.metadata ? presentationRequest.metadata : undefined
+    expiresAt: presentationRequest.expiresAt,
+    metadata: presentationRequest.metadata
   };
 
   return result;
@@ -197,7 +197,7 @@ async function verifyPresentationRequest (authorization: string, presentationReq
  * @param encryptedPresentation: EncryptedData
  * @param verifierDid: string
  */
-export const verifyPresentation = async (authorization: string, encryptedPresentation: EncryptedData, verifierDid: string, encryptionPrivateKey: string, presentationRequest?: PresentationRequestDto): Promise<UnumDto<DecryptedPresentation>> => {
+export const verifyPresentation = async (authorization: string, encryptedPresentation: EncryptedData, verifierDid: string, encryptionPrivateKey: string, presentationRequest?: PresentationRequestEnriched): Promise<UnumDto<DecryptedPresentation>> => {
   try {
     requireAuth(authorization);
 
@@ -230,10 +230,10 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
 
     if (!presentationRequest) {
       // grab the presentation request from Unum ID SaaS for verification purposes
-      const presentationRequestResponse = await getPresentationRequest(authorization, presentation.presentationRequestId);
+      const presentationRequestUnumDto = await getPresentationRequest(authorization, presentation.presentationRequestId);
 
-      authorization = handleAuthTokenHeader(presentationRequestResponse, authorization);
-      presentationRequest = extractPresentationRequest(presentationRequestResponse.body);
+      authorization = presentationRequestUnumDto.authToken;
+      presentationRequest = extractPresentationRequest(presentationRequestUnumDto.body);
     } else {
       // need to convert the string date attributes to to Date objects for proto handling
       presentationRequest = handleConvertingPresentationRequestDateAttributes(presentationRequest);

@@ -1,7 +1,7 @@
 import { omit } from 'lodash';
 
 import { UnumDto, VerifiedStatus } from '../types';
-import { CredentialRequest, PublicKeyInfo, JSONObj, PresentationPb, CredentialPb, ProofPb, UnsignedPresentationPb, CredentialSubject, CredentialIdToStatusMap } from '@unumid/types';
+import { CredentialRequest, PublicKeyInfo, JSONObj, PresentationPb, CredentialPb, ProofPb, UnsignedPresentation, CredentialSubject, CredentialIdToStatusMap } from '@unumid/types';
 import { validateProof } from './validateProof';
 import { requireAuth } from '../requireAuth';
 import { verifyCredential } from './verifyCredential';
@@ -16,6 +16,7 @@ import { convertCredentialSubject } from '../utils/convertCredentialSubject';
 import { sendPresentationVerifiedReceipt } from './sendPresentationVerifiedReceipt';
 import { checkCredentialStatuses } from './checkCredentialStatuses';
 import { getCredentialStatusFromMap } from '../utils/getCredentialStatusFromMap';
+import { UnsignedPresentationPb } from '@unumid/types-v3';
 
 /**
  * Validates the attributes for a credential from UnumId's Saas
@@ -307,7 +308,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
     let isPresentationVerified = false;
     try {
       // create byte array from protobuf helpers
-      const bytes = UnsignedPresentationPb.encode(data).finish();
+      const bytes = UnsignedPresentation.encode(data).finish();
 
       // check all the public keys to see if any work, stop if one does
       for (const publicKeyInfo of publicKeyInfoList) {

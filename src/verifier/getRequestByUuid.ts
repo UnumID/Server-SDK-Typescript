@@ -11,7 +11,7 @@ import { requireAuth } from '../requireAuth';
  * @param uuid
  * @returns UnumDto<PresentationRequestDto>
 */
-export const getRequest = async (
+export const getPresentationRequestByUuid = async (
   authorization: string,
   uuid: string
 ): Promise<UnumDto<PresentationRequestDto>> => {

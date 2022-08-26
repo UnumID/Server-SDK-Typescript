@@ -6,7 +6,7 @@ import { CredentialSubject, Credential, CredentialData, CredentialPb } from '@un
 import { CustError } from '../../src/utils/error';
 import * as createKeyPairs from '../../src/utils/createKeyPairs';
 import { getDidDocPublicKeys } from '../../src/utils/didHelper';
-import { doEncrypt, doEncryptPb } from '../../src/utils/encrypt';
+import { doEncrypt } from '../../src/utils/encrypt';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { omit } from 'lodash';
 
@@ -50,7 +50,7 @@ const createKeyPairSetSpy = jest.spyOn(createKeyPairs, 'createKeyPairSet');
 const mockMakeNetworkRequest = makeNetworkRequest as jest.Mock;
 const mockGetDidDocKeys = getDidDocPublicKeys as jest.Mock;
 const mockDoEncrypt = doEncrypt as jest.Mock;
-const mockDoEncryptPb = doEncryptPb as jest.Mock;
+const mockdoEncrypt = doEncrypt as jest.Mock;
 
 function callIssueCreds (issuer: string, subjectDid: string, credentialDataList: CredentialData[], expirationDate: Date, eccPrivateKey: string, auth: string): Promise<UnumDto<(Credential | CredentialPb)[]>> {
   return issueCredentials(auth, issuer, subjectDid, credentialDataList, eccPrivateKey, expirationDate);
@@ -111,7 +111,7 @@ describe('issueCredentials', () => {
 
   it('encrypts the credential for each public key and it\'s "proof-of" credential', () => {
     expect(mockDoEncrypt).toBeCalledTimes(8);
-    expect(mockDoEncryptPb).toBeCalledTimes(8);
+    expect(mockdoEncrypt).toBeCalledTimes(8);
   });
 
   it('sends encrypted credentials of all versions (2,3) to the saas', () => {

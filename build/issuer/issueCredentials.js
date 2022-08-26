@@ -74,177 +74,6 @@ var versionList_1 = require("../utils/versionList");
 var library_crypto_1 = require("@unumid/library-crypto");
 var getCredentialType_1 = require("../utils/getCredentialType");
 var lodash_1 = require("lodash");
-function isCredentialPb(cred) {
-    // HACK ALERT: just check if the cred object has a property unique to CredentialPb types
-    return cred.context !== undefined;
-}
-/**
- * Creates an object of type EncryptedCredentialOptions which encapsulates information relating to the encrypted credential data
- * @param cred
- * @param publicKeyInfos
- */
-var constructEncryptedCredentialOpts = function (cred, publicKeyInfos) {
-    var credentialSubject = convertCredentialSubject_1.convertCredentialSubject(cred.credentialSubject);
-    var subjectDid = credentialSubject.id;
-    logger_1.default.debug("Encrypting credential " + cred);
-    // create an encrypted copy of the credential with each RSA public key
-    return publicKeyInfos.map(function (publicKeyInfo) {
-        var subjectDidWithKeyFragment = subjectDid + "#" + publicKeyInfo.id;
-        // use the protobuf byte array encryption if dealing with a CredentialPb cred type
-        var encryptedData = isCredentialPb(cred)
-            ? encrypt_1.doEncryptPb(subjectDidWithKeyFragment, publicKeyInfo, types_1.CredentialPb.encode(cred).finish())
-            : encrypt_1.doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, cred);
-        // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
-        var credentialType = getCredentialType_1.getCredentialType(cred.type);
-        var encryptedCredentialOptions = {
-            credentialId: cred.id,
-            subject: subjectDidWithKeyFragment,
-            issuer: cred.issuer,
-            type: credentialType,
-            data: encryptedData,
-            expirationDate: cred.expirationDate
-        };
-        return encryptedCredentialOptions;
-    });
-};
-/**
- * Creates a signed credential with all the relevant information. The proof serves as a cryptographic signature.
- * @param usCred UnsignedCredentialPb
- * @param privateKey String
- */
-var constructSignedCredentialPbObj = function (usCred, privateKey) {
-    try {
-        // convert the protobuf to a byte array
-        var bytes = types_1.UnsignedCredentialPb.encode(usCred).finish();
-        var proof = createProof_1.createProofPb(bytes, privateKey, usCred.issuer);
-        var credential = {
-            context: usCred.context,
-            credentialStatus: usCred.credentialStatus,
-            credentialSubject: usCred.credentialSubject,
-            issuer: usCred.issuer,
-            type: usCred.type,
-            id: usCred.id,
-            issuanceDate: usCred.issuanceDate,
-            expirationDate: usCred.expirationDate,
-            proof: proof
-        };
-        return (credential);
-    }
-    catch (e) {
-        if (e instanceof library_crypto_1.CryptoError) {
-            logger_1.default.error("Issue in the crypto lib while creating credential " + usCred.id + " proof. " + e + ".");
-        }
-        else {
-            logger_1.default.error("Issue while creating creating credential " + usCred.id + " proof " + e + ".");
-        }
-        throw e;
-    }
-};
-/**
- * Creates a signed credential with all the relevant information. The proof serves as a cryptographic signature.
- * @param usCred UnsignedCredential
- * @param privateKey String
- */
-var constructSignedCredentialObj = function (usCred, privateKey) {
-    var proof = createProof_1.createProof(usCred, privateKey, usCred.issuer, 'pem');
-    var credential = {
-        '@context': usCred['@context'],
-        credentialStatus: usCred.credentialStatus,
-        credentialSubject: usCred.credentialSubject,
-        issuer: usCred.issuer,
-        type: usCred.type,
-        id: usCred.id,
-        issuanceDate: usCred.issuanceDate,
-        expirationDate: usCred.expirationDate,
-        proof: proof
-    };
-    return (credential);
-};
-/**
- * Creates all the attributes associated with an unsigned credential.
- * @param credOpts CredentialOptions
- * @param credentialId
- */
-var constructUnsignedCredentialPbObj = function (credOpts) {
-    var expirationDate = credOpts.expirationDate, credentialId = credOpts.credentialId, credentialSubject = credOpts.credentialSubject, issuer = credOpts.issuer, type = credOpts.type;
-    // credential subject is a string to facilitate handling arbitrary data in the protobuf object
-    var credentialSubjectStringified = JSON.stringify(credentialSubject);
-    var unsCredObj = {
-        context: ['https://www.w3.org/2018/credentials/v1'],
-        credentialStatus: {
-            id: config_1.configData.SaaSUrl + "/credentialStatus/" + credentialId,
-            type: 'CredentialStatus'
-        },
-        credentialSubject: credentialSubjectStringified,
-        issuer: issuer,
-        type: __spreadArrays(['VerifiableCredential'], type),
-        id: credentialId,
-        issuanceDate: new Date(),
-        expirationDate: expirationDate
-    };
-    return unsCredObj;
-};
-/**
- * Creates all the attributes associated with an unsigned credential.
- * @param credOpts CredentialOptions
- * @return Unsigned credential
- */
-var constructUnsignedCredentialObj = function (credOpts) {
-    var expirationDate = credOpts.expirationDate, credentialId = credOpts.credentialId, credentialSubject = credOpts.credentialSubject, issuer = credOpts.issuer, type = credOpts.type;
-    // CredentialSubject type is dependent on version. V2 is a string for passing to holder so iOS can handle it as a concrete type instead of a map of unknown keys.
-    var credentialSubjectStringified = JSON.stringify(credentialSubject);
-    var unsCredObj = {
-        '@context': ['https://www.w3.org/2018/credentials/v1'],
-        credentialStatus: {
-            id: config_1.configData.SaaSUrl + "/credentialStatus/" + credentialId,
-            type: 'CredentialStatus'
-        },
-        credentialSubject: credentialSubjectStringified,
-        issuer: issuer,
-        type: __spreadArrays(['VerifiableCredential'], type),
-        id: credentialId,
-        issuanceDate: new Date(),
-        expirationDate: expirationDate
-    };
-    return unsCredObj;
-};
-/**
- * Handle input validation.
- * @param issuer
- * @param subjectDid
- * @param credentialDataList
- * @param signingPrivateKey
- * @param expirationDate
- */
-var validateInputs = function (issuer, subjectDid, credentialDataList, signingPrivateKey, expirationDate) {
-    if (!issuer) {
-        throw new error_1.CustError(400, 'issuer is required.');
-    }
-    if (!subjectDid) {
-        throw new error_1.CustError(400, 'subjectDid is required.');
-    }
-    if (!signingPrivateKey) {
-        throw new error_1.CustError(400, 'signingPrivateKey is required.');
-    }
-    if (typeof issuer !== 'string') {
-        throw new error_1.CustError(400, 'issuer must be a string.');
-    }
-    if (typeof subjectDid !== 'string') {
-        throw new error_1.CustError(400, 'subjectDid must be a string.');
-    }
-    if (typeof signingPrivateKey !== 'string') {
-        throw new error_1.CustError(400, 'signingPrivateKey must be a string.');
-    }
-    // expirationDate must be a Date object and return a properly formed time. Invalid Date.getTime() will produce NaN
-    if (expirationDate && (!(expirationDate instanceof Date) || isNaN(expirationDate.getTime()))) {
-        throw new error_1.CustError(400, 'expirationDate must be a valid Date object.');
-    }
-    if (expirationDate && expirationDate < new Date()) {
-        throw new error_1.CustError(400, 'expirationDate must be in the future.');
-    }
-    // validate credentialDataList
-    validateCredentialDataList(credentialDataList);
-};
 /**
  * Multiplexed handler for issuing credentials with UnumID's SaaS.
  * @param authorization
@@ -254,8 +83,8 @@ var validateInputs = function (issuer, subjectDid, credentialDataList, signingPr
  * @param signingPrivateKey
  * @param expirationDate
  */
-exports.issueCredentials = function (authorization, issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate, issueCredentialsToSelf) {
-    if (issueCredentialsToSelf === void 0) { issueCredentialsToSelf = true; }
+exports.issueCredentials = function (authorization, issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate, declineIssueCredentialsToSelf) {
+    if (declineIssueCredentialsToSelf === void 0) { declineIssueCredentialsToSelf = false; }
     return __awaiter(void 0, void 0, void 0, function () {
         var publicKeyInfoResponse, publicKeyInfos, issuerPublicKeyInfos, publicKeyInfoResponse_1, creds, proofOfCreds, i, type, credData, credSubject, credentialId, credentialVersionPairs, proofOfType, proofOfCredentialSubject, proofOfCredentailId, proofOfCredentialVersionPairs, issuerCredSubject, issuerCredentialVersionPairs, issuerProofOfType, issuerProofOfCredentialSubject, issuerProofOfCredentialVersionPairs, _loop_1, _i, versionList_2, version, latestVersion, resultantCredentials;
         return __generator(this, function (_a) {
@@ -271,7 +100,7 @@ exports.issueCredentials = function (authorization, issuerDid, subjectDid, crede
                     publicKeyInfos = publicKeyInfoResponse.body;
                     authorization = publicKeyInfoResponse.authToken;
                     issuerPublicKeyInfos = [];
-                    if (!issueCredentialsToSelf) return [3 /*break*/, 3];
+                    if (!!declineIssueCredentialsToSelf) return [3 /*break*/, 3];
                     return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authorization, issuerDid, 'RSA')];
                 case 2:
                     publicKeyInfoResponse_1 = _a.sent();
@@ -295,7 +124,7 @@ exports.issueCredentials = function (authorization, issuerDid, subjectDid, crede
                         proofOfCredentialVersionPairs = constructEncryptedCredentialOfEachVersion(authorization, proofOfType, issuerDid, proofOfCredentailId, proofOfCredentialSubject, signingPrivateKey, publicKeyInfos, expirationDate);
                         // add all proofOfCredentialVersionPairs to creds array
                         Array.prototype.push.apply(proofOfCreds, proofOfCredentialVersionPairs);
-                        if (issueCredentialsToSelf) {
+                        if (!declineIssueCredentialsToSelf) {
                             issuerCredSubject = __assign(__assign({}, credData), { id: issuerDid });
                             issuerCredentialVersionPairs = constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, issuerCredSubject, signingPrivateKey, issuerPublicKeyInfos, expirationDate);
                             // add all issuerCredentialVersionPairs to creds array
@@ -349,6 +178,131 @@ exports.issueCredentials = function (authorization, issuerDid, subjectDid, crede
         });
     });
 };
+function isCredentialPb(cred) {
+    // HACK ALERT: just check if the cred object has a property unique to CredentialPb types
+    return cred.context !== undefined;
+}
+/**
+ * Creates an object of type EncryptedCredentialOptions which encapsulates information relating to the encrypted credential data
+ * @param cred
+ * @param publicKeyInfos
+ */
+var constructEncryptedCredentialOpts = function (cred, publicKeyInfos) {
+    var credentialSubject = convertCredentialSubject_1.convertCredentialSubject(cred.credentialSubject);
+    var subjectDid = credentialSubject.id;
+    logger_1.default.debug("Encrypting credential " + cred);
+    // create an encrypted copy of the credential with each RSA public key
+    return publicKeyInfos.map(function (publicKeyInfo) {
+        var subjectDidWithKeyFragment = subjectDid + "#" + publicKeyInfo.id;
+        // use the protobuf byte array encryption if dealing with a CredentialPb cred type
+        var encryptedData = encrypt_1.doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, types_1.CredentialPb.encode(cred).finish());
+        // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
+        var credentialType = getCredentialType_1.getCredentialType(cred.type);
+        var encryptedCredentialOptions = {
+            credentialId: cred.id,
+            subject: subjectDidWithKeyFragment,
+            issuer: cred.issuer,
+            type: credentialType,
+            data: encryptedData,
+            expirationDate: cred.expirationDate
+        };
+        return encryptedCredentialOptions;
+    });
+};
+/**
+ * Creates a signed credential with all the relevant information. The proof serves as a cryptographic signature.
+ * @param usCred UnsignedCredentialPb
+ * @param privateKey String
+ */
+var constructSignedCredentialPbObj = function (usCred, privateKey) {
+    try {
+        // convert the protobuf to a byte array
+        var bytes = types_1.UnsignedCredentialPb.encode(usCred).finish();
+        var proof = createProof_1.createProof(bytes, privateKey, usCred.issuer);
+        var credential = {
+            context: usCred.context,
+            credentialStatus: usCred.credentialStatus,
+            credentialSubject: usCred.credentialSubject,
+            issuer: usCred.issuer,
+            type: usCred.type,
+            id: usCred.id,
+            issuanceDate: usCred.issuanceDate,
+            expirationDate: usCred.expirationDate,
+            proof: proof
+        };
+        return (credential);
+    }
+    catch (e) {
+        if (e instanceof library_crypto_1.CryptoError) {
+            logger_1.default.error("Issue in the crypto lib while creating credential " + usCred.id + " proof. " + e + ".");
+        }
+        else {
+            logger_1.default.error("Issue while creating creating credential " + usCred.id + " proof " + e + ".");
+        }
+        throw e;
+    }
+};
+/**
+ * Creates all the attributes associated with an unsigned credential.
+ * @param credOpts CredentialOptions
+ * @param credentialId
+ */
+var constructUnsignedCredentialPbObj = function (credOpts) {
+    var expirationDate = credOpts.expirationDate, credentialId = credOpts.credentialId, credentialSubject = credOpts.credentialSubject, issuer = credOpts.issuer, type = credOpts.type;
+    // credential subject is a string to facilitate handling arbitrary data in the protobuf object
+    var credentialSubjectStringified = JSON.stringify(credentialSubject);
+    var unsCredObj = {
+        context: ['https://www.w3.org/2018/credentials/v1'],
+        credentialStatus: {
+            id: config_1.configData.SaaSUrl + "/credentialStatus/" + credentialId,
+            type: 'CredentialStatus'
+        },
+        credentialSubject: credentialSubjectStringified,
+        issuer: issuer,
+        type: __spreadArrays(['VerifiableCredential'], type),
+        id: credentialId,
+        issuanceDate: new Date(),
+        expirationDate: expirationDate
+    };
+    return unsCredObj;
+};
+/**
+ * Handle input validation.
+ * @param issuer
+ * @param subjectDid
+ * @param credentialDataList
+ * @param signingPrivateKey
+ * @param expirationDate
+ */
+var validateInputs = function (issuer, subjectDid, credentialDataList, signingPrivateKey, expirationDate) {
+    if (!issuer) {
+        throw new error_1.CustError(400, 'issuer is required.');
+    }
+    if (!subjectDid) {
+        throw new error_1.CustError(400, 'subjectDid is required.');
+    }
+    if (!signingPrivateKey) {
+        throw new error_1.CustError(400, 'signingPrivateKey is required.');
+    }
+    if (typeof issuer !== 'string') {
+        throw new error_1.CustError(400, 'issuer must be a string.');
+    }
+    if (typeof subjectDid !== 'string') {
+        throw new error_1.CustError(400, 'subjectDid must be a string.');
+    }
+    if (typeof signingPrivateKey !== 'string') {
+        throw new error_1.CustError(400, 'signingPrivateKey must be a string.');
+    }
+    // expirationDate must be a Date object and return a properly formed time. Invalid Date.getTime() will produce NaN
+    if (expirationDate && (!(expirationDate instanceof Date) || isNaN(expirationDate.getTime()))) {
+        throw new error_1.CustError(400, 'expirationDate must be a valid Date object.');
+    }
+    if (expirationDate && expirationDate < new Date()) {
+        throw new error_1.CustError(400, 'expirationDate must be in the future.');
+    }
+    // validate credentialDataList
+    validateCredentialDataList(credentialDataList);
+};
 /**
  * Helper to construct a Credential's CredentialOptions
  * @param type
@@ -392,11 +346,11 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
      */
     for (var v = 0; v < versionList_1.versionList.length - 1; v++) { // note: purposely terminating one index early, which ought to be the most recent version.
         var version = versionList_1.versionList[v];
-        if (semver_1.gte(version, '2.0.0') && semver_1.lt(version, '3.0.0')) {
+        if (semver_1.gte(version, '3.0.0') && semver_1.lt(version, '4.0.0')) {
             // Create latest version of the UnsignedCredential object
-            var unsignedCredential_1 = constructUnsignedCredentialObj(credentialOptions);
+            var unsignedCredential_1 = constructUnsignedCredentialPbObj(credentialOptions);
             // Create the signed Credential object from the unsignedCredential object
-            var credential_1 = constructSignedCredentialObj(unsignedCredential_1, signingPrivateKey);
+            var credential_1 = constructSignedCredentialPbObj(unsignedCredential_1, signingPrivateKey);
             // Create the encrypted credential issuance dto
             var encryptedCredentialUploadOptions_1 = constructIssueCredentialOptions(credential_1, publicKeyInfos, credentialSubject.id);
             var credPair_1 = {
@@ -407,11 +361,10 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
             results.push(credPair_1);
         }
     }
-    // Grabbing the latest version as defined in the version list, 3.0.0
+    // Grabbing the latest version as defined in the version list, 4.0.0
     var latestVersion = versionList_1.versionList[versionList_1.versionList.length - 1];
     // Create latest version of the UnsignedCredential object
     var unsignedCredential = constructUnsignedCredentialPbObj(credentialOptions);
-    // const unsignedProofOfCredential = constructUnsignedCredentialPbObj(proofOfCredentialOptions);
     // Create the signed Credential object from the unsignedCredential object
     var credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
     // Create the encrypted credential issuance dto

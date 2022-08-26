@@ -6,5 +6,5 @@ import { UnumDto } from '../types';
  * @param uuid
  * @returns UnumDto<PresentationRequestDto>
 */
-export declare const getRequest: (authorization: string, uuid: string) => Promise<UnumDto<PresentationRequestDto>>;
-//# sourceMappingURL=getRequest.d.ts.map
+export declare const getPresentationRequestByUuid: (authorization: string, uuid: string) => Promise<UnumDto<PresentationRequestDto>>;
+//# sourceMappingURL=getRequestByUuid.d.ts.map

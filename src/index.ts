@@ -6,14 +6,12 @@ import { UnumDto, RegisteredVerifier, RegisteredIssuer, VerifiedStatus, Decrypte
 import { verifyPresentation } from './verifier/verifyPresentation';
 import { registerIssuer } from './issuer/registerIssuer';
 import { issueCredentials } from './issuer/issueCredentials';
-import { updateCredentialStatus } from './issuer/updateCredentialStatus';
 import { extractCredentialInfo } from './utils/extractCredentialInfo';
 import { CredentialSubject, Presentation, Proof, Credential } from '@unumid/types';
 import { CustError } from './utils/error';
-import { createProof, createProofPb } from './utils/createProof';
+import { createProof } from './utils/createProof';
 import { convertCredentialSubject } from './utils/convertCredentialSubject';
-import { getRequest } from './verifier/getRequest';
-import { getVersionedRequest } from './verifier/getVersionedRequest';
+import { getPresentationRequestByUuid } from './verifier/getRequestByUuid';
 import { verifySubjectCredentialRequests } from './issuer/verifySubjectCredentialRequests';
 import { verifySignedDid } from './utils/verifyDidDocument';
 import { revokeAllCredentials } from './issuer/revokeAllCredentials';
@@ -21,13 +19,13 @@ import { updateCredentialStatuses } from './issuer/updateCredentialStatuses';
 import { checkCredentialStatuses } from './verifier/checkCredentialStatuses';
 import { reEncryptCredentials } from './issuer/reEncryptCredentials';
 import { extractCredentialType } from './utils/extractCredentialType';
+import { getPresentationRequest } from './verifier/getRequestById';
 
 export {
   // Issuer Functions
   registerIssuer,
   issueCredentials,
   reEncryptCredentials,
-  updateCredentialStatus,
   updateCredentialStatuses,
   verifySubjectCredentialRequests,
   revokeAllCredentials,
@@ -38,8 +36,8 @@ export {
   sendSms,
   verifyPresentation,
   checkCredentialStatuses,
-  getRequest,
-  getVersionedRequest,
+  getPresentationRequestByUuid,
+  getPresentationRequest,
   // Types
   UnumDto,
   RegisteredVerifier,
@@ -59,6 +57,5 @@ export {
   extractCredentialType,
   verifySignedDid,
   createProof,
-  createProofPb,
   convertCredentialSubject
 };

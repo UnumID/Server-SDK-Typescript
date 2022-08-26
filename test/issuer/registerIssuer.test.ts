@@ -1,10 +1,10 @@
-import { JSONObj, RegisteredIssuer, UnumDto } from '../../src/types';
+import { RegisteredIssuer, UnumDto } from '../../src/types';
 import { makeDummyIssuerResponse, dummyIssuerApiKey, makeDummyIssuer, dummyAuthToken } from './mocks';
 import { registerIssuer } from '../../src/issuer/registerIssuer';
 import { CustError } from '../../src/utils/error';
 import * as createKeyPairs from '../../src/utils/createKeyPairs';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
-import { VersionInfo } from '@unumid/types';
+import { JSONObj, VersionInfo } from '@unumid/types';
 
 jest.mock('../../src/utils/networkRequestHelper', () => ({
   ...jest.requireActual('../../src/utils/networkRequestHelper'),

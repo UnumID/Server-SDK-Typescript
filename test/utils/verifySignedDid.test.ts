@@ -1,10 +1,10 @@
 
-import { JSONObj, SignedDidDocument } from '@unumid/types';
+import { JSONObj, SignedDidDocument, UnsignedDID } from '@unumid/types';
 import { UnumDto, VerifiedStatus, CustError, verifySignedDid } from '../../src';
 import { getDidDocPublicKeys } from '../../src/utils/didHelper';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { doVerify } from '../../src/utils/verify';
-import { makeDummyUnsignedCredential, makeDummyCredential, dummyCredentialRequest, makeDummyDidDocument, dummyAuthToken, dummyIssuerDid, makeDummySubjectCredentialRequest, dummySubjectDid, makeDummySignedDidDocument, makeDummySubjectCredentialRequests } from '../issuer/mocks';
+import { makeDummyUnsignedCredential, makeDummyCredential, dummyCredentialRequest, makeDummyDidDocument, dummyAuthToken, dummyIssuerDid, dummySubjectDid, makeDummySignedDidDocument, makeDummySubjectCredentialRequests } from '../issuer/mocks';
 import { createKeyPairSet } from '../../src/utils/createKeyPairs';
 
 jest.mock('../../src/utils/didHelper', () => {
@@ -68,8 +68,10 @@ const populateMockData = async (): Promise<JSONObj> => {
   }
   ];
   const didId = 'did:unum:f2054199-1069-4337-a588-83d099e79d44';
-  const unsignedDidDocument = await makeDummyDidDocument({ id: didId }, keyPair.signing.privateKey, keyPair.signing.publicKey);
-  const signedDidDocument = await makeDummySignedDidDocument(unsignedDidDocument, keyPair.signing.privateKey, unsignedDidDocument.id);
+  const unsignedDidDocument: UnsignedDID = {
+    id: didId
+  };
+  const signedDidDocument = await makeDummySignedDidDocument(didId, keyPair.signing.privateKey);
 
   const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
 

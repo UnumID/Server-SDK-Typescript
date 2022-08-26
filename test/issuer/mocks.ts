@@ -1,10 +1,10 @@
 
-import { Issuer, DidDocument, UnsignedCredential, Credential, CredentialSubject, SubjectCredentialRequest, CredentialRequestPb, SignedDidDocument, SubjectCredentialRequests } from '@unumid/types';
-import { CredentialRequest, UnsignedSubjectCredentialRequests } from '@unumid/types/build/protos/credential';
+import { Issuer, DidDocument, UnsignedCredential, Credential, CredentialSubject, SubjectCredentialRequest, CredentialRequestPb, SignedDidDocument, SubjectCredentialRequests, UnsignedCredentialPb, Credential, UnsignedDID, DID } from '@unumid/types';
+import { CredentialRequest, UnsignedCredential, UnsignedSubjectCredentialRequests } from '@unumid/types/build/protos/credential';
 import { configData } from '../../src/config';
 import { RESTResponse } from '../../src/types';
 import { createKeyPairSet } from '../../src/utils/createKeyPairs';
-import { createProof, createProofPb } from '../../src/utils/createProof';
+import { createProof } from '../../src/utils/createProof';
 import { getUUID } from '../../src/utils/helpers';
 
 export const dummyAuthToken = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiaXNzdWVyIiwidXVpZCI6IjU5MDMyMmRiLTJlMDgtNGZjNi1iZTY2LTQ3NGRmMWY3Nzk4YSIsImRpZCI6ImRpZDp1bnVtOmRhOGYyNDJkLTZjZDYtNGUzMC1iNTU3LTNhMzkzZWFkZmMyYyIsImV4cCI6MTU5Njc2NzAzNi45NjQsImlhdCI6MTU5NzE0MzAxNn0.9AwobcQ3a9u4gMCc9b1BtN8VRoiglCJKGtkqB425Zyo';
@@ -59,7 +59,7 @@ export const makeDummySubjectCredentialRequests = async (requests: CredentialReq
 
   // convert the protobuf to a byte array
   const bytes: Uint8Array = UnsignedSubjectCredentialRequests.encode(unsignedSubjectCredentialRequests).finish();
-  const proof = await createProofPb(bytes, subjectPrivateKey, subjectDid, undefined);
+  const proof = await createProof(bytes, subjectPrivateKey, subjectDid);
 
   return {
     ...unsignedSubjectCredentialRequests,
@@ -67,10 +67,15 @@ export const makeDummySubjectCredentialRequests = async (requests: CredentialReq
   };
 };
 
-export const makeDummySignedDidDocument = async (didDoc: DidDocument, subjectPrivateKey: string, subjectDid: string): Promise<SignedDidDocument> => {
-  const proof = await createProof(didDoc, subjectPrivateKey, subjectDid, 'pem');
+export const makeDummySignedDidDocument = async (did: string, subjectPrivateKey: string): Promise<DID> => {
+  const unsignedDid: UnsignedDID = {
+    id: did
+  };
+  const bytes = UnsignedDID.encode(unsignedDid).finish();
+
+  const proof = await createProof(bytes, subjectPrivateKey, did);
   return {
-    ...didDoc,
+    ...unsignedDid,
     proof
   };
 };
@@ -183,7 +188,7 @@ export const makeDummyUnsignedCredential = (options: DummyUnsignedCredentialOpti
   const credentialSubject = makeDummyCredentialSubject(options);
 
   return {
-    '@context': ['https://www.w3.org/2018/credentials/v1'],
+    context: ['https://www.w3.org/2018/credentials/v1'],
     id,
     type: ['VerifiableCredential', type],
     issuer,
@@ -198,8 +203,7 @@ export const makeDummyUnsignedCredential = (options: DummyUnsignedCredentialOpti
 };
 
 export const makeDummyCredential = async (options: DummyCredentialOptions): Promise<Credential> => {
-  const { unsignedCredential, encoding } = options;
-  let { privateKey } = options;
+  let { privateKey, unsignedCredential, encoding } = options;
   if (!privateKey) {
     const keys = await createKeyPairSet(encoding);
     privateKey = keys.signing.privateKey;
@@ -209,7 +213,9 @@ export const makeDummyCredential = async (options: DummyCredentialOptions): Prom
 
   const issuerDidWithKeyFragment = `${unsignedCredential.issuer}#${privateKeyId}`;
 
-  const proof = createProof(unsignedCredential, privateKey, issuerDidWithKeyFragment, encoding);
+  const bytes = UnsignedCredentialPb.encode(unsignedCredential).finish();
+
+  const proof = createProof(bytes, privateKey, issuerDidWithKeyFragment);
 
   return {
     ...unsignedCredential,

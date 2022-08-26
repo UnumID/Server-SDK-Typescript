@@ -39,12 +39,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getVersionedRequest = void 0;
+exports.getPresentationRequestByUuid = void 0;
 var config_1 = require("../config");
+var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var logger_1 = __importDefault(require("../logger"));
 var requireAuth_1 = require("../requireAuth");
-var networkRequestHelper_1 = require("../utils/networkRequestHelper");
-exports.getVersionedRequest = function (authorization, id) { return __awaiter(void 0, void 0, void 0, function () {
+/**
+ * Handler for getting a PresentationRequest from UnumID's saas by its uuid
+ * @param authorization
+ * @param uuid
+ * @returns UnumDto<PresentationRequestDto>
+*/
+exports.getPresentationRequestByUuid = function (authorization, uuid) { return __awaiter(void 0, void 0, void 0, function () {
     var data, response, authToken, e_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
@@ -54,7 +60,7 @@ exports.getVersionedRequest = function (authorization, id) { return __awaiter(vo
                 data = {
                     method: 'GET',
                     baseUrl: config_1.configData.SaaSUrl,
-                    endPoint: "presentationRequestRepository/" + id,
+                    endPoint: "presentationRequest/" + uuid,
                     header: { Authorization: authorization }
                 };
                 return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(data)];
@@ -64,10 +70,10 @@ exports.getVersionedRequest = function (authorization, id) { return __awaiter(vo
                 return [2 /*return*/, { body: response.body, authToken: authToken }];
             case 2:
                 e_1 = _a.sent();
-                logger_1.default.error("Error getting request(s) from UnumID SaaS. " + e_1);
+                logger_1.default.error("Error getting request from UnumID SaaS. " + e_1);
                 throw e_1;
             case 3: return [2 /*return*/];
         }
     });
 }); };
-//# sourceMappingURL=getVersionedRequest.js.map
+//# sourceMappingURL=getRequestByUuid.js.map

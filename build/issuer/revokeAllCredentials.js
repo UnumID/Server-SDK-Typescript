@@ -57,7 +57,7 @@ var logger_1 = __importDefault(require("../logger"));
 var types_1 = require("@unumid/types");
 var error_1 = require("../utils/error");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
-var __1 = require("..");
+var createProof_1 = require("../utils/createProof");
 /**
  * Helper to validate request inputs.
  * @param req Request
@@ -96,7 +96,7 @@ exports.revokeAllCredentials = function (authorization, issuerDid, signingPrivat
                     did: subjectDid
                 };
                 bytes = types_1.UnsignedRevokeAllCredentials.encode(unsignedDto).finish();
-                proof = __1.createProofPb(bytes, signingPrivateKey, issuerDid);
+                proof = createProof_1.createProof(bytes, signingPrivateKey, issuerDid);
                 signedDto = __assign(__assign({}, unsignedDto), { proof: proof });
                 restData = {
                     method: 'POST',
