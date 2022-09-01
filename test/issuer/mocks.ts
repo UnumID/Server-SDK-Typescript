@@ -1,5 +1,5 @@
 
-import { Issuer, DidDocument, UnsignedCredential, Credential, CredentialSubject, SubjectCredentialRequest, CredentialRequestPb, SignedDidDocument, SubjectCredentialRequests, UnsignedCredentialPb, Credential, UnsignedDID, DID } from '@unumid/types';
+import { Issuer, DidDocument, UnsignedCredential, Credential, CredentialSubject, SubjectCredentialRequest, CredentialRequest, SignedDidDocument, SubjectCredentialRequests, UnsignedCredentialPb, Credential, UnsignedDID, DID } from '@unumid/types';
 import { CredentialRequest, UnsignedCredential, UnsignedSubjectCredentialRequests } from '@unumid/types/build/protos/credential';
 import { configData } from '../../src/config';
 import { RESTResponse } from '../../src/types';

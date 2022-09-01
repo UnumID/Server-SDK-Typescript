@@ -1,5 +1,5 @@
 
-import { CredentialRequestPb, JSONObj } from '@unumid/types';
+import { CredentialRequest, JSONObj } from '@unumid/types';
 import { UnumDto, VerifiedStatus, CustError } from '../../src';
 import { getDidDocPublicKeys } from '../../src/utils/didHelper';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
@@ -278,7 +278,7 @@ describe('verifySubjectCredentialRequest', () => {
     });
 
     it('returns a 400 status code with a descriptive error message when issuers is missing', async () => {
-      const badRequest: CredentialRequestPb = {
+      const badRequest: CredentialRequest = {
         ...dummyCredentialRequest,
         issuers: undefined
       };
