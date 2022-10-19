@@ -160,7 +160,7 @@ export const makeDummyVerifier = (options: DummyVerifierOptions = {}): Verifier 
   const updatedAt = options.updatedAt || now;
   const customerUuid = options.customerUuid || getUUID();
   const name = options.name || 'Test Verifier';
-  const url = options.url || 'https://customer-api.dev-unum.id/presentation';
+  const url = options.url || 'https://customer-api.dev-unumid.co/presentation';
   const isAuthorized = options.isAuthorized || true;
   const did = options.did || dummyVerifierDid;
   const versionInfo = [{ target: { version: '1.0.0' }, sdkVersion: '2.0.0' }];
@@ -194,7 +194,7 @@ export const makeDummyDidDocument = async (options: Partial<DidDocument> = {}): 
   const now = new Date();
   const created = options.created || now;
   const updated = options.updated || now;
-  const service = options.service || [{ id, serviceEndpoint: `https://api.dev-unum.id/presentation/${id}`, type: 'CredentialRepository' }];
+  const service = options.service || [{ id, serviceEndpoint: `https://api.dev-unumid.co/presentation/${id}`, type: 'CredentialRepository' }];
 
   const { publicKey } = options;
 
@@ -274,7 +274,7 @@ export const makeDummyVerifierInfo = (options: Partial<VerifierInfo>): Pick<Veri
   return {
     did: options.did || dummyVerifierDid,
     name: options.name || 'Dummy Verifier',
-    url: options.url || 'https://customer-api.dev-unum.id/presentation'
+    url: options.url || 'https://customer-api.dev-unumid.co/presentation'
   };
 };
 

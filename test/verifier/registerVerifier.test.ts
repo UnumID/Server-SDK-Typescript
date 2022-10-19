@@ -25,7 +25,7 @@ const mockMakeNetworkRequest = mocked(makeNetworkRequest, true);
 describe('registerVerifier', () => {
   const name = 'First Unumid Verifier';
   const customerUuid = '5e46f1ba-4c82-471d-bbc7-251924a90532';
-  const url = 'https://customer-api.dev-unum.id/presentation';
+  const url = 'https://customer-api.dev-unumid.co/presentation';
   const versionInfo: VersionInfo[] = [{
     target: {
       version: '2.0.0'
@@ -33,7 +33,7 @@ describe('registerVerifier', () => {
     sdkVersion: '2.0.0' // server sdk
   }, {
     target: {
-      url: 'https://customer-api.dev-unum.id/presentationV1'
+      url: 'https://customer-api.dev-unumid.co/presentationV1'
     },
     sdkVersion: '1.0.0' // server sdk
   }];
@@ -82,7 +82,7 @@ describe('registerVerifier', () => {
 describe('registerVerifier - Failure cases', () => {
   const name = 'First Unumid Verifier';
   const customerUuid = '5e46f1ba-4c82-471d-bbc7-251924a90532';
-  const url = 'https://customer-api.dev-unum.id/presentation';
+  const url = 'https://customer-api.dev-unumid.co/presentation';
 
   it('returns a CustError with a descriptive error message if url is missing', async () => {
     try {
@@ -159,7 +159,7 @@ describe('registerVerifier - Failure cases', () => {
 describe('registerVerifier - Failure cases - SaaS Errors', () => {
   const name = 'First Unumid Verifier';
   const customerUuid = '5e46f1ba-4c82-471d-bbc7-251924a90532';
-  const url = 'https://customer-api.dev-unum.id/presentation';
+  const url = 'https://customer-api.dev-unumid.co/presentation';
 
   it('Response code should be 403 when API Key is not valid', async () => {
     mockMakeNetworkRequest.mockRejectedValueOnce(new CustError(403, 'Forbidden'));
