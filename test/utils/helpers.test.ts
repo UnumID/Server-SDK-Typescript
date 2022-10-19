@@ -22,7 +22,7 @@ describe('Encrypt the given data', () => {
   let encryptSpy;
 
   beforeAll(async () => {
-    const baseUrl = 'https://api.dev-unum.id/';
+    const baseUrl = 'https://api.dev-unumid.co/';
     const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiaXNzdWVyIiwidXVpZCI6ImRmYTllNmY5LWUyMGYtNGU2MS05ODZjLTEwYjRjZDFmMDQxOCIsImRpZCI6ImRpZDp1bnVtOjNlNDhiOTY5LTVjZjMtNDZjNy05YzYxLTU0ZGU4ODZkMTM4MiIsImV4cCI6MTU5Njc2NzAzNi45NjQsImlhdCI6MTU5NzA1MDY4MX0.I-t3mDBTBjKeO_GZDyiXwgKwvlUIy_B6zcB1V3hZ2c0';
     encryptSpy = jest.spyOn(cryptoLib, 'encryptBytes', 'get');
     const didDocResponse = await getDIDDoc(baseUrl, authHeader, did);

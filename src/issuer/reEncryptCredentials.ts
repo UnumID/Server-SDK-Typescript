@@ -85,7 +85,7 @@ export const reEncryptCredentials = async (authorization: string, issuerDid: str
   }
 
   // (re)issue (aka re-encrypt) the credentials to the target subject
-  const reissuedCredentials = await issueCredentials(authToken, issuerDid, subjectDid, credentialDataList, signingPrivateKey, undefined, false);
+  const reissuedCredentials = await issueCredentials(authToken, issuerDid, subjectDid, credentialDataList, signingPrivateKey, undefined, true);
 
   return reissuedCredentials;
 };

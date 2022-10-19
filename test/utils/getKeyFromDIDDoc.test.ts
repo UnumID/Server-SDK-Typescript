@@ -30,7 +30,7 @@ describe('getKeyFromDidDoc', () => {
         {
           id: 'did:unum:3e48b969-5cf3-46c7-9c61-54de886d1382#vcr',
           type: 'CredentialRepositoryService',
-          serviceEndpoint: 'https://api.dev-unum.id/credentialRepository/did:unum:3e48b969-5cf3-46c7-9c61-54de886d1382'
+          serviceEndpoint: 'https://api.dev-unumid.co/credentialRepository/did:unum:3e48b969-5cf3-46c7-9c61-54de886d1382'
         }
       ]
     };
