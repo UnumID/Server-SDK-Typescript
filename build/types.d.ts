@@ -1,4 +1,4 @@
-import { CredentialStatusOptions, Issuer, CredentialSubject, Verifier, CredentialRequest, Presentation, KeyPair, PublicKeyInfo, JSONObj, PresentationPb, CredentialRequestPb } from '@unumid/types';
+import { CredentialStatusOptions, Issuer, CredentialSubject, Verifier, CredentialRequest, Presentation, KeyPair, PublicKeyInfo, JSONObj, PresentationPb } from '@unumid/types';
 
 /**
  * Interface for key pairs. One for signing purposes and the other for encryption.
@@ -68,7 +68,7 @@ export interface RegisteredIssuer extends Issuer {
  * Encapsulates PresentationRequest attributes.
  */
 export interface PresentationRequestParams {
-  credentialRequests: CredentialRequestPb[];
+  credentialRequests: CredentialRequest[];
   holderAppUuid: string;
   verifier: string;
   id: string; // identifier for related requests between versions
