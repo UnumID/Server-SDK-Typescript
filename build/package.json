@@ -1,6 +1,6 @@
 {
   "name": "@unumid/server-sdk",
-  "version": "3.28.0",
+  "version": "3.29.0",
   "main": "build/index.js",
   "repository": "git@github.com:UnumID/Server-SDK-TypeScript.git",
   "homepage": "https://docs.unum.id/server-sdk/",
@@ -37,7 +37,7 @@
     "jest": "^26.1.0",
     "supertest": "^4.0.2",
     "ts-jest": "^26.5.4",
-    "typedoc": "~0.20.33",
+    "typedoc": "^0.23.12",
     "typescript": "^3.9.7"
   },
   "dependencies": {
@@ -50,9 +50,9 @@
     "express": "^4.17.1",
     "fast-json-stable-stringify": "^2.1.0",
     "lodash": "^4.17.21",
-    "node-fetch": "^2.6.1",
-    "semver": "^7.3.5",
+    "node-fetch": "^2.6.7",
     "runtypes": "~6.0.0",
+    "semver": "^7.3.5",
     "ts-node": "^9.0.0",
     "uuid": "^8.3.2",
     "winston": "^3.3.3",
