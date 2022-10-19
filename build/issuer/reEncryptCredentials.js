@@ -130,7 +130,7 @@ exports.reEncryptCredentials = function (authorization, issuerDid, signingPrivat
                 case 6:
                     _i++;
                     return [3 /*break*/, 3];
-                case 7: return [4 /*yield*/, issueCredentials_1.issueCredentials(authToken, issuerDid, subjectDid, credentialDataList, signingPrivateKey, undefined, false)];
+                case 7: return [4 /*yield*/, issueCredentials_1.issueCredentials(authToken, issuerDid, subjectDid, credentialDataList, signingPrivateKey, undefined, true)];
                 case 8:
                     reissuedCredentials = _a.sent();
                     return [2 /*return*/, reissuedCredentials];
