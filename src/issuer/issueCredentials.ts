@@ -17,6 +17,9 @@ import { versionList } from '../utils/versionList';
 import { CryptoError } from '@unumid/library-crypto';
 import { getCredentialType } from '../utils/getCredentialType';
 import { omit } from 'lodash';
+import { isBase64 } from '../utils/isBase64';
+import { isValidUrl } from '../utils/isValidUrl';
+import { fetchBase64Image } from '../utils/fetchBase64Image';
 
 // interface to handle grouping Credentials and their encrypted form
 interface CredentialPair {
@@ -241,7 +244,7 @@ const constructUnsignedCredentialPbObj = (credOpts: CredentialOptions): Unsigned
  * @param signingPrivateKey
  * @param expirationDate
  */
-const validateInputs = (issuer: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date): void => {
+const validateInputs = async (issuer: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date): Promise<CredentialData[]> => {
   if (!issuer) {
     throw new CustError(400, 'issuer is required.');
   }
@@ -276,7 +279,7 @@ const validateInputs = (issuer: string, subjectDid: string, credentialDataList: 
   }
 
   // validate credentialDataList
-  validateCredentialDataList(credentialDataList);
+  return validateCredentialDataList(credentialDataList);
 };
 
 /**
@@ -423,9 +426,13 @@ const sendEncryptedCredentials = async (authorization: string, encryptedCredenti
 
 /**
  * Validates the credential data objects
+ *
+ * This is where credential formatting ought to be enforced. Post fetching of credential schema
  * @param credentialDataList
  */
-function validateCredentialDataList (credentialDataList: CredentialData[]) {
+async function validateCredentialDataList (credentialDataList: CredentialData[]): Promise<CredentialData[]> {
+  const result = [];
+
   for (const data of credentialDataList) {
     if (!data.type) {
       throw new CustError(400, 'Credential Data needs to contain the credential type');
@@ -434,5 +441,42 @@ function validateCredentialDataList (credentialDataList: CredentialData[]) {
     if (data.id) {
       throw new CustError(400, 'Credential Data has an invalid `id` key');
     }
+
+    const potentiallyTransformedData = validateCredentialSchema(data);
+    result.push(potentiallyTransformedData);
   }
+
+  return Promise.all(result);
+}
+
+/**
+ * Validates the credential schema
+ *
+ * This is where credential formatting ought to be enforced. Necessary to fetch of credential schema
+ * @param credentialDataList
+ */
+async function validateCredentialSchema (data: CredentialData): Promise<CredentialData> {
+  const { type } = data;
+  // const schema = await fetchCredentialSchema(type); // TODO - fetch credential schema
+
+  switch (data.type) {
+    case 'GovernmentIdDocumentImageCredential': {
+      // check that data.image is in base64 encoding, if not then format as such
+      // we know that this credential has a key of image thanks to the schema
+      const image = data.image as string;
+      if (!isBase64(image)) {
+        // need to check if value contains a url, if so we must grab the image and convert to base64
+        if (isValidUrl(image)) {
+          // fetch image from url and convert to base64
+          const base64Image = await fetchBase64Image(image);
+          return { ...data, image: base64Image };
+        } else {
+          throw new CustError(400, 'Invalid GovernmentIdDocumentImageCredential schema');
+        }
+      }
+      break;
+    }
+  }
+
+  return data;
 }

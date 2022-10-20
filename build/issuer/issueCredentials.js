@@ -74,6 +74,9 @@ var versionList_1 = require("../utils/versionList");
 var library_crypto_1 = require("@unumid/library-crypto");
 var getCredentialType_1 = require("../utils/getCredentialType");
 var lodash_1 = require("lodash");
+var isBase64_1 = require("../utils/isBase64");
+var isValidUrl_1 = require("../utils/isValidUrl");
+var fetchBase64Image_1 = require("../utils/fetchBase64Image");
 /**
  * Multiplexed handler for issuing credentials with UnumID's SaaS.
  * @param authorization
@@ -274,35 +277,37 @@ var constructUnsignedCredentialPbObj = function (credOpts) {
  * @param signingPrivateKey
  * @param expirationDate
  */
-var validateInputs = function (issuer, subjectDid, credentialDataList, signingPrivateKey, expirationDate) {
-    if (!issuer) {
-        throw new error_1.CustError(400, 'issuer is required.');
-    }
-    if (!subjectDid) {
-        throw new error_1.CustError(400, 'subjectDid is required.');
-    }
-    if (!signingPrivateKey) {
-        throw new error_1.CustError(400, 'signingPrivateKey is required.');
-    }
-    if (typeof issuer !== 'string') {
-        throw new error_1.CustError(400, 'issuer must be a string.');
-    }
-    if (typeof subjectDid !== 'string') {
-        throw new error_1.CustError(400, 'subjectDid must be a string.');
-    }
-    if (typeof signingPrivateKey !== 'string') {
-        throw new error_1.CustError(400, 'signingPrivateKey must be a string.');
-    }
-    // expirationDate must be a Date object and return a properly formed time. Invalid Date.getTime() will produce NaN
-    if (expirationDate && (!(expirationDate instanceof Date) || isNaN(expirationDate.getTime()))) {
-        throw new error_1.CustError(400, 'expirationDate must be a valid Date object.');
-    }
-    if (expirationDate && expirationDate < new Date()) {
-        throw new error_1.CustError(400, 'expirationDate must be in the future.');
-    }
-    // validate credentialDataList
-    validateCredentialDataList(credentialDataList);
-};
+var validateInputs = function (issuer, subjectDid, credentialDataList, signingPrivateKey, expirationDate) { return __awaiter(void 0, void 0, void 0, function () {
+    return __generator(this, function (_a) {
+        if (!issuer) {
+            throw new error_1.CustError(400, 'issuer is required.');
+        }
+        if (!subjectDid) {
+            throw new error_1.CustError(400, 'subjectDid is required.');
+        }
+        if (!signingPrivateKey) {
+            throw new error_1.CustError(400, 'signingPrivateKey is required.');
+        }
+        if (typeof issuer !== 'string') {
+            throw new error_1.CustError(400, 'issuer must be a string.');
+        }
+        if (typeof subjectDid !== 'string') {
+            throw new error_1.CustError(400, 'subjectDid must be a string.');
+        }
+        if (typeof signingPrivateKey !== 'string') {
+            throw new error_1.CustError(400, 'signingPrivateKey must be a string.');
+        }
+        // expirationDate must be a Date object and return a properly formed time. Invalid Date.getTime() will produce NaN
+        if (expirationDate && (!(expirationDate instanceof Date) || isNaN(expirationDate.getTime()))) {
+            throw new error_1.CustError(400, 'expirationDate must be a valid Date object.');
+        }
+        if (expirationDate && expirationDate < new Date()) {
+            throw new error_1.CustError(400, 'expirationDate must be in the future.');
+        }
+        // validate credentialDataList
+        return [2 /*return*/, validateCredentialDataList(credentialDataList)];
+    });
+}); };
 /**
  * Helper to construct a Credential's CredentialOptions
  * @param type
@@ -429,17 +434,72 @@ var sendEncryptedCredentials = function (authorization, encryptedCredentialUploa
 }); };
 /**
  * Validates the credential data objects
+ *
+ * This is where credential formatting ought to be enforced. Post fetching of credential schema
  * @param credentialDataList
  */
 function validateCredentialDataList(credentialDataList) {
-    for (var _i = 0, credentialDataList_1 = credentialDataList; _i < credentialDataList_1.length; _i++) {
-        var data = credentialDataList_1[_i];
-        if (!data.type) {
-            throw new error_1.CustError(400, 'Credential Data needs to contain the credential type');
-        }
-        if (data.id) {
-            throw new error_1.CustError(400, 'Credential Data has an invalid `id` key');
-        }
-    }
+    return __awaiter(this, void 0, void 0, function () {
+        var result, _i, credentialDataList_1, data, potentiallyTransformedData;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    result = [];
+                    _i = 0, credentialDataList_1 = credentialDataList;
+                    _a.label = 1;
+                case 1:
+                    if (!(_i < credentialDataList_1.length)) return [3 /*break*/, 4];
+                    data = credentialDataList_1[_i];
+                    if (!data.type) {
+                        throw new error_1.CustError(400, 'Credential Data needs to contain the credential type');
+                    }
+                    if (data.id) {
+                        throw new error_1.CustError(400, 'Credential Data has an invalid `id` key');
+                    }
+                    return [4 /*yield*/, validateCredentialSchema(data)];
+                case 2:
+                    potentiallyTransformedData = _a.sent();
+                    result.push(potentiallyTransformedData);
+                    _a.label = 3;
+                case 3:
+                    _i++;
+                    return [3 /*break*/, 1];
+                case 4: return [2 /*return*/, result];
+            }
+        });
+    });
+}
+/**
+ * Validates the credential schema
+ *
+ * This is where credential formatting ought to be enforced. Necessary to fetch of credential schema
+ * @param credentialDataList
+ */
+function validateCredentialSchema(data) {
+    return __awaiter(this, void 0, void 0, function () {
+        var type, _a, image, base64Image;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    type = data.type;
+                    _a = data.type;
+                    switch (_a) {
+                        case 'GovernmentIdDocumentImageCredential': return [3 /*break*/, 1];
+                    }
+                    return [3 /*break*/, 5];
+                case 1:
+                    image = data.image;
+                    if (!!isBase64_1.isBase64(image)) return [3 /*break*/, 4];
+                    if (!isValidUrl_1.isValidUrl(image)) return [3 /*break*/, 3];
+                    return [4 /*yield*/, fetchBase64Image_1.fetchBase64Image(image)];
+                case 2:
+                    base64Image = _b.sent();
+                    return [2 /*return*/, __assign(__assign({}, data), { image: base64Image })];
+                case 3: throw new error_1.CustError(400, 'Invalid GovernmentIdDocumentImageCredential schema');
+                case 4: return [3 /*break*/, 5];
+                case 5: return [2 /*return*/, data];
+            }
+        });
+    });
 }
 //# sourceMappingURL=issueCredentials.js.map
