@@ -35,8 +35,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fetchBase64Image = void 0;
+var node_fetch_1 = __importDefault(require("node-fetch"));
 /**
  * Fetch url image and encode to a base64 string
  *
@@ -46,10 +50,12 @@ exports.fetchBase64Image = void 0;
  */
 function fetchBase64Image(url) {
     return __awaiter(this, void 0, void 0, function () {
-        var imageUrlData, buffer, stringifiedBuffer, contentType, imageBas64;
+        var imageUrlData, buffer, stringifiedBuffer, contentType, imageBas64, e_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, fetch(url)];
+                case 0:
+                    _a.trys.push([0, 3, , 4]);
+                    return [4 /*yield*/, node_fetch_1.default(url)];
                 case 1:
                     imageUrlData = _a.sent();
                     return [4 /*yield*/, imageUrlData.arrayBuffer()];
@@ -59,6 +65,10 @@ function fetchBase64Image(url) {
                     contentType = imageUrlData.headers.get('content-type');
                     imageBas64 = "data:image/" + contentType + ";base64," + stringifiedBuffer;
                     return [2 /*return*/, imageBas64];
+                case 3:
+                    e_1 = _a.sent();
+                    throw new Error("Failed to fetch image from " + url);
+                case 4: return [2 /*return*/, url];
             }
         });
     });
