@@ -95,22 +95,24 @@ exports.issueCredentials = function (authorization, issuerDid, subjectDid, crede
                 case 0:
                     // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
                     requireAuth_1.requireAuth(authorization);
-                    // Validate inputs.
-                    validateInputs(issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate);
-                    return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authorization, subjectDid, 'RSA')];
+                    return [4 /*yield*/, validateInputs(issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate)];
                 case 1:
+                    // Validate inputs and potentially mutate image date inputs, e.g. image urls to base64 strings
+                    credentialDataList = _a.sent();
+                    return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authorization, subjectDid, 'RSA')];
+                case 2:
                     publicKeyInfoResponse = _a.sent();
                     publicKeyInfos = publicKeyInfoResponse.body;
                     authorization = publicKeyInfoResponse.authToken;
                     issuerPublicKeyInfos = [];
-                    if (!!declineIssueCredentialsToSelf) return [3 /*break*/, 3];
+                    if (!!declineIssueCredentialsToSelf) return [3 /*break*/, 4];
                     return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authorization, issuerDid, 'RSA')];
-                case 2:
+                case 3:
                     publicKeyInfoResponse_1 = _a.sent();
                     issuerPublicKeyInfos = publicKeyInfoResponse_1.body;
                     authorization = publicKeyInfoResponse_1.authToken;
-                    _a.label = 3;
-                case 3:
+                    _a.label = 4;
+                case 4:
                     creds = [];
                     proofOfCreds = [];
                     for (i = 0; i < credentialDataList.length; i++) {
@@ -159,18 +161,18 @@ exports.issueCredentials = function (authorization, issuerDid, subjectDid, crede
                         });
                     };
                     _i = 0, versionList_2 = versionList_1.versionList;
-                    _a.label = 4;
-                case 4:
-                    if (!(_i < versionList_2.length)) return [3 /*break*/, 7];
+                    _a.label = 5;
+                case 5:
+                    if (!(_i < versionList_2.length)) return [3 /*break*/, 8];
                     version = versionList_2[_i];
                     return [5 /*yield**/, _loop_1(version)];
-                case 5:
-                    _a.sent();
-                    _a.label = 6;
                 case 6:
-                    _i++;
-                    return [3 /*break*/, 4];
+                    _a.sent();
+                    _a.label = 7;
                 case 7:
+                    _i++;
+                    return [3 /*break*/, 5];
+                case 8:
                     latestVersion = versionList_1.versionList[versionList_1.versionList.length - 1];
                     resultantCredentials = creds.filter(function (credPair) { return (credPair.version === latestVersion && credPair.encryptedCredential.subject === subjectDid); }).map(function (credPair) { return credPair.credential; });
                     return [2 /*return*/, {
@@ -442,30 +444,19 @@ function validateCredentialDataList(credentialDataList) {
     return __awaiter(this, void 0, void 0, function () {
         var result, _i, credentialDataList_1, data, potentiallyTransformedData;
         return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    result = [];
-                    _i = 0, credentialDataList_1 = credentialDataList;
-                    _a.label = 1;
-                case 1:
-                    if (!(_i < credentialDataList_1.length)) return [3 /*break*/, 4];
-                    data = credentialDataList_1[_i];
-                    if (!data.type) {
-                        throw new error_1.CustError(400, 'Credential Data needs to contain the credential type');
-                    }
-                    if (data.id) {
-                        throw new error_1.CustError(400, 'Credential Data has an invalid `id` key');
-                    }
-                    return [4 /*yield*/, validateCredentialSchema(data)];
-                case 2:
-                    potentiallyTransformedData = _a.sent();
-                    result.push(potentiallyTransformedData);
-                    _a.label = 3;
-                case 3:
-                    _i++;
-                    return [3 /*break*/, 1];
-                case 4: return [2 /*return*/, result];
+            result = [];
+            for (_i = 0, credentialDataList_1 = credentialDataList; _i < credentialDataList_1.length; _i++) {
+                data = credentialDataList_1[_i];
+                if (!data.type) {
+                    throw new error_1.CustError(400, 'Credential Data needs to contain the credential type');
+                }
+                if (data.id) {
+                    throw new error_1.CustError(400, 'Credential Data has an invalid `id` key');
+                }
+                potentiallyTransformedData = validateCredentialSchema(data);
+                result.push(potentiallyTransformedData);
             }
+            return [2 /*return*/, Promise.all(result)];
         });
     });
 }

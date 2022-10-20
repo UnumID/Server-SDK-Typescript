@@ -40,8 +40,8 @@ export const issueCredentials = async (authorization: string, issuerDid: string,
   // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
   requireAuth(authorization);
 
-  // Validate inputs.
-  validateInputs(issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate);
+  // Validate inputs and potentially mutate image date inputs, e.g. image urls to base64 strings
+  credentialDataList = await validateInputs(issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate);
 
   // Get target Subject's DID document public keys for encrypting all the credentials issued.
   const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, subjectDid, 'RSA');
