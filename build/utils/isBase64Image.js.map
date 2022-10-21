@@ -1,1 +1,0 @@
-{"version":3,"file":"isBase64Image.js","sourceRoot":"","sources":["../../src/utils/isBase64Image.ts"],"names":[],"mappings":";;;AAAA,SAAgB,aAAa,CAAE,GAAW;IACxC,IAAM,MAAM,GAAG,QAAQ,CAAC,cAAc,EAAE,EAAE,YAAY,EAAE,IAAI,EAAE,CAAC,CAAC;IAChE,OAAO,MAAM,CAAC;AAChB,CAAC;AAHD,sCAGC"}

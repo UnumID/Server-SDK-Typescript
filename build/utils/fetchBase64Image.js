@@ -68,7 +68,7 @@ function fetchBase64Image(url) {
                 case 3:
                     e_1 = _a.sent();
                     throw new Error("Failed to fetch image from " + url);
-                case 4: return [2 /*return*/, url];
+                case 4: return [2 /*return*/];
             }
         });
     });

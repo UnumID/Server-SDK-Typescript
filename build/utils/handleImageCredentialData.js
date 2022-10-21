@@ -50,7 +50,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleImageCredentialData = void 0;
 var error_1 = require("./error");
 var fetchBase64Image_1 = require("./fetchBase64Image");
-var isBase64Image_1 = require("./isBase64Image");
+var isBase64_1 = require("./isBase64");
 var isValidUrl_1 = require("./isValidUrl");
 /**
  * Helper to handle image credential data.
@@ -66,7 +66,7 @@ function handleImageCredentialData(data) {
             switch (_a.label) {
                 case 0:
                     image = data.image;
-                    if (!!isBase64Image_1.isBase64(image)) return [3 /*break*/, 3];
+                    if (!!isBase64_1.isBase64Image(image)) return [3 /*break*/, 3];
                     if (!isValidUrl_1.isValidUrl(image)) return [3 /*break*/, 2];
                     return [4 /*yield*/, fetchBase64Image_1.fetchBase64Image(image)];
                 case 1:
