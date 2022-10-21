@@ -250,4 +250,14 @@ describe('issueCredentials', () => {
       expect(e).toEqual(new CustError(400, 'Invalid GovernmentIdDocumentImageCredential image data'));
     }
   });
+
+  it('custom error if image credential data url is invalid', async () => {
+    const url = 'https://xyz.abc.com';
+    try {
+      responseDto = await callIssueCreds(issuer, credentialSubject.id, [{ type: 'GovernmentIdDocumentImageCredential', image: url }], expirationDate, eccPrivateKey, authHeader);
+      fail();
+    } catch (e) {
+      expect(e).toEqual(new CustError(400, `Failed to fetch image from ${url}`));
+    }
+  });
 });

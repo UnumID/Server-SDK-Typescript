@@ -17,6 +17,4 @@ export async function fetchBase64Image (url: string): Promise<string> {
   } catch (e) {
     throw new Error(`Failed to fetch image from ${url}`);
   }
-
-  return url;
 }
