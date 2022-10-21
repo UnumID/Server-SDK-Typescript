@@ -44,7 +44,7 @@
     "@types/semver": "^7.3.4",
     "@types/uuid": "^8.3.0",
     "@unumid/library-crypto": "2.1.1",
-    "@unumid/types": "git+ssh://git@github.com/UnumID/types.git#4.0.1",
+    "@unumid/types": "4.0.1",
     "@unumid/types-v3": "npm:@unumid/types@3.54.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
