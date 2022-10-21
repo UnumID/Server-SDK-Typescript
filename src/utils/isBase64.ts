@@ -20,7 +20,7 @@ export function isBase64 (str: string, opts: {allowEmpty?: boolean, mimeRequired
     return false;
   }
 
-  let regex = '(?:[A-Za-z0-9+\\/]{4})*(?:[A-Za-z0-9+\\/]{2}==|[A-Za-z0-9+\/]{3}=)?';
+  let regex = '(?:[A-Za-z0-9+\\/]{4})*(?:[A-Za-z0-9+\\/]{2}==|[A-Za-z0-9+\\/]{3}=)?';
   const mimeRegex = '(data:\\w+\\/[a-zA-Z\\+\\-\\.]+;base64,)';
 
   if (opts.mimeRequired === true) {
