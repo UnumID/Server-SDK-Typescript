@@ -475,13 +475,16 @@ function validateCredentialSchema(data) {
                     switch (_a) {
                         case 'GovernmentIdDocumentImageCredential': return [3 /*break*/, 1];
                         case 'GovernmentIdDocumentBackImageCredential': return [3 /*break*/, 3];
+                        case 'FacialImageCredential': return [3 /*break*/, 5];
                     }
-                    return [3 /*break*/, 5];
+                    return [3 /*break*/, 7];
                 case 1: return [4 /*yield*/, handleImageCredentialData_1.handleImageCredentialData(data)];
                 case 2: return [2 /*return*/, _b.sent()];
                 case 3: return [4 /*yield*/, handleImageCredentialData_1.handleImageCredentialData(data)];
                 case 4: return [2 /*return*/, _b.sent()];
-                case 5: return [2 /*return*/, data];
+                case 5: return [4 /*yield*/, handleImageCredentialData_1.handleImageCredentialData(data)];
+                case 6: return [2 /*return*/, _b.sent()];
+                case 7: return [2 /*return*/, data];
             }
         });
     });

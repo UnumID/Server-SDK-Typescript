@@ -467,6 +467,9 @@ async function validateCredentialSchema (data: CredentialData): Promise<Credenti
     case 'GovernmentIdDocumentBackImageCredential': {
       return await handleImageCredentialData(data);
     }
+    case 'FacialImageCredential': {
+      return await handleImageCredentialData(data);
+    }
   }
 
   return data;
