@@ -1,5 +1,5 @@
 import { configData } from '../../src/config';
-import { dummyAuthToken, makeDummyDidDocument, dummyAdminKey } from './mocks';
+import { dummyAuthToken, makeDummyDidDocument, dummyAdminKey, base64Image, imageUrl } from './mocks';
 import { issueCredentials } from '../../src/issuer/issueCredentials';
 import { UnumDto } from '../../src/types';
 import { CredentialSubject, Credential, CredentialData, CredentialPb } from '@unumid/types';
@@ -9,6 +9,7 @@ import { getDidDocPublicKeys } from '../../src/utils/didHelper';
 import { doEncrypt } from '../../src/utils/encrypt';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import { omit } from 'lodash';
+import { fetchBase64Image } from '../../src/utils/fetchBase64Image';
 
 jest.mock('../../src/utils/didHelper', () => {
   const actual = jest.requireActual('../../src/utils/didHelper');
@@ -126,46 +127,46 @@ describe('issueCredentials', () => {
   });
 
   // TODO: fix this test.
-  // it('sends both the encrypted credentials and their respective "proof-of"', () => {
-  //   expect(mockMakeNetworkRequest).toBeCalled();
-  //   expect(mockMakeNetworkRequest.mock.calls).toHaveLength(4);
+  xit('sends both the encrypted credentials and their respective "proof-of"', () => {
+    expect(mockMakeNetworkRequest).toBeCalled();
+    expect(mockMakeNetworkRequest.mock.calls).toHaveLength(4);
 
-  //   for (const callArray of mockMakeNetworkRequest.mock.calls) {
-  //     for (const call of callArray) {
-  //       expect(call.data).toHaveProperty('credentialRequests');
-  //       expect(call.data.credentialRequests.length % 2).toEqual(0);
-  //       const credentialRequests = call.data.credentialRequests;
+    for (const callArray of mockMakeNetworkRequest.mock.calls) {
+      for (const call of callArray) {
+        expect(call.data).toHaveProperty('credentialRequests');
+        expect(call.data.credentialRequests.length % 2).toEqual(0);
+        const credentialRequests = call.data.credentialRequests;
 
-  //       for (const request of credentialRequests) {
-  //         const encryptedCredential = request.encryptedCredentials[0];
-  //         const proofOfCredential = request.encryptedCredentials[1];
+        for (const request of credentialRequests) {
+          const encryptedCredential = request.encryptedCredentials[0];
+          const proofOfCredential = request.encryptedCredentials[1];
 
-  //         // Validate Types
-  //         expect(proofOfCredential.type).toEqual(`ProofOf${encryptedCredential.type}`);
+          // Validate Types
+          expect(proofOfCredential.type).toEqual(`ProofOf${encryptedCredential.type}`);
 
-  //         if ('types' in proofOfCredential) {
-  //           expect(encryptedCredential.types.length).toEqual(proofOfCredential.types.length);
-  //           for (const credType of encryptedCredential.types) {
-  //             const property = credType === 'VerifiableCredential' ? credType : `ProofOf${credType}`;
-  //             expect(proofOfCredential.types).toContain(property);
-  //           }
-  //         }
+          if ('types' in proofOfCredential) {
+            expect(encryptedCredential.types.length).toEqual(proofOfCredential.types.length);
+            for (const credType of encryptedCredential.types) {
+              const property = credType === 'VerifiableCredential' ? credType : `ProofOf${credType}`;
+              expect(proofOfCredential.types).toContain(property);
+            }
+          }
 
-  //         // Validate CredentialID
-  //         expect(encryptedCredential.credentialId).toEqual(proofOfCredential.credentialId);
+          // Validate CredentialID
+          expect(encryptedCredential.credentialId).toEqual(proofOfCredential.credentialId);
 
-  //         // Validate matching issuanceDate
-  //         expect(proofOfCredential.issuanceDate).toEqual(encryptedCredential.issuanceDate);
+          // Validate matching issuanceDate
+          expect(proofOfCredential.issuanceDate).toEqual(encryptedCredential.issuanceDate);
 
-  //         // Validate Issuer
-  //         expect(proofOfCredential.issuer).toEqual(encryptedCredential.issuer);
+          // Validate Issuer
+          expect(proofOfCredential.issuer).toEqual(encryptedCredential.issuer);
 
-  //         // Validate Subject
-  //         expect(proofOfCredential.subject).toEqual('undefined#undefined');
-  //       }
-  //     }
-  //   }
-  // });
+          // Validate Subject
+          expect(proofOfCredential.subject).toEqual('undefined#undefined');
+        }
+      }
+    }
+  });
 
   it('returns the credentials', () => {
     expect(response.length).toEqual(2);
@@ -174,6 +175,31 @@ describe('issueCredentials', () => {
     expect(response[0].credentialSubject).toBeDefined();
     expect(response[0].proof).toBeDefined();
     expect(response[0].credentialStatus?.id).toEqual(`${configData.SaaSUrl}/credentialStatus/${response[0].id}`);
+  });
+
+  it('handles image credentials with base64 string input', async () => {
+    responseDto = await callIssueCreds(issuer, credentialSubject.id, [{ type: 'GovernmentIdDocumentImageCredential', image: base64Image }], expirationDate, eccPrivateKey, authHeader);
+    response = responseDto.body;
+    responseAuthToken = responseDto.authToken;
+
+    expect(response.length).toEqual(1);
+    expect(response[0].id).toBeDefined();
+    expect(response[0].credentialStatus).toBeDefined();
+    expect(response[0].credentialSubject).toContain(base64Image);
+  });
+
+  it('handles image credentials with url string input', async () => {
+    responseDto = await callIssueCreds(issuer, credentialSubject.id, [{ type: 'GovernmentIdDocumentImageCredential', image: imageUrl }], expirationDate, eccPrivateKey, authHeader);
+    response = responseDto.body;
+    responseAuthToken = responseDto.authToken;
+
+    const base64String = await fetchBase64Image(imageUrl);
+
+    expect(response.length).toEqual(1);
+    expect(response[0].id).toBeDefined();
+    expect(response[0].credentialStatus).toBeDefined();
+    expect(response[0].credentialSubject).not.toContain(imageUrl);
+    expect(response[0].credentialSubject).toContain(base64String);
   });
 
   it('returns the auth token', () => {
@@ -213,6 +239,25 @@ describe('issueCredentials', () => {
       expect(e).toEqual(new CustError(400, 'Credential Data needs to contain the credential type'));
       expect(e.code).toEqual(400);
       expect(e.message).toEqual('Credential Data needs to contain the credential type');
+    }
+  });
+
+  it('custom error if image credential data is invalid', async () => {
+    try {
+      responseDto = await callIssueCreds(issuer, credentialSubject.id, [{ type: 'GovernmentIdDocumentImageCredential', image: 'Base64' }], expirationDate, eccPrivateKey, authHeader);
+      fail();
+    } catch (e) {
+      expect(e).toEqual(new CustError(400, 'Invalid GovernmentIdDocumentImageCredential image data'));
+    }
+  });
+
+  it('custom error if image credential data url is invalid', async () => {
+    const url = 'https://xyz.abc.com';
+    try {
+      responseDto = await callIssueCreds(issuer, credentialSubject.id, [{ type: 'GovernmentIdDocumentImageCredential', image: url }], expirationDate, eccPrivateKey, authHeader);
+      fail();
+    } catch (e) {
+      expect(e).toEqual(new CustError(400, `Failed to fetch image from ${url}`));
     }
   });
 });

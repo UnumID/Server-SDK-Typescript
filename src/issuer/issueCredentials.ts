@@ -17,6 +17,10 @@ import { versionList } from '../utils/versionList';
 import { CryptoError } from '@unumid/library-crypto';
 import { getCredentialType } from '../utils/getCredentialType';
 import { omit } from 'lodash';
+import { isBase64 } from '../utils/isBase64';
+import { isValidUrl } from '../utils/isValidUrl';
+import { fetchBase64Image } from '../utils/fetchBase64Image';
+import { handleImageCredentialData } from '../utils/handleImageCredentialData';
 
 // interface to handle grouping Credentials and their encrypted form
 interface CredentialPair {
@@ -37,8 +41,8 @@ export const issueCredentials = async (authorization: string, issuerDid: string,
   // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
   requireAuth(authorization);
 
-  // Validate inputs.
-  validateInputs(issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate);
+  // Validate inputs and potentially mutate image date inputs, e.g. image urls to base64 strings
+  credentialDataList = await validateInputs(issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate);
 
   // Get target Subject's DID document public keys for encrypting all the credentials issued.
   const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, subjectDid, 'RSA');
@@ -241,7 +245,7 @@ const constructUnsignedCredentialPbObj = (credOpts: CredentialOptions): Unsigned
  * @param signingPrivateKey
  * @param expirationDate
  */
-const validateInputs = (issuer: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date): void => {
+const validateInputs = async (issuer: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date): Promise<CredentialData[]> => {
   if (!issuer) {
     throw new CustError(400, 'issuer is required.');
   }
@@ -276,7 +280,7 @@ const validateInputs = (issuer: string, subjectDid: string, credentialDataList: 
   }
 
   // validate credentialDataList
-  validateCredentialDataList(credentialDataList);
+  return validateCredentialDataList(credentialDataList);
 };
 
 /**
@@ -423,9 +427,13 @@ const sendEncryptedCredentials = async (authorization: string, encryptedCredenti
 
 /**
  * Validates the credential data objects
+ *
+ * This is where credential formatting ought to be enforced. Post fetching of credential schema
  * @param credentialDataList
  */
-function validateCredentialDataList (credentialDataList: CredentialData[]) {
+async function validateCredentialDataList (credentialDataList: CredentialData[]): Promise<CredentialData[]> {
+  const result = [];
+
   for (const data of credentialDataList) {
     if (!data.type) {
       throw new CustError(400, 'Credential Data needs to contain the credential type');
@@ -434,5 +442,32 @@ function validateCredentialDataList (credentialDataList: CredentialData[]) {
     if (data.id) {
       throw new CustError(400, 'Credential Data has an invalid `id` key');
     }
+
+    const potentiallyTransformedData = validateCredentialSchema(data);
+    result.push(potentiallyTransformedData);
   }
+
+  return Promise.all(result);
+}
+
+/**
+ * Validates the credential schema
+ *
+ * This is where credential formatting ought to be enforced. Necessary to fetch of credential schema
+ * @param credentialDataList
+ */
+async function validateCredentialSchema (data: CredentialData): Promise<CredentialData> {
+  const { type } = data;
+  // const schema = await fetchCredentialSchema(type); // TODO - actually fetch credential schema
+
+  switch (data.type) {
+    case 'GovernmentIdDocumentImageCredential': {
+      return await handleImageCredentialData(data);
+    }
+    case 'GovernmentIdDocumentBackImageCredential': {
+      return await handleImageCredentialData(data);
+    }
+  }
+
+  return data;
 }
