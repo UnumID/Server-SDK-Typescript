@@ -108,7 +108,7 @@ export async function verifySubjectCredentialRequestsHelper (authToken: string, 
 
   // check all the public keys to see if any work, stop if one does
   for (const publicKeyInfo of publicKeyInfoList) {
-    // verify the signature
+    // verify the signature. call is backwards compatible with old signature base58 encoding.
     isVerified = doVerify(signatureValue, bytes, publicKeyInfo);
     if (isVerified) break;
   }
