@@ -74,9 +74,7 @@ var versionList_1 = require("../utils/versionList");
 var library_crypto_1 = require("@unumid/library-crypto");
 var getCredentialType_1 = require("../utils/getCredentialType");
 var lodash_1 = require("lodash");
-var isBase64_1 = require("../utils/isBase64");
-var isValidUrl_1 = require("../utils/isValidUrl");
-var fetchBase64Image_1 = require("../utils/fetchBase64Image");
+var handleImageCredentialData_1 = require("../utils/handleImageCredentialData");
 /**
  * Multiplexed handler for issuing credentials with UnumID's SaaS.
  * @param authorization
@@ -468,7 +466,7 @@ function validateCredentialDataList(credentialDataList) {
  */
 function validateCredentialSchema(data) {
     return __awaiter(this, void 0, void 0, function () {
-        var type, _a, image, base64Image;
+        var type, _a;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
@@ -476,18 +474,13 @@ function validateCredentialSchema(data) {
                     _a = data.type;
                     switch (_a) {
                         case 'GovernmentIdDocumentImageCredential': return [3 /*break*/, 1];
+                        case 'GovernmentIdDocumentBackImageCredential': return [3 /*break*/, 3];
                     }
                     return [3 /*break*/, 5];
-                case 1:
-                    image = data.image;
-                    if (!!isBase64_1.isBase64(image)) return [3 /*break*/, 4];
-                    if (!isValidUrl_1.isValidUrl(image)) return [3 /*break*/, 3];
-                    return [4 /*yield*/, fetchBase64Image_1.fetchBase64Image(image)];
-                case 2:
-                    base64Image = _b.sent();
-                    return [2 /*return*/, __assign(__assign({}, data), { image: base64Image })];
-                case 3: throw new error_1.CustError(400, 'Invalid GovernmentIdDocumentImageCredential schema');
-                case 4: return [3 /*break*/, 5];
+                case 1: return [4 /*yield*/, handleImageCredentialData_1.handleImageCredentialData(data)];
+                case 2: return [2 /*return*/, _b.sent()];
+                case 3: return [4 /*yield*/, handleImageCredentialData_1.handleImageCredentialData(data)];
+                case 4: return [2 /*return*/, _b.sent()];
                 case 5: return [2 /*return*/, data];
             }
         });

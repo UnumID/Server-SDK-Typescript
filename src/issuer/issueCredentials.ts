@@ -20,6 +20,7 @@ import { omit } from 'lodash';
 import { isBase64 } from '../utils/isBase64';
 import { isValidUrl } from '../utils/isValidUrl';
 import { fetchBase64Image } from '../utils/fetchBase64Image';
+import { handleImageCredentialData } from '../utils/handleImageCredentialData';
 
 // interface to handle grouping Credentials and their encrypted form
 interface CredentialPair {
@@ -457,24 +458,14 @@ async function validateCredentialDataList (credentialDataList: CredentialData[])
  */
 async function validateCredentialSchema (data: CredentialData): Promise<CredentialData> {
   const { type } = data;
-  // const schema = await fetchCredentialSchema(type); // TODO - fetch credential schema
+  // const schema = await fetchCredentialSchema(type); // TODO - actually fetch credential schema
 
   switch (data.type) {
     case 'GovernmentIdDocumentImageCredential': {
-      // check that data.image is in base64 encoding, if not then format as such
-      // we know that this credential has a key of image thanks to the schema
-      const image = data.image as string;
-      if (!isBase64(image)) {
-        // need to check if value contains a url, if so we must grab the image and convert to base64
-        if (isValidUrl(image)) {
-          // fetch image from url and convert to base64
-          const base64Image = await fetchBase64Image(image);
-          return { ...data, image: base64Image };
-        } else {
-          throw new CustError(400, 'Invalid GovernmentIdDocumentImageCredential schema');
-        }
-      }
-      break;
+      return await handleImageCredentialData(data);
+    }
+    case 'GovernmentIdDocumentBackImageCredential': {
+      return await handleImageCredentialData(data);
     }
   }
 

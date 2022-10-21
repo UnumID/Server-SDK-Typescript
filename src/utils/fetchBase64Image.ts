@@ -7,16 +7,6 @@ import fetch from 'node-fetch';
  * @returns
  */
 export async function fetchBase64Image (url: string): Promise<string> {
-//   const response = await fetch(url);
-
-  //   if (!response.body) {
-  //     throw new Error(`Failed to fetch image from ${url}`);
-  //   }
-
-  //   const buffer = Buffer.from(response.body).toString('base64');
-  //   return buffer;
-  //   const result = await fetch(url).then(r => r.arrayBuffer()).then(buf => `data:image/${r.headers.get('content-type')};base64,` + buf.toString('base64'));
-  //   return result;
   try {
     const imageUrlData = await fetch(url);
     const buffer = await imageUrlData.arrayBuffer();
