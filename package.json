@@ -49,6 +49,7 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "fast-json-stable-stringify": "^2.1.0",
+    "is-base64": "^1.1.0",
     "lodash": "^4.17.21",
     "node-fetch": "^2.6.7",
     "runtypes": "~6.0.0",

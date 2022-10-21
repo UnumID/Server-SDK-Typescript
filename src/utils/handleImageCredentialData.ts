@@ -1,7 +1,7 @@
 import { CredentialData } from '@unumid/types';
 import { CustError } from './error';
 import { fetchBase64Image } from './fetchBase64Image';
-import { isBase64 } from './isBase64';
+import { isBase64Image } from './isBase64';
 import { isValidUrl } from './isValidUrl';
 
 /**
@@ -16,7 +16,7 @@ export async function handleImageCredentialData (data: CredentialData): Promise<
   // we know that this credential has a key of image thanks to the schema
   const image = data.image as string;
 
-  if (!isBase64(image)) {
+  if (!isBase64Image(image)) {
     // need to check if value contains a url, if so we must grab the image and convert to base64
     if (isValidUrl(image)) {
       // fetch image from url and convert to base64
