@@ -238,7 +238,7 @@ exports.constructSignedPresentationRequestV3 = function (unsignedPresentationReq
     try {
         // convert the protobuf to a byte array
         var bytes = types_1.UnsignedPresentationRequestPb.encode(unsignedPresentationRequest).finish();
-        var proof = createProof_1.createProof(bytes, privateKey, unsignedPresentationRequest.verifier);
+        var proof = createProof_1.createProof(bytes, privateKey, unsignedPresentationRequest.verifier, '3.0.0');
         var signedPresentationRequest = __assign(__assign({}, unsignedPresentationRequest), { proof: proof });
         return signedPresentationRequest;
     }
@@ -261,7 +261,7 @@ exports.constructSignedPresentationRequest = function (unsignedPresentationReque
     try {
         // convert the protobuf to a byte array
         var bytes = types_1.UnsignedPresentationRequestPb.encode(unsignedPresentationRequest).finish();
-        var proof = createProof_1.createProof(bytes, privateKey, unsignedPresentationRequest.verifier);
+        var proof = createProof_1.createProof(bytes, privateKey, unsignedPresentationRequest.verifier, '4.0.0');
         var signedPresentationRequest = __assign(__assign({}, unsignedPresentationRequest), { proof: proof });
         return signedPresentationRequest;
     }

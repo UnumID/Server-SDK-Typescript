@@ -179,12 +179,12 @@ const constructEncryptedCredentialOpts = (cred: CredentialPb, publicKeyInfos: Pu
  * @param usCred UnsignedCredentialPb
  * @param privateKey String
  */
-const constructSignedCredentialPbObj = (usCred: UnsignedCredentialPb, privateKey: string): CredentialPb => {
+const constructSignedCredentialPbObj = (usCred: UnsignedCredentialPb, privateKey: string, version: string): CredentialPb => {
   try {
     // convert the protobuf to a byte array
     const bytes: Uint8Array = UnsignedCredentialPb.encode(usCred).finish();
 
-    const proof: ProofPb = createProof(bytes, privateKey, usCred.issuer);
+    const proof: ProofPb = createProof(bytes, privateKey, usCred.issuer, version);
 
     const credential: CredentialPb = {
       context: usCred.context,
@@ -339,7 +339,7 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
       const unsignedCredential = constructUnsignedCredentialPbObj(credentialOptions);
 
       // Create the signed Credential object from the unsignedCredential object
-      const credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
+      const credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey, version);
 
       // Create the encrypted credential issuance dto
       const encryptedCredentialUploadOptions: IssueCredentialOptions = constructIssueCredentialOptions(credential, publicKeyInfos, credentialSubject.id, version);
@@ -360,7 +360,7 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
   const unsignedCredential = constructUnsignedCredentialPbObj(credentialOptions);
 
   // Create the signed Credential object from the unsignedCredential object
-  const credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
+  const credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey, version);
 
   // Create the encrypted credential issuance dto
   const encryptedCredentialUploadOptions: IssueCredentialOptions = constructIssueCredentialOptions(credential, publicKeyInfos, credentialSubject.id, version);

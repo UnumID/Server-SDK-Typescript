@@ -218,11 +218,11 @@ var constructEncryptedCredentialOpts = function (cred, publicKeyInfos, version) 
  * @param usCred UnsignedCredentialPb
  * @param privateKey String
  */
-var constructSignedCredentialPbObj = function (usCred, privateKey) {
+var constructSignedCredentialPbObj = function (usCred, privateKey, version) {
     try {
         // convert the protobuf to a byte array
         var bytes = types_1.UnsignedCredentialPb.encode(usCred).finish();
-        var proof = createProof_1.createProof(bytes, privateKey, usCred.issuer);
+        var proof = createProof_1.createProof(bytes, privateKey, usCred.issuer, version);
         var credential = {
             context: usCred.context,
             credentialStatus: usCred.credentialStatus,
@@ -356,7 +356,7 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
             // Create latest version of the UnsignedCredential object
             var unsignedCredential_1 = constructUnsignedCredentialPbObj(credentialOptions);
             // Create the signed Credential object from the unsignedCredential object
-            var credential_1 = constructSignedCredentialPbObj(unsignedCredential_1, signingPrivateKey);
+            var credential_1 = constructSignedCredentialPbObj(unsignedCredential_1, signingPrivateKey, version_2);
             // Create the encrypted credential issuance dto
             var encryptedCredentialUploadOptions_1 = constructIssueCredentialOptions(credential_1, publicKeyInfos, credentialSubject.id, version_2);
             var credPair_1 = {
@@ -372,7 +372,7 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
     // Create latest version of the UnsignedCredential object
     var unsignedCredential = constructUnsignedCredentialPbObj(credentialOptions);
     // Create the signed Credential object from the unsignedCredential object
-    var credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
+    var credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey, winston_1.version);
     // Create the encrypted credential issuance dto
     var encryptedCredentialUploadOptions = constructIssueCredentialOptions(credential, publicKeyInfos, credentialSubject.id, winston_1.version);
     var credPair = {

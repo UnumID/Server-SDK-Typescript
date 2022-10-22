@@ -228,7 +228,8 @@ export const constructSignedPresentationRequestV3 = (unsignedPresentationRequest
     const proof: Proof = createProof(
       bytes,
       privateKey,
-      unsignedPresentationRequest.verifier
+      unsignedPresentationRequest.verifier,
+      '3.0.0'
     );
 
     const signedPresentationRequest: PresentationRequestPbV3 = {
@@ -261,7 +262,8 @@ export const constructSignedPresentationRequest = (unsignedPresentationRequest: 
     const proof: Proof = createProof(
       bytes,
       privateKey,
-      unsignedPresentationRequest.verifier
+      unsignedPresentationRequest.verifier,
+      '4.0.0'
     );
 
     const signedPresentationRequest: PresentationRequestPb = {

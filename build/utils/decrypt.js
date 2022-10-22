@@ -8,7 +8,7 @@ var logger_1 = __importDefault(require("../logger"));
 var library_crypto_1 = require("@unumid/library-crypto");
 var library_crypto_v1_1 = require("@unumid/library-crypto-v1");
 /**
- * Decrypt the data.
+ * Decrypt the data. Supports v3 and v4.
  * @param privateRSAKey
  * @param data
  * @returns

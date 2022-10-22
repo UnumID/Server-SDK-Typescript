@@ -4,7 +4,7 @@ import { decryptBytes } from '@unumid/library-crypto';
 import { decryptBytes as decryptBytesBase58 } from '@unumid/library-crypto-v1';
 
 /**
- * Decrypt the data.
+ * Decrypt the data. Supports v3 and v4.
  * @param privateRSAKey
  * @param data
  * @returns
