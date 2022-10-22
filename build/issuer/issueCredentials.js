@@ -75,6 +75,7 @@ var library_crypto_1 = require("@unumid/library-crypto");
 var getCredentialType_1 = require("../utils/getCredentialType");
 var lodash_1 = require("lodash");
 var handleImageCredentialData_1 = require("../utils/handleImageCredentialData");
+var winston_1 = require("winston");
 /**
  * Multiplexed handler for issuing credentials with UnumID's SaaS.
  * @param authorization
@@ -87,7 +88,7 @@ var handleImageCredentialData_1 = require("../utils/handleImageCredentialData");
 exports.issueCredentials = function (authorization, issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate, declineIssueCredentialsToSelf) {
     if (declineIssueCredentialsToSelf === void 0) { declineIssueCredentialsToSelf = false; }
     return __awaiter(void 0, void 0, void 0, function () {
-        var publicKeyInfoResponse, publicKeyInfos, issuerPublicKeyInfos, publicKeyInfoResponse_1, creds, proofOfCreds, i, type, credData, credSubject, credentialId, credentialVersionPairs, proofOfType, proofOfCredentialSubject, proofOfCredentailId, proofOfCredentialVersionPairs, issuerCredSubject, issuerCredentialVersionPairs, issuerProofOfType, issuerProofOfCredentialSubject, issuerProofOfCredentialVersionPairs, _loop_1, _i, versionList_2, version, latestVersion, resultantCredentials;
+        var publicKeyInfoResponse, publicKeyInfos, issuerPublicKeyInfos, publicKeyInfoResponse_1, creds, proofOfCreds, i, type, credData, credSubject, credentialId, credentialVersionPairs, proofOfType, proofOfCredentialSubject, proofOfCredentailId, proofOfCredentialVersionPairs, issuerCredSubject, issuerCredentialVersionPairs, issuerProofOfType, issuerProofOfCredentialSubject, issuerProofOfCredentialVersionPairs, _loop_1, _i, versionList_2, version_1, latestVersion, resultantCredentials;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -139,18 +140,18 @@ exports.issueCredentials = function (authorization, issuerDid, subjectDid, crede
                             Array.prototype.push.apply(proofOfCreds, issuerProofOfCredentialVersionPairs);
                         }
                     }
-                    _loop_1 = function (version) {
+                    _loop_1 = function (version_1) {
                         var resultantEncryptedCredentials, result, proofOfResultantEncryptedCredentials, proofOfResult;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
-                                    resultantEncryptedCredentials = creds.filter(function (credPair) { return credPair.version === version; }).map(function (credPair) { return credPair.encryptedCredential; });
-                                    return [4 /*yield*/, sendEncryptedCredentials(authorization, { credentialRequests: resultantEncryptedCredentials }, version)];
+                                    resultantEncryptedCredentials = creds.filter(function (credPair) { return credPair.version === version_1; }).map(function (credPair) { return credPair.encryptedCredential; });
+                                    return [4 /*yield*/, sendEncryptedCredentials(authorization, { credentialRequests: resultantEncryptedCredentials }, version_1)];
                                 case 1:
                                     result = _a.sent();
                                     authorization = result.authToken;
-                                    proofOfResultantEncryptedCredentials = proofOfCreds.filter(function (credPair) { return credPair.version === version; }).map(function (credPair) { return credPair.encryptedCredential; });
-                                    return [4 /*yield*/, sendEncryptedCredentials(authorization, { credentialRequests: proofOfResultantEncryptedCredentials }, version)];
+                                    proofOfResultantEncryptedCredentials = proofOfCreds.filter(function (credPair) { return credPair.version === version_1; }).map(function (credPair) { return credPair.encryptedCredential; });
+                                    return [4 /*yield*/, sendEncryptedCredentials(authorization, { credentialRequests: proofOfResultantEncryptedCredentials }, version_1)];
                                 case 2:
                                     proofOfResult = _a.sent();
                                     authorization = proofOfResult.authToken;
@@ -162,8 +163,8 @@ exports.issueCredentials = function (authorization, issuerDid, subjectDid, crede
                     _a.label = 5;
                 case 5:
                     if (!(_i < versionList_2.length)) return [3 /*break*/, 8];
-                    version = versionList_2[_i];
-                    return [5 /*yield**/, _loop_1(version)];
+                    version_1 = versionList_2[_i];
+                    return [5 /*yield**/, _loop_1(version_1)];
                 case 6:
                     _a.sent();
                     _a.label = 7;
@@ -190,7 +191,7 @@ function isCredentialPb(cred) {
  * @param cred
  * @param publicKeyInfos
  */
-var constructEncryptedCredentialOpts = function (cred, publicKeyInfos) {
+var constructEncryptedCredentialOpts = function (cred, publicKeyInfos, version) {
     var credentialSubject = convertCredentialSubject_1.convertCredentialSubject(cred.credentialSubject);
     var subjectDid = credentialSubject.id;
     logger_1.default.debug("Encrypting credential " + cred);
@@ -198,7 +199,7 @@ var constructEncryptedCredentialOpts = function (cred, publicKeyInfos) {
     return publicKeyInfos.map(function (publicKeyInfo) {
         var subjectDidWithKeyFragment = subjectDid + "#" + publicKeyInfo.id;
         // use the protobuf byte array encryption if dealing with a CredentialPb cred type
-        var encryptedData = encrypt_1.doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, types_1.CredentialPb.encode(cred).finish());
+        var encryptedData = encrypt_1.doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, types_1.CredentialPb.encode(cred).finish(), version);
         // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
         var credentialType = getCredentialType_1.getCredentialType(cred.type);
         var encryptedCredentialOptions = {
@@ -217,11 +218,11 @@ var constructEncryptedCredentialOpts = function (cred, publicKeyInfos) {
  * @param usCred UnsignedCredentialPb
  * @param privateKey String
  */
-var constructSignedCredentialPbObj = function (usCred, privateKey) {
+var constructSignedCredentialPbObj = function (usCred, privateKey, version) {
     try {
         // convert the protobuf to a byte array
         var bytes = types_1.UnsignedCredentialPb.encode(usCred).finish();
-        var proof = createProof_1.createProof(bytes, privateKey, usCred.issuer);
+        var proof = createProof_1.createProof(bytes, privateKey, usCred.issuer, version);
         var credential = {
             context: usCred.context,
             credentialStatus: usCred.credentialStatus,
@@ -350,18 +351,18 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
      * However only care to return the most recent Credential type for customers to use.
      */
     for (var v = 0; v < versionList_1.versionList.length - 1; v++) { // note: purposely terminating one index early, which ought to be the most recent version.
-        var version = versionList_1.versionList[v];
-        if (semver_1.gte(version, '3.0.0') && semver_1.lt(version, '4.0.0')) {
+        var version_2 = versionList_1.versionList[v];
+        if (semver_1.gte(version_2, '3.0.0') && semver_1.lt(version_2, '4.0.0')) {
             // Create latest version of the UnsignedCredential object
             var unsignedCredential_1 = constructUnsignedCredentialPbObj(credentialOptions);
             // Create the signed Credential object from the unsignedCredential object
-            var credential_1 = constructSignedCredentialPbObj(unsignedCredential_1, signingPrivateKey);
+            var credential_1 = constructSignedCredentialPbObj(unsignedCredential_1, signingPrivateKey, version_2);
             // Create the encrypted credential issuance dto
-            var encryptedCredentialUploadOptions_1 = constructIssueCredentialOptions(credential_1, publicKeyInfos, credentialSubject.id);
+            var encryptedCredentialUploadOptions_1 = constructIssueCredentialOptions(credential_1, publicKeyInfos, credentialSubject.id, version_2);
             var credPair_1 = {
                 credential: credential_1,
                 encryptedCredential: encryptedCredentialUploadOptions_1,
-                version: version
+                version: version_2
             };
             results.push(credPair_1);
         }
@@ -371,9 +372,9 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
     // Create latest version of the UnsignedCredential object
     var unsignedCredential = constructUnsignedCredentialPbObj(credentialOptions);
     // Create the signed Credential object from the unsignedCredential object
-    var credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
+    var credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey, winston_1.version);
     // Create the encrypted credential issuance dto
-    var encryptedCredentialUploadOptions = constructIssueCredentialOptions(credential, publicKeyInfos, credentialSubject.id);
+    var encryptedCredentialUploadOptions = constructIssueCredentialOptions(credential, publicKeyInfos, credentialSubject.id, winston_1.version);
     var credPair = {
         credential: credential,
         encryptedCredential: encryptedCredentialUploadOptions,
@@ -390,9 +391,9 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
  * @param subjectDid
  * @returns
  */
-var constructIssueCredentialOptions = function (credential, publicKeyInfos, subjectDid) {
+var constructIssueCredentialOptions = function (credential, publicKeyInfos, subjectDid, version) {
     // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
-    var encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos);
+    var encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos, version);
     // Removing the 'credential' of "VerifiableCredential" from the Unum ID internal type for simplicity
     var credentialType = getCredentialType_1.getCredentialType(credential.type);
     var encryptedCredentialUploadOptions = {

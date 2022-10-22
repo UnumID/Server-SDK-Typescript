@@ -20,5 +20,8 @@ import { checkCredentialStatuses } from './verifier/checkCredentialStatuses';
 import { reEncryptCredentials } from './issuer/reEncryptCredentials';
 import { extractCredentialType } from './utils/extractCredentialType';
 import { getPresentationRequest } from './verifier/getRequestById';
-export { registerIssuer, issueCredentials, reEncryptCredentials, updateCredentialStatuses, verifySubjectCredentialRequests, revokeAllCredentials, registerVerifier, sendEmail, sendRequest, sendSms, verifyPresentation, checkCredentialStatuses, getPresentationRequestByUuid, getPresentationRequest, UnumDto, RegisteredVerifier, VerifiedStatus, Presentation, RegisteredIssuer, CredentialSubject, DecryptedPresentation, CredentialStatusInfo, CustError, Proof, Credential, CredentialInfo, extractCredentialInfo, extractCredentialType, verifySignedDid, createProof, convertCredentialSubject };
+import { doVerify } from './utils/verify';
+import { doEncrypt } from './utils/encrypt';
+import { doDecrypt } from './utils/decrypt';
+export { registerIssuer, issueCredentials, reEncryptCredentials, updateCredentialStatuses, verifySubjectCredentialRequests, revokeAllCredentials, registerVerifier, sendEmail, sendRequest, sendSms, verifyPresentation, checkCredentialStatuses, getPresentationRequestByUuid, getPresentationRequest, UnumDto, RegisteredVerifier, VerifiedStatus, Presentation, RegisteredIssuer, CredentialSubject, DecryptedPresentation, CredentialStatusInfo, CustError, Proof, Credential, CredentialInfo, extractCredentialInfo, extractCredentialType, verifySignedDid, createProof, convertCredentialSubject, doVerify, doDecrypt, doEncrypt };
 //# sourceMappingURL=index.d.ts.map

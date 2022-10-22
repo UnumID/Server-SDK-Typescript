@@ -39,7 +39,7 @@ describe('Encrypt the given data', () => {
   });
 
   it('encrypt crypto library should have been called', () => {
-    encryptedData = doEncrypt(did, publicKeyObj[0], dataBytes);
+    encryptedData = doEncrypt(did, publicKeyObj[0], dataBytes, '4.0.0');
     expect(encryptSpy).toBeCalled();
   });
 

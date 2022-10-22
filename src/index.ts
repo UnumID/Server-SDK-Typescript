@@ -20,6 +20,9 @@ import { checkCredentialStatuses } from './verifier/checkCredentialStatuses';
 import { reEncryptCredentials } from './issuer/reEncryptCredentials';
 import { extractCredentialType } from './utils/extractCredentialType';
 import { getPresentationRequest } from './verifier/getRequestById';
+import { doVerify } from './utils/verify';
+import { doEncrypt } from './utils/encrypt';
+import { doDecrypt } from './utils/decrypt';
 
 export {
   // Issuer Functions
@@ -57,5 +60,8 @@ export {
   extractCredentialType,
   verifySignedDid,
   createProof,
-  convertCredentialSubject
+  convertCredentialSubject,
+  doVerify,
+  doDecrypt,
+  doEncrypt
 };

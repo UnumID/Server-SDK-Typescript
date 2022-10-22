@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.convertCredentialSubject = exports.createProof = exports.verifySignedDid = exports.extractCredentialType = exports.extractCredentialInfo = exports.CustError = exports.getPresentationRequest = exports.getPresentationRequestByUuid = exports.checkCredentialStatuses = exports.verifyPresentation = exports.sendSms = exports.sendRequest = exports.sendEmail = exports.registerVerifier = exports.revokeAllCredentials = exports.verifySubjectCredentialRequests = exports.updateCredentialStatuses = exports.reEncryptCredentials = exports.issueCredentials = exports.registerIssuer = void 0;
+exports.doEncrypt = exports.doDecrypt = exports.doVerify = exports.convertCredentialSubject = exports.createProof = exports.verifySignedDid = exports.extractCredentialType = exports.extractCredentialInfo = exports.CustError = exports.getPresentationRequest = exports.getPresentationRequestByUuid = exports.checkCredentialStatuses = exports.verifyPresentation = exports.sendSms = exports.sendRequest = exports.sendEmail = exports.registerVerifier = exports.revokeAllCredentials = exports.verifySubjectCredentialRequests = exports.updateCredentialStatuses = exports.reEncryptCredentials = exports.issueCredentials = exports.registerIssuer = void 0;
 var registerVerifier_1 = require("./verifier/registerVerifier");
 Object.defineProperty(exports, "registerVerifier", { enumerable: true, get: function () { return registerVerifier_1.registerVerifier; } });
 var sendEmail_1 = require("./verifier/sendEmail");
@@ -41,4 +41,10 @@ var extractCredentialType_1 = require("./utils/extractCredentialType");
 Object.defineProperty(exports, "extractCredentialType", { enumerable: true, get: function () { return extractCredentialType_1.extractCredentialType; } });
 var getRequestById_1 = require("./verifier/getRequestById");
 Object.defineProperty(exports, "getPresentationRequest", { enumerable: true, get: function () { return getRequestById_1.getPresentationRequest; } });
+var verify_1 = require("./utils/verify");
+Object.defineProperty(exports, "doVerify", { enumerable: true, get: function () { return verify_1.doVerify; } });
+var encrypt_1 = require("./utils/encrypt");
+Object.defineProperty(exports, "doEncrypt", { enumerable: true, get: function () { return encrypt_1.doEncrypt; } });
+var decrypt_1 = require("./utils/decrypt");
+Object.defineProperty(exports, "doDecrypt", { enumerable: true, get: function () { return decrypt_1.doDecrypt; } });
 //# sourceMappingURL=index.js.map

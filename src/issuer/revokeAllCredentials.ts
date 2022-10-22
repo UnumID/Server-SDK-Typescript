@@ -49,7 +49,7 @@ export const revokeAllCredentials = async (authorization: string, issuerDid: str
     };
 
     const bytes = UnsignedRevokeAllCredentials.encode(unsignedDto).finish();
-    const proof: ProofPb = createProof(bytes, signingPrivateKey, issuerDid);
+    const proof: ProofPb = createProof(bytes, signingPrivateKey, issuerDid, '4.0.0');
 
     const signedDto: RevokeAllCredentials = {
       ...unsignedDto,
