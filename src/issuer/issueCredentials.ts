@@ -21,6 +21,7 @@ import { isBase64 } from '../utils/isBase64';
 import { isValidUrl } from '../utils/isValidUrl';
 import { fetchBase64Image } from '../utils/fetchBase64Image';
 import { handleImageCredentialData } from '../utils/handleImageCredentialData';
+import { version } from 'winston';
 
 // interface to handle grouping Credentials and their encrypted form
 interface CredentialPair {
@@ -145,7 +146,7 @@ function isCredentialPb (cred: Credential | CredentialPb): boolean {
  * @param cred
  * @param publicKeyInfos
  */
-const constructEncryptedCredentialOpts = (cred: CredentialPb, publicKeyInfos: PublicKeyInfo[]): EncryptedCredentialOptions[] => {
+const constructEncryptedCredentialOpts = (cred: CredentialPb, publicKeyInfos: PublicKeyInfo[], version: string): EncryptedCredentialOptions[] => {
   const credentialSubject: CredentialSubject = convertCredentialSubject(cred.credentialSubject);
   const subjectDid = credentialSubject.id;
 
@@ -155,7 +156,7 @@ const constructEncryptedCredentialOpts = (cred: CredentialPb, publicKeyInfos: Pu
     const subjectDidWithKeyFragment = `${subjectDid}#${publicKeyInfo.id}`;
 
     // use the protobuf byte array encryption if dealing with a CredentialPb cred type
-    const encryptedData: EncryptedData = doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, CredentialPb.encode(cred as CredentialPb).finish());
+    const encryptedData: EncryptedData = doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, CredentialPb.encode(cred as CredentialPb).finish(), version);
 
     // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
     const credentialType = getCredentialType(cred.type);
@@ -341,7 +342,7 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
       const credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
 
       // Create the encrypted credential issuance dto
-      const encryptedCredentialUploadOptions: IssueCredentialOptions = constructIssueCredentialOptions(credential, publicKeyInfos, credentialSubject.id);
+      const encryptedCredentialUploadOptions: IssueCredentialOptions = constructIssueCredentialOptions(credential, publicKeyInfos, credentialSubject.id, version);
       const credPair: WithVersion<CredentialPair> = {
         credential,
         encryptedCredential: encryptedCredentialUploadOptions,
@@ -362,7 +363,7 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
   const credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey);
 
   // Create the encrypted credential issuance dto
-  const encryptedCredentialUploadOptions: IssueCredentialOptions = constructIssueCredentialOptions(credential, publicKeyInfos, credentialSubject.id);
+  const encryptedCredentialUploadOptions: IssueCredentialOptions = constructIssueCredentialOptions(credential, publicKeyInfos, credentialSubject.id, version);
   const credPair: WithVersion<CredentialPair> = {
     credential,
     encryptedCredential: encryptedCredentialUploadOptions,
@@ -382,9 +383,9 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
  * @param subjectDid
  * @returns
  */
-const constructIssueCredentialOptions = (credential: CredentialPb, publicKeyInfos: PublicKeyInfo[], subjectDid: string): IssueCredentialOptions => {
+const constructIssueCredentialOptions = (credential: CredentialPb, publicKeyInfos: PublicKeyInfo[], subjectDid: string, version: string): IssueCredentialOptions => {
   // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
-  const encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos);
+  const encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos, version);
 
   // Removing the 'credential' of "VerifiableCredential" from the Unum ID internal type for simplicity
   const credentialType = getCredentialType(credential.type);
