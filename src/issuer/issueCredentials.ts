@@ -29,6 +29,85 @@ interface CredentialPair {
   credential: CredentialPb | Credential
 }
 
+export type CredentialEncryptionResult = {
+  creds: WithVersion<CredentialPair>[],
+  proofOfCreds: WithVersion<CredentialPair>[],
+}
+
+export function reduceCredentialEncryptionResults (prev: CredentialEncryptionResult, curr: CredentialEncryptionResult): CredentialEncryptionResult {
+  return {
+    creds: prev.creds.concat(curr.creds),
+    proofOfCreds: prev.creds.concat(curr.proofOfCreds)
+  };
+}
+
+/**
+ * Creates a signed, encrypted credential with all the relevant information.
+ * The proof serves as a cryptographic signature.
+ *
+ * @param authorization
+ * @param item
+ * @param issuerDid
+ * @param issuerPublicKeyInfos
+ * @param subjectDid
+ * @param publicKeyInfos
+ * @param signingPrivateKey
+ * @param declineIssueCredentialsToSelf
+ * @param expirationDate
+ */
+async function constructEncryptedCredential (
+  authorization: string,
+  item: CredentialData,
+  issuerDid: string,
+  issuerPublicKeyInfos: PublicKeyInfo[],
+  subjectDid: string,
+  publicKeyInfos: PublicKeyInfo[],
+  signingPrivateKey: string,
+  declineIssueCredentialsToSelf: boolean,
+  expirationDate: Date|undefined
+): Promise<CredentialEncryptionResult> {
+  const type = item.type;
+  const credData = omit(item, 'type');
+
+  // construct the Credential's credentialSubject
+  const credSubject: CredentialSubject = { id: subjectDid, ...credData };
+
+  const subjectsToIssueTo = [
+    credSubject,
+    // construct the Credential's credentialSubject for the issuerDid if not declining to issue to self
+    !declineIssueCredentialsToSelf ? [{ ...credData, id: issuerDid }] : []
+  ].flat();
+
+  const credentialId = getUUID();
+
+  const constructEncryptedCredentialForSubject = async (credSubject: CredentialSubject) => {
+    // construct the Credentials and their encrypted form for each supported version
+    const credentialVersionPairs: Promise<WithVersion<CredentialPair>[]> = (async () => constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, credSubject, signingPrivateKey, publicKeyInfos, expirationDate))();
+
+    const proofOfCredentialVersionPairs: Promise<WithVersion<CredentialPair>[]> = (async () => {
+      /**
+       * Handle construction of the ProofOfCredentials and their encrypted form for each supported version
+       */
+      const proofOfType = `ProofOf${type}`; // prefixing the type with ProofOf
+      const proofOfCredentialSubject = { id: credSubject.id }; // no credential data for a ProofOf Credential
+      const proofOfCredentailId = getUUID(); // proofOf credentials do not share a credentialId because different credential data (empty)
+      return constructEncryptedCredentialOfEachVersion(authorization, proofOfType, issuerDid, proofOfCredentailId, proofOfCredentialSubject, signingPrivateKey, publicKeyInfos, expirationDate);
+    })();
+
+    return { creds: await credentialVersionPairs, proofOfCreds: await proofOfCredentialVersionPairs };
+  };
+
+  const perSubjectCredentialPromises = subjectsToIssueTo
+    .map(constructEncryptedCredentialForSubject);
+
+  // Reduce per-subject credential promises into a single result of credential pair arrays
+  return (await Promise.all(perSubjectCredentialPromises))
+    .reduce(
+      reduceCredentialEncryptionResults,
+      { creds: [], proofOfCreds: [] }
+    );
+}
+
 /**
  * Multiplexed handler for issuing credentials with UnumID's SaaS.
  * @param authorization
@@ -59,59 +138,25 @@ export const issueCredentials = async (authorization: string, issuerDid: string,
   }
 
   // loop through the types and credential data lists inputted to create CredentialPairs of each supported version for each
-  const creds: WithVersion<CredentialPair>[] = [];
-  const proofOfCreds: WithVersion<CredentialPair>[] = [];
+  const encryptCredentialPromises = credentialDataList.map((item) => constructEncryptedCredential(
+    authorization,
+    item,
+    issuerDid,
+    issuerPublicKeyInfos,
+    subjectDid,
+    publicKeyInfos,
+    signingPrivateKey,
+    declineIssueCredentialsToSelf,
+    expirationDate
+  ));
 
-  for (let i = 0; i < credentialDataList.length; i++) {
-    const type = credentialDataList[i].type;
-    const credData = omit(credentialDataList[i], 'type');
+  const { creds, proofOfCreds } = (await Promise.all(encryptCredentialPromises))
+    .reduce(
+      reduceCredentialEncryptionResults,
+      { creds: [], proofOfCreds: [] }
+    );
 
-    // construct the Credential's credentialSubject
-    const credSubject: CredentialSubject = { id: subjectDid, ...credData };
-    const credentialId = getUUID();
-
-    // construct the Credentials and their encrypted form for each supported version
-    const credentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, credSubject, signingPrivateKey, publicKeyInfos, expirationDate);
-
-    // add all credentialVersionPairs to creds array
-    Array.prototype.push.apply(creds, credentialVersionPairs);
-
-    /**
-     * Handle construction of the ProofOfCredentials and their encrypted form for each supported version
-     */
-    const proofOfType = `ProofOf${type}`; // prefixing the type with ProofOf
-    const proofOfCredentialSubject = { id: credSubject.id }; // no credential data for a ProofOf Credential
-    const proofOfCredentailId = getUUID(); // proofOf credentials do not share a credentialId because different credential data (empty)
-    const proofOfCredentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, proofOfType, issuerDid, proofOfCredentailId, proofOfCredentialSubject, signingPrivateKey, publicKeyInfos, expirationDate);
-
-    // add all proofOfCredentialVersionPairs to creds array
-    Array.prototype.push.apply(proofOfCreds, proofOfCredentialVersionPairs);
-
-    if (!declineIssueCredentialsToSelf) {
-      // construct the Credential's credentialSubject for the issuerDid
-      const issuerCredSubject: CredentialSubject = { ...credData, id: issuerDid };
-
-      // construct the Credentials and their encrypted form for each supported version for the issuer
-      const issuerCredentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, issuerCredSubject, signingPrivateKey, issuerPublicKeyInfos, expirationDate);
-
-      // add all issuerCredentialVersionPairs to creds array
-      Array.prototype.push.apply(creds, issuerCredentialVersionPairs);
-
-      /**
-       * Handle construction of the ProofOfCredentials and their encrypted form for each supported version
-       */
-      const issuerProofOfType = `ProofOf${type}`; // prefixing the type with ProofOf
-      const issuerProofOfCredentialSubject = { id: issuerCredSubject.id }; // no credential data for a ProofOf Credential
-      const issuerProofOfCredentialVersionPairs: CredentialPair[] = constructEncryptedCredentialOfEachVersion(authorization, issuerProofOfType, issuerDid, proofOfCredentailId, issuerProofOfCredentialSubject, signingPrivateKey, publicKeyInfos, expirationDate);
-
-      // add all proofOfCredentialVersionPairs to creds array
-      Array.prototype.push.apply(proofOfCreds, issuerProofOfCredentialVersionPairs);
-    }
-  }
-
-  // loop through the versions list and send all the encrypted credentials to the saas grouped by version and credentialIds.
-  // Note: proofOf Credentials have a separate credentialId but the issuerCredentials share one (because same credential data)
-  for (const version of versionList) {
+  const sendEncryptedVersionedCredentials = async (version: string) => {
     // only grab the encrypted credentials of the current version
     const resultantEncryptedCredentials: IssueCredentialOptions[] = creds.filter(credPair => credPair.version === version).map(credPair => credPair.encryptedCredential);
 
@@ -123,7 +168,23 @@ export const issueCredentials = async (authorization: string, issuerDid: string,
 
     const proofOfResult = await sendEncryptedCredentials(authorization, { credentialRequests: proofOfResultantEncryptedCredentials }, version);
     authorization = proofOfResult.authToken;
-  }
+  };
+
+  // loop through the versions list and send all the encrypted credentials to the saas grouped by version and credentialIds.
+  // Note: proofOf Credentials have a separate credentialId but the issuerCredentials share one (because same credential data)
+  const promises = versionList.map(
+    (version) => sendEncryptedVersionedCredentials(version)
+      .catch((err) => {
+        logger.error(`Error sending encrypted credentials to SaaS: ${err?.message || JSON.stringify(err)}`);
+        return undefined;
+      })
+  );
+
+  // wait for all versioned requests to finish or fail
+  await Promise.all(promises).catch((err) => {
+    // this log message should not trigger because the catch is handled in the map above
+    logger.error(`[ShouldNotBeTriggered] Error sending encrypted credentials to SaaS: ${err?.message || JSON.stringify(err)}`);
+  });
 
   // grab all the credentials of the latest version and that were issued to the subject (to prevent duplicates if also "issuedToSelf", the issuer) from the CredentialPairs for the response
   // Note: not returning the ProofOf credentials.
@@ -145,8 +206,9 @@ function isCredentialPb (cred: Credential | CredentialPb): boolean {
  * Creates an object of type EncryptedCredentialOptions which encapsulates information relating to the encrypted credential data
  * @param cred
  * @param publicKeyInfos
+ * @param _version
  */
-const constructEncryptedCredentialOpts = (cred: CredentialPb, publicKeyInfos: PublicKeyInfo[], version: string): EncryptedCredentialOptions[] => {
+const constructEncryptedCredentialOpts = (cred: CredentialPb, publicKeyInfos: PublicKeyInfo[], _version: string): EncryptedCredentialOptions[] => {
   const credentialSubject: CredentialSubject = convertCredentialSubject(cred.credentialSubject);
   const subjectDid = credentialSubject.id;
 
@@ -178,6 +240,7 @@ const constructEncryptedCredentialOpts = (cred: CredentialPb, publicKeyInfos: Pu
  * Creates a signed credential with all the relevant information. The proof serves as a cryptographic signature.
  * @param usCred UnsignedCredentialPb
  * @param privateKey String
+ * @param version
  */
 const constructSignedCredentialPbObj = (usCred: UnsignedCredentialPb, privateKey: string, version: string): CredentialPb => {
   try {
