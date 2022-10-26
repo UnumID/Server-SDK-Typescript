@@ -111,7 +111,7 @@ export const issueCredentials = async (authorization: string, issuerDid: string,
 
   // loop through the versions list and send all the encrypted credentials to the saas grouped by version and credentialIds.
   // Note: proofOf Credentials have a separate credentialId but the issuerCredentials share one (because same credential data)
-  for (const version of versionList) {
+  const promises = versionList.map(async (version) => {
     // only grab the encrypted credentials of the current version
     const resultantEncryptedCredentials: IssueCredentialOptions[] = creds.filter(credPair => credPair.version === version).map(credPair => credPair.encryptedCredential);
 
@@ -123,7 +123,15 @@ export const issueCredentials = async (authorization: string, issuerDid: string,
 
     const proofOfResult = await sendEncryptedCredentials(authorization, { credentialRequests: proofOfResultantEncryptedCredentials }, version);
     authorization = proofOfResult.authToken;
-  }
+  }).map((p) => p.catch((err) => {
+    logger.error(`Error sending encrypted credentials to SaaS: ${err?.message || JSON.stringify(err)}`);
+    return undefined;
+  }));
+
+  await Promise.all(promises).catch((err) => {
+    // this log message should not trigger because the catch is handled in the map above
+    logger.error(`[ShouldNotBeTriggered] Error sending encrypted credentials to SaaS: ${err?.message || JSON.stringify(err)}`);
+  });
 
   // grab all the credentials of the latest version and that were issued to the subject (to prevent duplicates if also "issuedToSelf", the issuer) from the CredentialPairs for the response
   // Note: not returning the ProofOf credentials.
