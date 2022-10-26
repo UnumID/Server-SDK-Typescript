@@ -13,6 +13,7 @@ var semver_1 = require("semver");
  * @param did
  * @param publicKeyObj
  * @param data
+ * @param version
  */
 exports.doEncrypt = function (did, publicKeyObj, data, version) {
     return semver_1.lt(version, '4.0.0') ? _doEncryptV3(did, publicKeyObj, data) : _doEncrypt(did, publicKeyObj, data);
