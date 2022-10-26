@@ -218,7 +218,7 @@ const constructEncryptedCredentialOpts = (cred: CredentialPb, publicKeyInfos: Pu
     const subjectDidWithKeyFragment = `${subjectDid}#${publicKeyInfo.id}`;
 
     // use the protobuf byte array encryption if dealing with a CredentialPb cred type
-    const encryptedData: EncryptedData = doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, CredentialPb.encode(cred as CredentialPb).finish());
+    const encryptedData: EncryptedData = doEncrypt(subjectDidWithKeyFragment, publicKeyInfo, CredentialPb.encode(cred as CredentialPb).finish(), version);
 
     // Removing the w3c credential spec of "VerifiableCredential" from the Unum ID internal type for simplicity
     const credentialType = getCredentialType(cred.type);
@@ -240,13 +240,14 @@ const constructEncryptedCredentialOpts = (cred: CredentialPb, publicKeyInfos: Pu
  * Creates a signed credential with all the relevant information. The proof serves as a cryptographic signature.
  * @param usCred UnsignedCredentialPb
  * @param privateKey String
+ * @param version
  */
 const constructSignedCredentialPbObj = (usCred: UnsignedCredentialPb, privateKey: string, version: string): CredentialPb => {
   try {
     // convert the protobuf to a byte array
     const bytes: Uint8Array = UnsignedCredentialPb.encode(usCred).finish();
 
-    const proof: ProofPb = createProof(bytes, privateKey, usCred.issuer);
+    const proof: ProofPb = createProof(bytes, privateKey, usCred.issuer, version);
 
     const credential: CredentialPb = {
       context: usCred.context,
