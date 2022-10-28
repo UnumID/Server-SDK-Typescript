@@ -8,7 +8,6 @@ export declare type CredentialEncryptionResult = {
     creds: WithVersion<CredentialPair>[];
     proofOfCreds: WithVersion<CredentialPair>[];
 };
-export declare function reduceCredentialEncryptionResults(prev: CredentialEncryptionResult, curr: CredentialEncryptionResult): CredentialEncryptionResult;
 /**
  * Multiplexed handler for issuing credentials with UnumID's SaaS.
  * @param authorization
