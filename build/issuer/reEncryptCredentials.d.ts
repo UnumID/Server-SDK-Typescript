@@ -1,5 +1,5 @@
 import { UnumDto } from '../types';
-import { Credential, CredentialPb } from '@unumid/types';
+import { Credential } from '@unumid/types';
 /**
  * Helper to facilitate an issuer re-encrypting any credentials it has issued to a target subject.
  * This is useful in the case of needing to provide a subject credential data encrypted with a new RSA key id.
@@ -12,5 +12,5 @@ import { Credential, CredentialPb } from '@unumid/types';
  * @param issuerEncryptionKeyId
  * @param credentialTypes
  */
-export declare const reEncryptCredentials: (authorization: string, issuerDid: string, signingPrivateKey: string, encryptionPrivateKey: string, issuerEncryptionKeyId: string, subjectDid: string, credentialTypes?: string[]) => Promise<UnumDto<(CredentialPb | Credential)[]>>;
+export declare const reEncryptCredentials: (authorization: string, issuerDid: string, signingPrivateKey: string, encryptionPrivateKey: string, issuerEncryptionKeyId: string, subjectDid: string, credentialTypes?: string[]) => Promise<UnumDto<Credential[]>>;
 //# sourceMappingURL=reEncryptCredentials.d.ts.map
