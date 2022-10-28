@@ -89,6 +89,7 @@ export const reEncryptCredentials = async (authorization: string, issuerDid: str
   return {
     authToken: authorization, // TODO this needs to be the latest authToken from the results
     body: resultantCredentials
+  };
 };
 
 function validateInputs (issuerDid: string, signingPrivateKey: string, encryptionPrivateKey: string, subjectDid: string, issuerEncryptionKeyId: string) {

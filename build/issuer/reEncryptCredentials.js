@@ -68,39 +68,7 @@ var versionList_1 = require("../utils/versionList");
 exports.reEncryptCredentials = function (authorization, issuerDid, signingPrivateKey, encryptionPrivateKey, issuerEncryptionKeyId, subjectDid, credentialTypes) {
     if (credentialTypes === void 0) { credentialTypes = []; }
     return __awaiter(void 0, void 0, void 0, function () {
-        function validateInputs(issuerDid, signingPrivateKey, encryptionPrivateKey, subjectDid, issuerEncryptionKeyId) {
-            if (!issuerDid) {
-                throw new error_1.CustError(400, 'issuerDid is required.');
-            }
-            if (!subjectDid) {
-                throw new error_1.CustError(400, 'subjectDid is required.');
-            }
-            if (!signingPrivateKey) {
-                throw new error_1.CustError(400, 'signingPrivateKey is required.');
-            }
-            if (!encryptionPrivateKey) {
-                throw new error_1.CustError(400, 'encryptionPrivateKey is required.');
-            }
-            if (!issuerEncryptionKeyId) {
-                throw new error_1.CustError(400, 'issuerEncryptionKeyId is required.');
-            }
-            if (typeof issuerDid !== 'string') {
-                throw new error_1.CustError(400, 'issuer must be a string.');
-            }
-            if (typeof subjectDid !== 'string') {
-                throw new error_1.CustError(400, 'subjectDid must be a string.');
-            }
-            if (typeof signingPrivateKey !== 'string') {
-                throw new error_1.CustError(400, 'signingPrivateKey must be a string.');
-            }
-            if (typeof encryptionPrivateKey !== 'string') {
-                throw new error_1.CustError(400, 'encryptionPrivateKey must be a string.');
-            }
-            if (typeof issuerEncryptionKeyId !== 'string') {
-                throw new error_1.CustError(400, 'issuerEncryptionKeyId must be a string.');
-            }
-        }
-        var issuerDidWithFragment, credentialsResponse, credentials, credentialDataList, publicKeyInfoResponse, publicKeyInfo, authToken, promises, decryptedCredentials, _i, credentials_1, credential, version, decryptedCredentialBytes, decryptedCredential, isVerified, reEncryptedCredentialOptions, promise, results, latestVersion, resultantCredentials, getRelevantCredentials;
+        var issuerDidWithFragment, credentialsResponse, credentials, credentialDataList, publicKeyInfoResponse, publicKeyInfo, authToken, promises, decryptedCredentials, _i, credentials_1, credential, version, decryptedCredentialBytes, decryptedCredential, isVerified, reEncryptedCredentialOptions, promise, results, latestVersion, resultantCredentials;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -162,4 +130,65 @@ exports.reEncryptCredentials = function (authorization, issuerDid, signingPrivat
         });
     });
 };
+function validateInputs(issuerDid, signingPrivateKey, encryptionPrivateKey, subjectDid, issuerEncryptionKeyId) {
+    if (!issuerDid) {
+        throw new error_1.CustError(400, 'issuerDid is required.');
+    }
+    if (!subjectDid) {
+        throw new error_1.CustError(400, 'subjectDid is required.');
+    }
+    if (!signingPrivateKey) {
+        throw new error_1.CustError(400, 'signingPrivateKey is required.');
+    }
+    if (!encryptionPrivateKey) {
+        throw new error_1.CustError(400, 'encryptionPrivateKey is required.');
+    }
+    if (!issuerEncryptionKeyId) {
+        throw new error_1.CustError(400, 'issuerEncryptionKeyId is required.');
+    }
+    if (typeof issuerDid !== 'string') {
+        throw new error_1.CustError(400, 'issuer must be a string.');
+    }
+    if (typeof subjectDid !== 'string') {
+        throw new error_1.CustError(400, 'subjectDid must be a string.');
+    }
+    if (typeof signingPrivateKey !== 'string') {
+        throw new error_1.CustError(400, 'signingPrivateKey must be a string.');
+    }
+    if (typeof encryptionPrivateKey !== 'string') {
+        throw new error_1.CustError(400, 'encryptionPrivateKey must be a string.');
+    }
+    if (typeof issuerEncryptionKeyId !== 'string') {
+        throw new error_1.CustError(400, 'issuerEncryptionKeyId must be a string.');
+    }
+}
+/**
+ * Helper to get the relevant credentials issued by the issuer for the subject of which the issuer also issued to self.
+ * @param authorization
+ * @param issuerDid w/ keyId
+ * @param subjectDid
+ * @param credentialTypes
+ * @returns
+ */
+var getRelevantCredentials = function (authorization, issuerDidWithFragment, subjectDid, credentialTypes) { return __awaiter(void 0, void 0, void 0, function () {
+    var typesQuery, restData, restResp, authToken, encryptedCredentials;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                typesQuery = queryStringHelper_1.createListQueryString('type', credentialTypes);
+                restData = {
+                    method: 'GET',
+                    baseUrl: config_1.configData.SaaSUrl,
+                    endPoint: "credentialReIssuanceRepository/" + encodeURIComponent(issuerDidWithFragment) + "?subject=" + encodeURIComponent(subjectDid) + "&version=" + encodeURIComponent(constants_1.sdkMajorVersion) + "&" + typesQuery,
+                    header: { Authorization: authorization, version: constants_1.sdkMajorVersion }
+                };
+                return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];
+            case 1:
+                restResp = _a.sent();
+                authToken = networkRequestHelper_1.handleAuthTokenHeader(restResp, authorization);
+                encryptedCredentials = { body: restResp.body, authToken: authToken };
+                return [2 /*return*/, encryptedCredentials];
+        }
+    });
+}); };
 //# sourceMappingURL=reEncryptCredentials.js.map
