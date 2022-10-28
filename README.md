@@ -3,7 +3,7 @@
 This SDK combines the functionality of an [**Issuer**](https://docs.unumid.co/terminology#issuer) and [**Verifier**](https://docs.unumid.co/terminology#verifier) entities to work with UnumID's SaaS. For necessary account creation and API keys please email admin@unumid.co.
 
 ## Documentation
-High level technical documentation can be found [here](https://docs.unumid.co/server-sdk) which is served via [Docusaurus](https://github.com/UnumID/UnumID.github.io). More detailed generated from source documentation can be found [here](https://docs.unumid.co/Server-SDK-Typescript/index.html) which is served via repo specific Github pages via the /docs folder of the main branch.
+Official technical documentation can be found [here](https://docs.unumid.co/server-sdk) which is served via our [Docusaurus](https://github.com/UnumID/UnumID.github.io) repo. More detailed generated from source documentation can be found [here](https://docs.unumid.co/Server-SDK-Typescript/index.html) which is served via repo specific Github pages via the /docs folder of the main branch.
 ## Distribution
 
 This project is publicly published on the official npm [registry](https://www.npmjs.com/package/@unumid/server-sdk). For example it can be pulled with, `npm i @unumid/server-sdk` or `yarn add @unumid/server-sdk`.
@@ -50,6 +50,8 @@ The Server SDK uses the **UnumDto** type to facilitate handling many response bo
 }
 ```
 
+**Note**: Official documentation can be found [here](https://docs.unumid.co/server-sdk/).
+
 **Authentication**
 Every request detailed below requires a Bearer `authToken` as a first parameter which is used to authenticate request to UnumID's SaaS on your behalf. As mention above this auth token updated upon every subsequent function call and should be read via the `authToken` attribute and persisted accordingly for later requests. 
 
@@ -63,50 +65,6 @@ Register an issuer corresponding to your customer UUID and issuer API key provid
 
 You should store the DID (`did`) and encryption and signing key pairs (`keys`) that this returns. You'll need these to issue credentials to users.
 
-```typescript
-export type TargetInfo = {
-  [key: string]: any, // To be able to handle generic HTTP header requirements, i.e. version, accept, appId, etc
-  url?: string // Versions denoted via a different url.
-}
-```
-
-```typescript
-export type VersionInfo = {
-  target: TargetInfo, // The information of how to target a customer's application to communication with the corresponding Server sdkVersion.
-  sdkVersion: string // Server sdk version. Ought to be in Semver notation however opting to keep a string type for simplicity.
-}
-
-Parameters:
-```typescript
-"apiKey": string // your issuer API key
-"url": string, // the url of which UnumID's SaaS will interface with
-"versionInfo": VersionInfo[] // arrays of objects for how to contact specific version of your verifier and subsequently the sever sdk. 
-```
-
-Response Body:  [**RegisteredIssuer**](https://docs.unumid.co/Server-SDK-Typescript/interfaces/registeredissuer.html)
-```typescript title="RegisteredIssuer"
-{
-  "uuid": string, // identifies issuer in Unum ID database
-  "customerUuid": string, // identifies customer in Unum ID database
-  "did": string, // identifies issuer in Unum ID ecosystem
-  "name": string, // human-readable name for issuer. Displayed to users in mobile apps when verifiers request credentials. Comes from the name of the ApiKey used to register the Issuer.
-  "createdAt": string, // when issuer was registered
-  "updatedAt": string, // when issuer was last updated
-  "keys": {
-    "signing": {
-      "id": string, // identifies the key within the did doc. Used to specify the exact key used to create a signature.
-      "privateKey": string, // you use this to create signatures on credentials
-      "publicKey": string, // subjects and verifiers use this to verify your signatures on credentials
-    }
-    "encryption": {
-      "id": string, // identifies the key within the did doc
-      "privateKey": string, // not used
-      "publicKey": string, // not used; but part of the issuer did doc
-    }
-  }
-}
-```
-
 ### issueCredentials
 Issue a credential to a Subject, also known as a User.
 
@@ -116,79 +74,15 @@ This returns a credential `id` that should be stored for reference. For example,
 
 **Important**: The private keys never leave your app. This function, like all the others in this SDK, needs them in order to handle to cryptographic functionality on your behalf.
 
-Parameters
-```typescript
-"type": string || string[], // The Credential type(s)
-"issuer": string, // your issuer DID
-"credentialSubject": {
-  "id": string, // subject DID
-  [key: string]: any, // data about subject (any valid JSON)
-},
-"signingPrivateKey": string // your issuer signing private key
-"expirationDate"?: string, // (optional) when credential will no longer be valid (ISO 8601 date/time)
-```
-
-Response Body: [**Credential**](https://docs.unumid.co/Server-SDK-Typescript/interfaces/credential.html)
-```typescript title="Credential"
-{[
-    "@context": ["https://www.w3.org/2018/credentials/v1"], // for conformance with W3C Verifiable Credential spec
-    "credentialStatus": {
-        "id": string, // a url for credential's status
-        "type": "CredentialStatus"
-    },
-    "credentialSubject": stringify({ // a string representation of an object with  with an id attribute and any number of arbitrary key values pairs.
-        "id": string, // subject DID
-        [key: string]: any, // data about subject
-    }),
-    "issuer": string, // issuer DID
-    "type": string[], // credential type(s), always begins with "VerifiableCredential"
-    "id": string, // identifies credential (version 4 UUID)
-    "issuanceDate": string, // when credential was issued (ISO 8601 date/time)
-    "expirationDate": string, // when credential will no longer be valid (ISO 8601 date-time)
-    "proof": Proof // cryptographic proof created by signing credential with your issuer signing private key. Can be used to verify credential.
-]}
-```
-
 ### updateCredentialStatus
 Update a credential, i.e. make it invalid.
 
 You need to provide the credential `id` (created when you issued the credential) and a [CredentialStatusOptions](https://docs.unumid.co/types/modules.html#credentialstatusoptions) `status`. Currently the only valid status are: verified and revoked.
 
-```typescript
-export type CredentialStatusOptions = 'valid' | 'revoked';
-```
-
-Parameters
-```typescript
-{
-  "credentialId": string // id of the credential
-  "status": CredentialStatusOptions // status to update the credential to (defaults to 'revoked')
-}
-```
-
-Response Body: **Empty**. If unsuccessful and exception will be thrown.
-```typescript
-{}
-```
-
 ### revokeAllCredentials
 Revoke all issued credentials to a particular DID.
 
 You need to provide your issuer's `did` and `signingPrivateKey` also the target `subjectDid`. Only credentials issued by the associated issuer are revoked from the subject. The signing private key is necessary for the request signature to be created within the sdk. The signature is necessary to be verified by the SaaS prior to revoking all the credentials. 
-
-Parameters
-```typescript
-{
-  "issuerDid": string // did of the issuer of credential you would like to revoke
-  "signingPrivateKey": string // issuer's signing private key
-  "subjectDid": string // did of target subject whom to revoke all the credentials issued by the issuer
-}
-```
-
-Response Body: **Empty**. If unsuccessful and exception will be thrown.
-```typescript
-{}
-```
 
 ### verifySubjectCredentialRequests
 Verify a Subject's requests for credentials.
@@ -202,38 +96,6 @@ The main use case of this to allow bootstrapping users that just installed the U
 _Note_: Despite this having "verify" in its name, this function serves Issuers in determining whether a subject's request for credentials is valid. It is up to your application logic to determine whether you have the data relating to the the subject to issue the requested credentials.
 
 
-```typescript
-export type CredentialRequest = {
-  type: string; // the string matching the desire credential type
-  issuers: string[]; //list of acceptable issuer DIDs that have issued the credential
-  required: boolean; // to denote wether this particular credential is required. Defaults behavior resolves this to true.
-}
-```
-
-```typescript
-export type SubjectCredentialRequests = {
-  credentialRequests: CredentialRequests[]; // the string matching the desire credential type
-  proof: Proof; // proof signed by the subject
-}
-```
-
-Parameters
-```typescript
-{
-  "issuerDid": string // the did of your issuer
-  "subjectDid": string // the did of the subject
-  "subjectCredentialRequests: SubjectCredentialRequests // object containing list of CredentialRequests with a Proof signed by the Subject
-}
-```
-
-Response Body: [**VerifiedStatus**]. 
-```typescript
-export interface SubjectCredentialRequestVerifiedStatus {
-  isVerified: boolean; // returns true if the requests are verified and validation requirements are met
-  message?: string; // (optional) only populated iff isVerified is false
-}
-```
-
 ### verifySignedDid
 Verify a signed Decentralized Identifier.
 
@@ -243,30 +105,6 @@ The DID string is signed by the subject's ECC private key. This function verifie
 
 The main use case is for the `/userCredentialRequests` required Issuer endpoint. It facilitates getting DID information for users within your service. The User DID is necessary to then issue re-usable identity credentials to.
 
-
-```typescript
-export type DID = {
-  id: string; // the string matching the desire credential type
-  proof: Proof; //list of acceptable issuer DIDs that have issued the credential
-}
-```
-
-Parameters
-```typescript
-{
-  "issuerDid": string // the did of your issuer
-  "signedDid": DID // the signed DID object
-}
-```
-
-Response Body: [**VerifiedStatus**]. 
-```typescript
-export interface VerifiedStatus {
-  isVerified: boolean; // returns true if the signature of the DID is verified to be signed by the DID signing key
-  message?: string; // (optional) only populated iff isVerified is false
-}
-```
-
 ## Verifier
 The Verifier functionality is used by a customer acting as a verifier. Most importantly, it allows customers to send PresentationRequests to the UnumID mobile SDK and to verify the encrypted Presentation responses.
 
@@ -274,49 +112,6 @@ The Verifier functionality is used by a customer acting as a verifier. Most impo
 Register a verifier corresponding to your customer UUID and verifier API key that UnumID provides. As a customer, you can register as many verifiers as you like (or none at all), depending on your use case. Note, however, that you'll need a unique verifier API key for each one.
 
 You should store the DID (`did`) and signing key pair (`keys`) that this returns. You'll need these to create requests for (presentations of) credentials from users.
-
-```typescript
-export type TargetInfo = {
-  [key: string]: any, // To be able to handle generic HTTP header requirements, i.e. version, accept, appId, etc
-  url?: string // Versions denoted via a different url.
-}
-```
-
-```typescript
-export type VersionInfo = {
-  target: TargetInfo, // The information of how to target a customer's application to communication with the corresponding Server sdkVersion.
-  sdkVersion: string // Server sdk version. Ought to be in Semver notation however opting to keep a string type for simplicity.
-}
-```
-
-Parameters
-```typescript
-"apiKey": string // your verifier API key
-"url": string, // the url of which UnumID's SaaS will interface with
-"versionInfo": VersionInfo[] // arrays of objects for how to contact specific version of your verifier and subsequently the sever sdk. 
-```
-
-Response body: [**RegisteredVerifier**](https://docs.unumid.co/Server-SDK-Typescript/interfaces/registeredverifier.html)
-```typescript title="RegisteredVerifier"
-{
-  "uuid": string, // identifies verifier in Unum ID database
-  "customerUuid": string, // identifies customer in Unum ID database
-  "did": string, // identifiers verifier in Unum ID ecosystem
-  "name": string, // human-readable name for verifier. Displayed to users in mobile apps when you make requests. Comes from the name of the ApiKey used to register the Verifier.
-  "createdAt": string, // when verifier was registered (ISO 8601 date/time)
-  "updatedAt": string, // when verifier was last updated (ISO 8601 date/time)
-  "keys": {
-    "signing": {
-      "id": string, // identifies the key within the did doc. Used to specify the exact key used to create a signature.
-      "privateKey": string, // you use this to create signatures on requests
-      "publicKey": string, // subjects use this to verify your signatures on requests
-    }, "encryption": {
-      "id": string, // identifies the key within the did doc
-      "privateKey": string, // you use this to decrypt presentations you receive from subjects
-      "publicKey": string, // subjects use this to encrypt presentations they send to you
-    }
-  }
-```
 
 
 ### sendRequest
@@ -327,61 +122,6 @@ You need to provide your verifier DID (created when you registered) and the UUID
 **Important**: The signing private key never leaves your app. This function, like all the others in this SDK, is solely using it to handle to cryptographic functionality on your behalf.
 
 To request credentials, you need to populate one or more [CredentialRequest](https://docs.unumid.co/types/interfaces/credentialrequest.html) objects, defined in the UnumID generic [types](https://github.com/UnumID/types/blob/00ba819e661e2856ba9909923ac6f083b9a15e85/index.d.ts#L113-L117) project and shown below.
-
-```typescript
-export interface CredentialRequest {
-  type: string; // credential type. This must match type of previously issued credential.
-  issuers: string[]; // list of DIDs for acceptable issuers. If multiple, any one is acceptable.
-  required?: boolean; // (optional) if credential is required (default is true)
-}
-```
-If you list more than one acceptable `issuers` (entities that issued the desired credential type), the user can share a credential issued by any of the ones listed.
-
-Parameters
-```typescript
-"verifier": string, // your verifier DID
-"credentialRequests": CredentialRequest[], // a list of one or more CredentialRequest objects. Encodes which credentials should be included in presentation that responds to PresentationRequest.
-"signingPrivateKey": string, // your verifier signing private key
-"holderAppUuid": string, // identifies mobile app subjects will share presentations from
-"expiresAt"?: string, // (optional) when PresentationRequest will no longer be valid (ISO 8601 date/time). Default is 10 minutes after creation.
-"metadata"?: object // (optional) any additional data to include in PresentationRequest
-```
-
-Response Body: [**PresentationRequestPostDto**](https://docs.unumid.co/types/interfaces/presentationrequestpostdto.html)
-```typescript title="PresentationRequestPostDto"
-{
-  "presentationRequest": {
-    "uuid": string, // identifies PresentationRequest in Unum ID database
-    "createdAt": string, // when PresentationRequest was created (ISO 8601 date/time)
-    "updatedAt": string, // when PresentationRequest was last updated (ISO 8601 date/time). Should always be same as createdAt.
-    "expiresAt": string, // when PresentationRequest will no longer be valid (ISO 8601 date/time)
-    "verifier": string, // your verifier DID
-    "credentialRequests": CredentialRequest[], // a list of one or more CredentialRequest objects. Encodes which credentials should be included in presentation that responds to PresentationRequest.
-    "proof": Proof, // acryptographic proof created by signing PresentationRequest with your verifier signing private key. Can be used to verify PresentationRequest.
-    "metadata": object // any additional data to include in PresentationRequest
-  },
-  "verifier": {
-      "name": string, // human readable name for verifier. Displayed to users in mobile apps.
-      "did": string, // your verifier DID
-      "url": string // endpoint you use to receive presentations
-  },
-  "issuers": {
-      "IssuerDid:string": { // map keyed on issuer DID(s) that issued requested credential(s)
-        "name": string, // human readable name for issuer
-        "did": string // issuer DID
-      }
-  },
-  "holderApp": {
-    "name": string, // human readable name for holder app. Displayed to users in the Web SDK.
-    "uriScheme": string, // uri scheme to create deep links to the holder app.
-    "deeplinkButtonImg": string // image for the Web SDK to display as a button, encoded as a data uri
-  },
-  /* You send this to a user with the Web SDK: */
-  "deeplink": string, // deep link (URL) that can be used to trigger intended mobile app to load PresentationRequest
-  /* You display this to a user with the Web SDK */
-  "qrCode": string // QR code representation of deep link (encoded as data URL)
-}
-```
 
 ### verifyPresentation 
 Handles decrypting the encrypted presentation and verifies the signatures are valid.
@@ -401,25 +141,6 @@ The fist two are returned by [`registerVerifier`](#registerVerifier).
 
 **Note** `presentationRequest` is optional in order for the server sdk can handle verifying presentations that may not have a corresponding request. However, if `presentationRequest` is supplied from UnumID's SaaS via the `/presentation` endpoint, it is strongly recommended that it is provided as it performs additional validation checks on your behalf.
 
-Parameters
-```typescript
-"encryptedPresentation": EncryptedData, // encrypted presentation
-"verifierDid": string, // your verifier DID
-"encryptionPrivateKey": string // your verifier encryption private key
-"presentationRequest"?: PresentationRequestDto // (optional) presentation request dto object to verify presentation credentials meet request requirements. This is an optional param to support the future use case of handling verifying presentations that are not in response to PresentationRequest
-```
-
-
-Response Body: [**DecryptedPresentation**](https://docs.unumid.co/Server-SDK-Typescript/interfaces/decryptedpresentation.html)
-```typescript title="DecryptedPresentation"
-{
-  "isVerified": boolean; // whether the presentation is valid
-  "type": 'VerifiablePresentation' | 'DeclinedPresentation' // type of presentation. DeclinedPresentation means user declined request and the submitted presentation's VerifiableCredential attribute was undefined or an empty array.
-  "presentation": Presentation, // decrypted Presentation object
-  "message"?: string; // (optional) included if isVerified is false. Explains why verification failed.
-}
-```
-
 ### sendSms
 Use to send a deep link to a user by SMS. A templated message will be delivered from an UnumID associated phone number. You can of course use your own SMS sending service if you prefer.
 
@@ -429,19 +150,6 @@ The SMS message will be in the format:
 - Verification Request: [verifier_name]. Click here to complete: [deep_link]
 
 **Note**: The verifier is corresponding to the presentation request from which the deeplink references. Because you are the acting verifier, the name will be what ever you provided during [verifier registration](#registerVerifier). 
-
-Parameters
-```typescript
-{
-  "to": string, // phone number to send SMS to
-  "deeplink": string // the deeplink corresponding to the presentation request you would like served to the user
-}
-```
-
-Response Body: **Empty**. If unsuccessful and exception will be thrown.
-```typescript
-{}
-```
 
 ### sendEmail
 Use to send a deep link to a user by email. A templated message will be delivered from no-reply@unumid.co. You can of course use your own email sending service if you prefer.
@@ -454,47 +162,7 @@ The email will be in the format:
 
 **Note**: The verifier is corresponding to the presentation request from which the deeplink references. Because you are the acting verifier, the name will be what ever you provided during [verifier registration](#registerVerifier). 
 
-Parameters
-```typescript
-{
-  "to": string, // email address to send email to
-  "deeplink": string // the deeplink corresponding to the presentation request you would like served to the user
-}
-```
-
-Response Body: **Empty**. If unsuccessful and exception will be thrown.
-```typescript
-{}
-```
-
 ### checkCredentialStatuses
 Used to check the status of individual credentials. 
 
 The `status` attribute of the response's [CredentialStatusInfo](https://docs.unumid.co/types/interfaces/credentialstatusinfo.html) is of type [CredentialStatusOptions](https://docs.unumid.co/types/modules.html#credentialstatusoptions). Currently the only valid status are: verified and revoked.
-
-```typescript
-export type CredentialStatusOptions = 'valid' | 'revoked';
-```
-
-```typescript
-export type CredentialStatusInfo {
-  "createdAt": Date; // the time  the credential was recorded as created in the UnumID SaaS db
-  "updatedAt": Date; // the time  the credential was recorded as updated in the UnumID SaaS db
-  "credentialId": string; // the did (aka id) of the credential this status is in regard to
-  "status": CredentialStatusOptions; // a string literal type that currently only consists of 'valid' and 'revoked'
-}
-```
-
-Parameters
-```typescript
-{
-  "credentialIds": string[], // the array of ids of the credentials in question
-}
-```
-
-Response Body: **CredentialIdToStatusMap**. If unsuccessful and exception will be thrown.
-```typescript
-{
-  [credentialId: string]: CredentialStatusInfo;
-}
-```
