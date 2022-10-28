@@ -18,6 +18,7 @@ import { getCredentialType } from '../utils/getCredentialType';
 import { omit } from 'lodash';
 import { handleImageCredentialData } from '../utils/handleImageCredentialData';
 import { version } from 'winston';
+import { Credential } from '@unumid/types/build/protos/credential';
 
 // interface to handle grouping Credentials and their encrypted form
 interface CredentialPair {
@@ -233,7 +234,7 @@ const constructEncryptedCredentialOpts = (cred: CredentialPb, publicKeyInfos: Pu
  * @param privateKey String
  * @param version
  */
-const constructSignedCredentialPbObj = (usCred: UnsignedCredentialPb, privateKey: string, version: string): Credential => {
+const constructSignedCredentialPbObj = (usCred: UnsignedCredentialPb, privateKey: string, version: string): CredentialPb => {
   try {
     // convert the protobuf to a byte array
     const bytes: Uint8Array = UnsignedCredentialPb.encode(usCred).finish();
@@ -252,7 +253,7 @@ const constructSignedCredentialPbObj = (usCred: UnsignedCredentialPb, privateKey
       proof: proof
     };
 
-    return (credential as Credential);
+    return credential;
   } catch (e) {
     if (e instanceof CryptoError) {
       logger.error(`Issue in the crypto lib while creating credential ${usCred.id} proof. ${e}.`);
@@ -398,7 +399,7 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
       // Create the encrypted credential issuance dto
       const encryptedCredentialUploadOptions: IssueCredentialOptions = constructIssueCredentialOptions(credential, publicKeyInfos, credentialSubject.id, version);
       const credPair: WithVersion<CredentialPair> = {
-        credential,
+        credential: credential as Credential,
         encryptedCredential: encryptedCredentialUploadOptions,
         version: version
       };
@@ -437,7 +438,7 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
  * @param subjectDid
  * @returns
  */
-const constructIssueCredentialOptions = (credential: Credential, publicKeyInfos: PublicKeyInfo[], subjectDid: string, version: string): IssueCredentialOptions => {
+export const constructIssueCredentialOptions = (credential: CredentialPb, publicKeyInfos: PublicKeyInfo[], subjectDid: string, version: string): IssueCredentialOptions => {
   // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
   const encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos, version);
 
@@ -462,7 +463,7 @@ const constructIssueCredentialOptions = (credential: Credential, publicKeyInfos:
  * @param version
  * @returns
  */
-const sendEncryptedCredentials = async (authorization: string, encryptedCredentialUploadOptions: IssueCredentialsOptions, version: string) :Promise<UnumDto<void>> => {
+export const sendEncryptedCredentials = async (authorization: string, encryptedCredentialUploadOptions: IssueCredentialsOptions, version: string) :Promise<UnumDto<void>> => {
   const restData: RESTData = {
     method: 'POST',
     baseUrl: configData.SaaSUrl,

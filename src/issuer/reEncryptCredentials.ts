@@ -1,19 +1,20 @@
 import { configData } from '../config';
 import { RESTData, UnumDto } from '../types';
 import { requireAuth } from '../requireAuth';
-import { Credential, JSONObj, CredentialPb, CredentialData, EncryptedCredentialEnrichedDto, CredentialSubject, PublicKeyInfo } from '@unumid/types';
+import { Credential, JSONObj, CredentialPb, CredentialData, EncryptedCredentialEnrichedDto, CredentialSubject, PublicKeyInfo, IssueCredentialOptions } from '@unumid/types';
 
 import { CustError } from '../utils/error';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
 import _ from 'lodash';
 import { doDecrypt } from '../utils/decrypt';
-import { issueCredentials } from './issueCredentials';
+import { constructIssueCredentialOptions, issueCredentials, sendEncryptedCredentials } from './issueCredentials';
 import { sdkMajorVersion } from '../utils/constants';
 import { extractCredentialType } from '../utils/extractCredentialType';
 import { createListQueryString } from '../utils/queryStringHelper';
 import { verifyCredentialHelper } from '../verifier/verifyCredential';
 import logger from '../logger';
 import { getDidDocPublicKeys } from '../utils/didHelper';
+import { versionList } from '../utils/versionList';
 
 /**
  * Helper to facilitate an issuer re-encrypting any credentials it has issued to a target subject.
@@ -51,12 +52,16 @@ export const reEncryptCredentials = async (authorization: string, issuerDid: str
   const authToken = publicKeyInfoResponse.authToken;
 
   // decrypt and verify the credentials
+  const promises = [];
+  const decryptedCredentials: {credential: CredentialPb, version: string}[] = [];
   for (const credential of credentials) {
+    const { encryptedCredential: { version } } = credential;
     // decrypt the credential into a byte array
     const decryptedCredentialBytes = await doDecrypt(encryptionPrivateKey, credential.encryptedCredential.data);
 
     // create a protobuf Credential object from the byte array
     const decryptedCredential = CredentialPb.decode(decryptedCredentialBytes);
+    decryptedCredentials.push({ credential: decryptedCredential, version });
 
     // verify the credential signature
     const isVerified = await verifyCredentialHelper(decryptedCredential, publicKeyInfo);
@@ -65,28 +70,25 @@ export const reEncryptCredentials = async (authorization: string, issuerDid: str
       continue;
     }
 
-    // extract the credential data from the credential for sake of re-issuance
-    const credentialSubject = JSON.parse(decryptedCredential.credentialSubject) as CredentialSubject;
+    // Now just need to re-encrypt the credential with the new subject DID key id.
+    const reEncryptedCredentialOptions: IssueCredentialOptions = constructIssueCredentialOptions(decryptedCredential, publicKeyInfo, subjectDid, version);
 
-    // omit the id which is added to credential data to make the subject
-    const credentialData = {
-      ..._.omit(credentialSubject, 'id'),
-      /**
-       * HACK ALERT: assuming the credential type is ultimately only of length 2 with the first element being the 'VerifiableCredential' indicator.
-       * This will need to be updated if we want to actually sport multiple credential types being defined in one credential.
-       * However, lots of other parts of our product would have to updated too.
-       */
-      type: extractCredentialType(decryptedCredential.type)[0]
-    };
-
-    // push the credential data to the array
-    credentialDataList.push(credentialData);
+    // send the EncryptedCredential to the SaaS
+    const promise = sendEncryptedCredentials(authorization, { credentialRequests: [reEncryptedCredentialOptions] }, version);
+    promises.push(promise);
   }
 
-  // (re)issue (aka re-encrypt) the credentials to the target subject
-  const reissuedCredentials = await issueCredentials(authToken, issuerDid, subjectDid, credentialDataList, signingPrivateKey, undefined, true);
+  // wait for all requests to finish or fail
+  const results = await Promise.all(promises).catch((err) => {
+    logger.error(`Error sending encrypted credentials to SaaS: ${err?.message || JSON.stringify(err)}`);
+  });
 
-  return reissuedCredentials;
+  const latestVersion = versionList[versionList.length - 1];
+  const resultantCredentials: Credential[] = decryptedCredentials.filter(cred => (cred.version === latestVersion)).map(cred => cred.credential as Credential);
+
+  return {
+    authToken: authorization, // TODO this needs to be the latest authToken from the results
+    body: resultantCredentials
 };
 
 function validateInputs (issuerDid: string, signingPrivateKey: string, encryptionPrivateKey: string, subjectDid: string, issuerEncryptionKeyId: string) {

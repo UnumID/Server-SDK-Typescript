@@ -1,15 +1,4 @@
 "use strict";
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -56,15 +45,14 @@ var requireAuth_1 = require("../requireAuth");
 var types_1 = require("@unumid/types");
 var error_1 = require("../utils/error");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
-var lodash_1 = __importDefault(require("lodash"));
 var decrypt_1 = require("../utils/decrypt");
 var issueCredentials_1 = require("./issueCredentials");
 var constants_1 = require("../utils/constants");
-var extractCredentialType_1 = require("../utils/extractCredentialType");
 var queryStringHelper_1 = require("../utils/queryStringHelper");
 var verifyCredential_1 = require("../verifier/verifyCredential");
 var logger_1 = __importDefault(require("../logger"));
 var didHelper_1 = require("../utils/didHelper");
+var versionList_1 = require("../utils/versionList");
 /**
  * Helper to facilitate an issuer re-encrypting any credentials it has issued to a target subject.
  * This is useful in the case of needing to provide a subject credential data encrypted with a new RSA key id.
@@ -80,7 +68,39 @@ var didHelper_1 = require("../utils/didHelper");
 exports.reEncryptCredentials = function (authorization, issuerDid, signingPrivateKey, encryptionPrivateKey, issuerEncryptionKeyId, subjectDid, credentialTypes) {
     if (credentialTypes === void 0) { credentialTypes = []; }
     return __awaiter(void 0, void 0, void 0, function () {
-        var issuerDidWithFragment, credentialsResponse, credentials, credentialDataList, publicKeyInfoResponse, publicKeyInfo, authToken, _i, credentials_1, credential, decryptedCredentialBytes, decryptedCredential, isVerified, credentialSubject, credentialData, reissuedCredentials;
+        function validateInputs(issuerDid, signingPrivateKey, encryptionPrivateKey, subjectDid, issuerEncryptionKeyId) {
+            if (!issuerDid) {
+                throw new error_1.CustError(400, 'issuerDid is required.');
+            }
+            if (!subjectDid) {
+                throw new error_1.CustError(400, 'subjectDid is required.');
+            }
+            if (!signingPrivateKey) {
+                throw new error_1.CustError(400, 'signingPrivateKey is required.');
+            }
+            if (!encryptionPrivateKey) {
+                throw new error_1.CustError(400, 'encryptionPrivateKey is required.');
+            }
+            if (!issuerEncryptionKeyId) {
+                throw new error_1.CustError(400, 'issuerEncryptionKeyId is required.');
+            }
+            if (typeof issuerDid !== 'string') {
+                throw new error_1.CustError(400, 'issuer must be a string.');
+            }
+            if (typeof subjectDid !== 'string') {
+                throw new error_1.CustError(400, 'subjectDid must be a string.');
+            }
+            if (typeof signingPrivateKey !== 'string') {
+                throw new error_1.CustError(400, 'signingPrivateKey must be a string.');
+            }
+            if (typeof encryptionPrivateKey !== 'string') {
+                throw new error_1.CustError(400, 'encryptionPrivateKey must be a string.');
+            }
+            if (typeof issuerEncryptionKeyId !== 'string') {
+                throw new error_1.CustError(400, 'issuerEncryptionKeyId must be a string.');
+            }
+        }
+        var issuerDidWithFragment, credentialsResponse, credentials, credentialDataList, publicKeyInfoResponse, publicKeyInfo, authToken, promises, decryptedCredentials, _i, credentials_1, credential, version, decryptedCredentialBytes, decryptedCredential, isVerified, reEncryptedCredentialOptions, promise, results, latestVersion, resultantCredentials, getRelevantCredentials;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -100,15 +120,19 @@ exports.reEncryptCredentials = function (authorization, issuerDid, signingPrivat
                     publicKeyInfoResponse = _a.sent();
                     publicKeyInfo = publicKeyInfoResponse.body;
                     authToken = publicKeyInfoResponse.authToken;
+                    promises = [];
+                    decryptedCredentials = [];
                     _i = 0, credentials_1 = credentials;
                     _a.label = 3;
                 case 3:
                     if (!(_i < credentials_1.length)) return [3 /*break*/, 7];
                     credential = credentials_1[_i];
+                    version = credential.encryptedCredential.version;
                     return [4 /*yield*/, decrypt_1.doDecrypt(encryptionPrivateKey, credential.encryptedCredential.data)];
                 case 4:
                     decryptedCredentialBytes = _a.sent();
                     decryptedCredential = types_1.CredentialPb.decode(decryptedCredentialBytes);
+                    decryptedCredentials.push({ credential: decryptedCredential, version: version });
                     return [4 /*yield*/, verifyCredential_1.verifyCredentialHelper(decryptedCredential, publicKeyInfo)];
                 case 5:
                     isVerified = _a.sent();
@@ -116,87 +140,26 @@ exports.reEncryptCredentials = function (authorization, issuerDid, signingPrivat
                         logger_1.default.warn("Credential " + decryptedCredential.id + " signature could not be verified. This should never happen and is very suspicious. Please contact UnumID support.");
                         return [3 /*break*/, 6];
                     }
-                    credentialSubject = JSON.parse(decryptedCredential.credentialSubject);
-                    credentialData = __assign(__assign({}, lodash_1.default.omit(credentialSubject, 'id')), { 
-                        /**
-                         * HACK ALERT: assuming the credential type is ultimately only of length 2 with the first element being the 'VerifiableCredential' indicator.
-                         * This will need to be updated if we want to actually sport multiple credential types being defined in one credential.
-                         * However, lots of other parts of our product would have to updated too.
-                         */
-                        type: extractCredentialType_1.extractCredentialType(decryptedCredential.type)[0] });
-                    // push the credential data to the array
-                    credentialDataList.push(credentialData);
+                    reEncryptedCredentialOptions = issueCredentials_1.constructIssueCredentialOptions(decryptedCredential, publicKeyInfo, subjectDid, version);
+                    promise = issueCredentials_1.sendEncryptedCredentials(authorization, { credentialRequests: [reEncryptedCredentialOptions] }, version);
+                    promises.push(promise);
                     _a.label = 6;
                 case 6:
                     _i++;
                     return [3 /*break*/, 3];
-                case 7: return [4 /*yield*/, issueCredentials_1.issueCredentials(authToken, issuerDid, subjectDid, credentialDataList, signingPrivateKey, undefined, true)];
+                case 7: return [4 /*yield*/, Promise.all(promises).catch(function (err) {
+                        logger_1.default.error("Error sending encrypted credentials to SaaS: " + ((err === null || err === void 0 ? void 0 : err.message) || JSON.stringify(err)));
+                    })];
                 case 8:
-                    reissuedCredentials = _a.sent();
-                    return [2 /*return*/, reissuedCredentials];
+                    results = _a.sent();
+                    latestVersion = versionList_1.versionList[versionList_1.versionList.length - 1];
+                    resultantCredentials = decryptedCredentials.filter(function (cred) { return (cred.version === latestVersion); }).map(function (cred) { return cred.credential; });
+                    return [2 /*return*/, {
+                            authToken: authorization,
+                            body: resultantCredentials
+                        }];
             }
         });
     });
 };
-function validateInputs(issuerDid, signingPrivateKey, encryptionPrivateKey, subjectDid, issuerEncryptionKeyId) {
-    if (!issuerDid) {
-        throw new error_1.CustError(400, 'issuerDid is required.');
-    }
-    if (!subjectDid) {
-        throw new error_1.CustError(400, 'subjectDid is required.');
-    }
-    if (!signingPrivateKey) {
-        throw new error_1.CustError(400, 'signingPrivateKey is required.');
-    }
-    if (!encryptionPrivateKey) {
-        throw new error_1.CustError(400, 'encryptionPrivateKey is required.');
-    }
-    if (!issuerEncryptionKeyId) {
-        throw new error_1.CustError(400, 'issuerEncryptionKeyId is required.');
-    }
-    if (typeof issuerDid !== 'string') {
-        throw new error_1.CustError(400, 'issuer must be a string.');
-    }
-    if (typeof subjectDid !== 'string') {
-        throw new error_1.CustError(400, 'subjectDid must be a string.');
-    }
-    if (typeof signingPrivateKey !== 'string') {
-        throw new error_1.CustError(400, 'signingPrivateKey must be a string.');
-    }
-    if (typeof encryptionPrivateKey !== 'string') {
-        throw new error_1.CustError(400, 'encryptionPrivateKey must be a string.');
-    }
-    if (typeof issuerEncryptionKeyId !== 'string') {
-        throw new error_1.CustError(400, 'issuerEncryptionKeyId must be a string.');
-    }
-}
-/**
- * Helper to get the relevant credentials issued by the issuer for the subject of which the issuer also issued to self.
- * @param authorization
- * @param issuerDid w/ keyId
- * @param subjectDid
- * @param credentialTypes
- * @returns
- */
-var getRelevantCredentials = function (authorization, issuerDidWithFragment, subjectDid, credentialTypes) { return __awaiter(void 0, void 0, void 0, function () {
-    var typesQuery, restData, restResp, authToken, encryptedCredentials;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                typesQuery = queryStringHelper_1.createListQueryString('type', credentialTypes);
-                restData = {
-                    method: 'GET',
-                    baseUrl: config_1.configData.SaaSUrl,
-                    endPoint: "credentialReIssuanceRepository/" + encodeURIComponent(issuerDidWithFragment) + "?subject=" + encodeURIComponent(subjectDid) + "&version=" + encodeURIComponent(constants_1.sdkMajorVersion) + "&" + typesQuery,
-                    header: { Authorization: authorization, version: constants_1.sdkMajorVersion }
-                };
-                return [4 /*yield*/, networkRequestHelper_1.makeNetworkRequest(restData)];
-            case 1:
-                restResp = _a.sent();
-                authToken = networkRequestHelper_1.handleAuthTokenHeader(restResp, authorization);
-                encryptedCredentials = { body: restResp.body, authToken: authToken };
-                return [2 /*return*/, encryptedCredentials];
-        }
-    });
-}); };
 //# sourceMappingURL=reEncryptCredentials.js.map

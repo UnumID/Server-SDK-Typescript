@@ -1,5 +1,5 @@
 import { UnumDto } from '../types';
-import { Credential, CredentialData, WithVersion, IssueCredentialOptions } from '@unumid/types';
+import { Credential, CredentialPb, PublicKeyInfo, CredentialData, IssueCredentialsOptions, WithVersion, IssueCredentialOptions } from '@unumid/types';
 interface CredentialPair {
     encryptedCredential: IssueCredentialOptions;
     credential: Credential;
@@ -18,5 +18,22 @@ export declare type CredentialEncryptionResult = {
  * @param expirationDate
  */
 export declare const issueCredentials: (authorization: string, issuerDid: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date | undefined, declineIssueCredentialsToSelf?: boolean) => Promise<UnumDto<Credential[]>>;
+/**
+ * Helper to construct a IssueCredentialOptions prior to sending to the Saas
+ * @param credential
+ * @param proofOfCredential
+ * @param publicKeyInfos
+ * @param subjectDid
+ * @returns
+ */
+export declare const constructIssueCredentialOptions: (credential: CredentialPb, publicKeyInfos: PublicKeyInfo[], subjectDid: string, version: string) => IssueCredentialOptions;
+/**
+ * Helper to send multiple encrypted credentials, IssueCredentialsOptions, to the Saas
+ * @param authorization
+ * @param encryptedCredentialUploadOptions
+ * @param version
+ * @returns
+ */
+export declare const sendEncryptedCredentials: (authorization: string, encryptedCredentialUploadOptions: IssueCredentialsOptions, version: string) => Promise<UnumDto<void>>;
 export {};
 //# sourceMappingURL=issueCredentials.d.ts.map
