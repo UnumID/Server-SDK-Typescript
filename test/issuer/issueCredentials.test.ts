@@ -111,19 +111,19 @@ describe('issueCredentials', () => {
   });
 
   it('encrypts the credential for each public key and it\'s "proof-of" credential', () => {
-    expect(mockDoEncrypt).toBeCalledTimes(8);
-    expect(mockdoEncrypt).toBeCalledTimes(8);
+    expect(mockDoEncrypt).toBeCalledTimes(16);
+    expect(mockdoEncrypt).toBeCalledTimes(16);
   });
 
-  it('sends encrypted credentials of all versions (2,3) to the saas', () => {
+  it('sends encrypted credentials of all versions (3,4) to the saas', () => {
     expect(mockMakeNetworkRequest).toBeCalled();
     expect(mockMakeNetworkRequest.mock.calls.length).toEqual(4);
   });
 
-  it('sends the encrypted credentials v2 to the saas', () => {
+  it('sends the encrypted credentials v3 to the saas', () => {
     expect(mockMakeNetworkRequest).toBeCalled();
     // expect(mockMakeNetworkRequest.mock.calls[0][0].data.encryptedCredentials.length).toEqual(2);
-    expect(mockMakeNetworkRequest.mock.calls[0][0].header.version).toEqual('2.0.0');
+    expect(mockMakeNetworkRequest.mock.calls[0][0].header.version).toEqual('3.0.0');
   });
 
   // TODO: fix this test.
