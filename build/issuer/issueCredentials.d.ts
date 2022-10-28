@@ -17,6 +17,6 @@ export declare type CredentialEncryptionResult = {
  * @param signingPrivateKey
  * @param expirationDate
  */
-export declare const issueCredentials: (authorization: string, issuerDid: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date | undefined, declineIssueCredentialsToSelf?: boolean) => Promise<UnumDto<(Credential)[]>>;
+export declare const issueCredentials: (authorization: string, issuerDid: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date | undefined, declineIssueCredentialsToSelf?: boolean) => Promise<UnumDto<Credential[]>>;
 export {};
 //# sourceMappingURL=issueCredentials.d.ts.map
