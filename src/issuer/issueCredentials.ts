@@ -1,8 +1,7 @@
 import { configData } from '../config';
 import { CredentialOptions, RESTData, UnumDto } from '../types';
 import { requireAuth } from '../requireAuth';
-import { Proof as ProofV3, Credential as CredentialV3, PublicKeyInfo as PublicKeyInfoV3 } from '@unumid/types-v3';
-import { CredentialSubject, EncryptedCredentialOptions, EncryptedData, Proof, Credential, JSONObj, UnsignedCredentialPb, CredentialPb, ProofPb, PublicKeyInfo, CredentialData, IssueCredentialsOptions, WithVersion, IssueCredentialOptions } from '@unumid/types';
+import { CredentialSubject, EncryptedCredentialOptions, EncryptedData, Credential, JSONObj, UnsignedCredentialPb, CredentialPb, ProofPb, PublicKeyInfo, CredentialData, IssueCredentialsOptions, WithVersion, IssueCredentialOptions } from '@unumid/types';
 
 import logger from '../logger';
 import { getDidDocPublicKeys } from '../utils/didHelper';
@@ -17,9 +16,6 @@ import { versionList } from '../utils/versionList';
 import { CryptoError } from '@unumid/library-crypto';
 import { getCredentialType } from '../utils/getCredentialType';
 import { omit } from 'lodash';
-import { isBase64 } from '../utils/isBase64';
-import { isValidUrl } from '../utils/isValidUrl';
-import { fetchBase64Image } from '../utils/fetchBase64Image';
 import { handleImageCredentialData } from '../utils/handleImageCredentialData';
 import { version } from 'winston';
 
