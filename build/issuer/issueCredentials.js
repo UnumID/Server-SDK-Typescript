@@ -234,10 +234,6 @@ exports.issueCredentials = function (authorization, issuerDid, subjectDid, crede
         });
     });
 };
-// function isCredentialPb (cred: Credential | CredentialPb): boolean {
-//   // HACK ALERT: just check if the cred object has a property unique to CredentialPb types
-//   return (cred as CredentialPb).context !== undefined;
-// }
 /**
  * Creates an object of type EncryptedCredentialOptions which encapsulates information relating to the encrypted credential data
  * @param cred
