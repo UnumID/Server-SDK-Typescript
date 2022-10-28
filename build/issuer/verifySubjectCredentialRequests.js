@@ -50,7 +50,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifySubjectCredentialRequestsHelper = exports.verifySubjectCredentialRequests = void 0;
+exports.verifySubjectCredentialRequests = void 0;
 var types_1 = require("@unumid/types");
 var requireAuth_1 = require("../requireAuth");
 var error_1 = require("../utils/error");
@@ -62,6 +62,33 @@ var verify_1 = require("../utils/verify");
 var networkRequestHelper_1 = require("../utils/networkRequestHelper");
 var validateProof_1 = require("../verifier/validateProof");
 var logger_1 = __importDefault(require("../logger"));
+/**
+ * Verify the CredentialRequests signatures.
+ */
+function verifySubjectCredentialRequests(authorization, issuerDid, subjectDid, subjectCredentialRequests) {
+    return __awaiter(this, void 0, void 0, function () {
+        var result, authToken, _a, isVerified, message;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    requireAuth_1.requireAuth(authorization);
+                    // validate credentialRequests input; and grab the subjectDid for reference later
+                    validateSubjectCredentialRequests(subjectCredentialRequests, subjectDid);
+                    return [4 /*yield*/, verifySubjectCredentialRequestsHelper(authorization, issuerDid, subjectCredentialRequests)];
+                case 1:
+                    result = _b.sent();
+                    authToken = result.authToken;
+                    _a = result.body, isVerified = _a.isVerified, message = _a.message;
+                    return [4 /*yield*/, handleSubjectCredentialsRequestsVerificationReceipt(authToken, issuerDid, subjectDid, subjectCredentialRequests, isVerified, message)];
+                case 2:
+                    // handle sending back the ReceiptSubjectCredentialRequestVerifiedData receipt with the verification status
+                    authToken = _b.sent();
+                    return [2 /*return*/, __assign(__assign({}, result), { authToken: authToken })];
+            }
+        });
+    });
+}
+exports.verifySubjectCredentialRequests = verifySubjectCredentialRequests;
 /**
  * Validates the attributes for a credential request to UnumID's SaaS.
  * @param requests CredentialRequest
@@ -99,33 +126,6 @@ var validateSubjectCredentialRequests = function (requests, subjectDid) {
     // return the subjectDid for reference now that have validated all the same across all requests
     return subjectDid;
 };
-/**
- * Verify the CredentialRequests signatures.
- */
-function verifySubjectCredentialRequests(authorization, issuerDid, subjectDid, subjectCredentialRequests) {
-    return __awaiter(this, void 0, void 0, function () {
-        var result, authToken, _a, isVerified, message;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
-                case 0:
-                    requireAuth_1.requireAuth(authorization);
-                    // validate credentialRequests input; and grab the subjectDid for reference later
-                    validateSubjectCredentialRequests(subjectCredentialRequests, subjectDid);
-                    return [4 /*yield*/, verifySubjectCredentialRequestsHelper(authorization, issuerDid, subjectCredentialRequests)];
-                case 1:
-                    result = _b.sent();
-                    authToken = result.authToken;
-                    _a = result.body, isVerified = _a.isVerified, message = _a.message;
-                    return [4 /*yield*/, handleSubjectCredentialsRequestsVerificationReceipt(authToken, issuerDid, subjectDid, subjectCredentialRequests, isVerified, message)];
-                case 2:
-                    // handle sending back the ReceiptSubjectCredentialRequestVerifiedData receipt with the verification status
-                    authToken = _b.sent();
-                    return [2 /*return*/, __assign(__assign({}, result), { authToken: authToken })];
-            }
-        });
-    });
-}
-exports.verifySubjectCredentialRequests = verifySubjectCredentialRequests;
 function verifySubjectCredentialRequestsHelper(authToken, issuerDid, subjectCredentialRequests) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
@@ -179,7 +179,6 @@ function verifySubjectCredentialRequestsHelper(authToken, issuerDid, subjectCred
         });
     });
 }
-exports.verifySubjectCredentialRequestsHelper = verifySubjectCredentialRequestsHelper;
 /**
  * Handle sending back the SubjectCredentialRequestVerified receipt
  */

@@ -50,7 +50,7 @@ export function reduceCredentialEncryptionResults (prev: CredentialEncryptionRes
  * @param signingPrivateKey
  * @param expirationDate
  */
-export const issueCredentials = async (authorization: string, issuerDid: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date, declineIssueCredentialsToSelf = false): Promise<UnumDto<(CredentialPb | Credential)[]>> => {
+export const issueCredentials = async (authorization: string, issuerDid: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date, declineIssueCredentialsToSelf = false): Promise<UnumDto<(Credential)[]>> => {
   // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
   requireAuth(authorization);
 
@@ -189,7 +189,7 @@ export const issueCredentials = async (authorization: string, issuerDid: string,
   // grab all the credentials of the latest version and that were issued to the subject (to prevent duplicates if also "issuedToSelf", the issuer) from the CredentialPairs for the response
   // Note: not returning the ProofOf credentials.
   const latestVersion = versionList[versionList.length - 1];
-  const resultantCredentials: (Credential | CredentialPb)[] = creds.filter(credPair => (credPair.version === latestVersion && credPair.encryptedCredential.subject === subjectDid)).map(credPair => credPair.credential);
+  const resultantCredentials: (Credential)[] = creds.filter(credPair => (credPair.version === latestVersion && credPair.encryptedCredential.subject === subjectDid)).map(credPair => credPair.credential);
 
   return {
     authToken: authorization,
@@ -197,10 +197,10 @@ export const issueCredentials = async (authorization: string, issuerDid: string,
   };
 };
 
-function isCredentialPb (cred: Credential | CredentialPb): boolean {
-  // HACK ALERT: just check if the cred object has a property unique to CredentialPb types
-  return (cred as CredentialPb).context !== undefined;
-}
+// function isCredentialPb (cred: Credential | CredentialPb): boolean {
+//   // HACK ALERT: just check if the cred object has a property unique to CredentialPb types
+//   return (cred as CredentialPb).context !== undefined;
+// }
 
 /**
  * Creates an object of type EncryptedCredentialOptions which encapsulates information relating to the encrypted credential data
@@ -242,7 +242,7 @@ const constructEncryptedCredentialOpts = (cred: CredentialPb, publicKeyInfos: Pu
  * @param privateKey String
  * @param version
  */
-const constructSignedCredentialPbObj = (usCred: UnsignedCredentialPb, privateKey: string, version: string): CredentialPb => {
+const constructSignedCredentialPbObj = (usCred: UnsignedCredentialPb, privateKey: string, version: string): Credential => {
   try {
     // convert the protobuf to a byte array
     const bytes: Uint8Array = UnsignedCredentialPb.encode(usCred).finish();
@@ -261,7 +261,7 @@ const constructSignedCredentialPbObj = (usCred: UnsignedCredentialPb, privateKey
       proof: proof
     };
 
-    return (credential);
+    return (credential as Credential);
   } catch (e) {
     if (e instanceof CryptoError) {
       logger.error(`Issue in the crypto lib while creating credential ${usCred.id} proof. ${e}.`);
@@ -446,7 +446,7 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
  * @param subjectDid
  * @returns
  */
-const constructIssueCredentialOptions = (credential: CredentialPb, publicKeyInfos: PublicKeyInfo[], subjectDid: string, version: string): IssueCredentialOptions => {
+const constructIssueCredentialOptions = (credential: Credential, publicKeyInfos: PublicKeyInfo[], subjectDid: string, version: string): IssueCredentialOptions => {
   // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
   const encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos, version);
 
