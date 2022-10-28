@@ -1,5 +1,6 @@
 import { UnumDto } from '../types';
-import { Credential, CredentialPb, PublicKeyInfo, CredentialData, IssueCredentialsOptions, WithVersion, IssueCredentialOptions } from '@unumid/types';
+import { CredentialPb, PublicKeyInfo, CredentialData, IssueCredentialsOptions, WithVersion, IssueCredentialOptions } from '@unumid/types';
+import { Credential } from '@unumid/types/build/protos/credential';
 interface CredentialPair {
     encryptedCredential: IssueCredentialOptions;
     credential: Credential;
