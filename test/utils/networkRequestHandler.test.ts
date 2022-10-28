@@ -1,6 +1,6 @@
 import express from 'express';
 import { CustError } from '../../src/utils/error';
-import { RESTData, JSONObj } from '../../src/types';
+import { RESTData } from '../../src/types';
 import { makeNetworkRequest } from '../../src/utils/networkRequestHelper';
 import bodyParser from 'body-parser';
 import { versionList } from '../../src/utils/versionList';
@@ -94,10 +94,10 @@ describe('Rest type Call - Failure Scenario', () => {
 describe('Version list definitions for default saas version header', () => {
   it('Check that the version list contents', async () => {
     expect(versionList.length).toEqual(2);
-    expect(versionList[0]).toEqual('2.0.0');
-    expect(versionList[1]).toEqual('3.0.0');
+    expect(versionList[0]).toEqual('3.0.0');
+    expect(versionList[1]).toEqual('4.0.0');
 
-    // expecting latest version to be 3.0.0
-    expect(versionList[versionList.length - 1]).toEqual('3.0.0');
+    // expecting latest version to be 4.0.0
+    expect(versionList[versionList.length - 1]).toEqual('4.0.0');
   });
 });
