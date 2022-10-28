@@ -57,7 +57,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.issueCredentials = exports.reduceCredentialEncryptionResults = void 0;
+exports.issueCredentials = void 0;
 var config_1 = require("../config");
 var requireAuth_1 = require("../requireAuth");
 var types_1 = require("@unumid/types");
@@ -76,81 +76,6 @@ var getCredentialType_1 = require("../utils/getCredentialType");
 var lodash_1 = require("lodash");
 var handleImageCredentialData_1 = require("../utils/handleImageCredentialData");
 var winston_1 = require("winston");
-function reduceCredentialEncryptionResults(prev, curr) {
-    return {
-        creds: prev.creds.concat(curr.creds),
-        proofOfCreds: prev.creds.concat(curr.proofOfCreds)
-    };
-}
-exports.reduceCredentialEncryptionResults = reduceCredentialEncryptionResults;
-/**
- * Creates a signed, encrypted credential with all the relevant information.
- * The proof serves as a cryptographic signature.
- *
- * @param authorization
- * @param item
- * @param issuerDid
- * @param issuerPublicKeyInfos
- * @param subjectDid
- * @param publicKeyInfos
- * @param signingPrivateKey
- * @param declineIssueCredentialsToSelf
- * @param expirationDate
- */
-function constructEncryptedCredential(authorization, item, issuerDid, issuerPublicKeyInfos, subjectDid, publicKeyInfos, signingPrivateKey, declineIssueCredentialsToSelf, expirationDate) {
-    return __awaiter(this, void 0, void 0, function () {
-        var type, credData, credSubject, subjectsToIssueTo, credentialId, constructEncryptedCredentialForSubject, perSubjectCredentialPromises;
-        var _this = this;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    type = item.type;
-                    credData = lodash_1.omit(item, 'type');
-                    credSubject = __assign({ id: subjectDid }, credData);
-                    subjectsToIssueTo = [
-                        credSubject,
-                        // construct the Credential's credentialSubject for the issuerDid if not declining to issue to self
-                        !declineIssueCredentialsToSelf ? [__assign(__assign({}, credData), { id: issuerDid })] : []
-                    ].flat();
-                    credentialId = helpers_1.getUUID();
-                    constructEncryptedCredentialForSubject = function (credSubject) { return __awaiter(_this, void 0, void 0, function () {
-                        var credentialVersionPairs, proofOfCredentialVersionPairs, _a;
-                        var _this = this;
-                        return __generator(this, function (_b) {
-                            switch (_b.label) {
-                                case 0:
-                                    credentialVersionPairs = (function () { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
-                                        return [2 /*return*/, constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, credSubject, signingPrivateKey, publicKeyInfos, expirationDate)];
-                                    }); }); })();
-                                    proofOfCredentialVersionPairs = (function () { return __awaiter(_this, void 0, void 0, function () {
-                                        var proofOfType, proofOfCredentialSubject, proofOfCredentailId;
-                                        return __generator(this, function (_a) {
-                                            proofOfType = "ProofOf" + type;
-                                            proofOfCredentialSubject = { id: credSubject.id };
-                                            proofOfCredentailId = helpers_1.getUUID();
-                                            return [2 /*return*/, constructEncryptedCredentialOfEachVersion(authorization, proofOfType, issuerDid, proofOfCredentailId, proofOfCredentialSubject, signingPrivateKey, publicKeyInfos, expirationDate)];
-                                        });
-                                    }); })();
-                                    _a = {};
-                                    return [4 /*yield*/, credentialVersionPairs];
-                                case 1:
-                                    _a.creds = _b.sent();
-                                    return [4 /*yield*/, proofOfCredentialVersionPairs];
-                                case 2: return [2 /*return*/, (_a.proofOfCreds = _b.sent(), _a)];
-                            }
-                        });
-                    }); };
-                    perSubjectCredentialPromises = subjectsToIssueTo
-                        .map(constructEncryptedCredentialForSubject);
-                    return [4 /*yield*/, Promise.all(perSubjectCredentialPromises)];
-                case 1: 
-                // Reduce per-subject credential promises into a single result of credential pair arrays
-                return [2 /*return*/, (_a.sent())
-                        .reduce(reduceCredentialEncryptionResults, { creds: [], proofOfCreds: [] })];
-            }
-        });
-    });
-}
 /**
  * Multiplexed handler for issuing credentials with UnumID's SaaS.
  * @param authorization
@@ -234,9 +159,79 @@ exports.issueCredentials = function (authorization, issuerDid, subjectDid, crede
         });
     });
 };
-function isCredentialPb(cred) {
-    // HACK ALERT: just check if the cred object has a property unique to CredentialPb types
-    return cred.context !== undefined;
+function reduceCredentialEncryptionResults(prev, curr) {
+    return {
+        creds: prev.creds.concat(curr.creds),
+        proofOfCreds: prev.creds.concat(curr.proofOfCreds)
+    };
+}
+/**
+ * Creates a signed, encrypted credential with all the relevant information.
+ * The proof serves as a cryptographic signature.
+ *
+ * @param authorization
+ * @param item
+ * @param issuerDid
+ * @param issuerPublicKeyInfos
+ * @param subjectDid
+ * @param publicKeyInfos
+ * @param signingPrivateKey
+ * @param declineIssueCredentialsToSelf
+ * @param expirationDate
+ */
+function constructEncryptedCredential(authorization, item, issuerDid, issuerPublicKeyInfos, subjectDid, publicKeyInfos, signingPrivateKey, declineIssueCredentialsToSelf, expirationDate) {
+    return __awaiter(this, void 0, void 0, function () {
+        var type, credData, credSubject, subjectsToIssueTo, credentialId, constructEncryptedCredentialForSubject, perSubjectCredentialPromises;
+        var _this = this;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    type = item.type;
+                    credData = lodash_1.omit(item, 'type');
+                    credSubject = __assign({ id: subjectDid }, credData);
+                    subjectsToIssueTo = [
+                        credSubject,
+                        // construct the Credential's credentialSubject for the issuerDid if not declining to issue to self
+                        !declineIssueCredentialsToSelf ? [__assign(__assign({}, credData), { id: issuerDid })] : []
+                    ].flat();
+                    credentialId = helpers_1.getUUID();
+                    constructEncryptedCredentialForSubject = function (credSubject) { return __awaiter(_this, void 0, void 0, function () {
+                        var credentialVersionPairs, proofOfCredentialVersionPairs, _a;
+                        var _this = this;
+                        return __generator(this, function (_b) {
+                            switch (_b.label) {
+                                case 0:
+                                    credentialVersionPairs = (function () { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
+                                        return [2 /*return*/, constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, credSubject, signingPrivateKey, publicKeyInfos, expirationDate)];
+                                    }); }); })();
+                                    proofOfCredentialVersionPairs = (function () { return __awaiter(_this, void 0, void 0, function () {
+                                        var proofOfType, proofOfCredentialSubject, proofOfCredentailId;
+                                        return __generator(this, function (_a) {
+                                            proofOfType = "ProofOf" + type;
+                                            proofOfCredentialSubject = { id: credSubject.id };
+                                            proofOfCredentailId = helpers_1.getUUID();
+                                            return [2 /*return*/, constructEncryptedCredentialOfEachVersion(authorization, proofOfType, issuerDid, proofOfCredentailId, proofOfCredentialSubject, signingPrivateKey, publicKeyInfos, expirationDate)];
+                                        });
+                                    }); })();
+                                    _a = {};
+                                    return [4 /*yield*/, credentialVersionPairs];
+                                case 1:
+                                    _a.creds = _b.sent();
+                                    return [4 /*yield*/, proofOfCredentialVersionPairs];
+                                case 2: return [2 /*return*/, (_a.proofOfCreds = _b.sent(), _a)];
+                            }
+                        });
+                    }); };
+                    perSubjectCredentialPromises = subjectsToIssueTo
+                        .map(constructEncryptedCredentialForSubject);
+                    return [4 /*yield*/, Promise.all(perSubjectCredentialPromises)];
+                case 1: 
+                // Reduce per-subject credential promises into a single result of credential pair arrays
+                return [2 /*return*/, (_a.sent())
+                        .reduce(reduceCredentialEncryptionResults, { creds: [], proofOfCreds: [] })];
+            }
+        });
+    });
 }
 /**
  * Creates an object of type EncryptedCredentialOptions which encapsulates information relating to the encrypted credential data
@@ -288,7 +283,7 @@ var constructSignedCredentialPbObj = function (usCred, privateKey, version) {
             expirationDate: usCred.expirationDate,
             proof: proof
         };
-        return (credential);
+        return credential;
     }
     catch (e) {
         if (e instanceof library_crypto_1.CryptoError) {

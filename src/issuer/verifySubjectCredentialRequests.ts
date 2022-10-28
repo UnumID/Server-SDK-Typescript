@@ -13,6 +13,28 @@ import { validateProof } from '../verifier/validateProof';
 import logger from '../logger';
 
 /**
+ * Verify the CredentialRequests signatures.
+ */
+export async function verifySubjectCredentialRequests (authorization: string, issuerDid: string, subjectDid: string, subjectCredentialRequests: SubjectCredentialRequests): Promise<UnumDto<VerifiedStatus>> {
+  requireAuth(authorization);
+
+  // validate credentialRequests input; and grab the subjectDid for reference later
+  validateSubjectCredentialRequests(subjectCredentialRequests, subjectDid);
+
+  const result: UnumDto<VerifiedStatus> = await verifySubjectCredentialRequestsHelper(authorization, issuerDid, subjectCredentialRequests);
+  let authToken = result.authToken;
+  const { isVerified, message } = result.body;
+
+  // handle sending back the ReceiptSubjectCredentialRequestVerifiedData receipt with the verification status
+  authToken = await handleSubjectCredentialsRequestsVerificationReceipt(authToken, issuerDid, subjectDid, subjectCredentialRequests, isVerified, message);
+
+  return {
+    ...result,
+    authToken
+  };
+}
+
+/**
  * Validates the attributes for a credential request to UnumID's SaaS.
  * @param requests CredentialRequest
  */
@@ -59,29 +81,8 @@ const validateSubjectCredentialRequests = (requests: SubjectCredentialRequests, 
   // return the subjectDid for reference now that have validated all the same across all requests
   return subjectDid;
 };
-/**
- * Verify the CredentialRequests signatures.
- */
-export async function verifySubjectCredentialRequests (authorization: string, issuerDid: string, subjectDid: string, subjectCredentialRequests: SubjectCredentialRequests): Promise<UnumDto<VerifiedStatus>> {
-  requireAuth(authorization);
 
-  // validate credentialRequests input; and grab the subjectDid for reference later
-  validateSubjectCredentialRequests(subjectCredentialRequests, subjectDid);
-
-  const result: UnumDto<VerifiedStatus> = await verifySubjectCredentialRequestsHelper(authorization, issuerDid, subjectCredentialRequests);
-  let authToken = result.authToken;
-  const { isVerified, message } = result.body;
-
-  // handle sending back the ReceiptSubjectCredentialRequestVerifiedData receipt with the verification status
-  authToken = await handleSubjectCredentialsRequestsVerificationReceipt(authToken, issuerDid, subjectDid, subjectCredentialRequests, isVerified, message);
-
-  return {
-    ...result,
-    authToken
-  };
-}
-
-export async function verifySubjectCredentialRequestsHelper (authToken: string, issuerDid: string, subjectCredentialRequests: SubjectCredentialRequests): Promise<UnumDto<VerifiedStatus>> {
+async function verifySubjectCredentialRequestsHelper (authToken: string, issuerDid: string, subjectCredentialRequests: SubjectCredentialRequests): Promise<UnumDto<VerifiedStatus>> {
   const verificationMethod = subjectCredentialRequests.proof?.verificationMethod as string;
   const signatureValue = subjectCredentialRequests.proof?.signatureValue as string;
 

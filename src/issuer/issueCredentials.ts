@@ -1,8 +1,7 @@
 import { configData } from '../config';
 import { CredentialOptions, RESTData, UnumDto } from '../types';
 import { requireAuth } from '../requireAuth';
-import { Proof as ProofV3, Credential as CredentialV3, PublicKeyInfo as PublicKeyInfoV3 } from '@unumid/types-v3';
-import { CredentialSubject, EncryptedCredentialOptions, EncryptedData, Proof, Credential, JSONObj, UnsignedCredentialPb, CredentialPb, ProofPb, PublicKeyInfo, CredentialData, IssueCredentialsOptions, WithVersion, IssueCredentialOptions } from '@unumid/types';
+import { CredentialSubject, EncryptedCredentialOptions, EncryptedData, Credential, JSONObj, UnsignedCredentialPb, CredentialPb, ProofPb, PublicKeyInfo, CredentialData, IssueCredentialsOptions, WithVersion, IssueCredentialOptions } from '@unumid/types';
 
 import logger from '../logger';
 import { getDidDocPublicKeys } from '../utils/didHelper';
@@ -17,16 +16,13 @@ import { versionList } from '../utils/versionList';
 import { CryptoError } from '@unumid/library-crypto';
 import { getCredentialType } from '../utils/getCredentialType';
 import { omit } from 'lodash';
-import { isBase64 } from '../utils/isBase64';
-import { isValidUrl } from '../utils/isValidUrl';
-import { fetchBase64Image } from '../utils/fetchBase64Image';
 import { handleImageCredentialData } from '../utils/handleImageCredentialData';
 import { version } from 'winston';
 
 // interface to handle grouping Credentials and their encrypted form
 interface CredentialPair {
   encryptedCredential: IssueCredentialOptions,
-  credential: CredentialPb | Credential
+  credential: Credential
 }
 
 export type CredentialEncryptionResult = {
@@ -34,7 +30,96 @@ export type CredentialEncryptionResult = {
   proofOfCreds: WithVersion<CredentialPair>[],
 }
 
-export function reduceCredentialEncryptionResults (prev: CredentialEncryptionResult, curr: CredentialEncryptionResult): CredentialEncryptionResult {
+/**
+ * Multiplexed handler for issuing credentials with UnumID's SaaS.
+ * @param authorization
+ * @param issuer
+ * @param subjectDid
+ * @param credentialDataList
+ * @param signingPrivateKey
+ * @param expirationDate
+ */
+export const issueCredentials = async (authorization: string, issuerDid: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date, declineIssueCredentialsToSelf = false): Promise<UnumDto<Credential[]>> => {
+  // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
+  requireAuth(authorization);
+
+  // Validate inputs and potentially mutate image date inputs, e.g. image urls to base64 strings
+  credentialDataList = await validateInputs(issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate);
+
+  // Get target Subject's DID document public keys for encrypting all the credentials issued.
+  const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, subjectDid, 'RSA');
+  const publicKeyInfos = publicKeyInfoResponse.body;
+  authorization = publicKeyInfoResponse.authToken;
+
+  let issuerPublicKeyInfos: PublicKeyInfo[] = [];
+  if (!declineIssueCredentialsToSelf) {
+    // need to get the DID document public keys for the issuer in order to issue credentials to self
+    const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, issuerDid, 'RSA');
+    issuerPublicKeyInfos = publicKeyInfoResponse.body;
+    authorization = publicKeyInfoResponse.authToken;
+  }
+
+  // loop through the types and credential data lists inputted to create CredentialPairs of each supported version for each
+  const encryptCredentialPromises = credentialDataList.map((item) => constructEncryptedCredential(
+    authorization,
+    item,
+    issuerDid,
+    issuerPublicKeyInfos,
+    subjectDid,
+    publicKeyInfos,
+    signingPrivateKey,
+    declineIssueCredentialsToSelf,
+    expirationDate
+  ));
+
+  const { creds, proofOfCreds } = (await Promise.all(encryptCredentialPromises))
+    .reduce(
+      reduceCredentialEncryptionResults,
+      { creds: [], proofOfCreds: [] }
+    );
+
+  const sendEncryptedVersionedCredentials = async (version: string) => {
+    // only grab the encrypted credentials of the current version
+    const resultantEncryptedCredentials: IssueCredentialOptions[] = creds.filter(credPair => credPair.version === version).map(credPair => credPair.encryptedCredential);
+
+    const result = await sendEncryptedCredentials(authorization, { credentialRequests: resultantEncryptedCredentials }, version);
+    authorization = result.authToken;
+
+    // only grab the proof of encrypted credentials of the current version
+    const proofOfResultantEncryptedCredentials: IssueCredentialOptions[] = proofOfCreds.filter(credPair => credPair.version === version).map(credPair => credPair.encryptedCredential);
+
+    const proofOfResult = await sendEncryptedCredentials(authorization, { credentialRequests: proofOfResultantEncryptedCredentials }, version);
+    authorization = proofOfResult.authToken;
+  };
+
+  // loop through the versions list and send all the encrypted credentials to the saas grouped by version and credentialIds.
+  // Note: proofOf Credentials have a separate credentialId but the issuerCredentials share one (because same credential data)
+  const promises = versionList.map(
+    (version) => sendEncryptedVersionedCredentials(version)
+      .catch((err) => {
+        logger.error(`Error sending encrypted credentials to SaaS: ${err?.message || JSON.stringify(err)}`);
+        return undefined;
+      })
+  );
+
+  // wait for all versioned requests to finish or fail
+  await Promise.all(promises).catch((err) => {
+    // this log message should not trigger because the catch is handled in the map above
+    logger.error(`[ShouldNotBeTriggered] Error sending encrypted credentials to SaaS: ${err?.message || JSON.stringify(err)}`);
+  });
+
+  // grab all the credentials of the latest version and that were issued to the subject (to prevent duplicates if also "issuedToSelf", the issuer) from the CredentialPairs for the response
+  // Note: not returning the ProofOf credentials.
+  const latestVersion = versionList[versionList.length - 1];
+  const resultantCredentials: Credential[] = creds.filter(credPair => (credPair.version === latestVersion && credPair.encryptedCredential.subject === subjectDid)).map(credPair => credPair.credential);
+
+  return {
+    authToken: authorization,
+    body: resultantCredentials
+  };
+};
+
+function reduceCredentialEncryptionResults (prev: CredentialEncryptionResult, curr: CredentialEncryptionResult): CredentialEncryptionResult {
   return {
     creds: prev.creds.concat(curr.creds),
     proofOfCreds: prev.creds.concat(curr.proofOfCreds)
@@ -109,100 +194,6 @@ async function constructEncryptedCredential (
 }
 
 /**
- * Multiplexed handler for issuing credentials with UnumID's SaaS.
- * @param authorization
- * @param issuer
- * @param subjectDid
- * @param credentialDataList
- * @param signingPrivateKey
- * @param expirationDate
- */
-export const issueCredentials = async (authorization: string, issuerDid: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date, declineIssueCredentialsToSelf = false): Promise<UnumDto<(CredentialPb | Credential)[]>> => {
-  // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
-  requireAuth(authorization);
-
-  // Validate inputs and potentially mutate image date inputs, e.g. image urls to base64 strings
-  credentialDataList = await validateInputs(issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate);
-
-  // Get target Subject's DID document public keys for encrypting all the credentials issued.
-  const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, subjectDid, 'RSA');
-  const publicKeyInfos = publicKeyInfoResponse.body;
-  authorization = publicKeyInfoResponse.authToken;
-
-  let issuerPublicKeyInfos: PublicKeyInfo[] = [];
-  if (!declineIssueCredentialsToSelf) {
-    // need to get the DID document public keys for the issuer in order to issue credentials to self
-    const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, issuerDid, 'RSA');
-    issuerPublicKeyInfos = publicKeyInfoResponse.body;
-    authorization = publicKeyInfoResponse.authToken;
-  }
-
-  // loop through the types and credential data lists inputted to create CredentialPairs of each supported version for each
-  const encryptCredentialPromises = credentialDataList.map((item) => constructEncryptedCredential(
-    authorization,
-    item,
-    issuerDid,
-    issuerPublicKeyInfos,
-    subjectDid,
-    publicKeyInfos,
-    signingPrivateKey,
-    declineIssueCredentialsToSelf,
-    expirationDate
-  ));
-
-  const { creds, proofOfCreds } = (await Promise.all(encryptCredentialPromises))
-    .reduce(
-      reduceCredentialEncryptionResults,
-      { creds: [], proofOfCreds: [] }
-    );
-
-  const sendEncryptedVersionedCredentials = async (version: string) => {
-    // only grab the encrypted credentials of the current version
-    const resultantEncryptedCredentials: IssueCredentialOptions[] = creds.filter(credPair => credPair.version === version).map(credPair => credPair.encryptedCredential);
-
-    const result = await sendEncryptedCredentials(authorization, { credentialRequests: resultantEncryptedCredentials }, version);
-    authorization = result.authToken;
-
-    // only grab the proof of encrypted credentials of the current version
-    const proofOfResultantEncryptedCredentials: IssueCredentialOptions[] = proofOfCreds.filter(credPair => credPair.version === version).map(credPair => credPair.encryptedCredential);
-
-    const proofOfResult = await sendEncryptedCredentials(authorization, { credentialRequests: proofOfResultantEncryptedCredentials }, version);
-    authorization = proofOfResult.authToken;
-  };
-
-  // loop through the versions list and send all the encrypted credentials to the saas grouped by version and credentialIds.
-  // Note: proofOf Credentials have a separate credentialId but the issuerCredentials share one (because same credential data)
-  const promises = versionList.map(
-    (version) => sendEncryptedVersionedCredentials(version)
-      .catch((err) => {
-        logger.error(`Error sending encrypted credentials to SaaS: ${err?.message || JSON.stringify(err)}`);
-        return undefined;
-      })
-  );
-
-  // wait for all versioned requests to finish or fail
-  await Promise.all(promises).catch((err) => {
-    // this log message should not trigger because the catch is handled in the map above
-    logger.error(`[ShouldNotBeTriggered] Error sending encrypted credentials to SaaS: ${err?.message || JSON.stringify(err)}`);
-  });
-
-  // grab all the credentials of the latest version and that were issued to the subject (to prevent duplicates if also "issuedToSelf", the issuer) from the CredentialPairs for the response
-  // Note: not returning the ProofOf credentials.
-  const latestVersion = versionList[versionList.length - 1];
-  const resultantCredentials: (Credential | CredentialPb)[] = creds.filter(credPair => (credPair.version === latestVersion && credPair.encryptedCredential.subject === subjectDid)).map(credPair => credPair.credential);
-
-  return {
-    authToken: authorization,
-    body: resultantCredentials
-  };
-};
-
-function isCredentialPb (cred: Credential | CredentialPb): boolean {
-  // HACK ALERT: just check if the cred object has a property unique to CredentialPb types
-  return (cred as CredentialPb).context !== undefined;
-}
-
-/**
  * Creates an object of type EncryptedCredentialOptions which encapsulates information relating to the encrypted credential data
  * @param cred
  * @param publicKeyInfos
@@ -242,7 +233,7 @@ const constructEncryptedCredentialOpts = (cred: CredentialPb, publicKeyInfos: Pu
  * @param privateKey String
  * @param version
  */
-const constructSignedCredentialPbObj = (usCred: UnsignedCredentialPb, privateKey: string, version: string): CredentialPb => {
+const constructSignedCredentialPbObj = (usCred: UnsignedCredentialPb, privateKey: string, version: string): Credential => {
   try {
     // convert the protobuf to a byte array
     const bytes: Uint8Array = UnsignedCredentialPb.encode(usCred).finish();
@@ -261,7 +252,7 @@ const constructSignedCredentialPbObj = (usCred: UnsignedCredentialPb, privateKey
       proof: proof
     };
 
-    return (credential);
+    return (credential as Credential);
   } catch (e) {
     if (e instanceof CryptoError) {
       logger.error(`Issue in the crypto lib while creating credential ${usCred.id} proof. ${e}.`);
@@ -446,7 +437,7 @@ const constructEncryptedCredentialOfEachVersion = (authorization: string, type: 
  * @param subjectDid
  * @returns
  */
-const constructIssueCredentialOptions = (credential: CredentialPb, publicKeyInfos: PublicKeyInfo[], subjectDid: string, version: string): IssueCredentialOptions => {
+const constructIssueCredentialOptions = (credential: Credential, publicKeyInfos: PublicKeyInfo[], subjectDid: string, version: string): IssueCredentialOptions => {
   // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
   const encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos, version);
 
