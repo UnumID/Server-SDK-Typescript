@@ -43,13 +43,10 @@ export const reEncryptCredentials = async (authorization: string, issuerDid: str
   authorization = credentialsResponse.authToken;
   const credentials = credentialsResponse.body;
 
-  // result list to house the decrypted and verified credential data
-  const credentialDataList: CredentialData[] = [];
-
   // grab all 'secp256r1' keys from the DID + fragment document for credential verification.
   const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, issuerDid, 'secp256r1');
   const publicKeyInfo: PublicKeyInfo[] = publicKeyInfoResponse.body;
-  const authToken = publicKeyInfoResponse.authToken;
+  authorization = publicKeyInfoResponse.authToken;
 
   // decrypt and verify the credentials
   const promises = [];

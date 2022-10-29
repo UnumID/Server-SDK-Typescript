@@ -68,7 +68,7 @@ var versionList_1 = require("../utils/versionList");
 exports.reEncryptCredentials = function (authorization, issuerDid, signingPrivateKey, encryptionPrivateKey, issuerEncryptionKeyId, subjectDid, credentialTypes) {
     if (credentialTypes === void 0) { credentialTypes = []; }
     return __awaiter(void 0, void 0, void 0, function () {
-        var issuerDidWithFragment, credentialsResponse, credentials, credentialDataList, publicKeyInfoResponse, publicKeyInfo, authToken, promises, decryptedCredentials, _i, credentials_1, credential, version, decryptedCredentialBytes, decryptedCredential, isVerified, reEncryptedCredentialOptions, promise, results, latestVersion, resultantCredentials;
+        var issuerDidWithFragment, credentialsResponse, credentials, publicKeyInfoResponse, publicKeyInfo, promises, decryptedCredentials, _i, credentials_1, credential, version, decryptedCredentialBytes, decryptedCredential, isVerified, reEncryptedCredentialOptions, promise, results, latestVersion, resultantCredentials;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -82,12 +82,11 @@ exports.reEncryptCredentials = function (authorization, issuerDid, signingPrivat
                     credentialsResponse = _a.sent();
                     authorization = credentialsResponse.authToken;
                     credentials = credentialsResponse.body;
-                    credentialDataList = [];
                     return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authorization, issuerDid, 'secp256r1')];
                 case 2:
                     publicKeyInfoResponse = _a.sent();
                     publicKeyInfo = publicKeyInfoResponse.body;
-                    authToken = publicKeyInfoResponse.authToken;
+                    authorization = publicKeyInfoResponse.authToken;
                     promises = [];
                     decryptedCredentials = [];
                     _i = 0, credentials_1 = credentials;
