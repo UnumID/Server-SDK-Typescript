@@ -1,6 +1,7 @@
 import { SubjectCredentialRequests, Credential } from '@unumid/types';
 import { requireAuth } from '../requireAuth';
 import { UnumDto, VerifiedStatus } from '../types';
+import { CustError } from '../utils/error';
 import { reEncryptCredentials } from './reEncryptCredentials';
 import { verifySubjectCredentialRequests } from './verifySubjectCredentialRequests';
 
@@ -27,17 +28,18 @@ export interface HandleSubjectCredentialRequestsOptions {
  * Verify the CredentialRequests signatures and handle calling reEncryptCredentials.
  * Returns the verifiedStatus if the SubjectCredentialRequests are not valid. Otherwise, returns the re-encrypted credentials response which contains the re-encrypted credentials.
  */
-export async function handleSubjectCredentialRequests (options: HandleSubjectCredentialRequestsOptions): Promise<UnumDto<VerifiedStatus | Credential[]>> {
+export async function handleSubjectCredentialRequests (options: HandleSubjectCredentialRequestsOptions): Promise<UnumDto<Credential[]>> {
   const { authorization, issuerDid, subjectDid, subjectCredentialRequests, reEncryptCredentialsOptions: { signingPrivateKey, encryptionPrivateKey, issuerEncryptionKeyId, credentialTypes } } = options;
 
   requireAuth(authorization);
 
   const verifySubjectCredentialRequestsResult: UnumDto<VerifiedStatus> = await verifySubjectCredentialRequests(authorization, issuerDid, subjectDid, subjectCredentialRequests);
   const authToken = verifySubjectCredentialRequestsResult.authToken;
-  const { isVerified } = verifySubjectCredentialRequestsResult.body;
+  const { isVerified, message } = verifySubjectCredentialRequestsResult.body;
 
   if (!isVerified) {
-    return verifySubjectCredentialRequestsResult;
+    // return verifySubjectCredentialRequestsResult;
+    throw new CustError(500, message as string);
   }
 
   // handle sending back the ReceiptSubjectCredentialRequestVerifiedData receipt with the verification status

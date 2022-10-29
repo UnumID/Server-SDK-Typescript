@@ -38,6 +38,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleSubjectCredentialRequests = void 0;
 var requireAuth_1 = require("../requireAuth");
+var error_1 = require("../utils/error");
 var reEncryptCredentials_1 = require("./reEncryptCredentials");
 var verifySubjectCredentialRequests_1 = require("./verifySubjectCredentialRequests");
 /**
@@ -46,23 +47,24 @@ var verifySubjectCredentialRequests_1 = require("./verifySubjectCredentialReques
  */
 function handleSubjectCredentialRequests(options) {
     return __awaiter(this, void 0, void 0, function () {
-        var authorization, issuerDid, subjectDid, subjectCredentialRequests, _a, signingPrivateKey, encryptionPrivateKey, issuerEncryptionKeyId, credentialTypes, verifySubjectCredentialRequestsResult, authToken, isVerified, reEncryptCredentialsResult;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
+        var authorization, issuerDid, subjectDid, subjectCredentialRequests, _a, signingPrivateKey, encryptionPrivateKey, issuerEncryptionKeyId, credentialTypes, verifySubjectCredentialRequestsResult, authToken, _b, isVerified, message, reEncryptCredentialsResult;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
                 case 0:
                     authorization = options.authorization, issuerDid = options.issuerDid, subjectDid = options.subjectDid, subjectCredentialRequests = options.subjectCredentialRequests, _a = options.reEncryptCredentialsOptions, signingPrivateKey = _a.signingPrivateKey, encryptionPrivateKey = _a.encryptionPrivateKey, issuerEncryptionKeyId = _a.issuerEncryptionKeyId, credentialTypes = _a.credentialTypes;
                     requireAuth_1.requireAuth(authorization);
                     return [4 /*yield*/, verifySubjectCredentialRequests_1.verifySubjectCredentialRequests(authorization, issuerDid, subjectDid, subjectCredentialRequests)];
                 case 1:
-                    verifySubjectCredentialRequestsResult = _b.sent();
+                    verifySubjectCredentialRequestsResult = _c.sent();
                     authToken = verifySubjectCredentialRequestsResult.authToken;
-                    isVerified = verifySubjectCredentialRequestsResult.body.isVerified;
+                    _b = verifySubjectCredentialRequestsResult.body, isVerified = _b.isVerified, message = _b.message;
                     if (!isVerified) {
-                        return [2 /*return*/, verifySubjectCredentialRequestsResult];
+                        // return verifySubjectCredentialRequestsResult;
+                        throw new error_1.CustError(500, message);
                     }
                     return [4 /*yield*/, reEncryptCredentials_1.reEncryptCredentials(authToken, issuerDid, subjectDid, signingPrivateKey, encryptionPrivateKey, issuerEncryptionKeyId, credentialTypes)];
                 case 2:
-                    reEncryptCredentialsResult = _b.sent();
+                    reEncryptCredentialsResult = _c.sent();
                     return [2 /*return*/, reEncryptCredentialsResult];
             }
         });
