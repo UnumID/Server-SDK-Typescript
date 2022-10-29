@@ -35,8 +35,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleSubjectCredentialRequests = void 0;
+var logger_1 = __importDefault(require("../logger"));
 var requireAuth_1 = require("../requireAuth");
 var error_1 = require("../utils/error");
 var reEncryptCredentials_1 = require("./reEncryptCredentials");
@@ -51,6 +55,7 @@ function handleSubjectCredentialRequests(options) {
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
+                    logger_1.default.debug('handleSubjectCredentialRequests');
                     authorization = options.authorization, issuerDid = options.issuerDid, subjectDid = options.subjectDid, subjectCredentialRequests = options.subjectCredentialRequests, _a = options.reEncryptCredentialsOptions, signingPrivateKey = _a.signingPrivateKey, encryptionPrivateKey = _a.encryptionPrivateKey, issuerEncryptionKeyId = _a.issuerEncryptionKeyId, credentialTypes = _a.credentialTypes;
                     requireAuth_1.requireAuth(authorization);
                     return [4 /*yield*/, verifySubjectCredentialRequests_1.verifySubjectCredentialRequests(authorization, issuerDid, subjectDid, subjectCredentialRequests)];
@@ -65,6 +70,7 @@ function handleSubjectCredentialRequests(options) {
                     return [4 /*yield*/, reEncryptCredentials_1.reEncryptCredentials(authToken, issuerDid, subjectDid, signingPrivateKey, encryptionPrivateKey, issuerEncryptionKeyId, credentialTypes)];
                 case 2:
                     reEncryptCredentialsResult = _c.sent();
+                    logger_1.default.debug("handleSubjectCredentialRequests resultant credentials re-encrypted: " + reEncryptCredentialsResult.body.map(function (cred) { return cred.type; }));
                     return [2 /*return*/, reEncryptCredentialsResult];
             }
         });
