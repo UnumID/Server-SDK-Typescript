@@ -16,6 +16,10 @@ export interface HandleSubjectCredentialRequestsReEncryptOptions {
     credentialTypes: string[]
 }
 
+/**
+ * Interface to encapsulate all the attributes necessary to fullfil a verifySubjectCredentialRequests and
+ * a verifySubjectCredentialRequests in the helper function handleSubjectCredentialRequests
+ */
 export interface HandleSubjectCredentialRequestsOptions {
     authorization: string;
     issuerDid: string;
