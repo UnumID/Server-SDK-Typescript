@@ -24,29 +24,38 @@ import { versionList } from '../utils/versionList';
  * @param issuerDid
  * @param signingPrivateKey
  * @param encryptionPrivateKey
- * @param subjectDid
+ * @param subjectDidWithFragment
  * @param issuerEncryptionKeyId
  * @param credentialTypes
  */
-export const reEncryptCredentials = async (authorization: string, issuerDid: string, signingPrivateKey: string, encryptionPrivateKey: string, issuerEncryptionKeyId: string, subjectDid: string, credentialTypes: string[] = []): Promise<UnumDto<Credential[]>> => {
+export const reEncryptCredentials = async (authorization: string, issuerDid: string, signingPrivateKey: string, encryptionPrivateKey: string, issuerEncryptionKeyId: string, subjectDidWithFragment: string, credentialTypes: string[] = []): Promise<UnumDto<Credential[]>> => {
   // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
   requireAuth(authorization);
 
   // Validate inputs.
-  validateInputs(issuerDid, signingPrivateKey, encryptionPrivateKey, subjectDid, issuerEncryptionKeyId);
+  validateInputs(issuerDid, signingPrivateKey, encryptionPrivateKey, subjectDidWithFragment, issuerEncryptionKeyId);
 
-  // create the did + fragment
+  // create the issuer did + fragment
   const issuerDidWithFragment = `${issuerDid}#${issuerEncryptionKeyId}`;
 
+  // potentially separate the subject did from the fragment
+  const subjectDidSplit = subjectDidWithFragment.split('#');
+  const subjectDidWithOutFragment = subjectDidSplit[0];
+
   // get all the credentials issued by the issuer to the subject
-  const credentialsResponse: UnumDto<EncryptedCredentialEnrichedDto[]> = await getRelevantCredentials(authorization, issuerDidWithFragment, subjectDid, credentialTypes);
+  const credentialsResponse: UnumDto<EncryptedCredentialEnrichedDto[]> = await getRelevantCredentials(authorization, issuerDidWithFragment, subjectDidWithOutFragment, credentialTypes);
   authorization = credentialsResponse.authToken;
   const credentials = credentialsResponse.body;
 
-  // grab all 'secp256r1' keys from the DID + fragment document for credential verification.
-  const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, issuerDid, 'secp256r1');
-  const publicKeyInfo: PublicKeyInfo[] = publicKeyInfoResponse.body;
-  authorization = publicKeyInfoResponse.authToken;
+  // grab all Issuer's 'secp256r1' keys from the DID + fragment document for credential verification.
+  const issuerPublicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, issuerDid, 'secp256r1');
+  const issuerPublicKeyInfo: PublicKeyInfo[] = issuerPublicKeyInfoResponse.body;
+  authorization = issuerPublicKeyInfoResponse.authToken;
+
+  // grab all the Subject's 'secp256r1' keys from the DID + fragment document for credential issuance.
+  const subjectPublicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, subjectDidWithFragment, 'secp256r1');
+  const subjectPublicKeyInfo: PublicKeyInfo[] = subjectPublicKeyInfoResponse.body;
+  authorization = subjectPublicKeyInfoResponse.authToken;
 
   // decrypt and verify the credentials
   const promises = [];
@@ -61,14 +70,14 @@ export const reEncryptCredentials = async (authorization: string, issuerDid: str
     decryptedCredentials.push({ credential: decryptedCredential, version });
 
     // verify the credential signature
-    const isVerified = await verifyCredentialHelper(decryptedCredential, publicKeyInfo);
+    const isVerified = await verifyCredentialHelper(decryptedCredential, issuerPublicKeyInfo);
     if (!isVerified) {
       logger.warn(`Credential ${decryptedCredential.id} signature could not be verified. This should never happen and is very suspicious. Please contact UnumID support.`);
       continue;
     }
 
-    // Now just need to re-encrypt the credential with the new subject DID key id.
-    const reEncryptedCredentialOptions: IssueCredentialOptions = constructIssueCredentialOptions(decryptedCredential, publicKeyInfo, subjectDid, version);
+    // Now just need to re-encrypt the credential with the new subject DID key id(s). Note: this function can handle re-issuing to multiple keys if needed.
+    const reEncryptedCredentialOptions: IssueCredentialOptions = constructIssueCredentialOptions(decryptedCredential, subjectPublicKeyInfo, subjectDidWithFragment, version);
 
     // send the EncryptedCredential to the SaaS
     const promise = sendEncryptedCredentials(authorization, { credentialRequests: [reEncryptedCredentialOptions] }, version);
@@ -96,6 +105,11 @@ function validateInputs (issuerDid: string, signingPrivateKey: string, encryptio
 
   if (!subjectDid) {
     throw new CustError(400, 'subjectDid is required.');
+  }
+
+  const subjectDidSplit = subjectDid.split('#');
+  if (subjectDidSplit.length <= 1) {
+    throw new CustError(400, 'subjectDid with fragment is required.');
   }
 
   if (!signingPrivateKey) {
