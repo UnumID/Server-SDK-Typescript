@@ -102,7 +102,7 @@ export const issueCredentials = async (authorization: string, issuerDid: string,
 
   sendEncryptedVersionedCredentials('3.0.0')
     .catch((err) => {
-      logger.error(`Error sending encrypted credentials to SaaS: ${err?.message || JSON.stringify(err)}`);
+      logger.error(`Error sending v3 encrypted credentials to SaaS: ${err?.message || JSON.stringify(err)}`);
       return undefined;
     });
 
