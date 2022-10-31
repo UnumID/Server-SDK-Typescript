@@ -123,7 +123,7 @@ describe('issueCredentials', () => {
   it('sends the encrypted credentials v3 to the saas', () => {
     expect(mockMakeNetworkRequest).toBeCalled();
     // expect(mockMakeNetworkRequest.mock.calls[0][0].data.encryptedCredentials.length).toEqual(2);
-    expect(mockMakeNetworkRequest.mock.calls[0][0].header.version).toEqual('3.0.0');
+    expect(mockMakeNetworkRequest.mock.calls[0][0].header.version).toEqual('4.0.0');
   });
 
   // TODO: fix this test.
