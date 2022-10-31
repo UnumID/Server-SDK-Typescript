@@ -140,7 +140,7 @@ exports.issueCredentials = function (authorization, issuerDid, subjectDid, crede
                     // Note: proofOf Credentials have a separate credentialId but the issuerCredentials share one (because same credential data)
                     /**
                      * HACK ALERT: making this blocking to allow for the sake of SaaS ReceiptGroup handling which is currently unable to handle async requests.
-                     * Issue is receipt groups are created keyed of of credentialIds,
+                     * Situation is such that receipt groups are created keyed on credentialIds. This is so the ReceiptGroup has a chance to resolve so can be keyed on credentialId across versions.
                      */
                     return [4 /*yield*/, sendEncryptedVersionedCredentials('4.0.0')];
                 case 6:
@@ -148,12 +148,12 @@ exports.issueCredentials = function (authorization, issuerDid, subjectDid, crede
                     // Note: proofOf Credentials have a separate credentialId but the issuerCredentials share one (because same credential data)
                     /**
                      * HACK ALERT: making this blocking to allow for the sake of SaaS ReceiptGroup handling which is currently unable to handle async requests.
-                     * Issue is receipt groups are created keyed of of credentialIds,
+                     * Situation is such that receipt groups are created keyed on credentialIds. This is so the ReceiptGroup has a chance to resolve so can be keyed on credentialId across versions.
                      */
                     _b.sent();
                     sendEncryptedVersionedCredentials('3.0.0')
                         .catch(function (err) {
-                        logger_1.default.error("Error sending encrypted credentials to SaaS: " + ((err === null || err === void 0 ? void 0 : err.message) || JSON.stringify(err)));
+                        logger_1.default.error("Error sending v3 encrypted credentials to SaaS: " + ((err === null || err === void 0 ? void 0 : err.message) || JSON.stringify(err)));
                         return undefined;
                     });
                     latestVersion = versionList_1.versionList[versionList_1.versionList.length - 1];
