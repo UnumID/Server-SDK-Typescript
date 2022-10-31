@@ -27,7 +27,7 @@ export declare const issueCredentials: (authorization: string, issuerDid: string
  * @param subjectDid
  * @returns
  */
-export declare const constructIssueCredentialOptions: (credential: CredentialPb, publicKeyInfos: PublicKeyInfo[], subjectDid: string, version: string) => IssueCredentialOptions;
+export declare const constructIssueCredentialOptions: (credential: CredentialPb, subjectPublicKeyInfos: PublicKeyInfo[], subjectDidWithFragment: string, version: string) => IssueCredentialOptions;
 /**
  * Helper to send multiple encrypted credentials, IssueCredentialsOptions, to the Saas
  * @param authorization

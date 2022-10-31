@@ -61,63 +61,70 @@ var versionList_1 = require("../utils/versionList");
  * @param issuerDid
  * @param signingPrivateKey
  * @param encryptionPrivateKey
- * @param subjectDid
+ * @param subjectDidWithFragment
  * @param issuerEncryptionKeyId
  * @param credentialTypes
  */
-exports.reEncryptCredentials = function (authorization, issuerDid, signingPrivateKey, encryptionPrivateKey, issuerEncryptionKeyId, subjectDid, credentialTypes) {
+exports.reEncryptCredentials = function (authorization, issuerDid, signingPrivateKey, encryptionPrivateKey, issuerEncryptionKeyId, subjectDidWithFragment, credentialTypes) {
     if (credentialTypes === void 0) { credentialTypes = []; }
     return __awaiter(void 0, void 0, void 0, function () {
-        var issuerDidWithFragment, credentialsResponse, credentials, publicKeyInfoResponse, publicKeyInfo, promises, decryptedCredentials, _i, credentials_1, credential, version, decryptedCredentialBytes, decryptedCredential, isVerified, reEncryptedCredentialOptions, promise, results, latestVersion, resultantCredentials;
+        var issuerDidWithFragment, subjectDidSplit, subjectDidWithOutFragment, credentialsResponse, credentials, issuerPublicKeyInfoResponse, issuerPublicKeyInfo, subjectPublicKeyInfoResponse, subjectPublicKeyInfo, promises, decryptedCredentials, _i, credentials_1, credential, version, decryptedCredentialBytes, decryptedCredential, isVerified, reEncryptedCredentialOptions, promise, results, latestVersion, resultantCredentials;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
                     requireAuth_1.requireAuth(authorization);
                     // Validate inputs.
-                    validateInputs(issuerDid, signingPrivateKey, encryptionPrivateKey, subjectDid, issuerEncryptionKeyId);
+                    validateInputs(issuerDid, signingPrivateKey, encryptionPrivateKey, subjectDidWithFragment, issuerEncryptionKeyId);
                     issuerDidWithFragment = issuerDid + "#" + issuerEncryptionKeyId;
-                    return [4 /*yield*/, getRelevantCredentials(authorization, issuerDidWithFragment, subjectDid, credentialTypes)];
+                    subjectDidSplit = subjectDidWithFragment.split('#');
+                    subjectDidWithOutFragment = subjectDidSplit[0];
+                    return [4 /*yield*/, getRelevantCredentials(authorization, issuerDidWithFragment, subjectDidWithOutFragment, credentialTypes)];
                 case 1:
                     credentialsResponse = _a.sent();
                     authorization = credentialsResponse.authToken;
                     credentials = credentialsResponse.body;
                     return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authorization, issuerDid, 'secp256r1')];
                 case 2:
-                    publicKeyInfoResponse = _a.sent();
-                    publicKeyInfo = publicKeyInfoResponse.body;
-                    authorization = publicKeyInfoResponse.authToken;
+                    issuerPublicKeyInfoResponse = _a.sent();
+                    issuerPublicKeyInfo = issuerPublicKeyInfoResponse.body;
+                    authorization = issuerPublicKeyInfoResponse.authToken;
+                    return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authorization, subjectDidWithFragment, 'secp256r1')];
+                case 3:
+                    subjectPublicKeyInfoResponse = _a.sent();
+                    subjectPublicKeyInfo = subjectPublicKeyInfoResponse.body;
+                    authorization = subjectPublicKeyInfoResponse.authToken;
                     promises = [];
                     decryptedCredentials = [];
                     _i = 0, credentials_1 = credentials;
-                    _a.label = 3;
-                case 3:
-                    if (!(_i < credentials_1.length)) return [3 /*break*/, 7];
+                    _a.label = 4;
+                case 4:
+                    if (!(_i < credentials_1.length)) return [3 /*break*/, 8];
                     credential = credentials_1[_i];
                     version = credential.encryptedCredential.version;
                     return [4 /*yield*/, decrypt_1.doDecrypt(encryptionPrivateKey, credential.encryptedCredential.data)];
-                case 4:
+                case 5:
                     decryptedCredentialBytes = _a.sent();
                     decryptedCredential = types_1.CredentialPb.decode(decryptedCredentialBytes);
                     decryptedCredentials.push({ credential: decryptedCredential, version: version });
-                    return [4 /*yield*/, verifyCredential_1.verifyCredentialHelper(decryptedCredential, publicKeyInfo)];
-                case 5:
+                    return [4 /*yield*/, verifyCredential_1.verifyCredentialHelper(decryptedCredential, issuerPublicKeyInfo)];
+                case 6:
                     isVerified = _a.sent();
                     if (!isVerified) {
                         logger_1.default.warn("Credential " + decryptedCredential.id + " signature could not be verified. This should never happen and is very suspicious. Please contact UnumID support.");
-                        return [3 /*break*/, 6];
+                        return [3 /*break*/, 7];
                     }
-                    reEncryptedCredentialOptions = issueCredentials_1.constructIssueCredentialOptions(decryptedCredential, publicKeyInfo, subjectDid, version);
+                    reEncryptedCredentialOptions = issueCredentials_1.constructIssueCredentialOptions(decryptedCredential, subjectPublicKeyInfo, subjectDidWithFragment, version);
                     promise = issueCredentials_1.sendEncryptedCredentials(authorization, { credentialRequests: [reEncryptedCredentialOptions] }, version);
                     promises.push(promise);
-                    _a.label = 6;
-                case 6:
+                    _a.label = 7;
+                case 7:
                     _i++;
-                    return [3 /*break*/, 3];
-                case 7: return [4 /*yield*/, Promise.all(promises).catch(function (err) {
+                    return [3 /*break*/, 4];
+                case 8: return [4 /*yield*/, Promise.all(promises).catch(function (err) {
                         logger_1.default.error("Error sending encrypted credentials to SaaS: " + ((err === null || err === void 0 ? void 0 : err.message) || JSON.stringify(err)));
                     })];
-                case 8:
+                case 9:
                     results = _a.sent();
                     latestVersion = versionList_1.versionList[versionList_1.versionList.length - 1];
                     resultantCredentials = decryptedCredentials.filter(function (cred) { return (cred.version === latestVersion); }).map(function (cred) { return cred.credential; });
@@ -135,6 +142,10 @@ function validateInputs(issuerDid, signingPrivateKey, encryptionPrivateKey, subj
     }
     if (!subjectDid) {
         throw new error_1.CustError(400, 'subjectDid is required.');
+    }
+    var subjectDidSplit = subjectDid.split('#');
+    if (subjectDidSplit.length <= 1) {
+        throw new error_1.CustError(400, 'subjectDid with fragment is required.');
     }
     if (!signingPrivateKey) {
         throw new error_1.CustError(400, 'signingPrivateKey is required.');

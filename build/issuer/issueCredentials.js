@@ -440,14 +440,14 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
  * @param subjectDid
  * @returns
  */
-exports.constructIssueCredentialOptions = function (credential, publicKeyInfos, subjectDid, version) {
+exports.constructIssueCredentialOptions = function (credential, subjectPublicKeyInfos, subjectDidWithFragment, version) {
     // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
-    var encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos, version);
+    var encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, subjectPublicKeyInfos, version);
     // Removing the 'credential' of "VerifiableCredential" from the Unum ID internal type for simplicity
     var credentialType = getCredentialType_1.getCredentialType(credential.type);
     var encryptedCredentialUploadOptions = {
         credentialId: credential.id,
-        subject: subjectDid,
+        subject: subjectDidWithFragment,
         issuer: credential.issuer,
         type: credentialType,
         encryptedCredentials: encryptedCredentialOptions
