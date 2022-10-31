@@ -92,21 +92,19 @@ export const issueCredentials = async (authorization: string, issuerDid: string,
     authorization = proofOfResult.authToken;
   };
 
-  // loop through the versions list and send all the encrypted credentials to the saas grouped by version and credentialIds.
+  // Send the credentials of each version of the encrypted credentials to the saas grouped by version and credentialIds.
   // Note: proofOf Credentials have a separate credentialId but the issuerCredentials share one (because same credential data)
-  const promises = versionList.map(
-    (version) => sendEncryptedVersionedCredentials(version)
-      .catch((err) => {
-        logger.error(`Error sending encrypted credentials to SaaS: ${err?.message || JSON.stringify(err)}`);
-        return undefined;
-      })
-  );
+  /**
+   * HACK ALERT: making this blocking to allow for the sake of SaaS ReceiptGroup handling which is currently unable to handle async requests.
+   * Issue is receipt groups are created keyed of of credentialIds,
+   */
+  await sendEncryptedVersionedCredentials('4.0.0');
 
-  // wait for all versioned requests to finish or fail
-  await Promise.all(promises).catch((err) => {
-    // this log message should not trigger because the catch is handled in the map above
-    logger.error(`[ShouldNotBeTriggered] Error sending encrypted credentials to SaaS: ${err?.message || JSON.stringify(err)}`);
-  });
+  sendEncryptedVersionedCredentials('3.0.0')
+    .catch((err) => {
+      logger.error(`Error sending encrypted credentials to SaaS: ${err?.message || JSON.stringify(err)}`);
+      return undefined;
+    });
 
   // grab all the credentials of the latest version and that were issued to the subject (to prevent duplicates if also "issuedToSelf", the issuer) from the CredentialPairs for the response
   // Note: not returning the ProofOf credentials.
