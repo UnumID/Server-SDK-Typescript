@@ -88,7 +88,7 @@ var winston_1 = require("winston");
 exports.issueCredentials = function (authorization, issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate, declineIssueCredentialsToSelf) {
     if (declineIssueCredentialsToSelf === void 0) { declineIssueCredentialsToSelf = false; }
     return __awaiter(void 0, void 0, void 0, function () {
-        var publicKeyInfoResponse, publicKeyInfos, issuerPublicKeyInfos, publicKeyInfoResponse_1, encryptCredentialPromises, _a, creds, proofOfCreds, sendEncryptedVersionedCredentials, promises, latestVersion, resultantCredentials;
+        var publicKeyInfoResponse, publicKeyInfos, issuerPublicKeyInfos, publicKeyInfoResponse_1, encryptCredentialPromises, _a, creds, proofOfCreds, sendEncryptedVersionedCredentials, latestVersion, resultantCredentials;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
@@ -136,19 +136,26 @@ exports.issueCredentials = function (authorization, issuerDid, subjectDid, crede
                             }
                         });
                     }); };
-                    promises = versionList_1.versionList.map(function (version) { return sendEncryptedVersionedCredentials(version)
-                        .catch(function (err) {
-                        logger_1.default.error("Error sending encrypted credentials to SaaS: " + ((err === null || err === void 0 ? void 0 : err.message) || JSON.stringify(err)));
-                        return undefined;
-                    }); });
-                    // wait for all versioned requests to finish or fail
-                    return [4 /*yield*/, Promise.all(promises).catch(function (err) {
-                            // this log message should not trigger because the catch is handled in the map above
-                            logger_1.default.error("[ShouldNotBeTriggered] Error sending encrypted credentials to SaaS: " + ((err === null || err === void 0 ? void 0 : err.message) || JSON.stringify(err)));
-                        })];
+                    // Send the credentials of each version of the encrypted credentials to the saas grouped by version and credentialIds.
+                    // Note: proofOf Credentials have a separate credentialId but the issuerCredentials share one (because same credential data)
+                    /**
+                     * HACK ALERT: making this blocking to allow for the sake of SaaS ReceiptGroup handling which is currently unable to handle async requests.
+                     * Situation is such that receipt groups are created keyed on credentialIds. This is so the ReceiptGroup has a chance to resolve so can be keyed on credentialId across versions.
+                     */
+                    return [4 /*yield*/, sendEncryptedVersionedCredentials('4.0.0')];
                 case 6:
-                    // wait for all versioned requests to finish or fail
+                    // Send the credentials of each version of the encrypted credentials to the saas grouped by version and credentialIds.
+                    // Note: proofOf Credentials have a separate credentialId but the issuerCredentials share one (because same credential data)
+                    /**
+                     * HACK ALERT: making this blocking to allow for the sake of SaaS ReceiptGroup handling which is currently unable to handle async requests.
+                     * Situation is such that receipt groups are created keyed on credentialIds. This is so the ReceiptGroup has a chance to resolve so can be keyed on credentialId across versions.
+                     */
                     _b.sent();
+                    sendEncryptedVersionedCredentials('3.0.0')
+                        .catch(function (err) {
+                        logger_1.default.error("Error sending v3 encrypted credentials to SaaS: " + ((err === null || err === void 0 ? void 0 : err.message) || JSON.stringify(err)));
+                        return undefined;
+                    });
                     latestVersion = versionList_1.versionList[versionList_1.versionList.length - 1];
                     resultantCredentials = creds.filter(function (credPair) { return (credPair.version === latestVersion && credPair.encryptedCredential.subject === subjectDid); }).map(function (credPair) { return credPair.credential; });
                     return [2 /*return*/, {
