@@ -96,7 +96,7 @@ export const issueCredentials = async (authorization: string, issuerDid: string,
   // Note: proofOf Credentials have a separate credentialId but the issuerCredentials share one (because same credential data)
   /**
    * HACK ALERT: making this blocking to allow for the sake of SaaS ReceiptGroup handling which is currently unable to handle async requests.
-   * Issue is receipt groups are created keyed of of credentialIds,
+   * Situation is such that receipt groups are created keyed on credentialIds. This is so the ReceiptGroup has a chance to resolve so can be keyed on credentialId across versions.
    */
   await sendEncryptedVersionedCredentials('4.0.0');
 
