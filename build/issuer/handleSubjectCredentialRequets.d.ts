@@ -8,7 +8,6 @@ export interface HandleSubjectCredentialRequestsReEncryptOptions {
     signingPrivateKey: string;
     encryptionPrivateKey: string;
     issuerEncryptionKeyId: string;
-    credentialTypes: string[];
 }
 /**
  * Interface to encapsulate all the attributes necessary to fullfil a verifySubjectCredentialRequests and

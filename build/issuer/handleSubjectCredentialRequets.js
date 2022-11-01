@@ -51,12 +51,12 @@ var verifySubjectCredentialRequests_1 = require("./verifySubjectCredentialReques
  */
 function handleSubjectCredentialRequests(options) {
     return __awaiter(this, void 0, void 0, function () {
-        var authorization, issuerDid, subjectDid, subjectCredentialRequests, _a, signingPrivateKey, encryptionPrivateKey, issuerEncryptionKeyId, credentialTypes, verifySubjectCredentialRequestsResult, authToken, _b, isVerified, message, reEncryptCredentialsResult;
+        var authorization, issuerDid, subjectDid, subjectCredentialRequests, _a, signingPrivateKey, encryptionPrivateKey, issuerEncryptionKeyId, verifySubjectCredentialRequestsResult, authToken, _b, isVerified, message, credentialTypes, reEncryptCredentialsResult;
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
                     logger_1.default.debug('handleSubjectCredentialRequests');
-                    authorization = options.authorization, issuerDid = options.issuerDid, subjectDid = options.subjectDid, subjectCredentialRequests = options.subjectCredentialRequests, _a = options.reEncryptCredentialsOptions, signingPrivateKey = _a.signingPrivateKey, encryptionPrivateKey = _a.encryptionPrivateKey, issuerEncryptionKeyId = _a.issuerEncryptionKeyId, credentialTypes = _a.credentialTypes;
+                    authorization = options.authorization, issuerDid = options.issuerDid, subjectDid = options.subjectDid, subjectCredentialRequests = options.subjectCredentialRequests, _a = options.reEncryptCredentialsOptions, signingPrivateKey = _a.signingPrivateKey, encryptionPrivateKey = _a.encryptionPrivateKey, issuerEncryptionKeyId = _a.issuerEncryptionKeyId;
                     requireAuth_1.requireAuth(authorization);
                     return [4 /*yield*/, verifySubjectCredentialRequests_1.verifySubjectCredentialRequests(authorization, issuerDid, subjectDid, subjectCredentialRequests)];
                 case 1:
@@ -67,6 +67,7 @@ function handleSubjectCredentialRequests(options) {
                         // return verifySubjectCredentialRequestsResult;
                         throw new error_1.CustError(500, message);
                     }
+                    credentialTypes = subjectCredentialRequests.credentialRequests.map(function (request) { return request.type; });
                     return [4 /*yield*/, reEncryptCredentials_1.reEncryptCredentials(authToken, issuerDid, subjectDid, signingPrivateKey, encryptionPrivateKey, issuerEncryptionKeyId, credentialTypes)];
                 case 2:
                     reEncryptCredentialsResult = _c.sent();

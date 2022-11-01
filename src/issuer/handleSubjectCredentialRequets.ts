@@ -13,8 +13,7 @@ import { verifySubjectCredentialRequests } from './verifySubjectCredentialReques
 export interface HandleSubjectCredentialRequestsReEncryptOptions {
     signingPrivateKey: string,
     encryptionPrivateKey: string,
-    issuerEncryptionKeyId: string,
-    credentialTypes: string[]
+    issuerEncryptionKeyId: string
 }
 
 /**
@@ -35,7 +34,7 @@ export interface HandleSubjectCredentialRequestsOptions {
  */
 export async function handleSubjectCredentialRequests (options: HandleSubjectCredentialRequestsOptions): Promise<UnumDto<Credential[]>> {
   logger.debug('handleSubjectCredentialRequests');
-  const { authorization, issuerDid, subjectDid, subjectCredentialRequests, reEncryptCredentialsOptions: { signingPrivateKey, encryptionPrivateKey, issuerEncryptionKeyId, credentialTypes } } = options;
+  const { authorization, issuerDid, subjectDid, subjectCredentialRequests, reEncryptCredentialsOptions: { signingPrivateKey, encryptionPrivateKey, issuerEncryptionKeyId } } = options;
 
   requireAuth(authorization);
 
@@ -47,6 +46,8 @@ export async function handleSubjectCredentialRequests (options: HandleSubjectCre
     // return verifySubjectCredentialRequestsResult;
     throw new CustError(500, message as string);
   }
+
+  const credentialTypes: string[] = subjectCredentialRequests.credentialRequests.map(request => request.type);
 
   // handle sending back the ReceiptSubjectCredentialRequestVerifiedData receipt with the verification status
   const reEncryptCredentialsResult: UnumDto<Credential[]> = await reEncryptCredentials(authToken, issuerDid, subjectDid, signingPrivateKey, encryptionPrivateKey, issuerEncryptionKeyId, credentialTypes);
