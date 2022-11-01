@@ -38,7 +38,7 @@ export async function verifySubjectCredentialRequests (authorization: string, is
  * Validates the attributes for a credential request to UnumID's SaaS.
  * @param requests CredentialRequest
  */
-const validateSubjectCredentialRequests = (requests: SubjectCredentialRequests, subjectDid: string): string => {
+export const validateSubjectCredentialRequests = (requests: SubjectCredentialRequests, subjectDid: string): string => {
   if (!requests) {
     throw new CustError(400, 'SubjectCredentialRequests must be defined.');
   }
@@ -53,8 +53,8 @@ const validateSubjectCredentialRequests = (requests: SubjectCredentialRequests, 
 
   validateProof(requests.proof);
 
-  // handle validating the subject did is the identical to that of the proof
-  if (subjectDid.includes(requests.proof.verificationMethod.split('#')[0])) {
+  // handle validating the proof base did is included the subjectDID with fragment
+  if (!subjectDid.includes(requests.proof.verificationMethod.split('#')[0])) {
     throw new CustError(400, `Invalid SubjectCredentialRequest: provided subjectDid, ${subjectDid}, must match that of the credential requests' signer, ${requests.proof.verificationMethod}.`);
   }
 
