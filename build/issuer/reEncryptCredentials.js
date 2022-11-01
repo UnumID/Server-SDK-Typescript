@@ -72,6 +72,7 @@ exports.reEncryptCredentials = function (authorization, issuerDid, signingPrivat
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
+                    logger_1.default.debug('reEncryptCredentials');
                     // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
                     requireAuth_1.requireAuth(authorization);
                     // Validate inputs.
@@ -128,6 +129,7 @@ exports.reEncryptCredentials = function (authorization, issuerDid, signingPrivat
                     results = _a.sent();
                     latestVersion = versionList_1.versionList[versionList_1.versionList.length - 1];
                     resultantCredentials = decryptedCredentials.filter(function (cred) { return (cred.version === latestVersion); }).map(function (cred) { return cred.credential; });
+                    logger_1.default.info("reEncryptCredentials complete. " + resultantCredentials.length + " credentials for " + subjectDidWithFragment + " from " + issuerDid + " re-encrypted.");
                     return [2 /*return*/, {
                             authToken: authorization,
                             body: resultantCredentials

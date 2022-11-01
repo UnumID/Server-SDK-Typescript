@@ -29,6 +29,7 @@ import { versionList } from '../utils/versionList';
  * @param credentialTypes
  */
 export const reEncryptCredentials = async (authorization: string, issuerDid: string, signingPrivateKey: string, encryptionPrivateKey: string, issuerEncryptionKeyId: string, subjectDidWithFragment: string, credentialTypes: string[] = []): Promise<UnumDto<Credential[]>> => {
+  logger.debug('reEncryptCredentials');
   // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
   requireAuth(authorization);
 
@@ -92,6 +93,7 @@ export const reEncryptCredentials = async (authorization: string, issuerDid: str
   const latestVersion = versionList[versionList.length - 1];
   const resultantCredentials: Credential[] = decryptedCredentials.filter(cred => (cred.version === latestVersion)).map(cred => cred.credential as Credential);
 
+  logger.info(`reEncryptCredentials complete. ${resultantCredentials.length} credentials for ${subjectDidWithFragment} from ${issuerDid} re-encrypted.`);
   return {
     authToken: authorization, // TODO this needs to be the latest authToken from the results
     body: resultantCredentials
