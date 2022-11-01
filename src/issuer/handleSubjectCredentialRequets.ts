@@ -49,9 +49,18 @@ export async function handleSubjectCredentialRequests (options: HandleSubjectCre
 
   const credentialTypes: string[] = subjectCredentialRequests.credentialRequests.map(request => request.type);
 
-  // handle sending back the ReceiptSubjectCredentialRequestVerifiedData receipt with the verification status
-  const reEncryptCredentialsResult: UnumDto<Credential[]> = await reEncryptCredentials(authToken, issuerDid, subjectDid, signingPrivateKey, encryptionPrivateKey, issuerEncryptionKeyId, credentialTypes);
+  try {
+    // handle sending back the ReceiptSubjectCredentialRequestVerifiedData receipt with the verification status
+    const reEncryptCredentialsResult: UnumDto<Credential[]> = await reEncryptCredentials(authToken, issuerDid, subjectDid, signingPrivateKey, encryptionPrivateKey, issuerEncryptionKeyId, credentialTypes);
 
-  logger.debug(`handleSubjectCredentialRequests resultant credentials re-encrypted: ${reEncryptCredentialsResult.body.map(cred => cred.type)}`);
-  return reEncryptCredentialsResult;
+    logger.debug(`handleSubjectCredentialRequests resultant credentials re-encrypted: ${reEncryptCredentialsResult.body.map(cred => cred.type)}`);
+    return reEncryptCredentialsResult;
+  } catch (e) {
+    logger.warn(`Error re-encrypting credentials: ${e}`);
+    // returning empty body response
+    return {
+      authToken,
+      body: []
+    };
+  }
 }

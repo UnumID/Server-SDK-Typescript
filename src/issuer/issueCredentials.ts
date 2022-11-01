@@ -33,19 +33,25 @@ export type CredentialEncryptionResult = {
 
 /**
  * Multiplexed handler for issuing credentials with UnumID's SaaS.
+ *
+ * Note: if the subjectDid contains an key id, aka fragment, it will be ignored and credentials will be issued to all key ids
+ * associated with the base DID.
  * @param authorization
  * @param issuer
- * @param subjectDid
+ * @param _subjectDid
  * @param credentialDataList
  * @param signingPrivateKey
  * @param expirationDate
  */
-export const issueCredentials = async (authorization: string, issuerDid: string, subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date, declineIssueCredentialsToSelf = false): Promise<UnumDto<Credential[]>> => {
+export const issueCredentials = async (authorization: string, issuerDid: string, _subjectDid: string, credentialDataList: CredentialData[], signingPrivateKey: string, expirationDate?: Date, declineIssueCredentialsToSelf = false): Promise<UnumDto<Credential[]>> => {
   // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
   requireAuth(authorization);
 
   // Validate inputs and potentially mutate image date inputs, e.g. image urls to base64 strings
-  credentialDataList = await validateInputs(issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate);
+  credentialDataList = await validateInputs(issuerDid, _subjectDid, credentialDataList, signingPrivateKey, expirationDate);
+
+  // ensure dealing with subject DID with no key id, aka fragment
+  const subjectDid = _subjectDid.split('#')[0];
 
   // Get target Subject's DID document public keys for encrypting all the credentials issued.
   const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, subjectDid, 'RSA');

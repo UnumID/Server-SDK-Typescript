@@ -51,7 +51,7 @@ var verifySubjectCredentialRequests_1 = require("./verifySubjectCredentialReques
  */
 function handleSubjectCredentialRequests(options) {
     return __awaiter(this, void 0, void 0, function () {
-        var authorization, issuerDid, subjectDid, subjectCredentialRequests, _a, signingPrivateKey, encryptionPrivateKey, issuerEncryptionKeyId, verifySubjectCredentialRequestsResult, authToken, _b, isVerified, message, credentialTypes, reEncryptCredentialsResult;
+        var authorization, issuerDid, subjectDid, subjectCredentialRequests, _a, signingPrivateKey, encryptionPrivateKey, issuerEncryptionKeyId, verifySubjectCredentialRequestsResult, authToken, _b, isVerified, message, credentialTypes, reEncryptCredentialsResult, e_1;
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
@@ -68,11 +68,23 @@ function handleSubjectCredentialRequests(options) {
                         throw new error_1.CustError(500, message);
                     }
                     credentialTypes = subjectCredentialRequests.credentialRequests.map(function (request) { return request.type; });
-                    return [4 /*yield*/, reEncryptCredentials_1.reEncryptCredentials(authToken, issuerDid, subjectDid, signingPrivateKey, encryptionPrivateKey, issuerEncryptionKeyId, credentialTypes)];
+                    _c.label = 2;
                 case 2:
+                    _c.trys.push([2, 4, , 5]);
+                    return [4 /*yield*/, reEncryptCredentials_1.reEncryptCredentials(authToken, issuerDid, subjectDid, signingPrivateKey, encryptionPrivateKey, issuerEncryptionKeyId, credentialTypes)];
+                case 3:
                     reEncryptCredentialsResult = _c.sent();
                     logger_1.default.debug("handleSubjectCredentialRequests resultant credentials re-encrypted: " + reEncryptCredentialsResult.body.map(function (cred) { return cred.type; }));
                     return [2 /*return*/, reEncryptCredentialsResult];
+                case 4:
+                    e_1 = _c.sent();
+                    logger_1.default.warn("Error re-encrypting credentials: " + e_1);
+                    // returning empty body response
+                    return [2 /*return*/, {
+                            authToken: authToken,
+                            body: []
+                        }];
+                case 5: return [2 /*return*/];
             }
         });
     });

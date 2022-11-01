@@ -78,26 +78,30 @@ var handleImageCredentialData_1 = require("../utils/handleImageCredentialData");
 var winston_1 = require("winston");
 /**
  * Multiplexed handler for issuing credentials with UnumID's SaaS.
+ *
+ * Note: if the subjectDid contains an key id, aka fragment, it will be ignored and credentials will be issued to all key ids
+ * associated with the base DID.
  * @param authorization
  * @param issuer
- * @param subjectDid
+ * @param _subjectDid
  * @param credentialDataList
  * @param signingPrivateKey
  * @param expirationDate
  */
-exports.issueCredentials = function (authorization, issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate, declineIssueCredentialsToSelf) {
+exports.issueCredentials = function (authorization, issuerDid, _subjectDid, credentialDataList, signingPrivateKey, expirationDate, declineIssueCredentialsToSelf) {
     if (declineIssueCredentialsToSelf === void 0) { declineIssueCredentialsToSelf = false; }
     return __awaiter(void 0, void 0, void 0, function () {
-        var publicKeyInfoResponse, publicKeyInfos, issuerPublicKeyInfos, publicKeyInfoResponse_1, encryptCredentialPromises, _a, creds, proofOfCreds, sendEncryptedVersionedCredentials, latestVersion, resultantCredentials;
+        var subjectDid, publicKeyInfoResponse, publicKeyInfos, issuerPublicKeyInfos, publicKeyInfoResponse_1, encryptCredentialPromises, _a, creds, proofOfCreds, sendEncryptedVersionedCredentials, latestVersion, resultantCredentials;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
                     // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
                     requireAuth_1.requireAuth(authorization);
-                    return [4 /*yield*/, validateInputs(issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate)];
+                    return [4 /*yield*/, validateInputs(issuerDid, _subjectDid, credentialDataList, signingPrivateKey, expirationDate)];
                 case 1:
                     // Validate inputs and potentially mutate image date inputs, e.g. image urls to base64 strings
                     credentialDataList = _b.sent();
+                    subjectDid = _subjectDid.split('#')[0];
                     return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authorization, subjectDid, 'RSA')];
                 case 2:
                     publicKeyInfoResponse = _b.sent();
