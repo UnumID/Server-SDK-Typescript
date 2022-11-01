@@ -105,7 +105,7 @@ var validateSubjectCredentialRequests = function (requests, subjectDid) {
     }
     validateProof_1.validateProof(requests.proof);
     // handle validating the subject did is the identical to that of the proof
-    if (subjectDid !== requests.proof.verificationMethod.split('#')[0]) {
+    if (subjectDid.includes(requests.proof.verificationMethod.split('#')[0])) {
         throw new error_1.CustError(400, "Invalid SubjectCredentialRequest: provided subjectDid, " + subjectDid + ", must match that of the credential requests' signer, " + requests.proof.verificationMethod + ".");
     }
     for (var i = 0; i < requests.credentialRequests.length; i++) {
