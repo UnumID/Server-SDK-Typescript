@@ -71,7 +71,7 @@ function handleSubjectCredentialRequests(options) {
                     _c.label = 2;
                 case 2:
                     _c.trys.push([2, 4, , 5]);
-                    return [4 /*yield*/, reEncryptCredentials_1.reEncryptCredentials(authToken, issuerDid, subjectDid, signingPrivateKey, encryptionPrivateKey, issuerEncryptionKeyId, credentialTypes)];
+                    return [4 /*yield*/, reEncryptCredentials_1.reEncryptCredentials(authToken, issuerDid, signingPrivateKey, encryptionPrivateKey, issuerEncryptionKeyId, subjectDid, credentialTypes)];
                 case 3:
                     reEncryptCredentialsResult = _c.sent();
                     logger_1.default.debug("handleSubjectCredentialRequests resultant credentials re-encrypted: " + reEncryptCredentialsResult.body.map(function (cred) { return cred.type; }));
