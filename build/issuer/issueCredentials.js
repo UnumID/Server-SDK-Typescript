@@ -212,9 +212,13 @@ function constructEncryptedCredential(authorization, item, issuerDid, issuerPubl
                         return __generator(this, function (_b) {
                             switch (_b.label) {
                                 case 0:
-                                    credentialVersionPairs = (function () { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
-                                        return [2 /*return*/, constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, credSubject, signingPrivateKey, publicKeyInfos, expirationDate)];
-                                    }); }); })();
+                                    credentialVersionPairs = (function () { return __awaiter(_this, void 0, void 0, function () {
+                                        return __generator(this, function (_a) {
+                                            return [2 /*return*/, credSubject.id === issuerDid
+                                                    ? constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, credSubject, signingPrivateKey, issuerPublicKeyInfos, expirationDate)
+                                                    : constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, credSubject, signingPrivateKey, publicKeyInfos, expirationDate)];
+                                        });
+                                    }); })();
                                     proofOfCredentialVersionPairs = (function () { return __awaiter(_this, void 0, void 0, function () {
                                         var proofOfType, proofOfCredentialSubject, proofOfCredentailId;
                                         return __generator(this, function (_a) {

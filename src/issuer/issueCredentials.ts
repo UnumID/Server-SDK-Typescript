@@ -172,7 +172,11 @@ async function constructEncryptedCredential (
 
   const constructEncryptedCredentialForSubject = async (credSubject: CredentialSubject) => {
     // construct the Credentials and their encrypted form for each supported version
-    const credentialVersionPairs: Promise<WithVersion<CredentialPair>[]> = (async () => constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, credSubject, signingPrivateKey, publicKeyInfos, expirationDate))();
+    const credentialVersionPairs: Promise<WithVersion<CredentialPair>[]> = (async () => {
+      return credSubject.id === issuerDid
+        ? constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, credSubject, signingPrivateKey, issuerPublicKeyInfos, expirationDate)
+        : constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, credSubject, signingPrivateKey, publicKeyInfos, expirationDate);
+    })();
 
     const proofOfCredentialVersionPairs: Promise<WithVersion<CredentialPair>[]> = (async () => {
       /**
