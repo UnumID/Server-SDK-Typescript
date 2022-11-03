@@ -50,7 +50,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifySubjectCredentialRequests = void 0;
+exports.validateSubjectCredentialRequests = exports.verifySubjectCredentialRequests = void 0;
 var types_1 = require("@unumid/types");
 var requireAuth_1 = require("../requireAuth");
 var error_1 = require("../utils/error");
@@ -73,7 +73,7 @@ function verifySubjectCredentialRequests(authorization, issuerDid, subjectDid, s
                 case 0:
                     requireAuth_1.requireAuth(authorization);
                     // validate credentialRequests input; and grab the subjectDid for reference later
-                    validateSubjectCredentialRequests(subjectCredentialRequests, subjectDid);
+                    exports.validateSubjectCredentialRequests(subjectCredentialRequests, subjectDid);
                     return [4 /*yield*/, verifySubjectCredentialRequestsHelper(authorization, issuerDid, subjectCredentialRequests)];
                 case 1:
                     result = _b.sent();
@@ -93,7 +93,7 @@ exports.verifySubjectCredentialRequests = verifySubjectCredentialRequests;
  * Validates the attributes for a credential request to UnumID's SaaS.
  * @param requests CredentialRequest
  */
-var validateSubjectCredentialRequests = function (requests, subjectDid) {
+exports.validateSubjectCredentialRequests = function (requests, subjectDid) {
     if (!requests) {
         throw new error_1.CustError(400, 'SubjectCredentialRequests must be defined.');
     }
@@ -104,8 +104,8 @@ var validateSubjectCredentialRequests = function (requests, subjectDid) {
         throw new error_1.CustError(400, 'Invalid SubjectCredentialRequest: proof must be defined.');
     }
     validateProof_1.validateProof(requests.proof);
-    // handle validating the subject did is the identical to that of the proof
-    if (subjectDid !== requests.proof.verificationMethod.split('#')[0]) {
+    // handle validating the proof base did is included the subjectDID with fragment
+    if (!subjectDid.includes(requests.proof.verificationMethod.split('#')[0])) {
         throw new error_1.CustError(400, "Invalid SubjectCredentialRequest: provided subjectDid, " + subjectDid + ", must match that of the credential requests' signer, " + requests.proof.verificationMethod + ".");
     }
     for (var i = 0; i < requests.credentialRequests.length; i++) {

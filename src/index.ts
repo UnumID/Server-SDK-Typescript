@@ -23,6 +23,7 @@ import { getPresentationRequest } from './verifier/getRequestById';
 import { doVerify } from './utils/verify';
 import { doEncrypt } from './utils/encrypt';
 import { doDecrypt } from './utils/decrypt';
+import { handleSubjectCredentialRequests, HandleSubjectCredentialRequestsOptions, HandleSubjectCredentialRequestsReEncryptOptions } from './issuer/handleSubjectCredentialRequets';
 
 export {
   // Issuer Functions
@@ -32,6 +33,7 @@ export {
   updateCredentialStatuses,
   verifySubjectCredentialRequests,
   revokeAllCredentials,
+  handleSubjectCredentialRequests,
   // Verifier Functions
   registerVerifier,
   sendEmail,
@@ -50,6 +52,8 @@ export {
   CredentialSubject,
   DecryptedPresentation,
   CredentialStatusInfo,
+  HandleSubjectCredentialRequestsOptions,
+  HandleSubjectCredentialRequestsReEncryptOptions,
   // Util Types
   CustError,
   Proof,

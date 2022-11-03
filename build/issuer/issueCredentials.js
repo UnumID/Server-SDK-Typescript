@@ -57,7 +57,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.issueCredentials = void 0;
+exports.sendEncryptedCredentials = exports.constructIssueCredentialOptions = exports.issueCredentials = void 0;
 var config_1 = require("../config");
 var requireAuth_1 = require("../requireAuth");
 var types_1 = require("@unumid/types");
@@ -78,26 +78,30 @@ var handleImageCredentialData_1 = require("../utils/handleImageCredentialData");
 var winston_1 = require("winston");
 /**
  * Multiplexed handler for issuing credentials with UnumID's SaaS.
+ *
+ * Note: if the subjectDid contains an key id, aka fragment, it will be ignored and credentials will be issued to all key ids
+ * associated with the base DID.
  * @param authorization
  * @param issuer
- * @param subjectDid
+ * @param _subjectDid
  * @param credentialDataList
  * @param signingPrivateKey
  * @param expirationDate
  */
-exports.issueCredentials = function (authorization, issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate, declineIssueCredentialsToSelf) {
+exports.issueCredentials = function (authorization, issuerDid, _subjectDid, credentialDataList, signingPrivateKey, expirationDate, declineIssueCredentialsToSelf) {
     if (declineIssueCredentialsToSelf === void 0) { declineIssueCredentialsToSelf = false; }
     return __awaiter(void 0, void 0, void 0, function () {
-        var publicKeyInfoResponse, publicKeyInfos, issuerPublicKeyInfos, publicKeyInfoResponse_1, encryptCredentialPromises, _a, creds, proofOfCreds, sendEncryptedVersionedCredentials, latestVersion, resultantCredentials;
+        var subjectDid, publicKeyInfoResponse, publicKeyInfos, issuerPublicKeyInfos, publicKeyInfoResponse_1, encryptCredentialPromises, _a, creds, proofOfCreds, sendEncryptedVersionedCredentials, latestVersion, resultantCredentials;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
                     // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
                     requireAuth_1.requireAuth(authorization);
-                    return [4 /*yield*/, validateInputs(issuerDid, subjectDid, credentialDataList, signingPrivateKey, expirationDate)];
+                    return [4 /*yield*/, validateInputs(issuerDid, _subjectDid, credentialDataList, signingPrivateKey, expirationDate)];
                 case 1:
                     // Validate inputs and potentially mutate image date inputs, e.g. image urls to base64 strings
                     credentialDataList = _b.sent();
+                    subjectDid = _subjectDid.split('#')[0];
                     return [4 /*yield*/, didHelper_1.getDidDocPublicKeys(authorization, subjectDid, 'RSA')];
                 case 2:
                     publicKeyInfoResponse = _b.sent();
@@ -123,12 +127,12 @@ exports.issueCredentials = function (authorization, issuerDid, subjectDid, crede
                             switch (_a.label) {
                                 case 0:
                                     resultantEncryptedCredentials = creds.filter(function (credPair) { return credPair.version === version; }).map(function (credPair) { return credPair.encryptedCredential; });
-                                    return [4 /*yield*/, sendEncryptedCredentials(authorization, { credentialRequests: resultantEncryptedCredentials }, version)];
+                                    return [4 /*yield*/, exports.sendEncryptedCredentials(authorization, { credentialRequests: resultantEncryptedCredentials }, version)];
                                 case 1:
                                     result = _a.sent();
                                     authorization = result.authToken;
                                     proofOfResultantEncryptedCredentials = proofOfCreds.filter(function (credPair) { return credPair.version === version; }).map(function (credPair) { return credPair.encryptedCredential; });
-                                    return [4 /*yield*/, sendEncryptedCredentials(authorization, { credentialRequests: proofOfResultantEncryptedCredentials }, version)];
+                                    return [4 /*yield*/, exports.sendEncryptedCredentials(authorization, { credentialRequests: proofOfResultantEncryptedCredentials }, version)];
                                 case 2:
                                     proofOfResult = _a.sent();
                                     authorization = proofOfResult.authToken;
@@ -208,9 +212,13 @@ function constructEncryptedCredential(authorization, item, issuerDid, issuerPubl
                         return __generator(this, function (_b) {
                             switch (_b.label) {
                                 case 0:
-                                    credentialVersionPairs = (function () { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
-                                        return [2 /*return*/, constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, credSubject, signingPrivateKey, publicKeyInfos, expirationDate)];
-                                    }); }); })();
+                                    credentialVersionPairs = (function () { return __awaiter(_this, void 0, void 0, function () {
+                                        return __generator(this, function (_a) {
+                                            return [2 /*return*/, credSubject.id === issuerDid
+                                                    ? constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, credSubject, signingPrivateKey, issuerPublicKeyInfos, expirationDate)
+                                                    : constructEncryptedCredentialOfEachVersion(authorization, type, issuerDid, credentialId, credSubject, signingPrivateKey, publicKeyInfos, expirationDate)];
+                                        });
+                                    }); })();
                                     proofOfCredentialVersionPairs = (function () { return __awaiter(_this, void 0, void 0, function () {
                                         var proofOfType, proofOfCredentialSubject, proofOfCredentailId;
                                         return __generator(this, function (_a) {
@@ -414,7 +422,7 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
             // Create the signed Credential object from the unsignedCredential object
             var credential_1 = constructSignedCredentialPbObj(unsignedCredential_1, signingPrivateKey, version_1);
             // Create the encrypted credential issuance dto
-            var encryptedCredentialUploadOptions_1 = constructIssueCredentialOptions(credential_1, publicKeyInfos, credentialSubject.id, version_1);
+            var encryptedCredentialUploadOptions_1 = exports.constructIssueCredentialOptions(credential_1, publicKeyInfos, credentialSubject.id, version_1);
             var credPair_1 = {
                 credential: credential_1,
                 encryptedCredential: encryptedCredentialUploadOptions_1,
@@ -430,7 +438,7 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
     // Create the signed Credential object from the unsignedCredential object
     var credential = constructSignedCredentialPbObj(unsignedCredential, signingPrivateKey, winston_1.version);
     // Create the encrypted credential issuance dto
-    var encryptedCredentialUploadOptions = constructIssueCredentialOptions(credential, publicKeyInfos, credentialSubject.id, winston_1.version);
+    var encryptedCredentialUploadOptions = exports.constructIssueCredentialOptions(credential, publicKeyInfos, credentialSubject.id, winston_1.version);
     var credPair = {
         credential: credential,
         encryptedCredential: encryptedCredentialUploadOptions,
@@ -447,14 +455,14 @@ var constructEncryptedCredentialOfEachVersion = function (authorization, type, i
  * @param subjectDid
  * @returns
  */
-var constructIssueCredentialOptions = function (credential, publicKeyInfos, subjectDid, version) {
+exports.constructIssueCredentialOptions = function (credential, subjectPublicKeyInfos, subjectDidWithFragment, version) {
     // Create the attributes for an encrypted credential. The authorization string is used to get the DID Document containing the subject's public key for encryption.
-    var encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, publicKeyInfos, version);
+    var encryptedCredentialOptions = constructEncryptedCredentialOpts(credential, subjectPublicKeyInfos, version);
     // Removing the 'credential' of "VerifiableCredential" from the Unum ID internal type for simplicity
     var credentialType = getCredentialType_1.getCredentialType(credential.type);
     var encryptedCredentialUploadOptions = {
         credentialId: credential.id,
-        subject: subjectDid,
+        subject: subjectDidWithFragment,
         issuer: credential.issuer,
         type: credentialType,
         encryptedCredentials: encryptedCredentialOptions
@@ -468,7 +476,7 @@ var constructIssueCredentialOptions = function (credential, publicKeyInfos, subj
  * @param version
  * @returns
  */
-var sendEncryptedCredentials = function (authorization, encryptedCredentialUploadOptions, version) { return __awaiter(void 0, void 0, void 0, function () {
+exports.sendEncryptedCredentials = function (authorization, encryptedCredentialUploadOptions, version) { return __awaiter(void 0, void 0, void 0, function () {
     var restData, restResp, authToken, issuedCredential;
     return __generator(this, function (_a) {
         switch (_a.label) {

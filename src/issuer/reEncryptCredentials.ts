@@ -1,20 +1,20 @@
 import { configData } from '../config';
 import { RESTData, UnumDto } from '../types';
 import { requireAuth } from '../requireAuth';
-import { EncryptedCredentialEnrichedDto as EncryptedCredentialEnrichedDtoV3, Proof as ProofV3, Credential as CredentialV3, PublicKeyInfo as PublicKeyInfoV3 } from '@unumid/types-v3';
-import { Credential, JSONObj, CredentialPb, CredentialData, EncryptedCredentialEnrichedDto, CredentialSubject, PublicKeyInfo } from '@unumid/types';
+import { Credential, JSONObj, CredentialPb, CredentialData, EncryptedCredentialEnrichedDto, CredentialSubject, PublicKeyInfo, IssueCredentialOptions } from '@unumid/types';
 
 import { CustError } from '../utils/error';
 import { handleAuthTokenHeader, makeNetworkRequest } from '../utils/networkRequestHelper';
 import _ from 'lodash';
 import { doDecrypt } from '../utils/decrypt';
-import { issueCredentials } from './issueCredentials';
+import { constructIssueCredentialOptions, issueCredentials, sendEncryptedCredentials } from './issueCredentials';
 import { sdkMajorVersion } from '../utils/constants';
 import { extractCredentialType } from '../utils/extractCredentialType';
 import { createListQueryString } from '../utils/queryStringHelper';
 import { verifyCredentialHelper } from '../verifier/verifyCredential';
 import logger from '../logger';
 import { getDidDocPublicKeys } from '../utils/didHelper';
+import { versionList } from '../utils/versionList';
 
 /**
  * Helper to facilitate an issuer re-encrypting any credentials it has issued to a target subject.
@@ -24,70 +24,80 @@ import { getDidDocPublicKeys } from '../utils/didHelper';
  * @param issuerDid
  * @param signingPrivateKey
  * @param encryptionPrivateKey
- * @param subjectDid
+ * @param subjectDidWithFragment
  * @param issuerEncryptionKeyId
  * @param credentialTypes
  */
-export const reEncryptCredentials = async (authorization: string, issuerDid: string, signingPrivateKey: string, encryptionPrivateKey: string, issuerEncryptionKeyId: string, subjectDid: string, credentialTypes: string[] = []): Promise<UnumDto<(CredentialPb | Credential)[]>> => {
+export const reEncryptCredentials = async (authorization: string, issuerDid: string, signingPrivateKey: string, encryptionPrivateKey: string, issuerEncryptionKeyId: string, subjectDidWithFragment: string, credentialTypes: string[] = []): Promise<UnumDto<Credential[]>> => {
+  logger.debug('reEncryptCredentials');
   // The authorization string needs to be passed for the SaaS to authorize getting the DID document associated with the holder / subject.
   requireAuth(authorization);
 
   // Validate inputs.
-  validateInputs(issuerDid, signingPrivateKey, encryptionPrivateKey, subjectDid, issuerEncryptionKeyId);
+  validateInputs(issuerDid, signingPrivateKey, encryptionPrivateKey, subjectDidWithFragment, issuerEncryptionKeyId);
 
-  // create the did + fragment
+  // create the issuer did + fragment
   const issuerDidWithFragment = `${issuerDid}#${issuerEncryptionKeyId}`;
 
+  // potentially separate the subject did from the fragment
+  const subjectDidSplit = subjectDidWithFragment.split('#');
+  const subjectDidWithOutFragment = subjectDidSplit[0];
+
   // get all the credentials issued by the issuer to the subject
-  const credentialsResponse: UnumDto<EncryptedCredentialEnrichedDto[]> = await getRelevantCredentials(authorization, issuerDidWithFragment, subjectDid, credentialTypes);
+  const credentialsResponse: UnumDto<EncryptedCredentialEnrichedDto[]> = await getRelevantCredentials(authorization, issuerDidWithFragment, subjectDidWithOutFragment, credentialTypes);
   authorization = credentialsResponse.authToken;
   const credentials = credentialsResponse.body;
 
-  // result list to house the decrypted and verified credential data
-  const credentialDataList: CredentialData[] = [];
+  // grab all Issuer's 'secp256r1' keys from the DID + fragment document for credential verification.
+  const issuerPublicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, issuerDid, 'secp256r1');
+  const issuerPublicKeyInfo: PublicKeyInfo[] = issuerPublicKeyInfoResponse.body;
+  authorization = issuerPublicKeyInfoResponse.authToken;
 
-  // grab all 'secp256r1' keys from the DID + fragment document for credential verification.
-  const publicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, issuerDid, 'secp256r1');
-  const publicKeyInfo: PublicKeyInfo[] = publicKeyInfoResponse.body;
-  const authToken = publicKeyInfoResponse.authToken;
+  // grab all the Subject's 'secp256r1' keys from the DID + fragment document for credential issuance.
+  const subjectPublicKeyInfoResponse: UnumDto<PublicKeyInfo[]> = await getDidDocPublicKeys(authorization, subjectDidWithFragment, 'secp256r1');
+  const subjectPublicKeyInfo: PublicKeyInfo[] = subjectPublicKeyInfoResponse.body;
+  authorization = subjectPublicKeyInfoResponse.authToken;
 
   // decrypt and verify the credentials
+  const promises = [];
+  const decryptedCredentials: {credential: CredentialPb, version: string}[] = [];
   for (const credential of credentials) {
+    const { encryptedCredential: { version } } = credential;
     // decrypt the credential into a byte array
     const decryptedCredentialBytes = await doDecrypt(encryptionPrivateKey, credential.encryptedCredential.data);
 
     // create a protobuf Credential object from the byte array
     const decryptedCredential = CredentialPb.decode(decryptedCredentialBytes);
+    decryptedCredentials.push({ credential: decryptedCredential, version });
 
     // verify the credential signature
-    const isVerified = await verifyCredentialHelper(decryptedCredential, publicKeyInfo);
+    const isVerified = await verifyCredentialHelper(decryptedCredential, issuerPublicKeyInfo);
     if (!isVerified) {
       logger.warn(`Credential ${decryptedCredential.id} signature could not be verified. This should never happen and is very suspicious. Please contact UnumID support.`);
       continue;
     }
 
-    // extract the credential data from the credential for sake of re-issuance
-    const credentialSubject = JSON.parse(decryptedCredential.credentialSubject) as CredentialSubject;
+    // Now just need to re-encrypt the credential with the new subject DID key id(s). Note: this function can handle re-issuing to multiple keys if needed.
+    const reEncryptedCredentialOptions: IssueCredentialOptions = constructIssueCredentialOptions(decryptedCredential, subjectPublicKeyInfo, subjectDidWithFragment, version);
 
-    // omit the id which is added to credential data to make the subject
-    const credentialData = {
-      ..._.omit(credentialSubject, 'id'),
-      /**
-       * HACK ALERT: assuming the credential type is ultimately only of length 2 with the first element being the 'VerifiableCredential' indicator.
-       * This will need to be updated if we want to actually sport multiple credential types being defined in one credential.
-       * However, lots of other parts of our product would have to updated too.
-       */
-      type: extractCredentialType(decryptedCredential.type)[0]
-    };
-
-    // push the credential data to the array
-    credentialDataList.push(credentialData);
+    // send the EncryptedCredential to the SaaS
+    const promise = sendEncryptedCredentials(authorization, { credentialRequests: [reEncryptedCredentialOptions] }, version);
+    promises.push(promise);
   }
 
-  // (re)issue (aka re-encrypt) the credentials to the target subject
-  const reissuedCredentials = await issueCredentials(authToken, issuerDid, subjectDid, credentialDataList, signingPrivateKey, undefined, true);
+  // wait for all requests to finish or fail
+  const results = await Promise.all(promises).catch((err) => {
+    logger.error(`Error sending encrypted credentials to SaaS: ${err?.message || JSON.stringify(err)}`);
+  });
 
-  return reissuedCredentials;
+  const latestVersion = versionList[versionList.length - 1];
+  const resultantCredentials: Credential[] = decryptedCredentials.filter(cred => (cred.version === latestVersion)).map(cred => cred.credential as Credential);
+
+  logger.info(`reEncryptCredentials complete. ${resultantCredentials.length} credentials for ${subjectDidWithFragment} from ${issuerDid} re-encrypted.`);
+  return {
+    authToken: authorization, // TODO this needs to be the latest authToken from the results
+    body: resultantCredentials
+  };
 };
 
 function validateInputs (issuerDid: string, signingPrivateKey: string, encryptionPrivateKey: string, subjectDid: string, issuerEncryptionKeyId: string) {
@@ -97,6 +107,11 @@ function validateInputs (issuerDid: string, signingPrivateKey: string, encryptio
 
   if (!subjectDid) {
     throw new CustError(400, 'subjectDid is required.');
+  }
+
+  const subjectDidSplit = subjectDid.split('#');
+  if (subjectDidSplit.length <= 1) {
+    throw new CustError(400, 'subjectDid with fragment is required.');
   }
 
   if (!signingPrivateKey) {
