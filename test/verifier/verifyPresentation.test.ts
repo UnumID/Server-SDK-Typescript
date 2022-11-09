@@ -133,6 +133,7 @@ const populateMockData = async (): Promise<JSONObj> => {
   const presentationRequestUuid = '0cebee3b-3295-4ef6-a4d6-7dfea413b3ab';
   const presentationRequestId = '0cebee3b-3295-4ef6-a4d6-7dfea413b3aa';
   const verifier = 'did:unum:f2054199-1069-4337-a588-83d099e79d44';
+  const presentationUuid = getUUID();
 
   const presentationRequest = await makeDummyUnsignedPresentationRequest({ uuid: presentationRequestUuid, id: presentationRequestId, verifier });
 
@@ -141,8 +142,8 @@ const populateMockData = async (): Promise<JSONObj> => {
 
   const proof = (await presentationRequestDto).presentationRequest.proof;
 
-  const unsignedPresentation = await makeDummyUnsignedPresentation({ verifierDid: verifier, context, type, verifiableCredential: verifiableCredentials, presentationRequestId });
-  const presentation = await makeDummyPresentation({ verifierDid: verifier, context, type, verifiableCredential: verifiableCredentials, presentationRequestId });
+  const unsignedPresentation = await makeDummyUnsignedPresentation({ verifierDid: verifier, context, type, verifiableCredential: verifiableCredentials, presentationRequestId, uuid: presentationUuid });
+  const presentation = await makeDummyPresentation({ verifierDid: verifier, context, type, verifiableCredential: verifiableCredentials, presentationRequestId, uuid: presentationUuid });
 
   const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidmVyaWZpZXIiLCJ1dWlkIjoiM2VjYzVlZDMtZjdhMC00OTU4LWJjOTgtYjc5NTQxMThmODUyIiwiZGlkIjoiZGlkOnVudW06ZWVhYmU0NGItNjcxMi00NTRkLWIzMWItNTM0NTg4NTlmMTFmIiwiZXhwIjoxNTk1NDcxNTc0LjQyMiwiaWF0IjoxNTk1NTI5NTExfQ.4iJn_a8fHnVsmegdR5uIsdCjXmyZ505x1nA8NVvTEBg';
 
