@@ -16,7 +16,6 @@ import { convertCredentialSubject } from '../utils/convertCredentialSubject';
 import { sendPresentationVerifiedReceipt } from './sendPresentationVerifiedReceipt';
 import { checkCredentialStatuses } from './checkCredentialStatuses';
 import { getCredentialStatusFromMap } from '../utils/getCredentialStatusFromMap';
-import { UnsignedPresentationPb } from '@unumid/types-v3';
 
 /**
  * Validates the attributes for a credential from UnumId's Saas
@@ -266,7 +265,7 @@ export const verifyPresentationHelper = async (authorization: string, presentati
       throw new CustError(400, 'verifier is required.');
     }
 
-    const data: UnsignedPresentationPb = omit(presentation, 'proof');
+    const data: UnsignedPresentation = omit(presentation, 'proof');
     presentation = validatePresentation(presentation);
 
     const proof: ProofPb = presentation.proof as ProofPb; // already validated existence in validatePresentation

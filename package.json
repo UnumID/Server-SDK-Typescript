@@ -45,7 +45,7 @@
     "@types/uuid": "^8.3.0",
     "@unumid/library-crypto": "2.1.1",
     "@unumid/library-crypto-v1": "npm:@unumid/library-crypto@1.10.1",
-    "@unumid/types": "4.0.1",
+    "@unumid/types": "4.0.2",
     "@unumid/types-v3": "npm:@unumid/types@3.54.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
