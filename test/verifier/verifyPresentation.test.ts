@@ -87,7 +87,8 @@ const callVerifyEncryptedPresentationManual = (context, type, verifiableCredenti
     verifiableCredential,
     presentationRequestId,
     verifierDid: verifier,
-    proof
+    proof,
+    uuid: getUUID()
   };
 
   // const encryptedPresentation = encrypt(`did:unum:${getUUID()}`, dummyRsaPublicKey, presentation, 'pem');
