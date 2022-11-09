@@ -7,5 +7,5 @@ import { Proof } from '@unumid/types';
  * @param method
  * @param encoding
  */
-export declare const createProof: (data: Uint8Array, privateKey: string, method: string, version: string) => Proof;
+export declare const createProof: (data: Uint8Array, privateKey: string, method: string, version?: string) => Proof;
 //# sourceMappingURL=createProof.d.ts.map

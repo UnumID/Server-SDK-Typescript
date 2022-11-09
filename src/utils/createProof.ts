@@ -13,7 +13,7 @@ import logger from '../logger';
  * @param method
  * @param encoding
  */
-export const createProof = (data: Uint8Array, privateKey: string, method: string, version: string): Proof => {
+export const createProof = (data: Uint8Array, privateKey: string, method: string, version = '4.0.0'): Proof => {
   return lt(version, '4.0.0') ? _createProofV3(data, privateKey, method) : _createProof(data, privateKey, method);
 };
 

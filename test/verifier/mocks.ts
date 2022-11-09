@@ -323,7 +323,8 @@ export interface MakeDummyPresentationOptions {
   context?: string[]
   type?: string[]
   presentationRequestId?: string
-  verifiableCredential?: CredentialPb[]
+  verifiableCredential?: CredentialPb[],
+  uuid: string,
 
   unsignedPresentationRequestLiteral?: boolean;
   privateKeyLiteral?: boolean;
@@ -351,6 +352,7 @@ export const makeDummyUnsignedPresentation = async (options: MakeDummyPresentati
   };
   const credential = await makeDummyCredential(credOptions);
   const credentials = [credential];
+  const uuid = options.uuid || getUUID();
 
   const verifiableCredential = options.verifiableCredential || credentials;
 
@@ -359,7 +361,8 @@ export const makeDummyUnsignedPresentation = async (options: MakeDummyPresentati
     type,
     presentationRequestId,
     verifierDid,
-    verifiableCredential
+    verifiableCredential,
+    uuid
   };
 
   return unsignedPresentation;
@@ -381,6 +384,7 @@ export const makeDummyPresentation = async (options: MakeDummyPresentationOption
   };
   const credential = await makeDummyCredential(credOptions);
   const credentials = [credential];
+  const uuid = options.uuid || getUUID();
 
   const verifiableCredential = options.verifiableCredentialLiteral ? options.verifiableCredential : options.verifiableCredential || credentials;
 
@@ -389,7 +393,8 @@ export const makeDummyPresentation = async (options: MakeDummyPresentationOption
     type,
     presentationRequestId,
     verifierDid,
-    verifiableCredential
+    verifiableCredential,
+    uuid
   };
 
   let { privateKey } = options;

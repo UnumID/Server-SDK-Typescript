@@ -18,6 +18,7 @@ var logger_1 = __importDefault(require("../logger"));
  * @param encoding
  */
 exports.createProof = function (data, privateKey, method, version) {
+    if (version === void 0) { version = '4.0.0'; }
     return lodash_1.lt(version, '4.0.0') ? _createProofV3(data, privateKey, method) : _createProof(data, privateKey, method);
 };
 /**

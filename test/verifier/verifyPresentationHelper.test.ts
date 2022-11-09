@@ -9,6 +9,7 @@ import { isCredentialExpired } from '../../src/verifier/isCredentialExpired';
 import { verifyCredential } from '../../src/verifier/verifyCredential';
 import { verifyPresentationHelper } from '../../src/verifier/verifyPresentationHelper';
 import { makeDummyPresentation, makeDummyUnsignedCredential, makeDummyCredential, dummyCredentialRequest, makeDummyUnsignedPresentationRequest, makeDummyPresentationRequestEnriched, makeDummyUnsignedPresentation, makeDummyDidDocument, dummyAuthToken, dummyIssuerDid } from './mocks';
+import { getUUID } from '../../src/utils/helpers';
 
 jest.mock('../../src/utils/didHelper', () => {
   const actual = jest.requireActual('../../src/utils/didHelper');
@@ -63,7 +64,8 @@ const callVerifyPresentationManual = (context, type, verifiableCredential, prese
     verifiableCredential,
     presentationRequestId,
     verifierDid: verifier,
-    proof
+    proof,
+    uuid: getUUID()
   };
   return verifyPresentationHelper(auth, presentation, verifier, credentialRequests, presentationRequestUuid);
 };
