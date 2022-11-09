@@ -64,7 +64,8 @@ const callVerifyEncryptedPresentation = async (context, type, verifiableCredenti
     type,
     verifiableCredential,
     presentationRequestId,
-    verifierDid: verifier
+    verifierDid: verifier,
+    uuid: getUUID()
   });
 
   // const encryptedPresentation = encrypt(`did:unum:${getUUID()}`, dummyRsaPublicKey, presentation, 'pem');
