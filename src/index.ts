@@ -24,6 +24,8 @@ import { doVerify } from './utils/verify';
 import { doEncrypt } from './utils/encrypt';
 import { doDecrypt } from './utils/decrypt';
 import { handleSubjectCredentialRequests, HandleSubjectCredentialRequestsOptions, HandleSubjectCredentialRequestsReEncryptOptions } from './issuer/handleSubjectCredentialRequets';
+import { extractCredentialData } from './utils/extractCredentialData';
+import { extractPresentationData } from './utils/extractPresentationData';
 
 export {
   // Issuer Functions
@@ -60,8 +62,10 @@ export {
   Credential,
   CredentialInfo,
   // Util Functions
+  extractCredentialData,
   extractCredentialInfo,
   extractCredentialType,
+  extractPresentationData,
   verifySignedDid,
   createProof,
   convertCredentialSubject,
