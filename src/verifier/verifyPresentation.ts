@@ -17,6 +17,7 @@ import { validateProof } from './validateProof';
 import { convertProof } from '../utils/convertToProtobuf';
 import { sendPresentationVerifiedReceipt } from './sendPresentationVerifiedReceipt';
 import { extractPresentationRequest, getPresentationRequest, handleConvertingPresentationRequestDateAttributes } from './getRequestById';
+import { doDecrypt } from '../utils/decrypt';
 
 function isDeclinedPresentation (presentation: Presentation | PresentationPb): presentation is Presentation {
   return isArrayEmpty(presentation.verifiableCredential);
@@ -218,7 +219,7 @@ export const verifyPresentation = async (authorization: string, encryptedPresent
     }
 
     // decrypt the presentation
-    const presentationBytes = decryptBytes(encryptionPrivateKey, encryptedPresentation);
+    const presentationBytes = doDecrypt(encryptionPrivateKey, encryptedPresentation);
     const presentation: PresentationPb = PresentationPb.decode(presentationBytes);
 
     if (configData.debug) {
