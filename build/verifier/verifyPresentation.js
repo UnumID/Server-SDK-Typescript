@@ -67,6 +67,7 @@ var validateProof_1 = require("./validateProof");
 var convertToProtobuf_1 = require("../utils/convertToProtobuf");
 var sendPresentationVerifiedReceipt_1 = require("./sendPresentationVerifiedReceipt");
 var getRequestById_1 = require("./getRequestById");
+var decrypt_1 = require("../utils/decrypt");
 function isDeclinedPresentation(presentation) {
     return helpers_1.isArrayEmpty(presentation.verifiableCredential);
 }
@@ -234,7 +235,7 @@ exports.verifyPresentation = function (authorization, encryptedPresentation, ver
                 if (presentationRequest && presentationRequest.verifier.did !== verifierDid) {
                     throw new error_1.CustError(400, "verifier provided, " + verifierDid + ", does not match the presentation request verifier, " + presentationRequest.verifier.did + ".");
                 }
-                presentationBytes = library_crypto_1.decryptBytes(encryptionPrivateKey, encryptedPresentation);
+                presentationBytes = decrypt_1.doDecrypt(encryptionPrivateKey, encryptedPresentation);
                 presentation = types_1.PresentationPb.decode(presentationBytes);
                 if (config_1.configData.debug) {
                     logger_1.default.debug("Decrypted Presentation: " + JSON.stringify(presentation));
