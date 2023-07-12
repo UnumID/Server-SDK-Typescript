@@ -54,7 +54,7 @@
     "lodash": "^4.17.21",
     "node-fetch": "^2.6.7",
     "runtypes": "~6.0.0",
-    "semver": "^7.3.5",
+    "semver": "^7.5.2",
     "ts-node": "^9.0.0",
     "uuid": "^8.3.2",
     "winston": "^3.3.3",
